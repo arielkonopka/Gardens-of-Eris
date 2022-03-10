@@ -31,6 +31,11 @@ bool player::mechanics(bool collected)
         this->attachedBoard->player.x=this->x;
         this->attachedBoard->player.y=this->y;
     }
+    if (this->isDying()==true)
+    {
+        this->animPh++;
+        return true;
+    }
     if (this->attachedBoard->cntrlItm.type==0 && this->_me_moved==0)
     {
         bool res=this->moveInDirection(this->attachedBoard->cntrlItm.dir);

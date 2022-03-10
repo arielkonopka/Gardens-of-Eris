@@ -1,5 +1,5 @@
 {
-    "SpriteFile": "/storage/home/c/dev/gardenOfEris_revised/data/graph/icons64.png",
+    "SpriteFile": "data/graph/icons64.png",
     "width": 64,
     "height": 64,
     "spacing":4,

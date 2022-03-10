@@ -48,8 +48,6 @@
 		</Compiler>
 		<Unit filename="data/graph/icons64.png" />
 		<Unit filename="data/graph/icons64.xcf" />
-		<Unit filename="data/levels/millenium.dat" />
-		<Unit filename="data/levels/read.me" />
 		<Unit filename="data/skins.json" />
 		<Unit filename="include/bElem.h" />
 		<Unit filename="include/chamber.h" />

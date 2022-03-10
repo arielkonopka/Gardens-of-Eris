@@ -28,8 +28,14 @@ presenter::presenter(chamber *board)
     this->sHeight=0;
     this->spacing=0;
     this->inpMngr=new inputManager();
-    this->previousPosition=(coords){0,0};
-    this->positionOnScreen=(coords){0,0};
+    this->previousPosition=(coords)
+    {
+        0,0
+    };
+    this->positionOnScreen=(coords)
+    {
+        0,0
+    };
 
 
 
@@ -44,7 +50,7 @@ bool presenter::initializeDisplay()
     this->display = al_create_display(scrWidth, scrHeight);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
     al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
-    this->internalBitmap=al_create_bitmap(1024 ,1024);
+    this->internalBitmap=al_create_bitmap(1024,1024);
     return true;
 
 }
@@ -80,7 +86,7 @@ bool presenter::loadCofiguredData()
     /*
         read the configuration file
     */
-    FILE* fp = fopen("/storage/home/c/dev/gardenOfEris_revised/data/skins.json", "rb"); // non-Windows use "r"
+    FILE* fp = fopen("data/skins.json", "rb"); // non-Windows use "r"
     char readBuffer[65536];
     rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
     this->skinDefJson.ParseStream(is);
@@ -221,8 +227,8 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
     int aphs,subtyps,dirs;
     videoElement::aphases *phs; //Video element, that defines the animation of an object
 //the tile would not fit in the screen? ignore
-   // if(elem!=NULL)
-   //     std::cout<<elem->getType()<<".";
+    // if(elem!=NULL)
+    //     std::cout<<elem->getType()<<".";
 
     if (x>this->scrTilesX+20 || y>this->scrTilesY+20) return;
 //empty element? ignore or end the recursion cycle
@@ -297,13 +303,13 @@ void presenter::showGameField(int relX,int relY)
 
 
     ALLEGRO_BITMAP* screen=al_get_target_bitmap();
-   // chamber *myChamber=this->_cp_attachedBoard;
+    // chamber *myChamber=this->_cp_attachedBoard;
 //std::cout<<bx<<" "<<by<<" "<<this->positionOnScreen.x<<" "<<this->positionOnScreen.y<<"\n";
     // check if there is a need for top left corner to be recalculated
-if (this->internalBitmap==NULL)
-{
-    std::cout<<"******************* Dupa!!!\n";
-}
+    if (this->internalBitmap==NULL)
+    {
+        std::cout<<"******************* Dupa!!!\n";
+    }
     al_set_target_bitmap(this->internalBitmap);
     al_clear_to_color(al_map_rgba(50,70,120,255));
     for(x=0; x<this->scrTilesX+1; x++)
@@ -329,7 +335,7 @@ void presenter::showGameFieldLoop()
     while(!fin)
     {
         al_wait_for_event(evQueue, &event);
-         if(event.type == ALLEGRO_EVENT_TIMER)
+        if(event.type == ALLEGRO_EVENT_TIMER)
         {
             this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
             //std::cout<<"zZz";
@@ -350,16 +356,16 @@ static void *shGFL(ALLEGRO_THREAD* at,void* instance)
 int presenter::presentEverything()
 {
     ALLEGRO_EVENT event;
- //   presenter* instance=this;
+//   presenter* instance=this;
     controlItem cItem;
     void* instance=(void*)this;
     bool fin=false;
     int red=30;
     int green=20;
     int blue=50;
-   // ALLEGRO_THREAD* visual=al_create_thread(shGFL,&instance);
+    // ALLEGRO_THREAD* visual=al_create_thread(shGFL,&instance);
 
-  //  al_start_thread(visual);
+    //  al_start_thread(visual);
 
     while(!fin)
     {
@@ -372,6 +378,7 @@ int presenter::presentEverything()
         }
         if(event.type == ALLEGRO_EVENT_TIMER)
         {
+            this->_cp_attachedBoard->player.x=-1;
             for (int cy=0; cy<this->_cp_attachedBoard->width; cy++)
                 for (int cx=0; cx<this->_cp_attachedBoard->height; cx++)
                 {
@@ -381,15 +388,18 @@ int presenter::presentEverything()
                         myel->mechanics(false);
                 }
 
-
+            if (this->_cp_attachedBoard->player.x<0)
+            {
+                return 2;
+            }
             this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
             //  std::cout<<blue<<"\n";
 
         }
         cItem=this->inpMngr->translateEvent(&event); //We always got a status on what to do. remember, everything must have a timer!
-                                                    // the idea is to serve the keyboard state constantly, we avoid actions that are too fast
-                                                    // by having timers on everything, like: once you shoot, you will be able to shoot in some defined time
-                                                    // same with movement, object cycling, gun cycling, using things, interacting with things.
+        // the idea is to serve the keyboard state constantly, we avoid actions that are too fast
+        // by having timers on everything, like: once you shoot, you will be able to shoot in some defined time
+        // same with movement, object cycling, gun cycling, using things, interacting with things.
 
         if (cItem.type==7)
             return 1;

@@ -42,7 +42,7 @@ int main( int argc, char * argv[] )
     mojElement2=new key(myFirstChamber,garbageBin,0);
     mojElement2->stepOnElement(myFirstChamber->chamberArray[2][4]);
     //rndl->lvlGenerate(1,1,48,48,8,4,"B");
-    rndl->generateLevel(4);
+    rndl->generateLevel(2);
 
 
     //new chamber(100,100,garbageBin);
@@ -66,6 +66,10 @@ int main( int argc, char * argv[] )
         case 0:
             break; // No reaction, needed for reloading or something;
         case 1:
+
+            finish=true;
+            break;
+        case 2: // player died, time to pick another one.
             finish=true;
             break;
         }

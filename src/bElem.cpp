@@ -118,9 +118,6 @@ coords bElem::getCoords()
 oState bElem::disposeElement()
 {
     oState res;
-    std::cout<<" dispose: "<<this->getType()<<" "<<this->getSubtype()<<" "<<this->x<<" "<<this->y<<"\n";
-
-
     if ( this->garbageBin==NULL )
     {
         std::cout<<"Tried to dispose broken element!\n";
