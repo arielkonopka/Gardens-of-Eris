@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="gardenOfEris_revised" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/gardenOfEris_revised" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-march=nocona" />
+					<Add option="-std=c17" />
+					<Add option="-g" />
+					<Add directory="include" />
+				</Compiler>
+				<Linker>
+					<Add option="-O3" />
+					<Add library="allegro" />
+					<Add library="allegro_image" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/gardenOfEris_revised" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-march=nocona" />
+					<Add option="-fexpensive-optimizations" />
+					<Add option="-std=c17" />
+					<Add directory="include" />
+				</Compiler>
+				<Linker>
+					<Add option="-O3" />
+					<Add option="-s" />
+					<Add library="allegro" />
+					<Add library="allegro_image" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="data/graph/icons64.png" />
+		<Unit filename="data/graph/icons64.xcf" />
+		<Unit filename="data/levels/millenium.dat" />
+		<Unit filename="data/levels/read.me" />
+		<Unit filename="data/skins.json" />
+		<Unit filename="include/bElem.h" />
+		<Unit filename="include/chamber.h" />
+		<Unit filename="include/collectible.h" />
+		<Unit filename="include/commons.h" />
+		<Unit filename="include/door.h" />
+		<Unit filename="include/elements.h" />
+		<Unit filename="include/gCollect.h" />
+		<Unit filename="include/inputManager.h" />
+		<Unit filename="include/key.h" />
+		<Unit filename="include/levelLoader.h" />
+		<Unit filename="include/monster.h" />
+		<Unit filename="include/movableElements.h" />
+		<Unit filename="include/nonSteppable.h" />
+		<Unit filename="include/objectTypes.h" />
+		<Unit filename="include/player.h" />
+		<Unit filename="include/presenter.h" />
+		<Unit filename="include/randomLevelGenerator.h" />
+		<Unit filename="include/rubbish.h" />
+		<Unit filename="include/stillElem.h" />
+		<Unit filename="include/videoElementDef.h" />
+		<Unit filename="include/wall.h" />
+		<Unit filename="main.cpp" />
+		<Unit filename="src/bElem.cpp" />
+		<Unit filename="src/chamber.cpp" />
+		<Unit filename="src/collectible.cpp" />
+		<Unit filename="src/door.cpp" />
+		<Unit filename="src/gCollect.cpp" />
+		<Unit filename="src/inputManager.cpp" />
+		<Unit filename="src/key.cpp" />
+		<Unit filename="src/levelLoader.cpp" />
+		<Unit filename="src/monster.cpp" />
+		<Unit filename="src/movableElements.cpp" />
+		<Unit filename="src/nonSteppable.cpp" />
+		<Unit filename="src/player.cpp" />
+		<Unit filename="src/presenter.cpp" />
+		<Unit filename="src/randomLevelGenerator.cpp" />
+		<Unit filename="src/rubbish.cpp" />
+		<Unit filename="src/stillElem.cpp" />
+		<Unit filename="src/videoElementDef.cpp" />
+		<Unit filename="src/wall.cpp" />
+		<Extensions />
+	</Project>
+</CodeBlocks_project_file>

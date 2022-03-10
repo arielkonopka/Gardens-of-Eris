@@ -1,0 +1,589 @@
+# depslib dependency file v1.0
+1646693461 source:/storage/home/c/dev/gardenOfEris_revised/main.cpp
+	<exception>
+	<string>
+	<iostream>
+	<vector>
+	<string>
+	"commons.h"
+	"elements.h"
+	"presenter.h"
+	"randomLevelGenerator.h"
+
+1634072142 /usr/include/SDL2/SDL.h
+	"SDL_main.h"
+	"SDL_stdinc.h"
+	"SDL_assert.h"
+	"SDL_atomic.h"
+	"SDL_audio.h"
+	"SDL_clipboard.h"
+	"SDL_cpuinfo.h"
+	"SDL_endian.h"
+	"SDL_error.h"
+	"SDL_events.h"
+	"SDL_filesystem.h"
+	"SDL_gamecontroller.h"
+	"SDL_haptic.h"
+	"SDL_hints.h"
+	"SDL_joystick.h"
+	"SDL_loadso.h"
+	"SDL_log.h"
+	"SDL_messagebox.h"
+	"SDL_metal.h"
+	"SDL_mutex.h"
+	"SDL_power.h"
+	"SDL_render.h"
+	"SDL_rwops.h"
+	"SDL_sensor.h"
+	"SDL_shape.h"
+	"SDL_system.h"
+	"SDL_thread.h"
+	"SDL_timer.h"
+	"SDL_version.h"
+	"SDL_video.h"
+	"SDL_locale.h"
+	"SDL_misc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_main.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_stdinc.h
+	"SDL_config.h"
+	<sys/types.h>
+	<stdio.h>
+	<stdlib.h>
+	<stddef.h>
+	<stdarg.h>
+	<stdlib.h>
+	<malloc.h>
+	<stddef.h>
+	<stdarg.h>
+	<memory.h>
+	<string.h>
+	<strings.h>
+	<wchar.h>
+	<inttypes.h>
+	<stdint.h>
+	<ctype.h>
+	<math.h>
+	<float.h>
+	<alloca.h>
+	<malloc.h>
+	<malloc.h>
+	<malloc.h>
+	<stdlib.h>
+	<sal.h>
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_config.h
+	<SDL2/_real_SDL_config.h>
+
+1634072142 /usr/include/SDL2/begin_code.h
+
+1634072142 /usr/include/SDL2/close_code.h
+
+1634072142 /usr/include/SDL2/SDL_assert.h
+	"SDL_config.h"
+	"begin_code.h"
+	<signal.h>
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_atomic.h
+	"SDL_stdinc.h"
+	"SDL_platform.h"
+	"begin_code.h"
+	<sys/cpuinline.h>
+	<mbarrier.h>
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_platform.h
+	"AvailabilityMacros.h"
+	"TargetConditionals.h"
+	<winapifamily.h>
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_audio.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_endian.h"
+	"SDL_mutex.h"
+	"SDL_thread.h"
+	"SDL_rwops.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_error.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_endian.h
+	"SDL_stdinc.h"
+	<intrin.h>
+	<endian.h>
+	<endian.h>
+	<sys/endian.h>
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_mutex.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_thread.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_atomic.h"
+	"SDL_mutex.h"
+	<process.h>
+	<process.h>
+	<stdlib.h>
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_rwops.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_clipboard.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_cpuinfo.h
+	"SDL_stdinc.h"
+	<intrin.h>
+	<intrin.h>
+	<arm_neon.h>
+	<altivec.h>
+	<arm_neon.h>
+	<armintr.h>
+	<arm_neon.h>
+	<arm64intr.h>
+	<arm64_neon.h>
+	<mm3dnow.h>
+	<immintrin.h>
+	<mmintrin.h>
+	<xmmintrin.h>
+	<emmintrin.h>
+	<pmmintrin.h>
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_events.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_video.h"
+	"SDL_keyboard.h"
+	"SDL_mouse.h"
+	"SDL_joystick.h"
+	"SDL_gamecontroller.h"
+	"SDL_quit.h"
+	"SDL_gesture.h"
+	"SDL_touch.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_video.h
+	"SDL_stdinc.h"
+	"SDL_pixels.h"
+	"SDL_rect.h"
+	"SDL_surface.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_pixels.h
+	"SDL_stdinc.h"
+	"SDL_endian.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_rect.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_pixels.h"
+	"SDL_rwops.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_surface.h
+	"SDL_stdinc.h"
+	"SDL_pixels.h"
+	"SDL_rect.h"
+	"SDL_blendmode.h"
+	"SDL_rwops.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_blendmode.h
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_keyboard.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_keycode.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_keycode.h
+	"SDL_stdinc.h"
+	"SDL_scancode.h"
+
+1634072142 /usr/include/SDL2/SDL_scancode.h
+	"SDL_stdinc.h"
+
+1634072142 /usr/include/SDL2/SDL_mouse.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_joystick.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_gamecontroller.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_rwops.h"
+	"SDL_sensor.h"
+	"SDL_joystick.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_sensor.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_quit.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+
+1634072142 /usr/include/SDL2/SDL_gesture.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_video.h"
+	"SDL_touch.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_touch.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_filesystem.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_haptic.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"SDL_joystick.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_hints.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_loadso.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_log.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_messagebox.h
+	"SDL_stdinc.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_metal.h
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_power.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_render.h
+	"SDL_stdinc.h"
+	"SDL_rect.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_shape.h
+	"SDL_stdinc.h"
+	"SDL_pixels.h"
+	"SDL_rect.h"
+	"SDL_surface.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_system.h
+	"SDL_stdinc.h"
+	"SDL_keyboard.h"
+	"SDL_render.h"
+	"SDL_video.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_timer.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_version.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_locale.h
+	"SDL_stdinc.h"
+	"SDL_error.h"
+	"begin_code.h"
+	"close_code.h"
+
+1634072142 /usr/include/SDL2/SDL_misc.h
+	"SDL_stdinc.h"
+	"begin_code.h"
+	"close_code.h"
+
+1646598523 source:/storage/home/c/dev/gardenOfEris_revised/src/gCollect.cpp
+	"gCollect.h"
+
+1642534719 /storage/home/c/dev/gardenOfEris_revised/include/gCollect.h
+	<vector>
+	<iostream>
+	"bElem.h"
+
+1646858524 /storage/home/c/dev/gardenOfEris_revised/include/bElem.h
+	<stddef.h>
+	"objectTypes.h"
+	"commons.h"
+	"chamber.h"
+	"videoElementDef.h"
+	"gCollect.h"
+
+1642535604 source:/storage/home/c/dev/gardenOfEris_revised/src/stillElem.cpp
+	"stillElem.h"
+
+1642535430 /storage/home/c/dev/gardenOfEris_revised/include/stillElem.h
+	"nonSteppable.h"
+	"objectTypes.h"
+
+1646431807 source:/storage/home/c/dev/gardenOfEris_revised/src/chamber.cpp
+	"chamber.h"
+
+1646527705 /storage/home/c/dev/gardenOfEris_revised/include/chamber.h
+	<boost/multi_array.hpp>
+	"commons.h"
+	"gCollect.h"
+
+1640786588 source:/storage/home/c/dev/gardenOfEris_revised/include/bElem.cpp
+	"bElem.h"
+
+1646866406 source:/storage/home/c/dev/gardenOfEris_revised/src/bElem.cpp
+	"../include/bElem.h"
+
+1642535613 source:/storage/home/c/dev/gardenOfEris_revised/src/rubbish.cpp
+	"rubbish.h"
+
+1642535434 /storage/home/c/dev/gardenOfEris_revised/include/rubbish.h
+	"stillElem.h"
+	"gCollect.h"
+	"objectTypes.h"
+
+1646692562 source:/storage/home/c/dev/gardenOfEris_revised/src/nonSteppable.cpp
+	"nonSteppable.h"
+
+1646692564 /storage/home/c/dev/gardenOfEris_revised/include/nonSteppable.h
+	"bElem.h"
+	"gCollect.h"
+	"objectTypes.h"
+
+1642624394 /storage/home/c/dev/gardenOfEris_revised/include/wall.h
+	"nonSteppable.h"
+	"videoElementDef.h"
+	"objectTypes.h"
+
+1646529132 source:/storage/home/c/dev/gardenOfEris_revised/src/wall.cpp
+	"wall.h"
+
+1646859027 source:/storage/home/c/dev/gardenOfEris_revised/src/movableElements.cpp
+	"movableElements.h"
+
+1646859042 /storage/home/c/dev/gardenOfEris_revised/include/movableElements.h
+	"nonSteppable.h"
+	"commons.h"
+	"objectTypes.h"
+	"videoElementDef.h"
+	"chamber.h"
+	"gCollect.h"
+
+1640873922 source:/storage/home/c/dev/gardenOfEris_revised/src/chamberPresenter.cpp
+	"chamberPresenter.h"
+
+1640873897 /storage/home/c/dev/gardenOfEris_revised/include/chamberPresenter.h
+	"chamber.h"
+
+1646859896 source:/storage/home/c/dev/gardenOfEris_revised/src/presenter.cpp
+	"presenter.h"
+
+1643134247 /storage/home/c/dev/gardenOfEris_revised/include/presenter.h
+	<allegro5/allegro5.h>
+	<allegro5/allegro_font.h>
+	<allegro5/allegro_image.h>
+	<allegro5/allegro_primitives.h>
+	"allegro5/allegro_native_dialog.h"
+	<rapidjson/document.h>
+	<rapidjson/writer.h>
+	<rapidjson/filereadstream.h>
+	<rapidjson/stringbuffer.h>
+	<vector>
+	"chamber.h"
+	"videoElementDef.h"
+	"elements.h"
+	"inputManager.h"
+	"objectTypes.h"
+
+1642624078 source:/storage/home/c/dev/gardenOfEris_revised/src/videoElementDef.cpp
+	"videoElementDef.h"
+
+1646528422 /storage/home/c/dev/gardenOfEris_revised/include/videoElementDef.h
+	<boost/multi_array.hpp>
+	<allegro5/allegro5.h>
+	<vector>
+	"commons.h"
+
+1641937005 source:/storage/home/c/dev/gardenOfEris_revised/src/levelLoader.cpp
+	"levelLoader.h"
+
+1641937040 /storage/home/c/dev/gardenOfEris_revised/include/levelLoader.h
+
+1643047304 source:/storage/home/c/dev/gardenOfEris_revised/src/inputManager.cpp
+	"inputManager.h"
+
+1643047484 /storage/home/c/dev/gardenOfEris_revised/include/inputManager.h
+	"commons.h"
+	<allegro5/allegro.h>
+
+1642288274 source:/storage/home/c/dev/gardenOfEris_revised/src/glad.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<glad/glad.h>
+
+1642288274 /storage/home/c/dev/gardenOfEris_revised/include/glad/glad.h
+	<KHR/khrplatform.h>
+
+1642288274 /storage/home/c/dev/gardenOfEris_revised/include/KHR/khrplatform.h
+	<stdint.h>
+	<inttypes.h>
+	<stdint.h>
+
+1646866080 /storage/home/c/dev/gardenOfEris_revised/include/commons.h
+
+1646686435 /storage/home/c/dev/gardenOfEris_revised/include/objectTypes.h
+
+1646686556 /storage/home/c/dev/gardenOfEris_revised/include/elements.h
+	"bElem.h"
+	"wall.h"
+	"rubbish.h"
+	"stillElem.h"
+	"movableElements.h"
+	"nonSteppable.h"
+	"monster.h"
+	"player.h"
+	"collectible.h"
+	"door.h"
+	"key.h"
+
+1646860531 /storage/home/c/dev/gardenOfEris_revised/include/monster.h
+	"objectTypes.h"
+	"chamber.h"
+	"gCollect.h"
+	"videoElementDef.h"
+	<movableElements.h>
+
+1646864762 source:/storage/home/c/dev/gardenOfEris_revised/src/monster.cpp
+	"monster.h"
+
+1646865406 /storage/home/c/dev/gardenOfEris_revised/include/player.h
+	<movableElements.h>
+	"commons.h"
+	"objectTypes.h"
+	"videoElementDef.h"
+
+1646865924 source:/storage/home/c/dev/gardenOfEris_revised/src/player.cpp
+	"player.h"
+
+1646864715 source:/storage/home/c/dev/gardenOfEris_revised/src/randomLevelGenerator.cpp
+	"randomLevelGenerator.h"
+
+1646758656 /storage/home/c/dev/gardenOfEris_revised/include/randomLevelGenerator.h
+	<iostream>
+	<chrono>
+	<random>
+	"commons.h"
+	"elements.h"
+	"chamber.h"
+	"objectTypes.h"
+	<string>
+	<math.h>
+
+1646690785 /storage/home/c/dev/gardenOfEris_revised/include/collectible.h
+	<nonSteppable.h>
+
+1646692048 source:/storage/home/c/dev/gardenOfEris_revised/src/collectible.cpp
+	"collectible.h"
+
+1646758097 source:/storage/home/c/dev/gardenOfEris_revised/src/door.cpp
+	"door.h"
+
+1646689072 /storage/home/c/dev/gardenOfEris_revised/include/door.h
+	<bElem.h>
+	"videoElementDef.h"
+	"commons.h"
+
+1646687936 /storage/home/c/dev/gardenOfEris_revised/include/key.h
+	"collectible.h"
+	"commons.h"
+	"objectTypes.h"
+	"videoElementDef.h"
+
+1646692197 source:/storage/home/c/dev/gardenOfEris_revised/src/key.cpp
+	"key.h"
+

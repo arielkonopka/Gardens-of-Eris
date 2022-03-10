@@ -1,0 +1,32 @@
+#ifndef DOOR_H
+#define DOOR_H
+
+#include <bElem.h>
+#include "videoElementDef.h"
+#include "commons.h"
+
+class door : public bElem
+{
+public:
+    static videoElement::videoElementDef* vd;
+    virtual videoElement::videoElementDef* getVideoElementDef();
+    virtual int getType();
+    door(chamber* board, gCollect *garbage);
+    door(chamber* board, gCollect *garbage,int x, int y);
+    door(chamber* board, gCollect *garbage,int subtype);
+    door(chamber* board, gCollect *garbage,int subtype,int x, int y);
+    virtual bool interact(bElem *who);
+    virtual bool isSteppable();
+    virtual bool isOpen();
+    virtual ~door();
+    virtual bool isInteractive();
+protected:
+    bool open;
+    bool locked;
+
+private:
+    void initMe();
+
+};
+
+#endif // DOOR_H

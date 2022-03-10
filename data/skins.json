@@ -1,0 +1,90 @@
+{
+    "SpriteFile": "/storage/home/c/dev/gardenOfEris_revised/data/graph/icons64.png",
+    "width": 64,
+    "height": 64,
+    "spacing":4,
+    "Dying": [ [1,2],[2,2],[3,2],[4,2] ],
+    "Teleporting": [ [0,0] ],
+
+    "SpriteData":
+    [   {
+        "Type":0,
+        "Name":"Empty",
+        "AnimDef": [[[[6,0]]]]
+
+
+    },
+        {
+            "Type":4,
+            "Name":"Wall",
+            "AnimDef": [
+                [[[2,0]]],
+                [[[3,0]]],
+                [[[9,1]]]
+                ]
+
+        },
+        {
+            "Type":100,
+            "Name": "Player",
+            "AnimDef": [
+                        [
+                         [[6,5],[7,5]],
+
+                         [[4,5],[5,5]],
+                         [[2,5],[3,5]],
+                         [[0,5],[1,5]]
+
+
+                         ]
+                        ]
+        },
+        {
+            "Type":6,
+            "Name": "Monster",
+            "AnimDef": [
+                        [
+                         [[6,5],[7,5]],
+                         [[4,5],[5,5]],
+                         [[2,5],[3,5]],
+                         [[0,5],[1,5]]
+                         ]
+                        ]
+        },
+        {
+            "Type":50,
+            "Name": "Collectible",
+            "AnimDef": [
+                        [
+                         [[1,2]]
+                        ]
+            ]
+
+        },
+        {
+            "Type":51,
+            "Name": "key",
+            "AnimDef": [
+                        [
+                         [[6,3]]
+                        ]
+            ]
+
+        },
+        {
+            "Type":52,
+            "Name": "door",
+            "AnimDef": [
+                        [
+                         [[8,8],[9,8]]
+                        ]
+                        ]
+        }
+
+
+
+    ]
+
+
+
+}
