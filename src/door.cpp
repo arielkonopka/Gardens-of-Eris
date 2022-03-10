@@ -67,14 +67,17 @@ bool door::interact(bElem* who)
     }
     for(int c=0; c<who->collectedItems.size(); c++)
     {
+#ifdef debug
         if(who->collectedItems[c]->getType()==_key)
         {
             std::cout<<" %%% "<<who->collectedItems[c]->getSubtype()<<" "<<this->getSubtype()<<"\n";
         }
+#endif
         if (who->collectedItems[c]->getType()==_key && who->collectedItems[c]->getSubtype()==this->getSubtype())
         {
-
+#ifdef debug
             std::cout<<"Door Open!\n";
+#endif
             this->open=true;
             this->locked=false;
             if(who->collectedItems[c]->getSubtype()%2==0)

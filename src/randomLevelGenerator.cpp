@@ -282,7 +282,7 @@ bool randomLevelGenerator::qualifies(std::string itemLoc, std::string chamLoc)
 
 bool randomLevelGenerator::generateLevel(int holes)
 {
-    this->lvlGenerate(1,1,this->width-2,this->height-2,8,holes,"B");
+    this->lvlGenerate(1,1,this->width-2,this->height-2,10,holes,"B");
     for(int c=0; c<this->width; c++)
     {
         bElem *newElem=new wall(this->mychamber,this->garbageCollector);

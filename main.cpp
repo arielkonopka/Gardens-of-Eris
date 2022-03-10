@@ -18,7 +18,7 @@ int main( int argc, char * argv[] )
     delay.tv_sec=0;
     delay.tv_nsec=2;
     gCollect *garbageBin=new gCollect();
-    randomLevelGenerator *rndl=new randomLevelGenerator(50,50,garbageBin);
+    randomLevelGenerator *rndl=new randomLevelGenerator(150,150,garbageBin);
     presenter::presenter *myPresenter=new presenter::presenter(rndl->mychamber);
     chamber *myFirstChamber=rndl->mychamber;
 
@@ -42,7 +42,7 @@ int main( int argc, char * argv[] )
     mojElement2=new key(myFirstChamber,garbageBin,0);
     mojElement2->stepOnElement(myFirstChamber->chamberArray[2][4]);
     //rndl->lvlGenerate(1,1,48,48,8,4,"B");
-    rndl->generateLevel(2);
+    rndl->generateLevel(1);
 
 
     //new chamber(100,100,garbageBin);
@@ -88,7 +88,7 @@ int main( int argc, char * argv[] )
         //  }
 
     */
-    for (int y=0; y<myFirstChamber->height; y++)
+ /*   for (int y=0; y<myFirstChamber->height; y++)
     {
         for (int x=0; x<myFirstChamber->width; x++)
         {
@@ -97,7 +97,7 @@ int main( int argc, char * argv[] )
         }
         std::cout<<">\n";
     }
-
+*/
     bElem* n=new key(myFirstChamber,garbageBin,10);
     n->setSubtype(10);
     std::cout<<"\n\n"<<n->getSubtype();

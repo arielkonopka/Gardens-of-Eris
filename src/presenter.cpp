@@ -392,6 +392,7 @@ int presenter::presentEverything()
             {
                 return 2;
             }
+            this->_cp_attachedBoard->garbageBin->purgeGarbage();
             this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
             //  std::cout<<blue<<"\n";
 
