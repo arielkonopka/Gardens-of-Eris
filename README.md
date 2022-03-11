@@ -51,15 +51,13 @@ Placing the items can be a bit tricky. I thought of few strategies:
 3. Place elements in walls.
 
 I chose 1 and 3 (not implemented yet). Option one is a bit modified. When we place an element on a board, we call it's method selfAlign(), and it should self-align in the given neighborhood.
+Since we use the recursive division methon, I thought that the subchambers can have their own *coordinates*.
+First rectangle would be **B**, as beginning, then it would be divided in 4 rectangles: a, b, c, d. Those rectengles would be divided into a, b, c, d, and so on...
+THen we notice, that the rectangles processed by the algorythm would look like this: 
 
+Ba, Baa, Baaab, Baaac, Baaad, Bab, Bac, Bad, Bb, Bc, Bd... 
 
-
-
-
-
-
-
-
+We can now decide where to place our objects, we assign an object to coordinates, and then scatter it across the rectangle.
 
 ## skins.json file 
 
