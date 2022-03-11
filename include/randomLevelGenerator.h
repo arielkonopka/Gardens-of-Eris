@@ -10,8 +10,9 @@
 #include <string>
 #include <math.h>
 
-#define Wmin 4
-#define Hmin 4
+#define _debugRandomGenerator true
+#define Wmin 3
+#define Hmin 3
 typedef struct elementToPlace
 {
     int eType;

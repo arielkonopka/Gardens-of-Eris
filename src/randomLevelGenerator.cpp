@@ -117,7 +117,9 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
     if (depth<0)
         return 0;
     this->endChambers.push_back({x1,y1,x2,y2,loc});
+#ifdef _debugRandomGenerator
     std::cout<<"x1,y1 "<<x1<<","<<y1<<" x2,y2: "<<x2<<","<<y2<<" loc:"<<loc<<"\n";
+#endif
     dx=x2-x1;
     dy=y2-y1;
     if (dx>Wmin_) // tutaj trzeba zrobić ograniczenie
@@ -126,7 +128,7 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
 
         c=(this->gen() % (dx-Wmin_)) +x1+(Wmin_/2);
         dc1=c-x1;
-        dc2=x2-c+1;
+        dc2=x2-c+2;
 
     }
     //else return 0;
@@ -134,7 +136,7 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
     {
         d=(this->gen()%(dy-Hmin_)) +y1+(Hmin_/2);
         dd1=d-y1;
-        dd2=y2-d+1;
+        dd2=y2-d+2;
     }
     //else return 0;
     if (dc1>Wmin && dd1>Hmin)
@@ -145,23 +147,23 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
 
     if (dc2>Wmin && dd1>Hmin)
     {
-        this->lvlGenerate(c+1,y1,x2,d,depth-1,holes,loc+"b");
+        this->lvlGenerate(c+2,y1,x2,d,depth-1,holes,loc+"b");
     }
 
     if (dd2>Hmin && dc1>Wmin)
     {
-        this->lvlGenerate(x1,d+1,c+1,y2,depth-1,holes,loc+"d");
+        this->lvlGenerate(x1,d+2,c,y2,depth-1,holes,loc+"d");
     }
 
     if (dd2>Hmin && dc2>Wmin)
     {
-        this->lvlGenerate(c+1,d+1,x2,y2,depth-1,holes,loc+"c");
+        this->lvlGenerate(c+2,d+2,x2,y2,depth-1,holes,loc+"c");
     }
 
 
     doorPlaces1.clear();
     doorPlaces2.clear();
-    if (c>=0)
+    if (c>=0 && d>0)
     {
 
         for (int a=y1; a<=y2; a++)
@@ -185,6 +187,10 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
                 newElement->stepOnElement(this->mychamber->chamberArray[c+1][a]);
             }
         }
+#ifdef _debugRandomGenerator
+        std::cout<<" * "<<doorPlaces1.size()<<" "<<doorPlaces2.size()<<" "<<loc<<" "<<"c,d: "<<c<<","<<d<<"\n";
+        int hits=0,hits1=0;
+#endif
         for (int cnt=0; cnt<holes; cnt++)
         {
             if (doorPlaces1.size()>0)
@@ -193,6 +199,9 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
                 this->mychamber->chamberArray[c+1][doorPlaces1[rnd]]->disposeElement();
                 doorPlaces1[rnd]=doorPlaces1[doorPlaces1.size()-1];
                 doorPlaces1.pop_back();
+#ifdef _debugRandomGenerator
+                hits++;
+#endif
             }
 
             if (doorPlaces2.size()>0)
@@ -204,15 +213,26 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
                 if(rnd<doorPlaces2.size()-1)
                     doorPlaces2[rnd]=doorPlaces2[doorPlaces2.size()-1];
                 doorPlaces2.pop_back();
+#ifdef _debugRandomGenerator
+                hits1++;
+#endif
             }
         }
-
+#ifdef _debugRandomGenerator
+        if(hits==0 || hits1==0)
+        {
+            std::cout<<"Zero hits! "<<hits<<" "<<hits1<<" "<<loc<<"\n";
+        }
+#endif
 
     }
 
 
-    if (d>=0)
+    if (d>=0 && c>=0)
     {
+#ifdef _debugRandomGenerator
+        int hits=0,hits1=0;
+#endif
         doorPlaces1.clear();
         doorPlaces2.clear();
 
@@ -243,6 +263,9 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
                 this->mychamber->chamberArray[doorPlaces1[rnd]][d+1]->disposeElement();
                 doorPlaces1[rnd]=doorPlaces1[doorPlaces1.size()-1];
                 doorPlaces1.pop_back();
+#ifdef _debugRandomGenerator
+                hits++;
+#endif
 
             }
             if (doorPlaces2.size()>0)
@@ -251,9 +274,18 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
                 this->mychamber->chamberArray[doorPlaces2[rnd]][d+1]->disposeElement();
                 doorPlaces2[rnd]=doorPlaces2[doorPlaces2.size()-1];
                 doorPlaces2.pop_back();
+#ifdef _debugRandomGenerator
+                hits1++;
+#endif
 
             }
         }
+#ifdef _debugRandomGenerator
+        if(hits==0 || hits1==0)
+        {
+            std::cout<<"Low hits! "<<hits<<" "<<hits1<<" "<<loc<<"\n";
+        }
+#endif
     }
     return 0;
 }
@@ -282,7 +314,7 @@ bool randomLevelGenerator::qualifies(std::string itemLoc, std::string chamLoc)
 
 bool randomLevelGenerator::generateLevel(int holes)
 {
-    this->lvlGenerate(1,1,this->width-2,this->height-2,10,holes,"B");
+    this->lvlGenerate(1,1,this->width-2,this->height-2,14,holes,"B");
     for(int c=0; c<this->width; c++)
     {
         bElem *newElem=new wall(this->mychamber,this->garbageCollector);
