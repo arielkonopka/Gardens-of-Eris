@@ -105,6 +105,7 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
     std::vector<int> doorPlaces1,doorPlaces2;
     int Hmin_=((y2-y1)/(1+loc.size()));
     int Wmin_=((x2-x1)/(1+loc.size()));
+    int blind=4; // this->gen()%4;
     if(Hmin_<Hmin)
         Hmin_=Hmin;
     if(Wmin_<Wmin)
@@ -163,14 +164,14 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
 
     doorPlaces1.clear();
     doorPlaces2.clear();
-    if (c>=0 && d>0)
+    if (c>x1 && c<x2 && d>0)
     {
 
         for (int a=y1; a<=y2; a++)
         {
-            if (this->mychamber->chamberArray[c][a]->isSteppable() && this->mychamber->chamberArray[c+2][a]->isSteppable())
+            if (a!=d && this->mychamber->chamberArray[c][a]->isSteppable()==true && this->mychamber->chamberArray[c+2][a]->isSteppable()==true)
             {
-                if (a<d)
+                if (a<d+2)
                 {
                     doorPlaces1.push_back(a);
                 }
@@ -186,6 +187,10 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
                 bElem *newElement=new wall(this->mychamber,this->garbageCollector);
                 newElement->stepOnElement(this->mychamber->chamberArray[c+1][a]);
             }
+            else
+            {
+                break;
+            }
         }
 #ifdef _debugRandomGenerator
         std::cout<<" * "<<doorPlaces1.size()<<" "<<doorPlaces2.size()<<" "<<loc<<" "<<"c,d: "<<c<<","<<d<<"\n";
@@ -193,7 +198,7 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
 #endif
         for (int cnt=0; cnt<holes; cnt++)
         {
-            if (doorPlaces1.size()>0)
+            if (blind!=0 && doorPlaces1.size()>0)
             {
                 int rnd=this->gen()%(doorPlaces1.size());
                 this->mychamber->chamberArray[c+1][doorPlaces1[rnd]]->disposeElement();
@@ -204,14 +209,13 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
 #endif
             }
 
-            if (doorPlaces2.size()>0)
+            if (blind!=1 && doorPlaces2.size()>0)
             {
 
                 int rnd=this->gen()%(doorPlaces2.size());
-                if (this->mychamber->chamberArray[c+1][doorPlaces2[rnd]]!=NULL)
-                    this->mychamber->chamberArray[c+1][doorPlaces2[rnd]]->disposeElement();
-                if(rnd<doorPlaces2.size()-1)
-                    doorPlaces2[rnd]=doorPlaces2[doorPlaces2.size()-1];
+                this->mychamber->chamberArray[c+1][doorPlaces2[rnd]]->disposeElement();
+                //if(rnd<doorPlaces2.size()-1)
+                doorPlaces2[rnd]=doorPlaces2[doorPlaces2.size()-1];
                 doorPlaces2.pop_back();
 #ifdef _debugRandomGenerator
                 hits1++;
@@ -228,7 +232,7 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
     }
 
 
-    if (d>=0 && c>=0)
+    if (d>y1 && d<y2 && c>=0)
     {
 #ifdef _debugRandomGenerator
         int hits=0,hits1=0;
@@ -238,9 +242,11 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
 
         for (int a=x1; a<=x2; a++)
         {
-            if (this->mychamber->chamberArray[a][d]->isSteppable() && this->mychamber->chamberArray[a][d+2]->isSteppable())
+
+
+            if (a!=c && this->mychamber->chamberArray[a][d]->isSteppable()==true && this->mychamber->chamberArray[a][d+2]->isSteppable()==true)
             {
-                if (a<c)
+                if (a<c+2)
                 {
                     doorPlaces1.push_back(a);
                 }
@@ -257,7 +263,7 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
         }
         for (int cnt=0; cnt<holes; cnt++)
         {
-            if (doorPlaces1.size()>0)
+            if (blind!=2 && doorPlaces1.size()>0)
             {
                 int rnd=this->gen()%(doorPlaces1.size());
                 this->mychamber->chamberArray[doorPlaces1[rnd]][d+1]->disposeElement();
@@ -268,7 +274,11 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
 #endif
 
             }
-            if (doorPlaces2.size()>0)
+        }
+        for (int cnt=0; cnt<holes; cnt++)
+        {
+
+            if (blind!=3 && doorPlaces2.size()>0)
             {
                 int rnd=this->gen()%(doorPlaces2.size());
                 this->mychamber->chamberArray[doorPlaces2[rnd]][d+1]->disposeElement();
@@ -314,7 +324,7 @@ bool randomLevelGenerator::qualifies(std::string itemLoc, std::string chamLoc)
 
 bool randomLevelGenerator::generateLevel(int holes)
 {
-    this->lvlGenerate(1,1,this->width-2,this->height-2,14,holes,"B");
+    this->lvlGenerate(1,1,this->width-2,this->height-2,_iterations,holes,"B");
     for(int c=0; c<this->width; c++)
     {
         bElem *newElem=new wall(this->mychamber,this->garbageCollector);
