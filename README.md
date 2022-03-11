@@ -25,7 +25,7 @@ In the meanwhile I got a third reason, I can test it fairly fast, without even l
 
 ## The game story
 
-Ones upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology)) went to her garden, and to all the shock, she notices, that all her golden apples were gone. She as usual got furious. 
+Ones upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology)) went to her garden, and to all the shock, she had noticed, that all her golden apples had been gone. She as usual got furious. 
 
 Now you, the [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism) got yourself a mission. The goddes scattered your avatars across the strange world, that she had created for her apples. You must collect all of them, and bring them to your Goddess.
 
