@@ -487,6 +487,9 @@ bElem* randomLevelGenerator::createElement(elementToPlace element)
     case _key:
         return new key(this->mychamber,this->garbageCollector,element.eSubType);
         break;
+    case _monster:
+        return new monster(this->mychamber,this->garbageCollector);
+        break;
     }
     return NULL;
 }

@@ -24,7 +24,7 @@ int main( int argc, char * argv[] )
 
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
-    rndl->addElementToPlace({_monster,5,25,0,"B"});
+    rndl->addElementToPlace({_monster,5,5,0,"Bba"});
     rndl->addElementToPlace({_collectible,0,20,0,"Bc"});
     rndl->addElementToPlace({_key,1,20,0,"Baa"});
     rndl->addElementToPlace({_key,0,1,0,"Bbb"});
