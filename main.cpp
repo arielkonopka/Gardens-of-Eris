@@ -18,17 +18,17 @@ int main( int argc, char * argv[] )
     delay.tv_sec=0;
     delay.tv_nsec=2;
     gCollect *garbageBin=new gCollect();
-    randomLevelGenerator *rndl=new randomLevelGenerator(150,150,garbageBin);
+    randomLevelGenerator *rndl=new randomLevelGenerator(50,50,garbageBin);
     presenter::presenter *myPresenter=new presenter::presenter(rndl->mychamber);
     chamber *myFirstChamber=rndl->mychamber;
 
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
-    rndl->addElementToPlace({_collectible,5,25,0,"B"});
+    rndl->addElementToPlace({_monster,5,25,0,"B"});
     rndl->addElementToPlace({_collectible,0,20,0,"Bc"});
-    rndl->addElementToPlace({_key,0,20,0,"Baa"});
-    rndl->addElementToPlace({_key,1,1,0,"Bbb"});
-    rndl->addElementToPlace({_door,0,20,0,"Baa"});
+    rndl->addElementToPlace({_key,1,20,0,"Baa"});
+    rndl->addElementToPlace({_key,0,1,0,"Bbb"});
+    rndl->addElementToPlace({_door,0,20,0,"Bba"});
     rndl->addElementToPlace({_door,1,20,0,"Bac"});
 
     rndl->addElementToPlace({_player,0,1,0,"Baa"});

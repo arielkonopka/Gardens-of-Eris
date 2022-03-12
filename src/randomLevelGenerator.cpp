@@ -341,9 +341,16 @@ bool randomLevelGenerator::generateLevel(int holes)
         newElem2->stepOnElement(this->mychamber->chamberArray[0][c]);
         newElem3->stepOnElement(this->mychamber->chamberArray[this->width-1][c]);
     }
+    for (int c=0; c<this->elementsToPlace.size(); c++)
+    {
+
+        if (this->elementsToPlace[c].eType==_door)
+            this->placeDoors(this->elementsToPlace[c]);
+    }
     for(int c=0; c<this->elementsToPlace.size(); c++)
     {
-        this->placeElement(this->elementsToPlace[c]);
+        if(this->elementsToPlace[c].eType!=_door)
+            this->placeElement(this->elementsToPlace[c]);
     }
 
 
@@ -385,7 +392,7 @@ bool randomLevelGenerator::placeDoors(elementToPlace element)
         if (element.location==this->endChambers[c].location)
         {
             //Ok, now we need to place the door.
-            for(int c1=this->endChambers[c].x0-1; c1<=this->endChambers[c].x1+1;c1++)
+            for(int c1=this->endChambers[c].x0-1; c1<=this->endChambers[c].x1+1; c1++)
             {
                 if (this->mychamber->chamberArray[c1][this->endChambers[c].y0-1]->isSteppable())
                 {
