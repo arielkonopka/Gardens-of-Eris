@@ -354,11 +354,13 @@ int randomLevelGenerator::findSpotsToChoose(elementToPlace element)
 {
     this->spotsToChoose.clear();
     int surface=0;
+
     for(int c=0; c<this->endChambers.size(); c++)
     {
 //        std::cout<<" T### "<<this->endChambers[c].location<<"\n";
         if (element.location==this->endChambers[c].location)
         {
+
 //            std::cout<<" Q### "<<this->endChambers[c].location<<"\n";
             for(int x=this->endChambers[c].x0; x<=this->endChambers[c].x1; x++)
             {
@@ -375,6 +377,46 @@ int randomLevelGenerator::findSpotsToChoose(elementToPlace element)
     }
     return surface;
 }
+bool randomLevelGenerator::placeDoors(elementToPlace element)
+{
+    coords p0=NOCOORDS,p1=NOCOORDS;
+    for(int c=0; c<this->endChambers.size(); c++)
+    {
+        if (element.location==this->endChambers[c].location)
+        {
+            //Ok, now we need to place the door.
+            for(int c1=this->endChambers[c].x0-1; c1<=this->endChambers[c].x1+1;c1++)
+            {
+                if (this->mychamber->chamberArray[c1][this->endChambers[c].y0-1]->isSteppable())
+                {
+                    bElem* neEl=this->createElement(element);
+                    neEl->stepOnElement(this->mychamber->chamberArray[c1][this->endChambers[c].y0-1]);
+                }
+                if (this->mychamber->chamberArray[c1][this->endChambers[c].y1+1]->isSteppable())
+                {
+                    bElem* neEl=this->createElement(element);
+                    neEl->stepOnElement(this->mychamber->chamberArray[c1][this->endChambers[c].y1+1]);
+                }
+            }
+            for (int c2=this->endChambers[c].y0; c2<=this->endChambers[c].y1; c2++)
+            {
+                if (this->mychamber->chamberArray[this->endChambers[c].x0-1][c2]->isSteppable())
+                {
+                    bElem* neEl=this->createElement(element);
+                    neEl->stepOnElement(this->mychamber->chamberArray[this->endChambers[c].x0-1][c2]);
+                }
+                if (this->mychamber->chamberArray[this->endChambers[c].x1+1][c2]->isSteppable())
+                {
+                    bElem* neEl=this->createElement(element);
+                    neEl->stepOnElement(this->mychamber->chamberArray[this->endChambers[c].x1+1][c2]);
+                }
+
+            }
+
+            break;
+        }
+    }
+}
 
 bool randomLevelGenerator::placeElement(elementToPlace element)
 {
@@ -383,12 +425,20 @@ bool randomLevelGenerator::placeElement(elementToPlace element)
     std::vector<rectangle> candidates;
 
     surface=this->findSpotsToChoose(element);
+
+    if (element.eType==_door)
+    {
+        return this->placeDoors(element);
+    }
+
     for(; element.number>0; element.number--)
     {
+
         if(this->spotsToChoose.size()<=0)
         {
             break; // no more spots to place anything
         }
+
 
         rnd=this->gen()%this->spotsToChoose.size();
         coords tmp;
@@ -408,6 +458,7 @@ bool randomLevelGenerator::placeElement(elementToPlace element)
             spotsToChoose.pop_back();
         }
     }
+
     if(element.number>0)
         return false; // we failed to place all the elements
 

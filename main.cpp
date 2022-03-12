@@ -26,12 +26,12 @@ int main( int argc, char * argv[] )
     myPresenter->loadCofiguredData();
     rndl->addElementToPlace({_collectible,5,25,0,"B"});
     rndl->addElementToPlace({_collectible,0,20,0,"Bc"});
-    rndl->addElementToPlace({_key,0,20,0,"Ba"});
-    rndl->addElementToPlace({_key,1,1,0,"Bb"});
-    rndl->addElementToPlace({_door,0,20,0,"Ba"});
-    rndl->addElementToPlace({_door,1,20,0,"Bc"});
+    rndl->addElementToPlace({_key,0,20,0,"Baa"});
+    rndl->addElementToPlace({_key,1,1,0,"Bbb"});
+    rndl->addElementToPlace({_door,0,20,0,"Baa"});
+    rndl->addElementToPlace({_door,1,20,0,"Bac"});
 
-    rndl->addElementToPlace({_player,0,1,0,"Ba"});
+    rndl->addElementToPlace({_player,0,1,0,"Baa"});
     bElem *mojElement2=new monster(myFirstChamber,garbageBin);
 
 

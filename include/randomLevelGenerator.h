@@ -48,6 +48,7 @@ class randomLevelGenerator
         virtual ~randomLevelGenerator();
         bool generateLevel(int holes);
         int lvlGenerate(int x1,int y1,int x2,int y2,int depth,int holes,std::string loc);
+        bool placeDoors(elementToPlace element);
     protected:
 
     private:
