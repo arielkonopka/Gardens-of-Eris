@@ -5,7 +5,7 @@
 //#include "elements.h"
 #include "commons.h"
 #include "chamber.h"
-
+#include "gCollect.h"
 #include "videoElementDef.h"
 //class chamber;
 //class gCollect; // we will keep objects to be removed from the memory here. this is convenient because we would not fore an object to commit suicide, but instead we would "park" it here for later cleanup
@@ -54,9 +54,8 @@ public:
     virtual coords getCoords();
     virtual coords getAbsCoords(direction dir);
     virtual direction getDirection();
+    virtual bool setDirection(direction dir);
     virtual int getType();
-
-
     virtual int getSubtype();
     virtual int getCnt();
     virtual int getAnimPh();
@@ -74,6 +73,8 @@ public:
     virtual bool canCollect();
     virtual bool collect(bElem* collectible);
     virtual bool canInteract();
+    virtual bool isUsable();
+    virtual bool isWeapon();
 
     virtual bool isActive();
     virtual bool isOpen();

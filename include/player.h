@@ -21,9 +21,13 @@ public:
     int getAnimPh();
     player(chamber *board,gCollect *garbage);
     virtual ~player();
+
+
  //   bool isDying();
     //     virtual bool tick(bool collected);
 protected:
+    std::vector<bElem*> weapons;
+    std::vector<bElem*> usables;
 
 private:
     int animPh;

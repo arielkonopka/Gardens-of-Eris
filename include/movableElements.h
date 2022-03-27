@@ -33,8 +33,9 @@ class movableElements : public nonSteppable
      //   virtual bool isDying();
         int _me_moved;
         direction facing;
-    protected:
         bool movable;
+    protected:
+
     private:
 
         bool _me_canPush;

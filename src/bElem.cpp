@@ -15,7 +15,15 @@ bElem::bElem(chamber* board, gCollect* garbage)
     this->garbageBin=garbage;
 
 }
+bool bElem::isUsable()
+{
+    return false;
+}
 
+bool bElem::isWeapon()
+{
+    return false;
+}
 
 
 bElem::bElem(chamber* board, gCollect* garbage, int x, int y)
@@ -58,6 +66,11 @@ void bElem::init()
 
 }
 
+bool bElem::setDirection(direction dir)
+{
+    this->myDirection=dir;
+    return true;
+}
 
 bool bElem::isInteractive()
 {
@@ -120,8 +133,9 @@ oState bElem::disposeElement()
     oState res;
     if ( this->garbageBin==NULL )
     {
+        #ifdef _debug
         std::cout<<"Tried to dispose broken element!\n";
-
+        #endif
         return ERROR;
     }
     if(this->steppingOn!=NULL && x>=0 && y>=0)
@@ -137,9 +151,6 @@ oState bElem::disposeElement()
     }
     else
     {
-
-
-
         res=DISPOSED;
     }
     this->garbageBin->addToBin(this); //add myself to to bin - this should be the only way of the object disposal!
@@ -360,6 +371,7 @@ bool bElem::canCollect()
 {
     return false;
 }
+// remove element from the board, and return it for further processing(if not needed, run .dispose() on it)
 bElem* bElem::removeElement()
 {
     if (this->x<0 || this->y<0)
@@ -410,11 +422,14 @@ bool bElem::collect(bElem *collectible)
     collected=collectible->removeElement();
     if (collected==NULL)
     {
-        std::cout<<"COllecting failed!\n";
+#ifdef _debug
+        std::cout<<"Collecting failed!\n";
+#endif
         return false;
     }
-
+#ifdef _debug
     std::cout<<"Collect "<<collected->getType()<<" st: "<<collected->getSubtype()<<"\n";
+#endif
     this->collectedItems.push_back(collected);
     return true;
 }
@@ -431,6 +446,7 @@ bool bElem::setSubtype(int st)
     return true;
 }
 
+//removes from collection, does not keep the order
 bool bElem::removeFromcollection(int position)
 {
     if (position>=this->collectedItems.size() || position<0 || this->collectedItems.size()==0)
@@ -448,7 +464,9 @@ bool bElem::hurt(int points)
     {
         return false;
     }
+#ifdef _debug
     std::cout<<"Hurt me by "<<points<<" points "<<this->getEnergy()<<"\n";
+#endif
     this->setEnergy(this->getEnergy()-points);
     if (this->getEnergy()<=0)
         this->kill();

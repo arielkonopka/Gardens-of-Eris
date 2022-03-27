@@ -1,7 +1,7 @@
 #ifndef COLLECTIBLE_H
 #define COLLECTIBLE_H
 
-#include <nonSteppable.h>
+#include "nonSteppable.h"
 
 
 class collectible : public nonSteppable

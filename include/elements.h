@@ -17,7 +17,9 @@
 #include "collectible.h"
 #include "door.h"
 #include "key.h"
-
+#include "usable.h"
+#include "plainGun.h"
+#include "plainMissile.h"
 //
 
 

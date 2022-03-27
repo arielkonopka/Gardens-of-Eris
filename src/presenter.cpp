@@ -200,6 +200,12 @@ bool presenter::loadCofiguredData()
         case _key:
             ::key::vd=ved;
             break;
+        case _plainGun:
+            ::plainGun::vd=ved;
+            break;
+        case _plainMissile:
+            ::plainMissile::vd=ved;
+            break;
         }
     }
     //Here we should have the videoElementDefinitionsTable filled

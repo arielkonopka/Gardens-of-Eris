@@ -12,10 +12,20 @@
 #define _collectible 50
 #define _key 51
 #define _door 52
+#define _plainMissile 201
+#define _plainGun 200
+
+#define _plainGunAmmo 10
+#define _plainMissileSpeed 3
+#define _plainMissileEnergy 100
+
+
 
 #define _defaultEnergy 80
 #define _defaultKillTime 20
+
 #define _interactedTime 5
+
 
 typedef struct coords
 {
