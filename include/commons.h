@@ -14,6 +14,7 @@
 #define _door 52
 #define _plainMissile 201
 #define _plainGun 200
+#define _bunker 250
 
 #define _plainGunAmmo 10
 #define _plainMissileSpeed 3

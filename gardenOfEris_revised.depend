@@ -587,7 +587,7 @@
 1646692197 source:/storage/home/c/dev/gardenOfEris_revised/src/key.cpp
 	"key.h"
 
-1646953333 source:/storage/home/c/git/Gardens-of-Eris/main.cpp
+1648825657 source:/storage/home/c/git/Gardens-of-Eris/main.cpp
 	<exception>
 	<string>
 	<iostream>
@@ -598,9 +598,9 @@
 	"presenter.h"
 	"randomLevelGenerator.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/commons.h
+1648501156 /storage/home/c/git/Gardens-of-Eris/include/commons.h
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/elements.h
+1648501230 /storage/home/c/git/Gardens-of-Eris/include/elements.h
 	"bElem.h"
 	"wall.h"
 	"rubbish.h"
@@ -612,53 +612,57 @@
 	"collectible.h"
 	"door.h"
 	"key.h"
+	"usable.h"
+	"plainGun.h"
+	"plainMissile.h"
+	"bunker.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/bElem.h
+1648500006 /storage/home/c/git/Gardens-of-Eris/include/bElem.h
 	<stddef.h>
 	"objectTypes.h"
 	"commons.h"
 	"chamber.h"
+	"gCollect.h"
 	"videoElementDef.h"
 	"gCollect.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/objectTypes.h
+1647980235 /storage/home/c/git/Gardens-of-Eris/include/objectTypes.h
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/chamber.h
+1647980235 /storage/home/c/git/Gardens-of-Eris/include/chamber.h
 	<boost/multi_array.hpp>
 	"commons.h"
 	"gCollect.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/gCollect.h
+1647980235 /storage/home/c/git/Gardens-of-Eris/include/gCollect.h
 	<vector>
 	<iostream>
 	"bElem.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/videoElementDef.h
+1647980235 /storage/home/c/git/Gardens-of-Eris/include/videoElementDef.h
 	<boost/multi_array.hpp>
 	<allegro5/allegro5.h>
 	<vector>
 	"commons.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/wall.h
+1647980235 /storage/home/c/git/Gardens-of-Eris/include/wall.h
 	"nonSteppable.h"
 	"videoElementDef.h"
 	"objectTypes.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/nonSteppable.h
+1648415606 /storage/home/c/git/Gardens-of-Eris/include/nonSteppable.h
 	"bElem.h"
-	"gCollect.h"
 	"objectTypes.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/rubbish.h
+1647980235 /storage/home/c/git/Gardens-of-Eris/include/rubbish.h
 	"stillElem.h"
 	"gCollect.h"
 	"objectTypes.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/stillElem.h
+1647980235 /storage/home/c/git/Gardens-of-Eris/include/stillElem.h
 	"nonSteppable.h"
 	"objectTypes.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/movableElements.h
+1648415119 /storage/home/c/git/Gardens-of-Eris/include/movableElements.h
 	"nonSteppable.h"
 	"commons.h"
 	"objectTypes.h"
@@ -666,34 +670,34 @@
 	"chamber.h"
 	"gCollect.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/monster.h
+1647980235 /storage/home/c/git/Gardens-of-Eris/include/monster.h
 	"objectTypes.h"
 	"chamber.h"
 	"gCollect.h"
 	"videoElementDef.h"
 	<movableElements.h>
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/player.h
+1648414296 /storage/home/c/git/Gardens-of-Eris/include/player.h
 	<movableElements.h>
 	"commons.h"
 	"objectTypes.h"
 	"videoElementDef.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/collectible.h
-	<nonSteppable.h>
+1648415584 /storage/home/c/git/Gardens-of-Eris/include/collectible.h
+	"nonSteppable.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/door.h
+1647986358 /storage/home/c/git/Gardens-of-Eris/include/door.h
 	<bElem.h>
 	"videoElementDef.h"
 	"commons.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/key.h
+1647980235 /storage/home/c/git/Gardens-of-Eris/include/key.h
 	"collectible.h"
 	"commons.h"
 	"objectTypes.h"
 	"videoElementDef.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/presenter.h
+1647980235 /storage/home/c/git/Gardens-of-Eris/include/presenter.h
 	<allegro5/allegro5.h>
 	<allegro5/allegro_font.h>
 	<allegro5/allegro_image.h>
@@ -710,14 +714,15 @@
 	"inputManager.h"
 	"objectTypes.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/inputManager.h
+1647980235 /storage/home/c/git/Gardens-of-Eris/include/inputManager.h
 	"commons.h"
 	<allegro5/allegro.h>
 
-1647037238 /storage/home/c/git/Gardens-of-Eris/include/randomLevelGenerator.h
+1648225889 /storage/home/c/git/Gardens-of-Eris/include/randomLevelGenerator.h
 	<iostream>
 	<chrono>
 	<random>
+	"door.h"
 	"commons.h"
 	"elements.h"
 	"chamber.h"
@@ -725,59 +730,88 @@
 	<string>
 	<math.h>
 
-1646949038 source:/storage/home/c/git/Gardens-of-Eris/src/bElem.cpp
+1648505378 source:/storage/home/c/git/Gardens-of-Eris/src/bElem.cpp
 	"../include/bElem.h"
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/chamber.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/chamber.cpp
 	"chamber.h"
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/collectible.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/collectible.cpp
 	"collectible.h"
 
-1646953108 source:/storage/home/c/git/Gardens-of-Eris/src/door.cpp
+1647987044 source:/storage/home/c/git/Gardens-of-Eris/src/door.cpp
 	"door.h"
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/gCollect.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/gCollect.cpp
 	"gCollect.h"
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/inputManager.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/inputManager.cpp
 	"inputManager.h"
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/key.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/key.cpp
 	"key.h"
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/levelLoader.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/levelLoader.cpp
 	"levelLoader.h"
 
-1646948680 /storage/home/c/git/Gardens-of-Eris/include/levelLoader.h
+1647980235 /storage/home/c/git/Gardens-of-Eris/include/levelLoader.h
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/monster.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/monster.cpp
 	"monster.h"
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/movableElements.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/movableElements.cpp
 	"movableElements.h"
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/nonSteppable.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/nonSteppable.cpp
 	"nonSteppable.h"
 
-1646948968 source:/storage/home/c/git/Gardens-of-Eris/src/player.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/player.cpp
 	"player.h"
 
-1647036559 source:/storage/home/c/git/Gardens-of-Eris/src/presenter.cpp
+1648502744 source:/storage/home/c/git/Gardens-of-Eris/src/presenter.cpp
 	"presenter.h"
 
-1647037650 source:/storage/home/c/git/Gardens-of-Eris/src/randomLevelGenerator.cpp
+1648501195 source:/storage/home/c/git/Gardens-of-Eris/src/randomLevelGenerator.cpp
 	"randomLevelGenerator.h"
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/rubbish.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/rubbish.cpp
 	"rubbish.h"
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/stillElem.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/stillElem.cpp
 	"stillElem.h"
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/videoElementDef.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/videoElementDef.cpp
 	"videoElementDef.h"
 
-1646948680 source:/storage/home/c/git/Gardens-of-Eris/src/wall.cpp
+1647980243 source:/storage/home/c/git/Gardens-of-Eris/src/wall.cpp
 	"wall.h"
+
+1648415856 /storage/home/c/git/Gardens-of-Eris/include/usable.h
+	"collectible.h"
+
+1648499496 /storage/home/c/git/Gardens-of-Eris/include/plainGun.h
+	"usable.h"
+	"videoElementDef.h"
+	"plainMissile.h"
+
+1648504386 /storage/home/c/git/Gardens-of-Eris/include/plainMissile.h
+	"movableElements.h"
+	"videoElementDef.h"
+
+1648500643 /storage/home/c/git/Gardens-of-Eris/include/bunker.h
+	"commons.h"
+	"plainGun.h"
+	<nonSteppable.h>
+
+1648826026 source:/storage/home/c/git/Gardens-of-Eris/src/bunker.cpp
+	"bunker.h"
+
+1648826238 source:/storage/home/c/git/Gardens-of-Eris/src/plainGun.cpp
+	"plainGun.h"
+
+1648826804 source:/storage/home/c/git/Gardens-of-Eris/src/plainMissile.cpp
+	"plainMissile.h"
+
+1648414024 source:/storage/home/c/git/Gardens-of-Eris/src/usable.cpp
+	"usable.h"
 

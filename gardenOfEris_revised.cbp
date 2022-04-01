@@ -45,11 +45,13 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-std=c++20" />
 		</Compiler>
 		<Unit filename="data/graph/icons64.png" />
 		<Unit filename="data/graph/icons64.xcf" />
 		<Unit filename="data/skins.json" />
 		<Unit filename="include/bElem.h" />
+		<Unit filename="include/bunker.h" />
 		<Unit filename="include/chamber.h" />
 		<Unit filename="include/collectible.h" />
 		<Unit filename="include/commons.h" />
@@ -63,15 +65,19 @@
 		<Unit filename="include/movableElements.h" />
 		<Unit filename="include/nonSteppable.h" />
 		<Unit filename="include/objectTypes.h" />
+		<Unit filename="include/plainGun.h" />
+		<Unit filename="include/plainMissile.h" />
 		<Unit filename="include/player.h" />
 		<Unit filename="include/presenter.h" />
 		<Unit filename="include/randomLevelGenerator.h" />
 		<Unit filename="include/rubbish.h" />
 		<Unit filename="include/stillElem.h" />
+		<Unit filename="include/usable.h" />
 		<Unit filename="include/videoElementDef.h" />
 		<Unit filename="include/wall.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/bElem.cpp" />
+		<Unit filename="src/bunker.cpp" />
 		<Unit filename="src/chamber.cpp" />
 		<Unit filename="src/collectible.cpp" />
 		<Unit filename="src/door.cpp" />
@@ -82,11 +88,14 @@
 		<Unit filename="src/monster.cpp" />
 		<Unit filename="src/movableElements.cpp" />
 		<Unit filename="src/nonSteppable.cpp" />
+		<Unit filename="src/plainGun.cpp" />
+		<Unit filename="src/plainMissile.cpp" />
 		<Unit filename="src/player.cpp" />
 		<Unit filename="src/presenter.cpp" />
 		<Unit filename="src/randomLevelGenerator.cpp" />
 		<Unit filename="src/rubbish.cpp" />
 		<Unit filename="src/stillElem.cpp" />
+		<Unit filename="src/usable.cpp" />
 		<Unit filename="src/videoElementDef.cpp" />
 		<Unit filename="src/wall.cpp" />
 		<Extensions />

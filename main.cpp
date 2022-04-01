@@ -19,19 +19,24 @@ int main( int argc, char * argv[] )
     delay.tv_nsec=2;
     gCollect *garbageBin=new gCollect();
     randomLevelGenerator *rndl=new randomLevelGenerator(50,50,garbageBin);
-    presenter::presenter *myPresenter=new presenter::presenter(rndl->mychamber);
-    chamber *myFirstChamber=rndl->mychamber;
+
+    chamber* myFirstChamber=rndl->mychamber;
+    presenter::presenter *myPresenter=new presenter::presenter(myFirstChamber);
+    //chamber *myFirstChamber=rndl->mychamber;
 
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
-    rndl->addElementToPlace({_monster,5,5,0,"Bba"});
+   /* rndl->addElementToPlace({_monster,5,5,0,"Bba"});
     rndl->addElementToPlace({_collectible,0,20,0,"Bc"});
     rndl->addElementToPlace({_key,1,20,0,"Baa"});
     rndl->addElementToPlace({_key,0,1,0,"Bbb"});
     rndl->addElementToPlace({_door,0,20,0,"Bba"});
     rndl->addElementToPlace({_door,1,20,0,"Bac"});
 
-    rndl->addElementToPlace({_player,0,1,0,"Baa"});
+    */
+     rndl->generateLevel(1);
+    rndl->placeElement({_player,0,1,0,5},"Ba");
+    rndl->placeElement({_bunker,0,10,0,5,},"Ba");
     bElem *mojElement2=new monster(myFirstChamber,garbageBin);
 
 
@@ -42,14 +47,6 @@ int main( int argc, char * argv[] )
     mojElement2=new key(myFirstChamber,garbageBin,0);
     mojElement2->stepOnElement(myFirstChamber->chamberArray[2][4]);
     //rndl->lvlGenerate(1,1,48,48,8,4,"B");
-    rndl->generateLevel(1);
-
-
-    //new chamber(100,100,garbageBin);
-    //
-
-
-
 
 
 

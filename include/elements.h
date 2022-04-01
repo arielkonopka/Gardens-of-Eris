@@ -20,6 +20,7 @@
 #include "usable.h"
 #include "plainGun.h"
 #include "plainMissile.h"
+#include "bunker.h"
 //
 
 

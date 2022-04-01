@@ -48,6 +48,7 @@ public:
     virtual bool hurt(int points);
     virtual bool isSteppable();
     virtual bool isSteppableDirection(direction di);
+    virtual bElem *getElementInDirection(direction di);
     virtual bool canBeKilled();
     virtual bool canBeDestroyed();
 
