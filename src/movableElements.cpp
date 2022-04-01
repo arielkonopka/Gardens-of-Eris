@@ -117,3 +117,8 @@ direction movableElements::getDirection()
 
 }
 
+bool movableElements::setDirection(direction newDirection)
+{
+    this->facing=newDirection;
+    return true;
+}
