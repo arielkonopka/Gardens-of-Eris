@@ -29,9 +29,6 @@ class movableElements : public nonSteppable
         virtual int getSubtype();
         virtual bool canPush();
         virtual bool mechanics(bool collected);
-      // virtual bool tick(bool collected);
-        virtual bool kill();
-     //   virtual bool isDying();
         int _me_moved;
         direction facing;
         bool movable;

@@ -94,8 +94,9 @@ bool monster::steppableNeigh()
     return true;
 }
 
-bool monster::isDying()
-{
-    return false;
-}
 
+
+bool monster::canBeKilled()
+{
+    return true;
+}

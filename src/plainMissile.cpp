@@ -37,6 +37,8 @@ bool plainMissile::mechanics(bool collected)
 {
     bool res;
     res=movableElements::mechanics(collected);
+    if(this->isDying())
+        return true;
     if (this->_me_moved==0)
     {
         bElem *myel=this->getElementInDirection(this->getDirection());
@@ -46,17 +48,12 @@ bool plainMissile::mechanics(bool collected)
             return false;
         }
         if (myel->isSteppable()==true)
-            {
-                if (this->moveInDirection(this->getDirection())==false)
-                {
-                    std::cout<<"This should not happen!\n";
-                    this->kill();
-                }
-                return true;
-            }
+        {
+            this->moveInDirection(this->getDirection());
+            return true;
+        }
         if (myel->canBeKilled()==true)
         {
-            std::cout<<"I'm the pain!\n";
             myel->hurt(this->energy);
             this->disposeElement();
             return true;

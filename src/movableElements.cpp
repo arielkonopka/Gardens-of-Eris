@@ -98,11 +98,7 @@ bool movableElements::mechanics(bool collected)
     return true;
 }
 
-bool movableElements::kill()
-{
-    std::cout<<"Kill me!\n";
-    nonSteppable::kill();
-}
+
 
 videoElement::videoElementDef* movableElements::getVideoElementDef()
 {

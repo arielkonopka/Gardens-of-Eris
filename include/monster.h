@@ -18,9 +18,10 @@ class monster : public movableElements
         int getSubtype();
         virtual bool mechanics(bool collected);
         int getAnimPh();
+        virtual bool canBeKilled();
 
         bool steppableNeigh();
-        bool isDying();
+
     protected:
 
     private:

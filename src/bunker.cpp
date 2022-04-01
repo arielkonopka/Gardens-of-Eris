@@ -67,11 +67,11 @@ direction bunker::findLongestShot()
     int routes[]= {0,0,0,0};
     for(dir=0; dir<4; dir++)
     {
-        element=this;
-        while(element->isSteppableDirection((direction)(dir))==true)
+        element=this->getElementInDirection((direction)(dir));
+        if(element==NULL) continue;
+        while(element->isSteppable()==true)
         {
             routes[dir]++;
-        //    std::cout<<"dir "<<dir<<".";
             element=element->getElementInDirection((direction)(dir));
             if (element==NULL)
                 break;
@@ -80,13 +80,13 @@ direction bunker::findLongestShot()
         {
             if (element->canBeKilled()==true)
             {
-                routes[dir]=65535; // We shoot here, the place, where something to be killed stands at
+                routes[dir]=655350; // We shoot here, the place, where something to be killed stands at
             }
         }
         if(routes[dir]>longest)
         {
             longest=routes[dir];
-            longestDir=(direction)((dir%4));
+            longestDir=(direction)((dir));
         }
     }
     return longestDir;

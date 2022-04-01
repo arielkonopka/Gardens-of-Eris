@@ -13,12 +13,11 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-march=nocona" />
-					<Add option="-std=c17" />
+					<Add option="-Og" />
 					<Add option="-g" />
 					<Add directory="include" />
 				</Compiler>
 				<Linker>
-					<Add option="-O3" />
 					<Add library="allegro" />
 					<Add library="allegro_image" />
 				</Linker>

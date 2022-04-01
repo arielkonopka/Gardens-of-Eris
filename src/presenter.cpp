@@ -388,11 +388,11 @@ int presenter::presentEverything()
         if(event.type == ALLEGRO_EVENT_TIMER)
         {
             this->_cp_attachedBoard->player.x=-1;
-            for (int cy=0; cy<this->_cp_attachedBoard->width; cy++)
-                for (int cx=0; cx<this->_cp_attachedBoard->height; cx++)
+            for (int cy=0; cy<this->_cp_attachedBoard->height; cy++)
+                for (int cx=0; cx<this->_cp_attachedBoard->width; cx++)
                 {
 
-                    bElem* myel=this->_cp_attachedBoard->chamberArray[cx][cy];
+                    bElem* myel=this->_cp_attachedBoard->getElement(cx,cy);
                     if (myel!=NULL)
                         myel->mechanics(false);
                 }
