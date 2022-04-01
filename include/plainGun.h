@@ -17,6 +17,7 @@ public:
     virtual bool mechanics(bool collected);
     virtual ~plainGun();
     bool isWeapon();
+    virtual bool readyToShoot();
 protected:
 
 private:

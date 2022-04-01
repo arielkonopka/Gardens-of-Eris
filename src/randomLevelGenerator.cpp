@@ -609,6 +609,9 @@ bElem* randomLevelGenerator::createElement(elementToPlace element)
     case _plainGun:
         return new plainGun(this->mychamber,this->garbageCollector);
         break;
+    case _bunker:
+        return new bunker(this->mychamber,this->garbageCollector);
+        break;
     }
     return NULL;
 }

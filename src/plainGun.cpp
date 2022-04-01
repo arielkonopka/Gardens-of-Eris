@@ -34,45 +34,54 @@ bool plainGun::isWeapon()
 }
 bool plainGun::use(bElem* who)
 {
-    coords newcoords=NOCOORDS;
+    bElem *myel;
     if (this->shot>0)
         return false;
-    if (this->ammo<=0)
+    this->shot=10;
+    if (this->ammo<=0 && (this->getSubtype()%2)==1) //odd subtypes have infinite shots
         return false;
     if(who==NULL)
         return false;
-    newcoords=who->getAbsCoords(who->getDirection());
-    if(newcoords==NOCOORDS)
-        return false;
-    if (who->isSteppableDirection(who->getDirection())==true)
+ //   this->shot=_mov_delay;
+    myel=who->getElementInDirection(who->getDirection());
+    if(myel==NULL)
+        {
+            if(this->ammo>0)
+                this->ammo--;
+            return false;
+        }
+    if (myel->isSteppable()==true)
     {
         bElem* missile=new plainMissile(this->attachedBoard,this->garbageBin,this->energy);
+        missile->stepOnElement(myel);
         missile->setDirection(who->getDirection());
-        missile->stepOnElement(this->attachedBoard->getElement(newcoords.x,newcoords.y));
-    }
-    if (this->attachedBoard->getElement(newcoords.x,newcoords.y)->canBeKilled())
+    } else if (myel->canBeKilled())
     {
-        this->attachedBoard->getElement(newcoords.x,newcoords.y)->hurt(_plainMissileEnergy);
+        myel->hurt(_plainMissileEnergy);
+       // this->disposeElement();
     }
-
-
-
+    if (this->ammo>0)
+        this->ammo--;
+    return true;
 }
 
 
+bool plainGun::readyToShoot()
+{
+    return this->shot<=0;
+}
 
 
 bool plainGun::mechanics(bool collected)
 {
-    usable::mechanics(collected);
+    bool res=usable::mechanics(collected);
     if(this->shot>0)
     {
-
-     this->shot--;
+        this->shot--;
     }
     if(this->energy<this->maxEnergy)
     {
         this->energy++;
     }
-
+    return res;
 }

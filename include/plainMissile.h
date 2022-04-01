@@ -14,6 +14,7 @@ public:
     plainMissile(chamber *mychamber,gCollect *garbage,int energy);
     virtual ~plainMissile();
     virtual bool mechanics(bool collected);
+    virtual bool canBeKilled();
 
 protected:
     int power;

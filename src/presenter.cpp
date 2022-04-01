@@ -206,6 +206,9 @@ bool presenter::loadCofiguredData()
         case _plainMissile:
             ::plainMissile::vd=ved;
             break;
+        case _bunker:
+            ::bunker::vd=ved;
+            break;
         }
     }
     //Here we should have the videoElementDefinitionsTable filled

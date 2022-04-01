@@ -6,6 +6,13 @@ plainMissile::plainMissile(chamber *mychamber,gCollect *garbage) : movableElemen
 {
     this->power=_plainMissileEnergy;
     this->_me_moved=_plainMissileSpeed;
+    this->setDirection(UP);
+}
+plainMissile::plainMissile(chamber* mychamber, gCollect* garbage, int energy):movableElements(mychamber,garbage)
+{
+    this->power=energy;
+    this->_me_moved=_plainMissileSpeed;
+    this->setDirection(UP);
 }
 
 plainMissile::~plainMissile()
@@ -28,28 +35,40 @@ videoElement::videoElementDef* plainMissile::getVideoElementDef()
 }
 bool plainMissile::mechanics(bool collected)
 {
-    bool kill;
-
+    bool res;
+    res=movableElements::mechanics(collected);
     if (this->_me_moved==0)
     {
-        coords newcoords=this->getAbsCoords(this->getDirection());
-        if(newcoords==NOCOORDS)
+        bElem *myel=this->getElementInDirection(this->getDirection());
+        if(myel==NULL)
         {
             this->kill();
-            return true;
+            return false;
         }
-        if (this->isSteppableDirection(this->getDirection()))
+        if (myel->isSteppable()==true)
+            {
+                if (this->moveInDirection(this->getDirection())==false)
+                {
+                    std::cout<<"This should not happen!\n";
+                    this->kill();
+                }
+                return true;
+            }
+        if (myel->canBeKilled()==true)
         {
-            return this->moveInDirection(this->getDirection());
-        }
-        if (this->attachedBoard->getElement(newcoords.x,newcoords.y)->canBeKilled()==true)
-        { //we hit something, now visual effect, the missile will vanish here (we could add something, here, like another kill state, but no)
-            this->attachedBoard->getElement(newcoords.x,newcoords.y)->hurt(this->energy);
+            std::cout<<"I'm the pain!\n";
+            myel->hurt(this->energy);
             this->disposeElement();
             return true;
         }
         this->kill();
+        return true;
     }
+    return res;
+}
 
-    return     movableElements::mechanics(collected);
+
+bool plainMissile::canBeKilled()
+{
+    return true;
 }

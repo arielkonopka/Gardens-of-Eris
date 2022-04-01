@@ -187,6 +187,9 @@ coords bElem::getAbsCoords(direction dir)
         res.x++;
         break;
     }
+    if (this->attachedBoard==NULL)
+        return NOCOORDS;
+//    std::cout<<"resxy "<<res.y<<" "<<(this->attachedBoard->width)<<"\n";
     if (res.y>=this->attachedBoard->height || res.y<0 || res.x>=this->attachedBoard->width || res.x<0)
     {
         return NOCOORDS;
@@ -194,6 +197,13 @@ coords bElem::getAbsCoords(direction dir)
     return res;
 }
 
+bElem* bElem::getElementInDirection(direction di)
+{
+    coords mycoords=this->getAbsCoords(di);
+    if (mycoords==NOCOORDS)
+        return NULL;
+    return this->attachedBoard->getElement(mycoords.x,mycoords.y);
+}
 
 
 
@@ -332,18 +342,15 @@ bool bElem::isSteppableDirection(direction di)
 {
     coords tmpcoords;
     tmpcoords=this->getAbsCoords(di);
-    if(tmpcoords!=NOCOORDS)
+    if(!(tmpcoords==NOCOORDS))
     {
-        if (this->attachedBoard->chamberArray[tmpcoords.x][tmpcoords.y]->isSteppable()==false)
+        if(this->attachedBoard->getElement(tmpcoords.x,tmpcoords.y)!=NULL)
         {
-            return false;
+            return this->attachedBoard->getElement(tmpcoords.x,tmpcoords.y)->isSteppable();
         }
-        return true;
     }
     return false;
 }
-
-
 
 
 videoElement::videoElementDef* bElem::getVideoElementDef()
@@ -437,7 +444,7 @@ bool bElem::collect(bElem *collectible)
 
 bool bElem::selfAlign()
 {
-    return true;
+    return false;
 }
 
 bool bElem::setSubtype(int st)
