@@ -5,6 +5,7 @@
 #include "commons.h"
 #include "objectTypes.h"
 #include "videoElementDef.h"
+#include "plainGun.h"
 
 class player : public movableElements
 {
@@ -21,7 +22,7 @@ public:
     int getAnimPh();
     player(chamber *board,gCollect *garbage);
     virtual ~player();
-
+    virtual bool shootGun();
 
  //   bool isDying();
     //     virtual bool tick(bool collected);

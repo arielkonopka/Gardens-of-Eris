@@ -19,10 +19,7 @@ int plainGun::getType()
     return _plainGun;
 }
 
-int plainGun::getSubtype()
-{
-    return 0;
-}
+
 
 plainGun::~plainGun()
 {
@@ -35,33 +32,36 @@ bool plainGun::isWeapon()
 bool plainGun::use(bElem* who)
 {
     bElem *myel;
-    if (this->shot>0)
-        return false;
-    this->shot=10;
-    if (this->ammo<=0 && (this->getSubtype()%2)==1) //odd subtypes have infinite shots
-        return false;
-    if(who==NULL)
-        return false;
- //   this->shot=_mov_delay;
-    myel=who->getElementInDirection(who->getDirection());
-    if(myel==NULL)
-        {
-            if(this->ammo>0)
-                this->ammo--;
+    if (this->readyToShoot()==false)
+        return true; //The gun is fine, not ready to shoot though
+    this->shot=_plainMissileSpeed*4;
+    if (this->ammo<=0 || who==NULL) //odd subtypes have infinite shots
+        if (this->getSubtype()%2)
             return false;
+    if(who->getType()==_player)
+        std::cout<<"energy: "<<this->energy<<"\n";
+    myel=who->getElementInDirection(who->getDirection());
+    if(myel!=NULL)
+    {
+
+        if (myel->isSteppable()==true)
+        {
+            bElem* missile=new plainMissile(this->attachedBoard,this->garbageBin,this->energy);
+            missile->stepOnElement(myel);
+
+            missile->setDirection(who->getDirection());
         }
-    if (myel->isSteppable()==true)
-    {
-        bElem* missile=new plainMissile(this->attachedBoard,this->garbageBin,this->energy);
-        missile->stepOnElement(myel);
-        missile->setDirection(who->getDirection());
-    } else if (myel->canBeKilled())
-    {
-        myel->hurt(_plainMissileEnergy);
-       // this->disposeElement();
+        else if (myel->canBeKilled())
+        {
+            myel->hurt(_plainMissileEnergy);
+
+            // this->disposeElement();
+        }
     }
     if (this->ammo>0)
-        this->ammo--;
+        if (this->getSubtype()%2==0)
+            this->ammo--;
+    this->energy=this->energy/2;
     return true;
 }
 
@@ -81,7 +81,21 @@ bool plainGun::mechanics(bool collected)
     }
     if(this->energy<this->maxEnergy)
     {
-        this->energy++;
+        if (this->taterCounter%3==0)
+            this->energy++;
     }
     return res;
 }
+
+int plainGun::getAmmo()
+{
+    return this->ammo;
+}
+
+void plainGun::setAmmo(int ammo)
+{
+    this->ammo=ammo;
+}
+
+
+

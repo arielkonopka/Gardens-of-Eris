@@ -1,6 +1,19 @@
 #include "../include/bElem.h"
 
 videoElement::videoElementDef* bElem::vd=NULL;
+int bElem::instances=0;
+
+int bElem::getInstanceid()
+{
+   return this->instance;
+}
+
+void bElem::resetInstances()
+{
+    bElem::instances=0;
+}
+
+
 
 bElem::bElem()
 {
@@ -63,7 +76,22 @@ void bElem::init()
     this->killed=0;
     this->steppingOn=NULL;
     this->interacted=0;
+    this->destroyed=0;
+    this->instance=bElem::instances;
+    bElem::instances++;
+    this->collectedBy=NULL;
 
+    std::random_device rd;
+    std::mt19937::result_type seed = rd() ^ (
+                                         (std::mt19937::result_type)
+                                         std::chrono::duration_cast<std::chrono::seconds>(
+                                                 std::chrono::system_clock::now().time_since_epoch()
+                                         ).count() +
+                                         (std::mt19937::result_type)
+                                         std::chrono::duration_cast<std::chrono::microseconds>(
+                                                 std::chrono::high_resolution_clock::now().time_since_epoch()
+                                         ).count() );
+    this->randomNumberGenerator.seed(seed);
 }
 
 bool bElem::setDirection(direction dir)
@@ -209,6 +237,12 @@ bElem* bElem::getElementInDirection(direction di)
 
 bElem::~bElem()
 {
+    if(this->canCollect()==true)
+    {
+        for(int c=0;c<this->collectedItems.size();c++)
+            delete this->collectedItems[c];
+        this->collectedItems.clear();
+    }
 
 }
 
@@ -222,6 +256,15 @@ int bElem::getSubtype()
     return this->subtype;
 }
 
+int bElem::getAmmo()
+{
+  return 0;
+}
+
+void bElem::setAmmo()
+{
+    return;
+}
 
 
 bool bElem::isProvisioned()
@@ -259,6 +302,11 @@ bool bElem::interact(bElem *who)
 
 bool bElem::destroy()
 {
+    if (this->canBeDestroyed()==true && this->isDestroyed()==false)
+    {
+        this->destroyed=_defaultDestroyTime;
+        return true;
+    }
     return false;
 }
 
@@ -301,11 +349,24 @@ bool bElem::isSwitchOn()
 
 bool bElem::mechanics(bool collected)
 {
+    this->taterCounter++; //this is our source of sequential numbers
     if (this->steppingOn!=NULL)
     {
         this->steppingOn->mechanics(true);
     }
     this->animPhase++;
+
+    if (this->destroyed>0) //We support two modes of destruction, this one is the demolishion thing
+    {
+        this->destroyed--;
+        if(this->destroyed==0)
+        {
+            if (this->getType()!=_belemType) //We do not dispose the empty elements
+                this->disposeElement();
+            return true;
+        }
+    }
+
     if(this->killed>0)
     {
         this->killed--;
@@ -315,11 +376,13 @@ bool bElem::mechanics(bool collected)
             return true;
         }
     }
-
-
-
-
-
+    if(this->canCollect()==true && this->collectedItems.size()>0)
+    {
+        for(int cn0=0;cn0<this->collectedItems.size();cn0++)
+        {
+            this->collectedItems[cn0]->mechanics(true);
+        }
+    }
     return false;
 }
 
@@ -427,7 +490,7 @@ bool bElem::collect(bElem *collectible)
         return false;
     }
     collected=collectible->removeElement();
-    if (collected==NULL)
+    if (collected==NULL) //this should never happen!
     {
 #ifdef _debug
         std::cout<<"Collecting failed!\n";
@@ -437,9 +500,22 @@ bool bElem::collect(bElem *collectible)
 #ifdef _debug
     std::cout<<"Collect "<<collected->getType()<<" st: "<<collected->getSubtype()<<"\n";
 #endif
+    collected->setCollector(this);
     this->collectedItems.push_back(collected);
     return true;
 }
+
+bElem* bElem::getCollector()
+{
+    return this->collectedBy;
+}
+void bElem::setCollector(bElem* collector)
+{
+    this->collectedBy=collector;
+}
+
+
+
 
 
 bool bElem::selfAlign()
@@ -456,7 +532,7 @@ bool bElem::setSubtype(int st)
 //removes from collection, does not keep the order
 bool bElem::removeFromcollection(int position)
 {
-    if (position>=this->collectedItems.size() || position<0 || this->collectedItems.size()==0)
+    if (position>=(int)this->collectedItems.size() || position<0 || (int)this->collectedItems.size()==0)
         return false;
     this->collectedItems[position]->disposeElement();
     this->collectedItems[position]=this->collectedItems[this->collectedItems.size()-1];
@@ -501,5 +577,9 @@ bool bElem::kill()
     return true;
 }
 
+bool bElem::isDestroyed()
+{
+    return (this->destroyed>0);
+}
 
 

@@ -7,6 +7,8 @@
 #include "chamber.h"
 #include "gCollect.h"
 #include "videoElementDef.h"
+#include <chrono>
+#include <random>
 //class chamber;
 //class gCollect; // we will keep objects to be removed from the memory here. this is convenient because we would not fore an object to commit suicide, but instead we would "park" it here for later cleanup
 
@@ -25,6 +27,11 @@ class bElem
 {
 public:
     static videoElement::videoElementDef* vd;
+    virtual int getInstanceid();
+    static void resetInstances();
+    static int instances;
+
+
     bElem();
     bElem(chamber *board,gCollect *garbage);
     bElem(chamber *board,gCollect *garbage,int x, int y);
@@ -64,6 +71,7 @@ public:
     virtual int getEnergy();
     virtual bool setEnergy(int points);
     virtual bool isDying();
+    virtual bool isDestroyed();
     virtual bool isTeleporting();
 
     virtual bool isInteractive();
@@ -76,24 +84,31 @@ public:
     virtual bool canInteract();
     virtual bool isUsable();
     virtual bool isWeapon();
+    virtual int getAmmo();
+    virtual void setAmmo();
 
     virtual bool isActive();
     virtual bool isOpen();
     virtual bool isSwitchOn();
+
     virtual bElem* removeElement(); // removes element from the board, and returns it for further processing, usefull for eg. for collecting stuff
     oState disposeElement();
     bElem *steppingOn=NULL;
     std::vector<bElem *> collectedItems;
     bool removeFromcollection(int position);
-
+    virtual bElem* getCollector();
+    virtual void setCollector(bElem* collector);
     int interacted;
-
-    /* @mechanics(bool collected) - takes care both of time passing (all the timers and so on along with the mechanics itself - every object type can have its own rules
+    std::mt19937 randomNumberGenerator;
+    /*
+        @mechanics(bool collected) - takes care both of time passing (all the timers and so on along with the mechanics itself - every object type can have its own rules
         collected==true when the method is invoked from an objects inventory. useful for objects that do something when collected like mines, automatic weapons and so on
     */
     virtual bool mechanics(bool collected);
-
 protected:
+    bElem* collectedBy;
+    int instance;
+    int destroyed;
     int energy;
     int subtype=0;
     int animPhase=0;

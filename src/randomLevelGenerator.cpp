@@ -461,7 +461,7 @@ int randomLevelGenerator::findSpotsToChoose(std::string location)
             {
                 for (int y=this->endChambers[c].y0; y<=this->endChambers[c].y1; y++)
                 {
-                    if (this->mychamber->chamberArray[x][y]->isSteppable() && this->isLocationAllowed(x,y)==true)
+                    if (this->mychamber->chamberArray[x][y]->isSteppable() && this->isLocationAllowed(x,y)==true && this->steppableNeighs(x,y)>3)
                     {
 
                         this->spotsToChoose.push_back({x,y});
@@ -496,7 +496,7 @@ bool randomLevelGenerator::placeDoors(elementToPlace element,std::string locatio
     Place doors at the location
 
     */
-    coords p0=NOCOORDS,p1=NOCOORDS;
+
     for(int c=0; c<this->endChambers.size(); c++)
     {
         if (location==this->endChambers[c].location)
@@ -534,6 +534,19 @@ bool randomLevelGenerator::placeDoors(elementToPlace element,std::string locatio
             break;
         }
     }
+    return true;
+}
+int randomLevelGenerator::steppableNeighs(int x, int y)
+{
+    int res=0;
+    for (int c=0;c<4;c++)
+    {
+        if (this->mychamber->getElement(x,y)->isSteppableDirection((direction)(c))==true)
+        {
+           res++;
+        }
+    }
+    return res;
 }
 
 bool randomLevelGenerator::placeElement(elementToPlace element,std::string location)

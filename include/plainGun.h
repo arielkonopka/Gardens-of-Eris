@@ -11,13 +11,14 @@ public:
         static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
-    virtual int getSubtype();
     virtual bool use(bElem *who);
     plainGun(chamber *board,gCollect *garbage);
     virtual bool mechanics(bool collected);
     virtual ~plainGun();
     bool isWeapon();
     virtual bool readyToShoot();
+    virtual int getAmmo();
+    virtual void setAmmo(int ammo);
 protected:
 
 private:

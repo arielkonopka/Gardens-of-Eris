@@ -17,7 +17,7 @@ public:
     virtual bool canBeKilled();
 
 protected:
-    int power;
+
 
     bool killing;
 private:

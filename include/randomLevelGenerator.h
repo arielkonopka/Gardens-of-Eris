@@ -82,6 +82,7 @@ class randomLevelGenerator
         bool claimSpace(spaceToCreate theClaim);
         int recalculateLocations();
         bool banLocation(std::string loc);
+        int steppableNeighs(int x, int y);
   //      bool addSpaceToCreate(spaceToCreate spc);
     protected:
 

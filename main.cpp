@@ -12,7 +12,7 @@
 int main( int argc, char * argv[] )
 {
     bool finish=false;
-
+    bElem::resetInstances();
     struct timespec delay;
 
     delay.tv_sec=0;
@@ -36,7 +36,9 @@ int main( int argc, char * argv[] )
     */
      rndl->generateLevel(1);
     rndl->placeElement({_player,0,1,0,5},"Ba");
-    rndl->placeElement({_bunker,0,10,0,5,},"Ba");
+    rndl->placeElement({_bunker,0,100,0,5},"B");
+    rndl->placeElement({_plainGun,0,400,0,5},"B");
+    rndl->placeElement({_monster,0,40,0,5},"B");
     bElem *mojElement2=new monster(myFirstChamber,garbageBin);
 
 
@@ -48,7 +50,8 @@ int main( int argc, char * argv[] )
     mojElement2->stepOnElement(myFirstChamber->chamberArray[2][4]);
     //rndl->lvlGenerate(1,1,48,48,8,4,"B");
 
-
+   // std::cout<<bElem::instances<<" instances created\n";
+  //  exit(0);
 
     myPresenter->showGameField(1,1);
 

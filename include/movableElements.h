@@ -21,8 +21,8 @@ class movableElements : public nonSteppable
         static videoElement::videoElementDef* vd;
         movableElements(chamber *board,gCollect *garbage);
         virtual ~movableElements();
-        bool isMovable();
-        bool moveInDirection(direction dir);
+        virtual bool isMovable();
+        virtual bool moveInDirection(direction dir);
         virtual int getType();
         virtual direction getDirection();
         virtual bool setDirection(direction newDirection);

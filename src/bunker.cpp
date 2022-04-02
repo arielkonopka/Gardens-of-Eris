@@ -27,33 +27,14 @@ bunker::~bunker()
 }
 bool bunker::mechanics(bool collected)
 {
-    direction myNewDirection=LEFT;
     bool res=nonSteppable::mechanics(collected);
+
+    int randomTest=this->randomNumberGenerator()%1000;
     res=res || this->myGun->mechanics(collected);
-    if (this->rotated>0)
-    {
-        this->rotated--;
-        return res;
-    }
     if(this->myGun->readyToShoot()==false)
         return res;
- //   std::cout<<"shoot!\n";
-
-    myNewDirection=this->findLongestShot();
-
-    if (this->getDirection()!=myNewDirection)
-    {
-        int a=(int)(this->getDirection());
-        int b=(int)(myNewDirection);
-        if (a>b) a--;
-        if (a<b) a++;
-        this->setDirection((direction)(a%4));
-        this->rotated=_mov_delay;
-        return true;
-    }
-
-    this->myGun->use(this);
-    this->rotated=50;
+    if(randomTest>990)
+        this->myGun->use(this);
     return true;
 }
 
@@ -92,5 +73,10 @@ direction bunker::findLongestShot()
     return longestDir;
 }
 
+bool bunker::selfAlign()
+{
+    this->setDirection(this->findLongestShot());
+    return false;
+}
 
 

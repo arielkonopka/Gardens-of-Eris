@@ -24,6 +24,7 @@
 
 #define _defaultEnergy 80
 #define _defaultKillTime 20
+#define _defaultDestroyTime 20
 
 #define _interactedTime 5
 

@@ -43,26 +43,26 @@ bool monster::mechanics(bool collected)
     {
         for(int c=0; c<4; c++)
         {
-
-            coords tmpCoords=this->getAbsCoords((direction)c);
-            if (this->attachedBoard->chamberArray[tmpCoords.x][tmpCoords.y]->getType()==_player)
+            bElem* testElem=this->getElementInDirection((direction)c);
+            if (testElem==NULL)
             {
-                std::cout<<"Hurting!\n";
-                this->attachedBoard->chamberArray[tmpCoords.x][tmpCoords.y]->hurt(6);
+                continue;
+            }
+            if (testElem->getType()==_player)
+            {
+                testElem->hurt(6);
+                return true; //no need to leave the place, where we do the damage
                 break;
             }
-
-
         }
         if(this->moveInDirection(this->facing))
         {
-            tmpcoords=this->getAbsCoords( (direction)(((int)this->facing+3)%4));
-            if (tmpcoords!=NOCOORDS)
-
-                if (this->attachedBoard->chamberArray[tmpcoords.x][tmpcoords.y]->isSteppable())
+            bElem* testElem=this->getElementInDirection((direction)(((int)this->facing+3)%4));
+            if (testElem!=NULL)
+            {
+                if (testElem->isSteppable())
                     this->facing=(direction)(((int)this->facing+3)%4);
-
-            //     }
+            }
         }
         else
         {

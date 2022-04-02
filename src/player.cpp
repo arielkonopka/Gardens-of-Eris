@@ -13,7 +13,13 @@ player::player(chamber *board,gCollect *garbage) : movableElements::movableEleme
 
 player::~player()
 {
-    //dtor
+    //We remove all the collected weapons and stuff, we need to remember, that this is our responsibility to destroy our objects
+    for(int c=0;c<this->weapons.size();c++)
+        delete this->weapons[c];
+    this->weapons.clear();
+    for(int c=0;c<this->usables.size();c++)
+        delete this->usables[c];
+    this->usables.clear();
 }
 videoElement::videoElementDef* player::getVideoElementDef()
 {
@@ -42,12 +48,52 @@ bool player::mechanics(bool collected)
         if (res) this->animPh++;
         return true;
     }
+     if (this->attachedBoard->cntrlItm.type==1 && this->_me_moved==0)
+    {
+        this->setDirection(this->attachedBoard->cntrlItm.dir);
+        bool res=this->shootGun();
+        if (res) this->animPh++;
+        return true;
+    }
 
 
 
     return false;
 
 }
+
+//shoots any suitable gun
+bool player::shootGun()
+{
+    bool res=false;
+    for(int c=0;c<this->collectedItems.size();c++)
+    {
+        if (this->collectedItems[c]->isWeapon()==true)
+            if (this->collectedItems[c]->use(this)==true)
+                {
+                    res=true;
+                    break;
+                }
+    }
+    if(res==true)
+    {
+        for(int c=0;c<this->collectedItems.size();c++)
+        {
+            if(this->collectedItems[c]->isWeapon()==true)
+            {
+               bElem* mygun=this->collectedItems[c];
+                if (mygun->getAmmo()<=0)
+                {
+                    this->removeFromcollection(c);
+                }
+            }
+        }
+    }
+    return res;
+}
+
+
+
 
 bool player::canPush()
 {
