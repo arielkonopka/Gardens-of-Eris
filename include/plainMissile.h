@@ -1,9 +1,9 @@
 #ifndef PLAINMISSILE_H
 #define PLAINMISSILE_H
-#include "movableElements.h"
+#include "killableElements.h"
 #include "videoElementDef.h"
 
-class plainMissile : public movableElements
+class plainMissile : public killableElements
 {
 public:
     static videoElement::videoElementDef* vd;
@@ -14,7 +14,6 @@ public:
     plainMissile(chamber *mychamber,gCollect *garbage,int energy);
     virtual ~plainMissile();
     virtual bool mechanics(bool collected);
-    virtual bool canBeKilled();
 
 protected:
 

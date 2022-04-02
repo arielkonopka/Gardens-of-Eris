@@ -4,10 +4,10 @@
 #include "chamber.h"
 #include "gCollect.h"
 #include "videoElementDef.h"
-#include <movableElements.h>
+#include "killableElements.h"
 
 
-class monster : public movableElements
+class monster : public killableElements
 {
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
@@ -18,7 +18,7 @@ class monster : public movableElements
         int getSubtype();
         virtual bool mechanics(bool collected);
         int getAnimPh();
-        virtual bool canBeKilled();
+
 
         bool steppableNeigh();
 

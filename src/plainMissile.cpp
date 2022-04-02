@@ -2,14 +2,14 @@
 
 
 videoElement::videoElementDef* plainMissile::vd=NULL;
-plainMissile::plainMissile(chamber *mychamber,gCollect *garbage) : movableElements(mychamber,garbageBin)
+plainMissile::plainMissile(chamber *mychamber,gCollect *garbage) : killableElements(mychamber,garbageBin)
 {
     this->energy=_plainMissileEnergy;
     this->_me_moved=_plainMissileSpeed;
     this->setDirection(UP);
 
 }
-plainMissile::plainMissile(chamber* mychamber, gCollect* garbage, int energy):movableElements(mychamber,garbage)
+plainMissile::plainMissile(chamber* mychamber, gCollect* garbage, int energy):killableElements(mychamber,garbage)
 {
     this->energy=energy;
     this->_me_moved=_plainMissileSpeed;
@@ -66,7 +66,4 @@ bool plainMissile::mechanics(bool collected)
 }
 
 
-bool plainMissile::canBeKilled()
-{
-    return (!this->isDying());
-}
+

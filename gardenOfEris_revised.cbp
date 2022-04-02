@@ -31,7 +31,7 @@
 				<Compiler>
 					<Add option="-march=nocona" />
 					<Add option="-fexpensive-optimizations" />
-					<Add option="-std=c17" />
+					<Add option="-O3" />
 					<Add directory="include" />
 				</Compiler>
 				<Linker>

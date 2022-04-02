@@ -11,6 +11,7 @@
 #include "rubbish.h"
 #include "stillElem.h"
 #include "movableElements.h"
+#include "killableElements.h"
 #include "nonSteppable.h"
 #include "monster.h"
 #include "player.h"

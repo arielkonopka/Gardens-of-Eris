@@ -3,7 +3,7 @@
 // the static variable must be initialized
 videoElement::videoElementDef* monster::vd=NULL;
 
-monster::monster(chamber *board,gCollect *garbage): movableElements(board,garbage)
+monster::monster(chamber *board,gCollect *garbage): killableElements(board,garbage)
 {
     this->animph=0;
     this->internalCnt=0;
@@ -94,9 +94,3 @@ bool monster::steppableNeigh()
     return true;
 }
 
-
-
-bool monster::canBeKilled()
-{
-    return true;
-}
