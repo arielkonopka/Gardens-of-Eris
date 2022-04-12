@@ -29,7 +29,7 @@ int monster::getSubtype()
 }
 bool monster::mechanics(bool collected)
 {
-    movableElements::mechanics(collected);
+    killableElements::mechanics(collected);
     coords tmpcoords;
 
     //this->tick(collected);

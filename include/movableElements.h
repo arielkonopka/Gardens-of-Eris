@@ -20,6 +20,8 @@ class movableElements : public nonSteppable
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
         movableElements(chamber *board,gCollect *garbage);
+        movableElements(chamber *board,gCollect *garbage,int x, int y);
+
         virtual ~movableElements();
         virtual bool isMovable();
         virtual bool moveInDirection(direction dir);

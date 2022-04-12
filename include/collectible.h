@@ -2,9 +2,9 @@
 #define COLLECTIBLE_H
 
 #include "nonSteppable.h"
+#include "killableElements.h"
 
-
-class collectible : public nonSteppable
+class collectible : public killableElements
 {
 public:
     static videoElement::videoElementDef* vd;

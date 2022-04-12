@@ -21,7 +21,7 @@ chamber::~chamber()
     {
         for (int cY=0; cY<this->height;cY++)
         {
-            while(this->chamberArray[cX][cY]->disposeElement()==DISPOSED);
+            while(this->chamberArray[cX][cY]->disposeElementUnsafe()==DISPOSED);
         }
         this->garbageBin->purgeGarbage();
 

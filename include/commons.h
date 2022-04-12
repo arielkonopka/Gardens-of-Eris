@@ -15,20 +15,26 @@
 #define _plainMissile 201
 #define _plainGun 200
 #define _bunker 250
+#define _teleporter 400
+
+
 
 #define _plainGunAmmo 10
 #define _plainMissileSpeed 3
 #define _plainMissileEnergy 100
 
 
+#define _dexterityLevels 50
+
+#define _initialDexterity 5
 
 #define _defaultEnergy 80
 #define _defaultKillTime 20
 #define _defaultDestroyTime 20
 
 #define _interactedTime 5
-
-
+#define NOCOORDS   ((coords){-1,-1})
+#define NOSTATS ((stats){-1,-1})
 typedef struct coords
 {
     int x=-1,y=-1;
@@ -56,7 +62,23 @@ typedef enum { UP=0,LEFT=1,DOWN=2,RIGHT=3} direction;
 
  } controlItem;
 
+typedef enum { NONE=0,GUN=1,AMMO=2,ARMOR=3,POWERUP=4} modType;
 
 
 
+typedef struct stats
+{
+    int strength;
+    int energy;
+    int dexterity;
+
+} stats;
+
+typedef struct neighboorhood
+{
+    bool steppableClose[4]; //up,left,down,right
+    bool steppableOther[4]; //up-left,down-left,down-right,up-right
+    bool steppable[8]; // whole neighboorhood, starting from up, then up-left, left, down-left, down, down-right, right, up-right
+
+} sNeighboorhood;
  #endif

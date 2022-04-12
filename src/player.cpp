@@ -3,12 +3,13 @@
 videoElement::videoElementDef* player::vd=NULL;
 
 
-player::player(chamber *board,gCollect *garbage) : movableElements::movableElements(board,garbage)
+player::player(chamber *board,gCollect *garbage) : killableElements::killableElements(board,garbage)
 {
     this->used=0;
     this->interacted=0;
     this->_me_moved=0;
     this->animPh=0;
+    this->myStats.dexterity=_initialDexterity;
 }
 
 player::~player()
@@ -30,7 +31,7 @@ videoElement::videoElementDef* player::getVideoElementDef()
 
 bool player::mechanics(bool collected)
 {
-    movableElements::mechanics(collected);
+    killableElements::mechanics(collected);
     if (this->x<0) return false; // It was disposed, so we do not want to process this
     if (this->getActive()==true)
     {
@@ -128,8 +129,5 @@ bool player::canCollect()
 {
     return true;
 }
-bool player::canBeKilled()
-{
-    return true;
-}
+
 

@@ -1,11 +1,11 @@
 #include "collectible.h"
 videoElement::videoElementDef* collectible::vd=NULL;
 
-collectible::collectible(chamber *board,gCollect *garbage):nonSteppable(board,garbage)
+collectible::collectible(chamber *board,gCollect *garbage):killableElements(board,garbage)
 {
    // this->setSubtype(0);
 }
-collectible::collectible(chamber* board, gCollect* garbage, int x, int y): nonSteppable(board,garbage,x,y)
+collectible::collectible(chamber* board, gCollect* garbage, int x, int y): killableElements(board,garbage,x,y)
 {
    // this->setSubtype(0);
 }

@@ -22,7 +22,7 @@ class chamber;
 
 typedef enum { DISPOSED=0,NULLREACHED=1,ERROR=2} oState;
 
-#define NOCOORDS   ((coords){-1,-1})
+
 class bElem
 {
 public:
@@ -36,6 +36,7 @@ public:
     bElem(chamber *board,gCollect *garbage);
     bElem(chamber *board,gCollect *garbage,int x, int y);
 
+    virtual sNeighboorhood getSteppableNeighboorhood();
     virtual ~bElem();
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual void setBoard(chamber *board);
@@ -90,9 +91,14 @@ public:
     virtual bool isActive();
     virtual bool isOpen();
     virtual bool isSwitchOn();
-
+    virtual stats getStats();
+    virtual void setStats(stats newStats);
+    virtual bool isMod(); // is the element a mod of another element? - mod is an object that changes other object's behavior
+    virtual modType getModType();
     virtual bElem* removeElement(); // removes element from the board, and returns it for further processing, usefull for eg. for collecting stuff
     oState disposeElement();
+    oState disposeElementUnsafe();
+
     bElem *steppingOn=NULL;
     std::vector<bElem *> collectedItems;
     bool removeFromcollection(int position);
@@ -100,16 +106,17 @@ public:
     virtual void setCollector(bElem* collector);
     int interacted;
     std::mt19937 randomNumberGenerator;
+    stats myStats;
     /*
         @mechanics(bool collected) - takes care both of time passing (all the timers and so on along with the mechanics itself - every object type can have its own rules
         collected==true when the method is invoked from an objects inventory. useful for objects that do something when collected like mines, automatic weapons and so on
     */
     virtual bool mechanics(bool collected);
 protected:
+
     bElem* collectedBy;
     int instance;
     int destroyed;
-    int energy;
     int subtype=0;
     int animPhase=0;
     int taterCounter=0; //Internal counter

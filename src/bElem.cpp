@@ -5,7 +5,7 @@ int bElem::instances=0;
 
 int bElem::getInstanceid()
 {
-   return this->instance;
+    return this->instance;
 }
 
 void bElem::resetInstances()
@@ -72,7 +72,9 @@ void bElem::init()
     this->x=-1;
     this->y=-1;
     this->animPhase=0;
-    this->energy=_defaultEnergy;
+    this->setEnergy(_defaultEnergy); // this is rather a durability of an object, if it is killable;
+    this->myStats.strength=0; // generic object has no strength
+    this->myStats.dexterity=_initialDexterity; // We do not have the dexterity;
     this->killed=0;
     this->steppingOn=NULL;
     this->interacted=0;
@@ -155,27 +157,26 @@ coords bElem::getCoords()
     mycoords.y=this->y;
     return mycoords;
 }
-
-oState bElem::disposeElement()
+oState bElem::disposeElementUnsafe()
 {
     oState res;
     if ( this->garbageBin==NULL )
     {
-        #ifdef _debug
+#ifdef _debug
         std::cout<<"Tried to dispose broken element!\n";
-        #endif
+#endif
         return ERROR;
     }
     if(this->steppingOn!=NULL && x>=0 && y>=0)
     {
         this->attachedBoard->chamberArray[this->x][this->y]=this->steppingOn; //steppingOn can be NULL, that could mean that someone would have to create an empty field here.
         this->steppingOn=NULL;
-        res=(this->attachedBoard->chamberArray[this->x][this->y]==NULL?NULLREACHED:DISPOSED);
+        res=DISPOSED;
     }
     else if (x>=0 && y>=0)
     {
-        bElem* be=new bElem(this->attachedBoard,this->garbageBin);
-        this->attachedBoard->chamberArray[this->x][this->y]=be;
+        this->attachedBoard->chamberArray[this->x][this->y]=NULL;
+        res=NULLREACHED;
     }
     else
     {
@@ -187,6 +188,19 @@ oState bElem::disposeElement()
     this->attachedBoard=NULL;
     this->garbageBin=NULL;
     return res; // false means that there is no more elements to go.
+}
+
+oState bElem::disposeElement()
+{
+    int x0=this->x;//save necessary data, becasue it will be lost after disposeElementUnsafe
+    int y0=this->y;
+    gCollect* myGarbage=this->garbageBin;
+    chamber* myChamber=this->attachedBoard;
+    if(this->disposeElementUnsafe()==NULLREACHED)
+    {
+        bElem* newElem=new bElem(myChamber,myGarbage,x0,y0);
+    }
+    return DISPOSED;
 }
 
 
@@ -239,7 +253,7 @@ bElem::~bElem()
 {
     if(this->canCollect()==true)
     {
-        for(int c=0;c<this->collectedItems.size();c++)
+        for(int c=0; c<this->collectedItems.size(); c++)
             delete this->collectedItems[c];
         this->collectedItems.clear();
     }
@@ -258,7 +272,7 @@ int bElem::getSubtype()
 
 int bElem::getAmmo()
 {
-  return 0;
+    return 0;
 }
 
 void bElem::setAmmo()
@@ -367,18 +381,10 @@ bool bElem::mechanics(bool collected)
         }
     }
 
-    if(this->killed>0)
-    {
-        this->killed--;
-        if(this->killed==0)
-        {
-            this->disposeElement(); //it seems we really died. what a waste
-            return true;
-        }
-    }
+
     if(this->canCollect()==true && this->collectedItems.size()>0)
     {
-        for(int cn0=0;cn0<this->collectedItems.size();cn0++)
+        for(int cn0=0; cn0<this->collectedItems.size(); cn0++)
         {
             this->collectedItems[cn0]->mechanics(true);
         }
@@ -398,7 +404,7 @@ bool bElem::canBeKilled()
 
 bool bElem::canBeDestroyed()
 {
-    return false;
+    return true;
 }
 
 bool bElem::isSteppableDirection(direction di)
@@ -543,38 +549,23 @@ bool bElem::removeFromcollection(int position)
 
 bool bElem::hurt(int points)
 {
-    if ((this->canBeKilled()==false || this->isDying() ) && this->getEnergy()<=0)
-    {
-        return false;
-    }
-#ifdef _debug
-    std::cout<<"Hurt me by "<<points<<" points "<<this->getEnergy()<<"\n";
-#endif
-    this->setEnergy(this->getEnergy()-points);
-    if (this->getEnergy()<=0)
-        this->kill();
-    return true;
+    return false;
 }
 
 int bElem::getEnergy()
 {
-    return this->energy;
+    return this->myStats.energy;
 }
 
 bool bElem::setEnergy(int points)
 {
-    this->energy=(points>=0)?points:0;
+    this->myStats.energy=(points>=0)?points:0;
     return (points==0);
 }
 
 bool bElem::kill()
 {
-    if (this->canBeKilled()==false || this->isDying())
-    {
-        return false;
-    }
-    this->killed=_defaultKillTime;
-    return true;
+    return false;
 }
 
 bool bElem::isDestroyed()
@@ -582,4 +573,83 @@ bool bElem::isDestroyed()
     return (this->destroyed>0);
 }
 
+stats bElem::getStats()
+{
+    return myStats;
+}
+void bElem::setStats(stats newStats)
+{
+    this->myStats=newStats;
+
+}
+
+bool bElem::isMod()
+{
+    return false;
+}
+
+modType bElem::getModType()
+{
+    return NONE;
+}
+
+/*
+Here we want to avoid the duplication of boundary checking, that is why we use getABSCoords, isSteppableInDirection and getElementInDirection;
+*/
+sNeighboorhood bElem::getSteppableNeighboorhood()
+{
+    sNeighboorhood myNeigh;
+    coords up,left,down,right;
+    up=this->getAbsCoords(UP);
+    left=this->getAbsCoords(LEFT);
+    down=this->getAbsCoords(DOWN);
+    right=this->getAbsCoords(RIGHT);
+    myNeigh.steppable[0]=this->isSteppableDirection(UP);
+    myNeigh.steppableClose[0]=myNeigh.steppable[0];
+    if (up!=NOCOORDS and left!=NOCOORDS)
+    {
+        myNeigh.steppable[1]=this->getElementInDirection(UP)->isSteppableDirection(LEFT);
+    }
+    else
+    {
+        myNeigh.steppable[1]=false;
+    }
+    myNeigh.steppableOther[0]=myNeigh.steppable[1];
+    myNeigh.steppable[2]=this->isSteppableDirection(LEFT);
+    myNeigh.steppableClose[1]=myNeigh.steppable[2];
+
+    if (down!=NOCOORDS and left!=NOCOORDS)
+    {
+        myNeigh.steppable[3]=this->getElementInDirection(DOWN)->isSteppableDirection(LEFT);
+    }
+    else
+    {
+        myNeigh.steppable[3]=false;
+    }
+    myNeigh.steppableOther[1]=myNeigh.steppable[3];
+    myNeigh.steppable[4]=this->isSteppableDirection(DOWN);
+    myNeigh.steppableClose[2]=myNeigh.steppable[4];
+    if (down!=NOCOORDS and right!=NOCOORDS)
+    {
+        myNeigh.steppable[5]=this->getElementInDirection(DOWN)->isSteppableDirection(RIGHT);
+    }
+    else
+    {
+        myNeigh.steppable[5]=false;
+    }
+    myNeigh.steppableOther[2]=myNeigh.steppable[5];
+    myNeigh.steppable[6]=this->isSteppableDirection(RIGHT);
+    myNeigh.steppableClose[3]=myNeigh.steppable[6];
+    if (up!=NOCOORDS and right!=NOCOORDS)
+    {
+        myNeigh.steppable[7]=this->getElementInDirection(UP)->isSteppableDirection(RIGHT);
+    }
+    else
+    {
+        myNeigh.steppable[7]=false;
+    }
+    myNeigh.steppableOther[3]=myNeigh.steppable[5];
+    return myNeigh;
+
+}
 

@@ -7,7 +7,7 @@
 #include "videoElementDef.h"
 #include "plainGun.h"
 
-class player : public movableElements
+class player : public killableElements
 {
 public:
     virtual videoElement::videoElementDef* getVideoElementDef();
@@ -16,7 +16,6 @@ public:
     bool canPush();
     bool canCollect();
     bool canInteract();
-    bool canBeKilled();
     int getType();
     bool getActive();
     int getAnimPh();

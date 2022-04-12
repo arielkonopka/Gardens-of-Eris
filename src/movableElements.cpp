@@ -11,6 +11,12 @@ movableElements::movableElements(chamber *board,gCollect *garbage) : nonSteppabl
     this->_me_canPush=false;
     this->movable=true;
 }
+movableElements::movableElements(chamber *board,gCollect *garbage,int x, int y) : nonSteppable(board,garbage,x,y)
+{
+    this->_me_moved=0;
+    this->_me_canPush=false;
+    this->movable=true;
+}
 
 movableElements::~movableElements()
 {
@@ -109,8 +115,6 @@ direction movableElements::getDirection()
 {
 
     return this->facing;
-
-
 }
 
 bool movableElements::setDirection(direction newDirection)

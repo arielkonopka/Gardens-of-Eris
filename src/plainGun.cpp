@@ -39,21 +39,26 @@ bool plainGun::use(bElem* who)
         if (this->getSubtype()%2)
             return false;
     if(who->getType()==_player)
-        std::cout<<"energy: "<<this->energy<<"\n";
+        std::cout<<"energy: "<<this->getEnergy()<<"\n";
     myel=who->getElementInDirection(who->getDirection());
     if(myel!=NULL)
     {
 
+        int ener=0;
+        if (who->getStats().dexterity>0)
+        {
+            ener= this->randomNumberGenerator()%(_dexterityLevels-who->getStats().dexterity);
+        }
+
         if (myel->isSteppable()==true)
         {
-            bElem* missile=new plainMissile(this->attachedBoard,this->garbageBin,this->energy);
+            bElem* missile=new plainMissile(this->attachedBoard,this->garbageBin,this->getEnergy()-ener);
             missile->stepOnElement(myel);
-
             missile->setDirection(who->getDirection());
         }
         else if (myel->canBeKilled())
         {
-            myel->hurt(_plainMissileEnergy);
+            myel->hurt(this->getEnergy());
 
             // this->disposeElement();
         }
@@ -61,7 +66,7 @@ bool plainGun::use(bElem* who)
     if (this->ammo>0)
         if (this->getSubtype()%2==0)
             this->ammo--;
-    this->energy=this->energy/2;
+    this->setEnergy(this->getEnergy()/2);
     return true;
 }
 
@@ -79,10 +84,10 @@ bool plainGun::mechanics(bool collected)
     {
         this->shot--;
     }
-    if(this->energy<this->maxEnergy)
+    if(this->getEnergy()<this->maxEnergy)
     {
         if (this->taterCounter%3==0)
-            this->energy++;
+            this->setEnergy(this->getEnergy()+1);
     }
     return res;
 }

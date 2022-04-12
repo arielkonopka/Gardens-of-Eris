@@ -461,7 +461,7 @@ int randomLevelGenerator::findSpotsToChoose(std::string location)
             {
                 for (int y=this->endChambers[c].y0; y<=this->endChambers[c].y1; y++)
                 {
-                    if (this->mychamber->chamberArray[x][y]->isSteppable() && this->isLocationAllowed(x,y)==true && this->steppableNeighs(x,y)>3)
+                    if (this->mychamber->chamberArray[x][y]->isSteppable() && this->isLocationAllowed(x,y)==true && this->steppableNeighs(x,y)>2)
                     {
 
                         this->spotsToChoose.push_back({x,y});
@@ -546,6 +546,11 @@ int randomLevelGenerator::steppableNeighs(int x, int y)
            res++;
         }
     }
+
+
+
+
+
     return res;
 }
 
