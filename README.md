@@ -71,6 +71,14 @@ TBD
 The game uses two timers. One is used for scrolling and general screen refresh rate. The other is used to perform game mechanics calculations. This way we do not have to review the whole board every frame. It should be good to think of another method of 
 updating fames.
 
+# Shooting guns
+A plain gun shoots plain missiles. It is used by an element that can collect it (or create it like bunker) and can use it. A gun takes the operators dexterity, then finds a random value that will be used to decrease missile energy. 
+Then after the shot, the guns energy is halved. It restores with mechanics() calls. So the faster you shoot, the weaker shots you produce.
+
+
+
+
+
 ## TODO
 * two timers in presenter, one for the screen refreshing and scrolling, the other one for mechanics
 * iterators in inventory - just for fun
