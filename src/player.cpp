@@ -10,6 +10,7 @@ player::player(chamber *board,gCollect *garbage) : killableElements::killableEle
     this->_me_moved=0;
     this->animPh=0;
     this->myStats.dexterity=_initialDexterity;
+    this->myInventory=new inventory();
 }
 
 player::~player()
@@ -40,7 +41,7 @@ bool player::mechanics(bool collected)
     }
     if (this->isDying()==true)
     {
-        this->animPh++;
+       // this->animPh++;
         return true;
     }
     if (this->attachedBoard->cntrlItm.type==0 && this->_me_moved==0)
@@ -51,13 +52,29 @@ bool player::mechanics(bool collected)
     }
      if (this->attachedBoard->cntrlItm.type==1 && this->_me_moved==0)
     {
+
         this->setDirection(this->attachedBoard->cntrlItm.dir);
         bool res=this->shootGun();
-        if (res) this->animPh++;
+        if (res)
+            this->animPhase++;
+        this->_me_moved=_mov_delay;
         return true;
     }
+  if (this->attachedBoard->cntrlItm.type==2 && this->_me_moved==0)
+    {
 
-
+        bElem* obj=this->getElementInDirection(this->attachedBoard->cntrlItm.dir);
+        bool res;
+        this->_me_moved=_mov_delay;
+        this->setDirection(this->attachedBoard->cntrlItm.dir);
+        if (obj==NULL)
+            return false;
+            std::cout<<"Interact/n";
+        res=obj->interact(this);
+        if (res)
+            this->animPhase++;
+        return true;
+    }
 
     return false;
 

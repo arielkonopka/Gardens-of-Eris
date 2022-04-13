@@ -16,11 +16,14 @@
 #define _plainGun 200
 #define _bunker 250
 #define _teleporter 400
+#define _stash 600
 
 
+#define _mov_delay   2
+#define _mov_delay_push   3
 
 #define _plainGunAmmo 10
-#define _plainMissileSpeed 3
+#define _plainMissileSpeed 2
 #define _plainMissileEnergy 100
 
 
@@ -29,10 +32,10 @@
 #define _initialDexterity 5
 
 #define _defaultEnergy 80
-#define _defaultKillTime 20
-#define _defaultDestroyTime 20
+#define _defaultKillTime 10
+#define _defaultDestroyTime 10
 
-#define _interactedTime 5
+#define _interactedTime 3
 #define NOCOORDS   ((coords){-1,-1})
 #define NOSTATS ((stats){-1,-1})
 typedef struct coords

@@ -16,7 +16,10 @@ class bunker : public nonSteppable
         virtual bool mechanics(bool collected);
         direction findLongestShot();
         virtual bool selfAlign();
+        virtual bool interact(bElem* Who);
     protected:
+        int interacted;
+        int help;
         plainGun *myGun;
         int rotated;
     private:

@@ -35,10 +35,13 @@ bool monster::mechanics(bool collected)
     //this->tick(collected);
 
     this->internalCnt++;
-    if (this->internalCnt%10==0)
+    if (this->internalCnt%5==0)
         this->animph++;
     // if (this->internalCnt%20==0)
     //     this->facing=(direction)(((int)this->facing+1)%4);
+    if(this->isDying()==true)
+        return true;
+
     if (this->_me_moved==0)
     {
         for(int c=0; c<4; c++)

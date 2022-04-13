@@ -58,7 +58,9 @@
 		<Unit filename="include/elements.h" />
 		<Unit filename="include/gCollect.h" />
 		<Unit filename="include/inputManager.h" />
+		<Unit filename="include/inventory.h" />
 		<Unit filename="include/key.h" />
+		<Unit filename="include/killableElements.h" />
 		<Unit filename="include/levelLoader.h" />
 		<Unit filename="include/monster.h" />
 		<Unit filename="include/movableElements.h" />
@@ -71,6 +73,7 @@
 		<Unit filename="include/randomLevelGenerator.h" />
 		<Unit filename="include/rubbish.h" />
 		<Unit filename="include/stillElem.h" />
+		<Unit filename="include/teleport.h" />
 		<Unit filename="include/usable.h" />
 		<Unit filename="include/videoElementDef.h" />
 		<Unit filename="include/wall.h" />
@@ -82,7 +85,9 @@
 		<Unit filename="src/door.cpp" />
 		<Unit filename="src/gCollect.cpp" />
 		<Unit filename="src/inputManager.cpp" />
+		<Unit filename="src/inventory.cpp" />
 		<Unit filename="src/key.cpp" />
+		<Unit filename="src/killableElements.cpp" />
 		<Unit filename="src/levelLoader.cpp" />
 		<Unit filename="src/monster.cpp" />
 		<Unit filename="src/movableElements.cpp" />
@@ -94,6 +99,7 @@
 		<Unit filename="src/randomLevelGenerator.cpp" />
 		<Unit filename="src/rubbish.cpp" />
 		<Unit filename="src/stillElem.cpp" />
+		<Unit filename="src/teleport.cpp" />
 		<Unit filename="src/usable.cpp" />
 		<Unit filename="src/videoElementDef.cpp" />
 		<Unit filename="src/wall.cpp" />

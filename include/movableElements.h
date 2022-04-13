@@ -11,8 +11,6 @@
 //#include "objectTypes.h"
 
 
-#define _mov_delay   6
-#define _mov_delay_push   6
 
 class movableElements : public nonSteppable
 {

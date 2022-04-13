@@ -7,6 +7,8 @@ bunker::bunker(chamber *board,gCollect *garbageBin):nonSteppable(board,garbageBi
     this->myGun->setSubtype(1); // we have a gun, and we are not afraid to use it.
     this->setDirection(UP);
     this->rotated=0;
+    this->interacted=-1;
+    this->help=0;
 }
 bunker::bunker(chamber* board, gCollect* garbageBin, int x, int y):nonSteppable(board,garbageBin,x,y)
 {
@@ -14,6 +16,8 @@ bunker::bunker(chamber* board, gCollect* garbageBin, int x, int y):nonSteppable(
     this->myGun->setSubtype(1); // we have a gun, and we are not afraid to use it.
     this->setDirection(UP);
     this->rotated=0;
+    this->interacted=-1;
+    this->help=0;
 }
 
 videoElement::videoElementDef* bunker::getVideoElementDef()
@@ -28,8 +32,9 @@ bunker::~bunker()
 bool bunker::mechanics(bool collected)
 {
     bool res=nonSteppable::mechanics(collected);
-
-    int randomTest=this->randomNumberGenerator()%1000;
+    if(this->help>0)
+        this->help--;
+    int randomTest=this->randomNumberGenerator()%1000+this->help;
     res=res || this->myGun->mechanics(collected);
     if(this->myGun->readyToShoot()==false)
         return res;
@@ -38,6 +43,12 @@ bool bunker::mechanics(bool collected)
     return true;
 }
 
+bool bunker::interact(bElem* Who)
+{
+    if(this->interacted>0)
+        return false;
+    this->help=500;
+}
 
 direction bunker::findLongestShot()
 {

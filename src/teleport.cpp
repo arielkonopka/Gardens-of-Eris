@@ -104,9 +104,7 @@ bool teleport::teleportIt(bElem* who, coords teleportPosition)
                 return true;
             }
             else
-                continue;
-
-
+                continue; //this should not happen, because steppableClose is true, so the coordinates must be valid
         }
     }
     return false;

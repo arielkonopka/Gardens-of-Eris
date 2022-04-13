@@ -4,6 +4,8 @@
 #include "objectTypes.h"
 //#include "elements.h"
 #include "commons.h"
+#include "inventory.h"
+
 #include "chamber.h"
 #include "gCollect.h"
 #include "videoElementDef.h"
@@ -18,7 +20,7 @@
 class gCollect;
 class chamber;
 
-
+class inventory;
 
 typedef enum { DISPOSED=0,NULLREACHED=1,ERROR=2} oState;
 
@@ -112,6 +114,7 @@ public:
         collected==true when the method is invoked from an objects inventory. useful for objects that do something when collected like mines, automatic weapons and so on
     */
     virtual bool mechanics(bool collected);
+    inventory *myInventory;
 protected:
 
     bElem* collectedBy;

@@ -13,10 +13,10 @@ int main( int argc, char * argv[] )
 {
     bool finish=false;
     bElem::resetInstances();
-    struct timespec delay;
+  //  struct timespec delay;
 
-    delay.tv_sec=0;
-    delay.tv_nsec=2;
+   // delay.tv_sec=0;
+   // delay.tv_nsec=2;
     gCollect *garbageBin=new gCollect();
     randomLevelGenerator *rndl=new randomLevelGenerator(150,150,garbageBin);
 
@@ -55,7 +55,7 @@ int main( int argc, char * argv[] )
 
     myPresenter->showGameField(1,1);
 
-    int blue=0;
+  //  int blue=0;
 
     while(!finish)
     {

@@ -65,7 +65,7 @@ bool door::interact(bElem* who)
         this->open=!this->open;
         return true;
     }
-    for(int c=0; c<who->collectedItems.size(); c++)
+    for(int c=0; c<(int)who->collectedItems.size(); c++)
     {
 #ifdef debug
         if(who->collectedItems[c]->getType()==_key)

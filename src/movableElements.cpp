@@ -53,9 +53,9 @@ bool movableElements::moveInDirection(direction dir)
             return true;
         }
     }
-    else if (this->canCollect()==true && this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->isCollectible()==true)
+    if (this->canCollect()==true && this->myInventory!=NULL && this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->isCollectible()==true)
     {
-
+        //if (this->myInventory->addToInventory(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)
         if (this->collect(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)
         {
             this->_me_moved=_mov_delay;
@@ -63,11 +63,11 @@ bool movableElements::moveInDirection(direction dir)
             return true;
         }
     }
-    else if (this->canInteract()==true && this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->isInteractive()==true)
+    if (this->canInteract()==true && this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->isInteractive()==true)
     {
         if(this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->interact(this)==true)
         {
-            this->_me_moved=_mov_delay/2;
+            this->_me_moved=_mov_delay;
             if (this->facing==RIGHT || this->facing==DOWN) this->_me_moved++;
             return true;
 

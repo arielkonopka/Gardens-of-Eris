@@ -49,8 +49,9 @@ Placing the items can be a bit tricky. I thought of few strategies:
 1. Scatter randomly across all the steppable places on the maze (maze generated first)
 2. Because of how the maze is generated, we can exactly locate the moment, when the space is not divided anymore. That is where we can place our stuff, that gives us nice options, like place stuff by te walls, place stuff in the middle of free space.
 3. Place elements in walls.
+4. Search for the best fit for spaces requested, we use the way maze was generated to identify appropriate spaces, which we then have scattered with objects. - there is a lot to be done here
 
-I chose 1 and 3 (not implemented yet). Option one is a bit modified. When we place an element on a board, we call it's method selfAlign(), and it should self-align in the given neighborhood.
+
 Since we use the recursive division methon, I thought that the subchambers can have their own *coordinates*.
 First rectangle would be **B**, as beginning, then it would be divided in 4 rectangles: a, b, c, d. Those rectengles would be divided into a, b, c, d, and so on...
 THen we notice, that the rectangles processed by the algorythm would look like this: 
@@ -66,5 +67,10 @@ This file contains the skin definition for the game. It has quite a flexible des
 
 TBD
 
+## Mechanics
+The game uses two timers. One is used for scrolling and general screen refresh rate. The other is used to perform game mechanics calculations. This way we do not have to review the whole board every frame. It should be good to think of another method of 
+updating fames.
 
-
+## TODO
+* two timers in presenter, one for the screen refreshing and scrolling, the other one for mechanics
+* iterators in inventory - just for fun

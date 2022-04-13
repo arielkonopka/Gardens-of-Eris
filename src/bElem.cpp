@@ -82,7 +82,7 @@ void bElem::init()
     this->instance=bElem::instances;
     bElem::instances++;
     this->collectedBy=NULL;
-
+    this->myInventory=NULL;
     std::random_device rd;
     std::mt19937::result_type seed = rd() ^ (
                                          (std::mt19937::result_type)
@@ -198,7 +198,8 @@ oState bElem::disposeElement()
     chamber* myChamber=this->attachedBoard;
     if(this->disposeElementUnsafe()==NULLREACHED)
     {
-        bElem* newElem=new bElem(myChamber,myGarbage,x0,y0);
+        bElem* newElem=new bElem(myChamber,myGarbage);
+        newElem->stepOnElement(newElem->attachedBoard->getElement(x0,y0));
     }
     return DISPOSED;
 }
@@ -333,7 +334,7 @@ int bElem::getCnt()
 int bElem::getAnimPh()
 {
     // this->animPhase++;
-    return this->animPhase/10;
+    return this->animPhase;
 }
 
 int bElem::getSwitchId()

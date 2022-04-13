@@ -17,12 +17,16 @@ presenter::presenter(chamber *board)
     }
 
 
-    this->alTimer = al_create_timer(1.0 / 30.0);
+    this->alTimer = al_create_timer(1.0 / 10.0);
+    this->scrTimer=al_create_timer(1.0/20);
     this->evQueue= al_create_event_queue();
     al_register_event_source(this->evQueue, al_get_keyboard_event_source());
 
     al_register_event_source(this->evQueue, al_get_timer_event_source(this->alTimer));
+    al_register_event_source(this->evQueue, al_get_timer_event_source(this->scrTimer));
     al_start_timer(this->alTimer);
+    al_start_timer(this->scrTimer);
+
     this->_cp_attachedBoard=board;
     this->sWidth=0;
     this->sHeight=0;
@@ -327,7 +331,7 @@ void presenter::showGameField(int relX,int relY)
             this->showObjectTile(x,y,0,0,this->_cp_attachedBoard->getElement(x+(this->positionOnScreen.x/this->sWidth),y+(this->positionOnScreen.y/this->sHeight)));
         }
     al_set_target_bitmap(screen);
-    al_wait_for_vsync();
+    // al_wait_for_vsync();
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY,0);
 
     al_flip_display();
@@ -335,12 +339,12 @@ void presenter::showGameField(int relX,int relY)
 
 void presenter::showGameFieldLoop()
 {
-    ALLEGRO_TIMER* alTimer = al_create_timer(1.0 / 20.0);
+    ALLEGRO_TIMER* alTimer = al_create_timer(1000.0 );
     ALLEGRO_EVENT event;
     ALLEGRO_EVENT_QUEUE* evQueue= al_create_event_queue();
     bool fin=false;
     al_register_event_source(evQueue,al_get_timer_event_source(alTimer));
-    al_start_timer(alTimer);
+//al_start_timer(alTimer);
     while(!fin)
     {
         al_wait_for_event(evQueue, &event);
@@ -372,6 +376,7 @@ int presenter::presentEverything()
     int red=30;
     int green=20;
     int blue=50;
+
     // ALLEGRO_THREAD* visual=al_create_thread(shGFL,&instance);
 
     //  al_start_thread(visual);
@@ -387,25 +392,34 @@ int presenter::presentEverything()
         }
         if(event.type == ALLEGRO_EVENT_TIMER)
         {
-            this->_cp_attachedBoard->player.x=-1;
-            for (int cy=0; cy<this->_cp_attachedBoard->height; cy++)
-                for (int cx=0; cx<this->_cp_attachedBoard->width; cx++)
-                {
-
-                    bElem* myel=this->_cp_attachedBoard->getElement(cx,cy);
-                    if (myel!=NULL)
-                        myel->mechanics(false);
-                }
-
-            if (this->_cp_attachedBoard->player.x<0)
+            if(event.timer.source==this->alTimer)
             {
-                return 2;
-            }
-            this->_cp_attachedBoard->garbageBin->purgeGarbage();
-            this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
-            std::cout<<"\033[0G x,y ->"<<this->_cp_attachedBoard->player.x<<","<<this->_cp_attachedBoard->player.y;
-            //  std::cout<<blue<<"\n";
 
+
+                this->_cp_attachedBoard->player.x=-1;
+                for (int cy=0; cy<this->_cp_attachedBoard->height; cy++)
+                    for (int cx=0; cx<this->_cp_attachedBoard->width; cx++)
+                    {
+
+                        bElem* myel=this->_cp_attachedBoard->getElement(cx,cy);
+                        if (myel!=NULL)
+                            myel->mechanics(false);
+                    }
+
+                if (this->_cp_attachedBoard->player.x<0)
+                {
+                    return 2;
+                }
+                this->_cp_attachedBoard->garbageBin->purgeGarbage();
+            }
+            if(event.timer.source==this->scrTimer)
+            {
+
+
+                this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
+                std::cout<<"\033[0G x,y ->"<<this->_cp_attachedBoard->player.x<<","<<this->_cp_attachedBoard->player.y;
+                //  std::cout<<blue<<"\n";
+            }
         }
         cItem=this->inpMngr->translateEvent(&event); //We always got a status on what to do. remember, everything must have a timer!
         // the idea is to serve the keyboard state constantly, we avoid actions that are too fast

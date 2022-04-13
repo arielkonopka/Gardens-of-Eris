@@ -19,8 +19,6 @@ int plainGun::getType()
     return _plainGun;
 }
 
-
-
 plainGun::~plainGun()
 {
     //dtor
@@ -34,7 +32,7 @@ bool plainGun::use(bElem* who)
     bElem *myel;
     if (this->readyToShoot()==false)
         return true; //The gun is fine, not ready to shoot though
-    this->shot=_plainMissileSpeed*4;
+    this->shot=_plainMissileSpeed*_mov_delay;
     if (this->ammo<=0 || who==NULL) //odd subtypes have infinite shots
         if (this->getSubtype()%2)
             return false;
@@ -80,6 +78,7 @@ bool plainGun::readyToShoot()
 bool plainGun::mechanics(bool collected)
 {
     bool res=usable::mechanics(collected);
+
     if(this->shot>0)
     {
         this->shot--;
