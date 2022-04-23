@@ -88,6 +88,7 @@ class randomLevelGenerator
     protected:
 
     private:
+        int doorTypes;
     //    std::vector<spaceToCreate> spacesToCreate;
         bool isLocationAllowed(int x,int y);
         int findSpotsToChoose(std::string location);

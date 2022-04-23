@@ -363,6 +363,7 @@ static void *shGFL(ALLEGRO_THREAD* at,void* instance)
     presenter* myinst=(presenter*)instance;
     std::cout<<"start thread";
     myinst->showGameFieldLoop();
+    return NULL;
 }
 
 

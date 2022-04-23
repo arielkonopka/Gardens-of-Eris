@@ -48,11 +48,16 @@ bool door::isOpen()
 
 bool door::interact(bElem* who)
 {
-
+    bElem* key=NULL;
     //That should not happen, as we do not expect object randomly interacting with others without being programmed to do so.
     if(who->canInteract()==false)
     {
         return false;
+    }
+    if (this->locked==false)
+    {
+        this->open=!this->open;
+        return true;
     }
     //If it cannot collect, it cannot hold a key.
     if (who->canCollect()==false || who->collectedItems.size()==0)
@@ -60,11 +65,28 @@ bool door::interact(bElem* who)
         return false;
     }
     //if Door is unlocked, only open/close thing
-    if (this->locked==false)
+
+    if (this->getSubtype()%2==0)
     {
-        this->open=!this->open;
-        return true;
+        key=who->myInventory->getKey(_key,this->getSubtype(),true);
+    }else
+    {
+        key=who->myInventory->getKey(_key,this->getSubtype(),false);
     }
+    if(key!=NULL)
+    {
+       this->open=true;
+       this->locked=false;
+    } else
+    {
+        return false;
+    }
+    if (this->getSubtype()%2==0)
+    {
+        key->disposeElement();
+    }
+    return true;
+/*
     for(int c=0; c<(int)who->collectedItems.size(); c++)
     {
 #ifdef debug
@@ -87,7 +109,8 @@ bool door::interact(bElem* who)
             return true;
         }
     }
-    return false;
+  */
+
 }
 bool door::isInteractive()
 {

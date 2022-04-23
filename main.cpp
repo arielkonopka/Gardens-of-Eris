@@ -26,14 +26,18 @@ int main( int argc, char * argv[] )
 
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
-   /* rndl->addElementToPlace({_monster,5,5,0,"Bba"});
-    rndl->addElementToPlace({_collectible,0,20,0,"Bc"});
-    rndl->addElementToPlace({_key,1,20,0,"Baa"});
-    rndl->addElementToPlace({_key,0,1,0,"Bbb"});
-    rndl->addElementToPlace({_door,0,20,0,"Bba"});
-    rndl->addElementToPlace({_door,1,20,0,"Bac"});
 
-    */
+
+
+
+    rndl->placeElement({_monster,5,5,0},"Bba");
+    rndl->placeElement({_collectible,0,20,0},"B");
+    rndl->placeElement({_key,1,200,0},"B");
+    rndl->placeElement({_key,0,100,0},"B");
+    //rndl->placeElement({_door,0,200,0},"Ba");
+    //rndl->placeElement({_door,1,20,0},"Bb");
+
+
      rndl->generateLevel(1);
     rndl->placeElement({_player,0,1,0,5},"Ba");
     rndl->placeElement({_bunker,0,100,0,5},"B");

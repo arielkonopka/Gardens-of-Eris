@@ -69,7 +69,7 @@ bool player::mechanics(bool collected)
         this->setDirection(this->attachedBoard->cntrlItm.dir);
         if (obj==NULL)
             return false;
-            std::cout<<"Interact/n";
+        std::cout<<"Interact/n";
         res=obj->interact(this);
         if (res)
             this->animPhase++;
@@ -84,6 +84,14 @@ bool player::mechanics(bool collected)
 bool player::shootGun()
 {
     bool res=false;
+    bElem* gun=this->myInventory->getActiveWeapon();
+    if(gun!=NULL)
+    {
+        std::cout<<"Gun present\n";
+        gun->use(this);
+        return true;
+    }
+    return false;
     for(int c=0;c<this->collectedItems.size();c++)
     {
         if (this->collectedItems[c]->isWeapon()==true)

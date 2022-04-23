@@ -48,6 +48,7 @@ bool bunker::interact(bElem* Who)
     if(this->interacted>0)
         return false;
     this->help=500;
+    return true;
 }
 
 direction bunker::findLongestShot()

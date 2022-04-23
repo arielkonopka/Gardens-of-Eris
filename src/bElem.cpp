@@ -254,7 +254,7 @@ bElem::~bElem()
 {
     if(this->canCollect()==true)
     {
-        for(int c=0; c<this->collectedItems.size(); c++)
+        for(int c=0; c<(int)this->collectedItems.size(); c++)
             delete this->collectedItems[c];
         this->collectedItems.clear();
     }
@@ -364,6 +364,10 @@ bool bElem::isSwitchOn()
 
 bool bElem::mechanics(bool collected)
 {
+    if(this->myInventory!=NULL)
+    {
+        this->myInventory->mechanics();
+    }
     this->taterCounter++; //this is our source of sequential numbers
     if (this->steppingOn!=NULL)
     {
@@ -382,12 +386,11 @@ bool bElem::mechanics(bool collected)
         }
     }
 
-
     if(this->canCollect()==true && this->collectedItems.size()>0)
     {
-        for(int cn0=0; cn0<this->collectedItems.size(); cn0++)
+        for(auto m:this->collectedItems)
         {
-            this->collectedItems[cn0]->mechanics(true);
+            m->mechanics(true);
         }
     }
     return false;

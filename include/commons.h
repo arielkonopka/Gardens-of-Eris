@@ -67,7 +67,8 @@ typedef enum { UP=0,LEFT=1,DOWN=2,RIGHT=3} direction;
 
 typedef enum { NONE=0,GUN=1,AMMO=2,ARMOR=3,POWERUP=4} modType;
 
-
+/* when the element mechanics is run, we need the result of what happened to be passable further down the inheritance hierarchy, that is why we need more status types */
+typedef enum { CHANGED=0,UNCHANGED=1,ELEMENTOUT=2,ELEMENTIN=3 } mechanicResult;
 
 typedef struct stats
 {

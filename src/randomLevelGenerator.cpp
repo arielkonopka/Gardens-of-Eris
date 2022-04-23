@@ -17,6 +17,7 @@ randomLevelGenerator::randomLevelGenerator(int w, int h,gCollect *gbin)
                                                  std::chrono::high_resolution_clock::now().time_since_epoch()
                                          ).count() );
     this->gen.seed(seed);
+    this->doorTypes=0;
     //ctor
 }
 
@@ -279,7 +280,7 @@ bool randomLevelGenerator::qualifies(std::string itemLoc, std::string chamLoc)
 {
     if (chamLoc.size()<itemLoc.size())
         return false;
-    for(int c=0; c<itemLoc.size(); c++)
+    for(size_t c=0; c<itemLoc.size(); c++)
     {
         if (itemLoc.at(c)!=chamLoc.at(c))
             return false;
@@ -291,20 +292,20 @@ int randomLevelGenerator::recalculateLocations()
 {
     int c=0;
     int sGlobal=0;
-    for(c=0; this->endChambers.size()>c; c++)
+    for(auto ec:this->endChambers)
     {
-        if(this->endChambers[c].banned==false)
+        if(ec.banned==false)
         {
             int s=0;
-            for(int x=this->endChambers[c].x0; x<=this->endChambers[c].x1; x++)
+            for(int x=ec.x0; x<=ec.x1; x++)
             {
-                for (int y=this->endChambers[c].y0; y<=this->endChambers[c].y1; y++)
+                for (int y=ec.y0; y<=ec.y1; y++)
                 {
                     if(this->isLocationAllowed(x,y) && this->mychamber->chamberArray[x][y]->isSteppable())
                     {
                         sGlobal++;
                         s++;
-                        this->endChambers[c].surface=s;
+                        ec.surface=s;
                     }
                 }
             }
@@ -312,7 +313,7 @@ int randomLevelGenerator::recalculateLocations()
         }
         else
         {
-            this->endChambers[c].surface=0;
+            ec.surface=0;
         }
     }
     return sGlobal;
@@ -321,7 +322,10 @@ int randomLevelGenerator::recalculateLocations()
 
 
 bool randomLevelGenerator::claimSpace(spaceToCreate theClaim)
-{
+{/*
+  * This method scatters objects in the maze. It looks for the best fit (required space), picks 5 best fits and then randomly chooses one.
+  * It then uses place Object on all objects from the claim.
+  */
     rectangle spaces[5];
     std::string bLocation;
     int votedSpaceNo=this->gen()%5;
@@ -331,20 +335,20 @@ bool randomLevelGenerator::claimSpace(spaceToCreate theClaim)
         spaces[c].surface=-1;
     }
 
-    for(int c=0; c<this->endChambers.size(); c++)
+    for(auto ec:this->endChambers)
     {
-        if(this->endChambers[c].banned==false && this->endChambers[c].surface>=s)
+        if(ec.banned==false && ec.surface>=s)
         {
             for (int c1=0; c1<5; c1++)
             {
                 if(spaces[c1].surface==-1)
                 {
-                    spaces[c1].surface=this->endChambers[c].surface;
+                    spaces[c1]=ec;
                     break;
                 }
-                if(spaces[c1].surface>this->endChambers[c].surface)
+                if(spaces[c1].surface>ec.surface)
                 {
-                    spaces[c1]=this->endChambers[c];
+                    spaces[c1]=ec;
                     break;
                 }
             }
@@ -352,12 +356,17 @@ bool randomLevelGenerator::claimSpace(spaceToCreate theClaim)
 
     }
     bLocation=spaces[votedSpaceNo].location;
-   // bLocation.resize(spaces[votedSpaceNo].location.size()-1);
-    // ok, now in array spaces, we have 5 candidates, to be picked., so we randomly try to pick one;
-    //spaces[votedSpaceNo] - is our space:)
+    for(auto cl:theClaim.elementsToBePlaced)
+    {
+        this->placeElement(cl,bLocation);
+    }
+
     if(theClaim.closing==doorTypeA || theClaim.closing==doorTypeB || theClaim.closing==teleport)
     {
+        this->placeDoors((elementToPlace){_door,this->doorTypes,1,0,1},bLocation);
         this->banLocation(bLocation);
+        this->placeElement((elementToPlace){_key,this->doorTypes,1,0,1},"B");
+        this->doorTypes++;
     }
     return true;
 }
@@ -366,12 +375,12 @@ bool randomLevelGenerator::banLocation(std::string loc)
 {
     std::string bLocation=loc;
     bLocation.resize(loc.size()-1);
-    for (int c2=0; c2>this->endChambers.size(); c2++)
+    for (auto ec:this->endChambers)
     {
-        if(this->endChambers[c2].banned==false && this->endChambers[c2].location==bLocation)
+        if(ec.banned==false && ec.location==bLocation)
         {
             //We ban added location
-            this->endChambers[c2].banned=true;
+            ec.banned=true;
             break;
         }
     }
@@ -453,13 +462,13 @@ int randomLevelGenerator::findSpotsToChoose(std::string location)
     this->spotsToChoose.clear();
     int surface=0;
 
-    for(int c=0; c<this->endChambers.size(); c++)
+    for(auto ec:this->endChambers)
     {
-        if (this->endChambers[c].banned==false && location==this->endChambers[c].location)
+        if (ec.banned==false && location==ec.location)
         {
-            for(int x=this->endChambers[c].x0; x<=this->endChambers[c].x1; x++)
+            for(int x=ec.x0; x<=ec.x1; x++)
             {
-                for (int y=this->endChambers[c].y0; y<=this->endChambers[c].y1; y++)
+                for (int y=ec.y0; y<=ec.y1; y++)
                 {
                     if (this->mychamber->chamberArray[x][y]->isSteppable() && this->isLocationAllowed(x,y)==true && this->steppableNeighs(x,y)>2)
                     {
@@ -479,9 +488,9 @@ bool randomLevelGenerator::isLocationAllowed(int x, int y)
     Checks if the location is allowed. It does that by examining all the allowed rectangles made by the maze generator.
     And then comparing the coordinates with the rectangle topleft and downright corners
     */
-    for (int c=0; c<this->endChambers.size(); c++)
+    for (auto ec:this->endChambers)
     {
-        if (this->endChambers[c].banned==true && this->endChambers[c].x0>=x && this->endChambers[c].x1<=x && this->endChambers[c].y0>=y && this->endChambers[c].y1<=y)
+        if (ec.banned==true && ec.x0>=x && ec.x1<=x && ec.y0>=y && ec.y1<=y)
         {
             return false;
         }
@@ -497,36 +506,36 @@ bool randomLevelGenerator::placeDoors(elementToPlace element,std::string locatio
 
     */
 
-    for(int c=0; c<this->endChambers.size(); c++)
+    for(auto ec:this->endChambers)
     {
-        if (location==this->endChambers[c].location)
+        if (location==ec.location)
         {
-            this->endChambers[c].banned=true;
+            ec.banned=true;
             //Ok, now we need to place the door.
-            for(int c1=this->endChambers[c].x0-1; c1<=this->endChambers[c].x1+1; c1++)
+            for(int c1=ec.x0-1; c1<=ec.x1+1; c1++)
             {
-                if (this->mychamber->chamberArray[c1][this->endChambers[c].y0-1]->isSteppable())
+                if (this->mychamber->chamberArray[c1][ec.y0-1]->isSteppable())
                 {
                     bElem* neEl=this->createElement(element);
-                    neEl->stepOnElement(this->mychamber->chamberArray[c1][this->endChambers[c].y0-1]);
+                    neEl->stepOnElement(this->mychamber->chamberArray[c1][ec.y0-1]);
                 }
-                if (this->mychamber->chamberArray[c1][this->endChambers[c].y1+1]->isSteppable())
+                if (this->mychamber->chamberArray[c1][ec.y1+1]->isSteppable())
                 {
                     bElem* neEl=this->createElement(element);
-                    neEl->stepOnElement(this->mychamber->chamberArray[c1][this->endChambers[c].y1+1]);
+                    neEl->stepOnElement(this->mychamber->chamberArray[c1][ec.y1+1]);
                 }
             }
-            for (int c2=this->endChambers[c].y0; c2<=this->endChambers[c].y1; c2++)
+            for (int c2=ec.y0; c2<=ec.y1; c2++)
             {
-                if (this->mychamber->chamberArray[this->endChambers[c].x0-1][c2]->isSteppable())
+                if (this->mychamber->chamberArray[ec.x0-1][c2]->isSteppable())
                 {
                     bElem* neEl=this->createElement(element);
-                    neEl->stepOnElement(this->mychamber->chamberArray[this->endChambers[c].x0-1][c2]);
+                    neEl->stepOnElement(this->mychamber->chamberArray[ec.x0-1][c2]);
                 }
-                if (this->mychamber->chamberArray[this->endChambers[c].x1+1][c2]->isSteppable())
+                if (this->mychamber->chamberArray[ec.x1+1][c2]->isSteppable())
                 {
                     bElem* neEl=this->createElement(element);
-                    neEl->stepOnElement(this->mychamber->chamberArray[this->endChambers[c].x1+1][c2]);
+                    neEl->stepOnElement(this->mychamber->chamberArray[ec.x1+1][c2]);
                 }
 
             }
