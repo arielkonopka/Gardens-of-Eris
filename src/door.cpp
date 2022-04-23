@@ -60,7 +60,7 @@ bool door::interact(bElem* who)
         return true;
     }
     //If it cannot collect, it cannot hold a key.
-    if (who->canCollect()==false || who->collectedItems.size()==0)
+    if (who->canCollect()==false || who->myInventory!=NULL)
     {
         return false;
     }
@@ -86,31 +86,6 @@ bool door::interact(bElem* who)
         key->disposeElement();
     }
     return true;
-/*
-    for(int c=0; c<(int)who->collectedItems.size(); c++)
-    {
-#ifdef debug
-        if(who->collectedItems[c]->getType()==_key)
-        {
-            std::cout<<" %%% "<<who->collectedItems[c]->getSubtype()<<" "<<this->getSubtype()<<"\n";
-        }
-#endif
-        if (who->collectedItems[c]->getType()==_key && who->collectedItems[c]->getSubtype()==this->getSubtype())
-        {
-#ifdef debug
-            std::cout<<"Door Open!\n";
-#endif
-            this->open=true;
-            this->locked=false;
-            if(who->collectedItems[c]->getSubtype()%2==0)
-            {
-                std::cout<<who->removeFromcollection(c)<<"---<\n";
-            }
-            return true;
-        }
-    }
-  */
-
 }
 bool door::isInteractive()
 {

@@ -252,11 +252,9 @@ bElem* bElem::getElementInDirection(direction di)
 
 bElem::~bElem()
 {
-    if(this->canCollect()==true)
+    if(this->myInventory!=NULL)
     {
-        for(int c=0; c<(int)this->collectedItems.size(); c++)
-            delete this->collectedItems[c];
-        this->collectedItems.clear();
+        delete this->myInventory;
     }
 
 }
@@ -385,13 +383,9 @@ bool bElem::mechanics(bool collected)
             return true;
         }
     }
-
-    if(this->canCollect()==true && this->collectedItems.size()>0)
+    if(this->canCollect()==true && this->myInventory!=NULL)
     {
-        for(auto m:this->collectedItems)
-        {
-            m->mechanics(true);
-        }
+        this->myInventory->mechanics();
     }
     return false;
 }
@@ -511,7 +505,7 @@ bool bElem::collect(bElem *collectible)
     std::cout<<"Collect "<<collected->getType()<<" st: "<<collected->getSubtype()<<"\n";
 #endif
     collected->setCollector(this);
-    this->collectedItems.push_back(collected);
+    this->myInventory->addToInventory(collected);
     return true;
 }
 
@@ -539,16 +533,6 @@ bool bElem::setSubtype(int st)
     return true;
 }
 
-//removes from collection, does not keep the order
-bool bElem::removeFromcollection(int position)
-{
-    if (position>=(int)this->collectedItems.size() || position<0 || (int)this->collectedItems.size()==0)
-        return false;
-    this->collectedItems[position]->disposeElement();
-    this->collectedItems[position]=this->collectedItems[this->collectedItems.size()-1];
-    this->collectedItems.pop_back();
-    return true;
-}
 
 
 bool bElem::hurt(int points)

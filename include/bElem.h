@@ -102,8 +102,7 @@ public:
     oState disposeElementUnsafe();
 
     bElem *steppingOn=NULL;
-    std::vector<bElem *> collectedItems;
-    bool removeFromcollection(int position);
+//    std::vector<bElem *> collectedItems;
     virtual bElem* getCollector();
     virtual void setCollector(bElem* collector);
     int interacted;

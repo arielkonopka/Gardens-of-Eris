@@ -16,12 +16,8 @@ player::player(chamber *board,gCollect *garbage) : killableElements::killableEle
 player::~player()
 {
     //We remove all the collected weapons and stuff, we need to remember, that this is our responsibility to destroy our objects
-    for(int c=0;c<this->weapons.size();c++)
-        delete this->weapons[c];
-    this->weapons.clear();
-    for(int c=0;c<this->usables.size();c++)
-        delete this->usables[c];
-    this->usables.clear();
+
+
 }
 videoElement::videoElementDef* player::getVideoElementDef()
 {
@@ -92,30 +88,7 @@ bool player::shootGun()
         return true;
     }
     return false;
-    for(int c=0;c<this->collectedItems.size();c++)
-    {
-        if (this->collectedItems[c]->isWeapon()==true)
-            if (this->collectedItems[c]->use(this)==true)
-                {
-                    res=true;
-                    break;
-                }
-    }
-    if(res==true)
-    {
-        for(int c=0;c<this->collectedItems.size();c++)
-        {
-            if(this->collectedItems[c]->isWeapon()==true)
-            {
-               bElem* mygun=this->collectedItems[c];
-                if (mygun->getAmmo()<=0)
-                {
-                    this->removeFromcollection(c);
-                }
-            }
-        }
-    }
-    return res;
+
 }
 
 

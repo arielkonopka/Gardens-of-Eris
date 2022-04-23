@@ -33,9 +33,10 @@ inventory::~inventory()
 }
 
 bElem* inventory::getKey(int type, int subtype,bool removeIt)
-{/* finds a key in the inventory and returns it, when nothing found, NULL is returned*/
+{
+    /* finds a key in the inventory and returns it, when nothing found, NULL is returned*/
     bElem* res;
-    for(size_t c=0;c<this->keys.size();c++)
+    for(size_t c=0; c<this->keys.size(); c++)
     {
         if(this->keys[c]->getType()==type && this->keys[c]->getSubtype()==subtype)
         {
@@ -71,10 +72,10 @@ here we care about the sequence, so we move the other elements. that would be a 
 */
 bool inventory::removeActiveWeapon()
 {
-   /* if(this->wPos>this->weapons.size)
-    {
-        this->wPos=0;
-    } */
+    /* if(this->wPos>this->weapons.size)
+     {
+         this->wPos=0;
+     } */
     this->weapons.at(this->wPos)->disposeElement();
     this->weapons.erase(this->weapons.begin()+this->wPos);
     if (this->wPos>=(int)this->weapons.size())
@@ -110,49 +111,49 @@ bool inventory::addToInventory(bElem* what)
     if(what==NULL)
         return false;
 
-        if(what->myInventory!=NULL)
-        {
+    if(what->myInventory!=NULL)
+    {
         /* this is probably a stash, or something like that. that is why, when we create an object, that shoots infinite ammo, it is better to have gun in non standard places, it would not be picked up that way*/
-    this->mergeInventory(what->myInventory);
-        }
+        this->mergeInventory(what->myInventory);
+    }
 
-if (what->isWeapon()==true)
-{
-    this->weapons.push_back(what->removeElement());
-    return true;
-}
-if (what->isUsable()==true)
-{
-    this->usables.push_back(what->removeElement());
-    return true;
-}
-if(what->isMod()==true)
-{
-    this->mods.push_back(what->removeElement());
-    return true;
-}
-if(what->getType()==_key)
-{
-    this->keys.push_back(what->removeElement());
-    return true;
-}
-if(what->isCollectible()==true)
-{
-    // we do not collect stash items, we already merged its inventory
-    if(what->getType()!=_stash)
-        this->tokens.push_back(what->removeElement());
-    return true;
-}
-return false;
+    if (what->isWeapon()==true)
+    {
+        this->weapons.push_back(what->removeElement());
+        return true;
+    }
+    if (what->isUsable()==true)
+    {
+        this->usables.push_back(what->removeElement());
+        return true;
+    }
+    if(what->isMod()==true)
+    {
+        this->mods.push_back(what->removeElement());
+        return true;
+    }
+    if(what->getType()==_key)
+    {
+        this->keys.push_back(what->removeElement());
+        return true;
+    }
+    if(what->isCollectible()==true)
+    {
+        // we do not collect stash items, we already merged its inventory
+        if(what->getType()!=_stash)
+            this->tokens.push_back(what->removeElement());
+        return true;
+    }
+    return false;
 }
 
 int inventory::requestTokens(int number, int type, int subType)
 {
     bool found=false;
-    for(int n=number;n>0;n--)
+    for(int n=number; n>0; n--)
     {
         found=false;
-        for(int c=0; c<this->tokens.size(); c++)
+        for(size_t c=0; c<this->tokens.size(); c++)
         {
             if(this->tokens[c]->getType()==type && this->tokens[c]->getSubtype()==subType)
             {
@@ -205,12 +206,12 @@ bool inventory::mergeInventory(inventory* theOtherInventory)
 
 
 bool inventory::removeToken(int position)
-{ /* removes a token from tokens pocket, warning, it performs disposeElement on it, so it should not be referenced anywhere else!*/
-    if(position>=this->tokens.size())
+{
+    /* removes a token from tokens pocket, warning, it performs disposeElement on it, so it should not be referenced anywhere else!*/
+    if(position>=(int)this->tokens.size())
         return false;
     this->tokens[position]->disposeElement();
-    this->tokens[position]=this->tokens[this->tokens.size()-1];
-    this->tokens.pop_back();
+    this->tokens.erase(this->tokens.begin()+position);
     return true;
 
 
