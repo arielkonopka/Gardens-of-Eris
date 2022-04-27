@@ -10,6 +10,7 @@
 #include "objectTypes.h"
 #include <string>
 #include <math.h>
+#include "teleport.h"
 
 #define _debugRandomGenerator true
 #define Wmin 3
@@ -29,7 +30,7 @@ typedef struct elementToPlace
 
 } elementToPlace;
 
-enum closingType {doorTypeA=1,doorTypeB=2,teleport=10,none=0};
+enum closingType {doorTypeA=1,doorTypeB=2,none=0};
 
 
 typedef struct _spaceToCreate

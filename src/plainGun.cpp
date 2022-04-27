@@ -12,6 +12,7 @@ plainGun::plainGun(chamber *board,gCollect *garbage): usable(board,garbage)
 {
     this->maxEnergy=_plainMissileEnergy;
     this->ammo=_plainGunAmmo;
+    this->myInventory=new inventory();
 }
 
 int plainGun::getType()
@@ -32,7 +33,7 @@ bool plainGun::use(bElem* who)
     bElem *myel;
     if (this->readyToShoot()==false)
         return true; //The gun is fine, not ready to shoot though
-    this->shot=_plainMissileSpeed*_mov_delay;
+    this->shot=_plainMissileSpeed*_mov_delay+1;
     if (this->ammo<=0 || who==NULL) //odd subtypes have infinite shots
         if (this->getSubtype()%2)
             return false;
@@ -53,6 +54,8 @@ bool plainGun::use(bElem* who)
             bElem* missile=new plainMissile(this->attachedBoard,this->garbageBin,this->getEnergy()-ener);
             missile->stepOnElement(myel);
             missile->setDirection(who->getDirection());
+
+
         }
         else if (myel->canBeKilled())
         {

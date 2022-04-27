@@ -22,6 +22,7 @@
 #include "plainGun.h"
 #include "plainMissile.h"
 #include "bunker.h"
+#include "teleport.h"
 //
 
 

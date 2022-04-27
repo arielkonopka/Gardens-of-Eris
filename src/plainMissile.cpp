@@ -9,11 +9,12 @@ plainMissile::plainMissile(chamber *mychamber,gCollect *garbage) : killableEleme
     this->setDirection(UP);
 
 }
-plainMissile::plainMissile(chamber* mychamber, gCollect* garbage, int energy):killableElements(mychamber,garbage)
+plainMissile::plainMissile(chamber* mychamber, gCollect* garbage, int energy) : killableElements(mychamber,garbage)
 {
     this->setEnergy(energy);
     this->_me_moved=_plainMissileSpeed;
     this->setDirection(UP);
+    this->myInventory=new inventory(); // This is for a mod, that could be installed on the ammo
 }
 
 plainMissile::~plainMissile()
@@ -37,10 +38,11 @@ videoElement::videoElementDef* plainMissile::getVideoElementDef()
 bool plainMissile::mechanics(bool collected)
 {
     bool res;
+    int mvd=this->_me_moved;
     res=killableElements::mechanics(collected);
     if(this->isDying())
         return true;
-    if (this->_me_moved==0)
+    if (this->_me_moved==0 && mvd==0)
     {
         bElem *myel=this->getElementInDirection(this->getDirection());
         if(myel==NULL)
@@ -50,7 +52,7 @@ bool plainMissile::mechanics(bool collected)
         }
         if (myel->isSteppable()==true)
         {
-            this->moveInDirection(this->getDirection());
+            this->moveInDirectionSpeed(this->getDirection(),_plainMissileSpeed);
             return true;
         }
         if (myel->canBeKilled()==true)
@@ -59,6 +61,8 @@ bool plainMissile::mechanics(bool collected)
             this->disposeElement();
             return true;
         }
+        if(myel->isDying())
+            this->disposeElement();
         this->kill();
         return true;
     }

@@ -79,8 +79,7 @@ void bElem::init()
     this->steppingOn=NULL;
     this->interacted=0;
     this->destroyed=0;
-    this->instance=bElem::instances;
-    bElem::instances++;
+    this->instance=bElem::instances++;
     this->collectedBy=NULL;
     this->myInventory=NULL;
     std::random_device rd;
@@ -94,11 +93,13 @@ void bElem::init()
                                                  std::chrono::high_resolution_clock::now().time_since_epoch()
                                          ).count() );
     this->randomNumberGenerator.seed(seed);
+
 }
 
 bool bElem::setDirection(direction dir)
 {
     this->myDirection=dir;
+
     return true;
 }
 
@@ -640,4 +641,13 @@ sNeighboorhood bElem::getSteppableNeighboorhood()
     return myNeigh;
 
 }
+bool bElem::moveInDirectionSpeed(direction d, int speed)
+{
+    return false;
 
+}
+
+void bElem::setMoved(int time)
+{
+
+}

@@ -15,10 +15,15 @@ public:
     virtual ~teleport();
     virtual bool interact(bElem *who);
     virtual bool isInteractive();
-    virtual bool teleportIt(bElem *who,coords teleportPosition);
+    virtual bool teleportIt(bElem *who);
+    virtual oState disposeElement();
+    virtual oState disposeElementUnsafe();
 protected:
-
 private:
+    static std::vector<teleport*> teleporters;
+    bool removeFromTeleports();
+    bool addToTeleports();
+    teleport *theOtherEnd;
 };
 
 #endif // TELEPORT_H

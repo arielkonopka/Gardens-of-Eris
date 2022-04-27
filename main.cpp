@@ -43,6 +43,7 @@ int main( int argc, char * argv[] )
     rndl->placeElement({_bunker,0,100,0,5},"B");
     rndl->placeElement({_plainGun,0,400,0,5},"B");
     rndl->placeElement({_monster,0,40,0,5},"B");
+    rndl->placeElement({_teleporter,0,40,0,5},"B");
     bElem *mojElement2=new monster(myFirstChamber,garbageBin);
 
 

@@ -213,6 +213,10 @@ bool presenter::loadCofiguredData()
         case _bunker:
             ::bunker::vd=ved;
             break;
+        case _teleporter:
+            ::teleport::vd=ved;
+            break;
+
         }
     }
     //Here we should have the videoElementDefinitionsTable filled

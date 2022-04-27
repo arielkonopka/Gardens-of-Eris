@@ -71,6 +71,12 @@ TBD
 The game uses two timers. One is used for scrolling and general screen refresh rate. The other is used to perform game mechanics calculations. This way we do not have to review the whole board every frame. It should be good to think of another method of 
 updating fames.
 
+# Teleporters
+Every new teleporter is placed in a vector (actually it is a vector of pointers). As soon, as the player interacts with a teleporter it checks if it has attached link to a corresponding teleporter.
+If not, we take randomly chosen teleporter from the list, and we remove the interacted element from the list. We set the chosen teleport as the other end.
+If other end is established, we check if the teleporter has any steppable fields in it. If so, we take the player from the original location, and place it into the steppable field found in the teleport.
+
+
 # Shooting guns
 A plain gun shoots plain missiles. It is used by an element that can collect it (or create it like bunker) and can use it. A gun takes the operators dexterity, then finds a random value that will be used to decrease missile energy. 
 Then after the shot, the guns energy is halved. It restores with mechanics() calls. So the faster you shoot, the weaker shots you produce.

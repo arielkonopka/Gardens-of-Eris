@@ -50,6 +50,7 @@ public:
     virtual bool setSubtype(int st);
     virtual bool stepOnElement(bElem *step);
     virtual bool moveInDirection(direction d);
+    virtual bool moveInDirectionSpeed(direction d,int speed);
     virtual bool use(bElem *use);
     virtual bool getActive();
     virtual bool interact(bElem *who);
@@ -89,7 +90,7 @@ public:
     virtual bool isWeapon();
     virtual int getAmmo();
     virtual void setAmmo();
-
+    virtual void setMoved(int time);
     virtual bool isActive();
     virtual bool isOpen();
     virtual bool isSwitchOn();
@@ -98,8 +99,8 @@ public:
     virtual bool isMod(); // is the element a mod of another element? - mod is an object that changes other object's behavior
     virtual modType getModType();
     virtual bElem* removeElement(); // removes element from the board, and returns it for further processing, usefull for eg. for collecting stuff
-    oState disposeElement();
-    oState disposeElementUnsafe();
+    virtual oState disposeElement();
+    virtual oState disposeElementUnsafe();
 
     bElem *steppingOn=NULL;
 //    std::vector<bElem *> collectedItems;

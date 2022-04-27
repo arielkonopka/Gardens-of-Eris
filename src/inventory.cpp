@@ -41,8 +41,10 @@ bElem* inventory::getKey(int type, int subtype,bool removeIt)
         if(this->keys[c]->getType()==type && this->keys[c]->getSubtype()==subtype)
         {
             res=this->keys[c];
-            this->keys[c]=this->keys[this->keys.size()-1];
-            this->keys.pop_back();
+            if (removeIt==true)
+            {
+                this->keys.erase(this->keys.begin()+c);
+            }
             return res;
         }
     }

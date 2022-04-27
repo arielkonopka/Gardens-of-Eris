@@ -23,12 +23,14 @@ class movableElements : public nonSteppable
         virtual ~movableElements();
         virtual bool isMovable();
         virtual bool moveInDirection(direction dir);
+        virtual bool moveInDirectionSpeed(direction dir,int speed);
         virtual int getType();
         virtual direction getDirection();
         virtual bool setDirection(direction newDirection);
         virtual int getSubtype();
         virtual bool canPush();
         virtual bool mechanics(bool collected);
+        virtual void setMoved(int time);
         int _me_moved;
         direction facing;
         bool movable;

@@ -23,7 +23,7 @@
 #define _mov_delay_push   3
 
 #define _plainGunAmmo 10
-#define _plainMissileSpeed 2
+#define _plainMissileSpeed 0
 #define _plainMissileEnergy 100
 
 

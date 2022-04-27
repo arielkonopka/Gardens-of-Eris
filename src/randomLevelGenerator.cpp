@@ -361,7 +361,7 @@ bool randomLevelGenerator::claimSpace(spaceToCreate theClaim)
         this->placeElement(cl,bLocation);
     }
 
-    if(theClaim.closing==doorTypeA || theClaim.closing==doorTypeB || theClaim.closing==teleport)
+    if(theClaim.closing==doorTypeA || theClaim.closing==doorTypeB )
     {
         this->placeDoors((elementToPlace){_door,this->doorTypes,1,0,1},bLocation);
         this->banLocation(bLocation);
@@ -639,6 +639,10 @@ bElem* randomLevelGenerator::createElement(elementToPlace element)
     case _bunker:
         return new bunker(this->mychamber,this->garbageCollector);
         break;
+    case _teleporter:
+        return new teleport(this->mychamber,this->garbageCollector);
+    case _movableType:
+        return new movableElements(this->mychamber,this->garbageCollector);
     }
     return NULL;
 }
