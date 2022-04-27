@@ -29,6 +29,13 @@ bunker::~bunker()
 {
     delete this->myGun;
 }
+
+bool bunker::isMovable()
+{
+    return true;
+}
+
+
 bool bunker::mechanics(bool collected)
 {
     bool res=nonSteppable::mechanics(collected);

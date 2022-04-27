@@ -17,6 +17,7 @@ class bunker : public nonSteppable
         direction findLongestShot();
         virtual bool selfAlign();
         virtual bool interact(bElem* Who);
+        virtual bool isMovable();
     protected:
         int interacted;
         int help;

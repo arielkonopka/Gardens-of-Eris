@@ -32,7 +32,7 @@ bool teleport::interact(bElem* who)
         }
         this->theOtherEnd=teleport::teleporters[b];
         this->theOtherEnd->removeFromTeleports(); //We remove the other end from teleporters available to choose, as it was already chosen.
-                                                  //this way, we can always have an allocated teleporter
+        //this way, we can always have an allocated teleporter
 
     }
     return this->theOtherEnd->teleportIt(who);
@@ -57,23 +57,21 @@ int teleport::getType()
 bool teleport::teleportIt(bElem* who)
 {
     sNeighboorhood myNeigh;
-    myNeigh=this->getSteppableNeighboorhood();
-    for (int x=0; x<4; x++)
+    for(int c=0; c<4; c++)
     {
-        if(myNeigh.steppableClose[x]==true)
+        direction d=(direction)((int)who->getDirection()+c);
+
+        if (this->isSteppableDirection(d))
         {
-            coords c=this->getAbsCoords((direction)x);
-            if(c!=NOCOORDS)
-            {
-                who->removeElement(); //we found a space to be teleported
-                who->setBoard(this->attachedBoard); // We can be teleported between the chambers
-                who->stepOnElement(this->attachedBoard->getElement(c.x,c.y)); // We need to add the special effects and stuff, we will do it later
-                // the best, would be remember last position of who and then create inactive player instance, and set it as teleport out, or dying, dying seems a little more attractive :)
-                who->setMoved(_mov_delay*4);
-                return true;
-            }
+            who->removeElement();
+            who->setBoard(this->attachedBoard);
+            who->stepOnElement(this->getElementInDirection(d));
+            who->setMoved(40);
+            return true;
+
         }
     }
+
     return false;
 }
 bool teleport::removeFromTeleports()

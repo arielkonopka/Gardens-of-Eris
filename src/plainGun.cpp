@@ -33,7 +33,7 @@ bool plainGun::use(bElem* who)
     bElem *myel;
     if (this->readyToShoot()==false)
         return true; //The gun is fine, not ready to shoot though
-    this->shot=_plainMissileSpeed*_mov_delay+1;
+    this->shot=_plainMissileSpeed+_mov_delay;
     if (this->ammo<=0 || who==NULL) //odd subtypes have infinite shots
         if (this->getSubtype()%2)
             return false;
@@ -55,9 +55,12 @@ bool plainGun::use(bElem* who)
             missile->stepOnElement(myel);
             missile->setDirection(who->getDirection());
 
-
         }
-        else if (myel->canBeKilled())
+        else if ( myel->getType()==_plainMissile && myel->getDirection()==this->getDirection())
+        {
+            myel->setEnergy(myel->getEnergy()+ener);
+        }
+        else if (myel->canBeKilled() )
         {
             myel->hurt(this->getEnergy());
 
