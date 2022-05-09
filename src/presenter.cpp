@@ -24,8 +24,7 @@ presenter::presenter(chamber *board)
 
     al_register_event_source(this->evQueue, al_get_timer_event_source(this->alTimer));
     al_register_event_source(this->evQueue, al_get_timer_event_source(this->scrTimer));
-    al_start_timer(this->alTimer);
-    al_start_timer(this->scrTimer);
+
 
     this->_cp_attachedBoard=board;
     this->sWidth=0;
@@ -385,7 +384,8 @@ int presenter::presentEverything()
     // ALLEGRO_THREAD* visual=al_create_thread(shGFL,&instance);
 
     //  al_start_thread(visual);
-
+    al_start_timer(this->alTimer);
+    al_start_timer(this->scrTimer);
     while(!fin)
     {
         al_wait_for_event(this->evQueue, &event);

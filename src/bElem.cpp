@@ -173,19 +173,22 @@ oState bElem::disposeElementUnsafe()
     }
     if(x>=0 && y>=0)
     {
-        this->removeElement();
+
         if(this->steppingOn!=NULL)
         {
+            this->removeElement();
             res=DISPOSED;
         }
         else
         {
+            this->attachedBoard->chamberArray[this->x][this->y]=NULL;
             res=NULLREACHED;
         }
     }
     else
     {
-        res=DISPOSED;
+        //res=DISPOSED;
+        return DISPOSED;
     }
     this->garbageBin->addToBin(this); //add myself to to bin - this should be the only way of the object disposal!
     this->x=-1; //we set the state of the object to be unprovisioned - out of the game.

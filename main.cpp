@@ -18,7 +18,7 @@ int main( int argc, char * argv[] )
    // delay.tv_sec=0;
    // delay.tv_nsec=2;
     gCollect *garbageBin=gCollect::getInstance();
-    randomLevelGenerator *rndl=new randomLevelGenerator(150,150,garbageBin);
+    randomLevelGenerator *rndl=new randomLevelGenerator(200,200,garbageBin);
 
     chamber* myFirstChamber=rndl->mychamber;
     presenter::presenter *myPresenter=new presenter::presenter(myFirstChamber);
