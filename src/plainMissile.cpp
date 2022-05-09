@@ -47,20 +47,26 @@ bool plainMissile::mechanics(bool collected)
         bElem *myel=this->getElementInDirection(this->getDirection());
         if(myel==NULL)
         {
-            this->kill();
-            return false;
+            this->moveInDirectionSpeed(this->getDirection(),_plainMissileSpeed);
+            return true;
+        }
+        if (myel->canBeKilled()==true)
+        {
+            if (myel->getType()==this->getType() && myel->getDirection()==this->getDirection() && myel->getSubtype()==this->getSubtype())
+            {
+                return false;
+            }
+            myel->hurt(this->getEnergy());
+            this->disposeElement();
+            return true;
         }
         if (myel->isSteppable()==true)
         {
             this->moveInDirectionSpeed(this->getDirection(),_plainMissileSpeed);
             return true;
         }
-        if (myel->canBeKilled()==true)
-        {
-            myel->hurt(this->getEnergy());
-            this->disposeElement();
-            return true;
-        }
+
+
         if(myel->isDying())
             this->disposeElement();
         this->kill();

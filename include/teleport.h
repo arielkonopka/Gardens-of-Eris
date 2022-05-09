@@ -22,6 +22,7 @@ protected:
 private:
     static std::vector<teleport*> teleporters;
     bool removeFromTeleports();
+    void purgeFromTeleporters();
     bool addToTeleports();
     teleport *theOtherEnd;
 };

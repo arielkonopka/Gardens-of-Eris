@@ -1,6 +1,8 @@
 #include "../include/bElem.h"
 
 videoElement::videoElementDef* bElem::vd=NULL;
+std::vector<bElem*> bElem::liveElems;
+int bElem::sTaterCounter=0;
 int bElem::instances=0;
 
 int bElem::getInstanceid()
@@ -64,6 +66,7 @@ bElem::bElem(chamber* board, gCollect* garbage, int x, int y)
     }
 
 }
+
 
 void bElem::init()
 {
@@ -168,16 +171,17 @@ oState bElem::disposeElementUnsafe()
 #endif
         return ERROR;
     }
-    if(this->steppingOn!=NULL && x>=0 && y>=0)
+    if(x>=0 && y>=0)
     {
-        this->attachedBoard->chamberArray[this->x][this->y]=this->steppingOn; //steppingOn can be NULL, that could mean that someone would have to create an empty field here.
-        this->steppingOn=NULL;
-        res=DISPOSED;
-    }
-    else if (x>=0 && y>=0)
-    {
-        this->attachedBoard->chamberArray[this->x][this->y]=NULL;
-        res=NULLREACHED;
+        this->removeElement();
+        if(this->steppingOn!=NULL)
+        {
+            res=DISPOSED;
+        }
+        else
+        {
+            res=NULLREACHED;
+        }
     }
     else
     {
@@ -256,6 +260,7 @@ bElem::~bElem()
     if(this->myInventory!=NULL)
     {
         delete this->myInventory;
+
     }
 
 }
@@ -333,7 +338,7 @@ int bElem::getCnt()
 int bElem::getAnimPh()
 {
     // this->animPhase++;
-    return this->animPhase;
+    return this->getCntr()>>1;
 }
 
 int bElem::getSwitchId()
@@ -651,3 +656,65 @@ void bElem::setMoved(int time)
 {
 
 }
+int bElem::getMoved()
+{
+    return 0;
+}
+void bElem::setTeleporting(int time)
+{
+
+}
+
+
+
+void bElem::registerLiveElement(bElem* who)
+{
+    bElem::liveElems.push_back(who);
+}
+
+void bElem::deregisterLiveElement(bElem* who)
+{
+    std::vector<bElem*>::iterator p;
+    for(p=bElem::liveElems.begin(); p!=bElem::liveElems.end();)
+    {
+        if(who->getInstanceid()==(*p)->getInstanceid())
+        {
+            bElem::liveElems.erase(p);
+        }
+        else
+        {
+            p++;
+        }
+    }
+}
+
+void bElem::runLiveElements()
+{
+    for(auto p=bElem::liveElems.begin(); p!=bElem::liveElems.end(); p++)
+        if((*p)->getCoords()!=NOCOORDS)
+        {
+
+            (*p)->mechanics(false);
+        }
+    bElem::tick();
+    if (gCollect::getInstance()->garbageQsize()>0) //clean up, when there is garbage to be cleared
+        gCollect::getInstance()->purgeGarbage();
+}
+
+void bElem::setActive(bool active)
+{
+
+}
+
+
+void bElem::tick()
+{
+    bElem::sTaterCounter++;
+}
+
+int bElem::getCntr()
+{
+    return bElem::sTaterCounter;
+}
+
+

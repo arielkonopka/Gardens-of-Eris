@@ -1,7 +1,7 @@
 #ifndef MOVABLEELEMENTS_H
 #define MOVABLEELEMENTS_H
 
-#include "nonSteppable.h"
+#include "mechanical.h"
 #include "commons.h"
 #include "objectTypes.h"
 #include "videoElementDef.h"
@@ -12,7 +12,7 @@
 
 
 
-class movableElements : public nonSteppable
+class movableElements : public mechanical
 {
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
@@ -31,6 +31,8 @@ class movableElements : public nonSteppable
         virtual bool canPush();
         virtual bool mechanics(bool collected);
         virtual void setMoved(int time);
+        virtual int getMoved();
+
         int _me_moved;
         direction facing;
         bool movable;

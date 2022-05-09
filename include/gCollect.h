@@ -14,15 +14,17 @@ class bElem;
 class gCollect
 {
     public:
-        gCollect();
+
         ~gCollect();
         bool purgeGarbage();
         void addToBin(bElem *element);
         int garbageQsize();
-
+        static gCollect* getInstance();
     protected:
 
     private:
+        gCollect();
+        static gCollect *instanceId;
         std::vector<bElem *> garbageVector;
 };
 

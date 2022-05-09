@@ -70,6 +70,12 @@ TBD
 ## Mechanics
 The game uses two timers. One is used for scrolling and general screen refresh rate. The other is used to perform game mechanics calculations. This way we do not have to review the whole board every frame. It should be good to think of another method of 
 updating fames.
+There is a vector with "mechanical" elements. We add elements that have some mechanics (like they shoot, walk, do something on their own), but the animation phases are handled differently, so objects without mechanics still can have animated sprites.
+There are methods:
+  1. void registerLiveElement(bElem* who);
+  2. void deregisterLiveElement(bElem* who);
+One is for registering a mechanical object (there has to be implemeted mechanics method), the other one deregisters the object.
+
 
 # Teleporters
 Every new teleporter is placed in a vector (actually it is a vector of pointers). As soon, as the player interacts with a teleporter it checks if it has attached link to a corresponding teleporter.
@@ -86,5 +92,5 @@ Then after the shot, the guns energy is halved. It restores with mechanics() cal
 
 
 ## TODO
-* two timers in presenter, one for the screen refreshing and scrolling, the other one for mechanics
-* iterators in inventory - just for fun
+* refactor mechanics - the elements should "know" when they are being stepped on, and collected, and react accordingly
+* check why the mechanics did not work properly for collected items and remove direct inventory mechanic iterator and use the global list of mechanical objects to animate them.

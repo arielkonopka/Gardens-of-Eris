@@ -11,25 +11,16 @@ inventory::~inventory()
 {
     //We place the objects in the garbage collector.
     for(auto  w:this->weapons)
-    {
         w->disposeElement();
-    }
     for(auto u: this->usables)
-    {
         u->disposeElement();
-    }
     for(auto t:this->tokens)
-    {
         t->disposeElement();
-    }
     for(auto k:this->keys)
-    {
         k->disposeElement();
-    }
     for(auto m:this->mods)
-    {
         m->disposeElement();
-    }
+
 }
 
 bElem* inventory::getKey(int type, int subtype,bool removeIt)
@@ -112,7 +103,7 @@ bool inventory::addToInventory(bElem* what)
 {
     if(what==NULL)
         return false;
-
+    what->deregisterLiveElement(what);
     if(what->myInventory!=NULL)
     {
         /* this is probably a stash, or something like that. that is why, when we create an object, that shoots infinite ammo, it is better to have gun in non standard places, it would not be picked up that way*/

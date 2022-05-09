@@ -4,18 +4,20 @@
 videoElement::videoElementDef* nonSteppable::vd=NULL;
 
 
-nonSteppable::nonSteppable(chamber *board,gCollect *garbage): bElem(board,garbage)
+nonSteppable::nonSteppable(chamber *board,gCollect *garbage):bElem(board,garbage)
 {
+    this->teleporting=0;
 
 }
-
 nonSteppable::nonSteppable(chamber* board, gCollect* garbage, int x, int y) : bElem(board,garbage,x,y)
 {
-
+    this->teleporting=0;
 }
+
 
 nonSteppable::~nonSteppable()
 {
+
     //dtor
 }
 bool nonSteppable::isSteppable()
@@ -34,8 +36,18 @@ videoElement::videoElementDef* nonSteppable::getVideoElementDef()
 }
 bool nonSteppable::mechanics(bool collected)
 {
-    return bElem::mechanics(collected);
+    bool res= bElem::mechanics(collected);
+    if(this->teleporting>0)
+        this->teleporting--;
+    return res;
 
-
+}
+void nonSteppable::setTeleporting(int time)
+{
+    this->teleporting=time;
+}
+bool nonSteppable::isTeleporting()
+{
+    return (this->teleporting>0);
 }
 

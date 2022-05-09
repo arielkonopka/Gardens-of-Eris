@@ -11,7 +11,7 @@ teleport::teleport(chamber* board, gCollect* garbage):nonSteppable(board,garbage
 
 teleport::~teleport()
 {
-    //dtor
+    this->purgeFromTeleporters();
 }
 bool teleport::interact(bElem* who)
 {
@@ -57,16 +57,17 @@ int teleport::getType()
 bool teleport::teleportIt(bElem* who)
 {
     sNeighboorhood myNeigh;
+    int dir=(int)who->getDirection();
     for(int c=0; c<4; c++)
     {
-        direction d=(direction)((int)who->getDirection()+c);
+        direction d=(direction)((dir+c)%4);
 
         if (this->isSteppableDirection(d))
         {
             who->removeElement();
             who->setBoard(this->attachedBoard);
             who->stepOnElement(this->getElementInDirection(d));
-            who->setMoved(40);
+            who->setTeleporting(_mov_delay+1*40);
             return true;
 
         }
@@ -74,6 +75,33 @@ bool teleport::teleportIt(bElem* who)
 
     return false;
 }
+
+void teleport::purgeFromTeleporters()
+{
+    std::vector<teleport*>::iterator ptr;
+    for(ptr=teleport::teleporters.begin(); ptr!=teleport::teleporters.end(); )
+    {
+        if((*ptr)->getInstanceid()==this->getInstanceid())
+        {
+            teleport::teleporters.erase(ptr); //
+        }
+        else
+        {
+            if ((*ptr)->theOtherEnd!=NULL)
+            {
+                if((*ptr)->theOtherEnd->getInstanceid()==this->getInstanceid())
+                {
+                    (*ptr)->theOtherEnd->addToTeleports(); // not sure if we should do the teleport recycling
+                    (*ptr)->theOtherEnd=NULL; //We remove the reference to the disposed teleport
+                }
+            }
+            ptr++;
+        }
+    }
+
+}
+
+
 bool teleport::removeFromTeleports()
 {
     std::vector<teleport*>::iterator ptr;
@@ -101,13 +129,13 @@ bool teleport::addToTeleports()
 
 oState teleport::disposeElement()
 {
-    this->removeFromTeleports();
+    this->purgeFromTeleporters();
     return nonSteppable::disposeElement();
 }
 
 oState teleport::disposeElementUnsafe()
 {
-    this->removeFromTeleports();
+    this->purgeFromTeleporters();
     return nonSteppable::disposeElementUnsafe();
 
 }

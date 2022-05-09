@@ -7,7 +7,7 @@ monster::monster(chamber *board,gCollect *garbage): killableElements(board,garba
 {
     this->animph=0;
     this->internalCnt=0;
-    this->facing=UP;
+    this->setDirection(UP);
 }
 
 monster::~monster()
@@ -37,41 +37,50 @@ bool monster::mechanics(bool collected)
     this->internalCnt++;
     if (this->internalCnt%5==0)
         this->animph++;
-    // if (this->internalCnt%20==0)
-    //     this->facing=(direction)(((int)this->facing+1)%4);
+
     if(this->isDying()==true)
         return true;
 
-    if (this->_me_moved==0)
+    if (this->getMoved()==0)
     {
+        sNeighboorhood myNeigh=this->getSteppableNeighboorhood();
+        bool _empty=true;
         for(int c=0; c<4; c++)
         {
+            if(myNeigh.steppableClose[c]==false)
+                _empty=false;
             bElem* testElem=this->getElementInDirection((direction)c);
             if (testElem==NULL)
             {
                 continue;
             }
-            if (testElem->getType()==_player)
+            if (testElem->getType()==_player && testElem->isTeleporting()==false)
             {
                 testElem->hurt(6);
                 return true; //no need to leave the place, where we do the damage
                 break;
             }
         }
-        if(this->moveInDirection(this->facing))
+        if(_empty)
         {
-            bElem* testElem=this->getElementInDirection((direction)(((int)this->facing+3)%4));
+            this->moveInDirection(this->getDirection());
+            return true;
+        }
+        if(this->moveInDirection(this->getDirection()))
+        {
+
+            bElem* testElem=this->getElementInDirection((direction)(((int)this->getDirection()+3)%4));
             if (testElem!=NULL)
             {
                 if (testElem->isSteppable())
-                    this->facing=(direction)(((int)this->facing+3)%4);
+                    this->setDirection((direction)(((int)this->getDirection()+3)%4));
             }
         }
         else
         {
-            this->facing=(direction)(((int)this->facing+1)%4);
+            this->setDirection((direction)(((int)this->getDirection()+1)%4));
             this->_me_moved=_mov_delay;
-            if (this->facing==RIGHT || this->facing==DOWN) this->_me_moved++;
+
         }
 
     }

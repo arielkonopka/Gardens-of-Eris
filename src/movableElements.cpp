@@ -5,13 +5,13 @@ videoElement::videoElementDef* movableElements::vd=NULL;
 
 
 
-movableElements::movableElements(chamber *board,gCollect *garbage) : nonSteppable(board,garbage)
+movableElements::movableElements(chamber *board,gCollect *garbage) : mechanical(board,garbage)
 {
     this->_me_moved=0;
     this->_me_canPush=false;
     this->movable=true;
 }
-movableElements::movableElements(chamber *board,gCollect *garbage,int x, int y) : nonSteppable(board,garbage,x,y)
+movableElements::movableElements(chamber *board,gCollect *garbage,int x, int y) : mechanical(board,garbage,x,y)
 {
     this->_me_moved=0;
     this->_me_canPush=false;
@@ -42,7 +42,6 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
     {
         this->stepOnElement(this->attachedBoard->chamberArray[ncoord.x][ncoord.y]);
         this->_me_moved=speed;
-        if (this->getDirection()==RIGHT || this->getDirection()==DOWN) this->_me_moved++; // we will process that twice in one iteration, we do not want that
         return true;
     }
     else if (this->canPush()==true && this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->isMovable()==true)
@@ -54,7 +53,6 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
             this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->stepOnElement(this->attachedBoard->chamberArray[ncoord2.x][ncoord2.y]); //move next object in direction
             this->stepOnElement(this->attachedBoard->chamberArray[ncoord.x][ncoord.y]);  // move the initiating object
             this->_me_moved=speed+1;
-            if (this->getDirection()==RIGHT || this->getDirection()==DOWN) this->_me_moved++; //we will process this twice during movement right or down, it is because how we iterate throught the world.
             return true;
         }
     }
@@ -64,7 +62,6 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
         //if (this->collect(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)
         {
             this->_me_moved=speed;
-            if (this->getDirection()==RIGHT || this->getDirection()==DOWN) this->_me_moved++;
             return true;
         }
     }
@@ -73,7 +70,6 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
         if(this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->interact(this)==true)
         {
             this->_me_moved=speed;
-            if (this->getDirection()==RIGHT || this->getDirection()==DOWN) this->_me_moved++;
             return true;
 
         }
@@ -126,8 +122,7 @@ direction movableElements::getDirection()
 bool movableElements::setDirection(direction newDirection)
 {
     nonSteppable::setDirection(newDirection);
-    if(newDirection==DOWN||newDirection==RIGHT)
-        this->_me_moved++;
+
     return true;
 }
 
@@ -135,4 +130,9 @@ bool movableElements::setDirection(direction newDirection)
 void movableElements::setMoved(int time)
 {
     this->_me_moved=time;
+}
+
+int movableElements::getMoved()
+{
+    return this->_me_moved;
 }

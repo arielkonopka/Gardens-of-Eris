@@ -1,23 +1,22 @@
 #include "gCollect.h"
 
+
+gCollect* gCollect::instanceId=NULL;
+
 gCollect::gCollect()
 {
-    //ctor
 }
 
 gCollect::~gCollect()
 {
     this->purgeGarbage();
+    gCollect::instanceId=NULL;
 
 }
 bool gCollect::purgeGarbage()
 {
-   for (unsigned int cnt=0;cnt<this->garbageVector.size();cnt++)
-    {
-      //  std::cout<<".";
-        bElem *tmp=this->garbageVector[cnt];
-        delete tmp;
-    }
+   for (auto p:this->garbageVector)
+        delete p;
    this->garbageVector.clear();
    return true;
 }
@@ -29,4 +28,11 @@ void gCollect::addToBin(bElem* element)
 int gCollect::garbageQsize()
 {
     return this->garbageVector.size();
+}
+
+gCollect* gCollect::getInstance()
+{
+    if(gCollect::instanceId==NULL)
+        gCollect::instanceId=new gCollect();
+    return gCollect::instanceId;
 }

@@ -32,8 +32,9 @@ public:
     virtual int getInstanceid();
     static void resetInstances();
     static int instances;
-
-
+    void registerLiveElement(bElem* who);
+    void deregisterLiveElement(bElem* who);
+    static void runLiveElements();
     bElem();
     bElem(chamber *board,gCollect *garbage);
     bElem(chamber *board,gCollect *garbage,int x, int y);
@@ -45,7 +46,7 @@ public:
     virtual void setGarbageBin(gCollect *garbage);
     virtual void setCoords(int x, int y);
 
-
+    virtual void setActive(bool active);
     virtual bool selfAlign();
     virtual bool setSubtype(int st);
     virtual bool stepOnElement(bElem *step);
@@ -77,7 +78,7 @@ public:
     virtual bool isDying();
     virtual bool isDestroyed();
     virtual bool isTeleporting();
-
+    virtual void setTeleporting(int time);
     virtual bool isInteractive();
     virtual bool isProvisioned();
     virtual bool isMovable();
@@ -91,6 +92,7 @@ public:
     virtual int getAmmo();
     virtual void setAmmo();
     virtual void setMoved(int time);
+    virtual int getMoved();
     virtual bool isActive();
     virtual bool isOpen();
     virtual bool isSwitchOn();
@@ -114,7 +116,10 @@ public:
         collected==true when the method is invoked from an objects inventory. useful for objects that do something when collected like mines, automatic weapons and so on
     */
     virtual bool mechanics(bool collected);
+    static std::vector<bElem*> liveElems;
     inventory *myInventory;
+    static void tick();
+    virtual int getCntr();
 protected:
 
     bElem* collectedBy;
@@ -130,6 +135,7 @@ protected:
     bool amIUsable;
     int killed;
 private:
+    static int sTaterCounter;
     virtual void init();
     //  static videoElement::videoElementDef *def;
 
