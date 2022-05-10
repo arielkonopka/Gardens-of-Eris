@@ -8,7 +8,7 @@ videoElement::videoElementDef* plainGun::getVideoElementDef()
     return plainGun::vd;
 }
 
-plainGun::plainGun(chamber *board,gCollect *garbage): usable(board,garbage)
+plainGun::plainGun(chamber *board): usable(board)
 {
     this->maxEnergy=_plainMissileEnergy;
     this->ammo=_plainGunAmmo;
@@ -38,12 +38,12 @@ bool plainGun::use(bElem* who)
 
     if (this->readyToShoot()==false)
         return true; //The gun is fine, not ready to shoot though
-    this->shot=_mov_delay*4;
+    this->shot=_mov_delay+_plainMissileSpeed;
     if (this->ammo<=0 || who==NULL) //odd subtypes have infinite shots
         if (this->getSubtype()%2)
             return false;
-    if(who->getType()==_player)
-        std::cout<<"energy: "<<this->getEnergy()<<"\n";
+ //   if(who->getType()==_player)
+ //       std::cout<<"energy: "<<this->getEnergy()<<"\n";
     myel=who->getElementInDirection(who->getDirection());
     if(myel!=NULL)
     {
@@ -60,11 +60,11 @@ bool plainGun::use(bElem* who)
 
         if (myel->isSteppable()==true)
         {
-            bElem* missile=new plainMissile(this->attachedBoard,this->garbageBin,ener);
+            bElem* missile=new plainMissile(this->getBoard(),ener);
             missile->setEnergy(ener);
             missile->stepOnElement(myel);
             missile->setDirection(who->getDirection());
-            missile->setMoved(_plainMissileSpeed);
+          //  missile->setMoved(_plainMissileSpeed);
             return true;
 
         }

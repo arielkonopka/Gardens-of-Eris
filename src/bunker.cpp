@@ -1,18 +1,18 @@
 #include "bunker.h"
 
 videoElement::videoElementDef* bunker::vd=NULL;
-bunker::bunker(chamber *board,gCollect *garbageBin):mechanical(board,garbageBin)
+bunker::bunker(chamber *board):mechanical(board)
 {
-    this->myGun=new plainGun(this->attachedBoard,this->garbageBin);
+    this->myGun=new plainGun(board);
     this->myGun->setSubtype(1); // we have a gun, and we are not afraid to use it.
     this->setDirection(UP);
     this->rotated=0;
     this->interacted=-1;
     this->help=0;
 }
-bunker::bunker(chamber* board, gCollect* garbageBin, int x, int y):mechanical(board,garbageBin,x,y)
+bunker::bunker(chamber* board, int x, int y):mechanical(board,x,y)
 {
-    this->myGun=new plainGun(this->attachedBoard,this->garbageBin);
+    this->myGun=new plainGun(board);
     this->myGun->setSubtype(1); // we have a gun, and we are not afraid to use it.
     this->setDirection(UP);
     this->rotated=0;
@@ -54,7 +54,7 @@ bool bunker::interact(bElem* Who)
 {
     if(this->interacted>0)
         return false;
-    this->help=500;
+    this->help=999;
     return true;
 }
 

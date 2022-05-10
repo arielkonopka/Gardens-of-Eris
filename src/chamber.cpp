@@ -1,16 +1,16 @@
 #include "chamber.h"
 
-chamber::chamber(int x,int y,gCollect *garbageBin)
+chamber::chamber(int x,int y)
 {
     this->chamberArray.resize(boost::extents[x][y]);
     this->width=x;
     this->height=y;
-    this->garbageBin=garbageBin;
+    this->garbageBin=gCollect::getInstance();
     for(int cX=0; cX<x; cX++)
     {
         for (int cY=0; cY<y; cY++)
         {
-            this->chamberArray[cX][cY]=new bElem(this,garbageBin,cX,cY);
+            this->chamberArray[cX][cY]=new bElem(this,cX,cY);
         }
     }
 }

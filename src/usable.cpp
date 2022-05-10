@@ -23,12 +23,12 @@ bool usable::isCollectible()
 {
     return true;
 }
-usable::usable(chamber* board, gCollect* garbage):collectible(board,garbage)
+usable::usable(chamber* board):collectible(board)
 {
 
 }
 
-usable::usable(chamber* board, gCollect* garbage, int x, int y) : collectible(board,garbage)
+usable::usable(chamber* board, int x, int y) : collectible(board)
 {
 
 }

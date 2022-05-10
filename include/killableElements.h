@@ -9,8 +9,8 @@
 class killableElements : public movableElements
 {
     public:
-        killableElements(chamber* board,gCollect* garbageBin);
-        killableElements(chamber* board,gCollect* garbageBin,int x, int y);
+        killableElements(chamber* board);
+        killableElements(chamber* board,int x, int y);
         virtual ~killableElements();
         virtual bool canBeKilled();
         virtual bool canBeDestroyed();

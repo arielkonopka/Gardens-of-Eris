@@ -2,19 +2,21 @@
 
 
 videoElement::videoElementDef* plainMissile::vd=NULL;
-plainMissile::plainMissile(chamber *mychamber,gCollect *garbage) : killableElements(mychamber,garbageBin)
+plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber)
 {
     this->setEnergy(_plainMissileEnergy);
     this->_me_moved=_plainMissileSpeed;
     this->setDirection(UP);
+    this->setMoved(_plainMissileSpeed);
 
 }
-plainMissile::plainMissile(chamber* mychamber, gCollect* garbage, int energy) : killableElements(mychamber,garbage)
+plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber)
 {
     this->setEnergy(energy);
     this->_me_moved=_plainMissileSpeed;
     this->setDirection(UP);
     this->myInventory=new inventory(); // This is for a mod, that could be installed on the ammo
+    this->setMoved(_plainMissileSpeed);
 }
 
 plainMissile::~plainMissile()

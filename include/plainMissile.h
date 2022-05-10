@@ -10,8 +10,8 @@ public:
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
     virtual int getSubtype();
-    plainMissile(chamber *mychamber,gCollect *garbage);
-    plainMissile(chamber *mychamber,gCollect *garbage,int energy);
+    plainMissile(chamber *mychamber);
+    plainMissile(chamber *mychamber,int energy);
     virtual ~plainMissile();
     virtual bool mechanics(bool collected);
 

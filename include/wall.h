@@ -13,8 +13,8 @@ class wall : public nonSteppable
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
-        wall(chamber *board,gCollect *garbage);
-        wall(chamber *board,gCollect *garbage,int subtype);
+        wall(chamber *board);
+        wall(chamber *board,int subtype);
         virtual  bool isDying();
         virtual ~wall();
         int getSubtype();

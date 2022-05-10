@@ -4,12 +4,12 @@
 videoElement::videoElementDef* nonSteppable::vd=NULL;
 
 
-nonSteppable::nonSteppable(chamber *board,gCollect *garbage):bElem(board,garbage)
+nonSteppable::nonSteppable(chamber *board):bElem(board)
 {
     this->teleporting=0;
 
 }
-nonSteppable::nonSteppable(chamber* board, gCollect* garbage, int x, int y) : bElem(board,garbage,x,y)
+nonSteppable::nonSteppable(chamber* board,int x, int y) : bElem(board,x,y)
 {
     this->teleporting=0;
 }

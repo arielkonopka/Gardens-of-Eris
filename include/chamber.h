@@ -17,7 +17,7 @@ class chamber
         gCollect *garbageBin;
         bElem* getElement(int x, int y);
         boost::multi_array<bElem *,2> chamberArray;
-        chamber(int x,int y,gCollect *garbageBin);
+        chamber(int x,int y);
         ~chamber();
 
     protected:

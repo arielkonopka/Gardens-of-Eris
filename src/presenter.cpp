@@ -17,8 +17,8 @@ presenter::presenter(chamber *board)
     }
 
 
-    this->alTimer = al_create_timer(1.0 / 10.0);
-    this->scrTimer=al_create_timer(1.0/20);
+    this->alTimer = al_create_timer(1.0 / 15.0);
+    this->scrTimer=al_create_timer(1.0/40);
     this->evQueue= al_create_event_queue();
     al_register_event_source(this->evQueue, al_get_keyboard_event_source());
 
@@ -377,7 +377,7 @@ int presenter::presentEverything()
     controlItem cItem;
     void* instance=(void*)this;
     bool fin=false;
-    int red=30;
+    int red=20;
     int green=20;
     int blue=50;
 
@@ -399,26 +399,13 @@ int presenter::presentEverything()
         {
             if(event.timer.source==this->alTimer)
             {
-
-
-                this->_cp_attachedBoard->player.x=-1;
-/*                for (int cy=0; cy<this->_cp_attachedBoard->height; cy++)
-                    for (int cx=0; cx<this->_cp_attachedBoard->width; cx++)
-                    {
-
-                        bElem* myel=this->_cp_attachedBoard->getElement(cx,cy);
-                     //   std::cout<<"\n"<<myel->getType()<<"techmech x="<<cx<<" y:"<<cy<<"\n";
-                        if (myel!=NULL)
-                            myel->mechanics(false);
-                    }
-                    */
-                    bElem::runLiveElements();
-
-                if (this->_cp_attachedBoard->player.x<0)
+                this->_cp_attachedBoard->player=NOCOORDS;
+                bElem::runLiveElements();
+                gCollect::getInstance()->purgeGarbage();
+                if (this->_cp_attachedBoard->player==NOCOORDS)
                 {
                     return 2;
                 }
-                this->_cp_attachedBoard->garbageBin->purgeGarbage();
             }
             if(event.timer.source==this->scrTimer)
             {

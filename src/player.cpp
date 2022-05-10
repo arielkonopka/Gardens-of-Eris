@@ -5,7 +5,7 @@ std::vector<player*> player::allPlayers;
 std::vector<player*> player::visitedPlayers;
 
 
-player::player(chamber *board,gCollect *garbage) : killableElements::killableElements(board,garbage)
+player::player(chamber *board) : killableElements::killableElements(board)
 {
     this->used=0;
     this->interacted=0;
@@ -14,7 +14,16 @@ player::player(chamber *board,gCollect *garbage) : killableElements::killableEle
     this->myStats.dexterity=_initialDexterity;
     this->myInventory=new inventory();
     this->visited=false;
+    if(player::allPlayers.size()>0)
+    {
+        this->activated=false;
+    }
+    else
+    {
+        this->activated=true;
+    }
     player::allPlayers.push_back(this);
+
 }
 
 player::~player()
@@ -27,7 +36,7 @@ player::~player()
         if(this->getInstanceid()==px->getInstanceid())
             player::allPlayers.erase(p);
         else
-           p++;
+            p++;
     }
     for(std::vector<player*>::iterator p=player::visitedPlayers.begin(); p!=player::visitedPlayers.end();)
     {
@@ -35,12 +44,30 @@ player::~player()
         if(this->getInstanceid()==px->getInstanceid())
             player::visitedPlayers.erase(p);
         else
-           p++;
+            p++;
     }
 
-
-
 }
+
+oState player::disposeElement()
+{
+    if(this->isActive())
+    {
+        this->setActive(false);
+        this->getBoard()->player=NOCOORDS;
+        if(player::visitedPlayers.size()>0)
+        { // Activate next inactive player avatar
+            bElem* p=player::visitedPlayers[0];
+            p->setActive(true);
+            p->getBoard()->player=p->getCoords();
+            player::visitedPlayers.erase(player::visitedPlayers.begin());
+        }
+    }
+    return killableElements::disposeElement();
+}
+
+
+
 bool player::interact(bElem* who)
 {
     if (who==NULL)
@@ -71,15 +98,16 @@ videoElement::videoElementDef* player::getVideoElementDef()
 bool player::mechanics(bool collected)
 {
     killableElements::mechanics(collected);
-    if (this->x<0) return false; // It was disposed, so we do not want to process this
-    if (this->getActive()==true)
+    if (this->getCoords()==NOCOORDS)
+        return false; // It was disposed, so we do not want to process this
+    if (this->isActive()==true)
     {
-        this->attachedBoard->player.x=this->x;
-        this->attachedBoard->player.y=this->y;
+        this->getBoard()->player.x=this->x;
+        this->getBoard()->player.y=this->y;
     }
     else
     {
-        this->animPh=this->taterCounter/40;
+        this->animPh=this->getCntr()>>2;
         return true; // Inactive player, not very useful;
     }
     if(this->isTeleporting())
@@ -89,29 +117,29 @@ bool player::mechanics(bool collected)
     }
     if ( (this->isDying()==true))
         return true;
-    switch(this->attachedBoard->cntrlItm.type)
+    switch(this->getBoard()->cntrlItm.type)
     {
     case 0:
     {
-        bool res=this->moveInDirection(this->attachedBoard->cntrlItm.dir);
+        bool res=this->moveInDirection(this->getBoard()->cntrlItm.dir);
         if (res) this->animPh++;
         return true;
     }
     case 1:
     {
-        this->setDirection(this->attachedBoard->cntrlItm.dir);
+        this->setDirection(this->getBoard()->cntrlItm.dir);
         bool res=this->shootGun();
         if (res)
             this->animPh+=(this->taterCounter%2);
-        this->setMoved(_mov_delay);
+        this->setMoved(_mov_delay_push);
         return true;
     }
     case 2:
     {
-        bElem* obj=this->getElementInDirection(this->attachedBoard->cntrlItm.dir);
+        bElem* obj=this->getElementInDirection(this->getBoard()->cntrlItm.dir);
         bool res;
-        this->setMoved(_mov_delay);
-        this->setDirection(this->attachedBoard->cntrlItm.dir);
+        this->setMoved(_mov_delay_push);
+        this->setDirection(this->getBoard()->cntrlItm.dir);
         if (obj==NULL)
             return false;
         std::cout<<"Interact/n";
@@ -148,9 +176,9 @@ bool player::canPush()
 {
     return true;
 }
-bool player::getActive()
+bool player::isActive()
 {
-    return true; // temporary, in the future only one player should be active in the whole chamber array
+    return this->activated; // temporary, in the future only one player should be active in the whole chamber array
 }
 
 
@@ -168,16 +196,6 @@ bool player::canInteract()
 int player::getAnimPh()
 {
     return this->animPh;
-}
-
-bool player::findAndActivatePlayer()
-{
-    if(player::visitedPlayers.size()<=0)
-        return false;
-    player::visitedPlayers[0]->setActive(true);
-    player::visitedPlayers[0]->attachedBoard->player=player::visitedPlayers[0]->getCoords();
-    player::visitedPlayers.erase(player::visitedPlayers.begin());
-    return true;
 }
 
 

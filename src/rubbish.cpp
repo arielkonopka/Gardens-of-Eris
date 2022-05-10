@@ -4,14 +4,10 @@
 videoElement::videoElementDef* rubbish::vd=NULL;
 
 
-rubbish::rubbish(chamber *board, gCollect *garbage) : stillElem(board,garbage)
+rubbish::rubbish(chamber *board) : stillElem(board)
 {
    // wall::wall(borad,garbage);
-    this->garbageBin=garbage;
-    this->attachedBoard=board;
-    this->x=-1;
-    this->y=-1;
-    this->steppingOn=NULL;
+
 }
 
 rubbish::~rubbish()

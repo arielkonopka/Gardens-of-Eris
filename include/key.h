@@ -12,9 +12,9 @@ public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
-    key(chamber *board,gCollect *garbage);
-    key(chamber *board,gCollect *garbage,int x,int y);
-    key(chamber *board,gCollect *garbage,int subtype);
+    key(chamber *board);
+    key(chamber *board,int x,int y);
+    key(chamber *board,int subtype);
     virtual ~key();
 
 protected:

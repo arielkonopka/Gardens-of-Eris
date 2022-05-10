@@ -12,21 +12,21 @@ int door::getType()
     return _door;
 }
 
-door::door(chamber* board, gCollect *garbage) : bElem(board,garbage)
+door::door(chamber* board) : bElem(board)
 {
     this->initMe();
 }
-door::door(chamber* board, gCollect* garbage, int x, int y) :bElem(board,garbage,x,y)
+door::door(chamber* board, int x, int y) :bElem(board,x,y)
 {
     this->initMe();
 }
-door::door(chamber* board, gCollect* garbage, int subtype) :bElem(board,garbage)
+door::door(chamber* board, int subtype) :bElem(board)
 {
     this->setSubtype(subtype);
     this->initMe();
 }
 
-door::door(chamber* board, gCollect* garbage, int subtype, int x, int y):bElem(board,garbage,x,y)
+door::door(chamber* board, int subtype, int x, int y):bElem(board,x,y)
 {
     this->setSubtype(subtype);
     this->initMe();

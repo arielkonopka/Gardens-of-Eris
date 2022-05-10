@@ -74,7 +74,7 @@ class randomLevelGenerator
 
         std::vector<elementToPlace> elementsToPlace;
         chamber *mychamber;
-        randomLevelGenerator(int w,int h,gCollect *gbin);
+        randomLevelGenerator(int w,int h);
         void addElementToPlace(elementToPlace element);
         virtual ~randomLevelGenerator();
         bool generateLevel(int holes);

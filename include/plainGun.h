@@ -12,7 +12,7 @@ public:
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
     virtual bool use(bElem *who);
-    plainGun(chamber *board,gCollect *garbage);
+    plainGun(chamber *board);
     virtual bool mechanics(bool collected);
     virtual ~plainGun();
     bool isWeapon();

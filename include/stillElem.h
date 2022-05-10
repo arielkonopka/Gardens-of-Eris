@@ -9,7 +9,7 @@ class stillElem :  public nonSteppable
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
-        stillElem(chamber *board,gCollect *garbage);
+        stillElem(chamber *board);
         ~stillElem();
         int getType();
         int getSubtype();

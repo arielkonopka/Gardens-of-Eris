@@ -12,7 +12,7 @@ class rubbish :public stillElem
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
-        rubbish(chamber *board, gCollect *garbage);
+        rubbish(chamber *board);
         virtual ~rubbish();
         int getType();
         int getSubtype();

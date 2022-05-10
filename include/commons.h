@@ -19,8 +19,8 @@
 #define _stash 600
 
 
-#define _mov_delay   2
-#define _mov_delay_push   3
+#define _mov_delay   3
+#define _mov_delay_push   4
 
 #define _plainGunAmmo 10
 #define _plainMissileSpeed 1
@@ -35,7 +35,7 @@
 #define _defaultKillTime 10
 #define _defaultDestroyTime 10
 
-#define _interactedTime 3
+#define _interactedTime 6
 #define NOCOORDS   ((coords){-1,-1})
 #define NOSTATS ((stats){-1,-1})
 typedef struct coords

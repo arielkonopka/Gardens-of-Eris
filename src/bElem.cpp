@@ -23,11 +23,11 @@ bElem::bElem()
     this->init();
 }
 
-bElem::bElem(chamber* board, gCollect* garbage)
+bElem::bElem(chamber* board)
 {
     this->init();
     this->attachedBoard=board;
-    this->garbageBin=garbage;
+
 
 }
 bool bElem::isUsable()
@@ -41,11 +41,10 @@ bool bElem::isWeapon()
 }
 
 
-bElem::bElem(chamber* board, gCollect* garbage, int x, int y)
+bElem::bElem(chamber* board, int x, int y)
 {
     this->init();
     this->attachedBoard=board;
-    this->garbageBin=garbage;
     this->x=x;
     this->y=y;
     // If we fail to place the object on a board, we will let it hanging, check, if x or y are ==-1
@@ -70,8 +69,9 @@ bElem::bElem(chamber* board, gCollect* garbage, int x, int y)
 
 void bElem::init()
 {
+    this->stomping=NULL;
+    this->collector=NULL;
     this->attachedBoard=NULL;
-    this->garbageBin=NULL;
     this->x=-1;
     this->y=-1;
     this->animPhase=0;
@@ -83,7 +83,7 @@ void bElem::init()
     this->interacted=0;
     this->destroyed=0;
     this->instance=bElem::instances++;
-    this->collectedBy=NULL;
+
     this->myInventory=NULL;
     std::random_device rd;
     std::mt19937::result_type seed = rd() ^ (
@@ -111,16 +111,17 @@ bool bElem::isInteractive()
     return false;
 }
 
+chamber* bElem::getBoard()
+{
+    return this->attachedBoard;
+}
 
 void bElem::setBoard(chamber* board)
 {
     this->attachedBoard=board;
 }
 
-void bElem::setGarbageBin(gCollect* garbage)
-{
-    this->garbageBin=garbage;
-}
+
 direction bElem::getDirection()
 {
     return this->myDirection;
@@ -132,23 +133,52 @@ void bElem::setCoords(int x, int y)
     this->y=y;
 }
 
+bElem* bElem::getStomper()
+{
+        return this->stomping;
+}
+
+void bElem::stomp(bElem* who)
+{
+    this->stomping=who;
+}
+
+void bElem::unstomp()
+{
+    this->stomping=NULL;
+}
+
+void bElem::getCollected(bElem* who)
+{
+    this->collector=who;
+}
+
+void bElem::getDropped()
+{
+    this->collector=NULL;
+}
+
 
 // the way it should operate is:
 // release the field it is residingg and step on the new one (replace it on a board)
 bool bElem::stepOnElement(bElem* step)
 {
-    if (this->attachedBoard==NULL || this->garbageBin==NULL || step->isSteppable()==false)  return false;
+    if (this->getBoard()==NULL || step==NULL || step->isSteppable()==false || step->getBoard()==NULL)  return false;
     if (this->steppingOn==NULL)
     {
+        step->stomp(this);
         this->steppingOn=step;
     }
     else
     {
-        this->attachedBoard->chamberArray[this->x][this->y]=this->steppingOn;
+
+        this->getBoard()->chamberArray[this->x][this->y]=this->steppingOn;
+        this->getBoard()->chamberArray[this->x][this->y]->unstomp();
         this->steppingOn=step;
+        step->stomp(this);
     }
     coords crds=this->steppingOn->getCoords();
-    this->attachedBoard->chamberArray[crds.x][crds.y]=this;
+    this->getBoard()->chamberArray[crds.x][crds.y]=this;
     this->x=crds.x;
     this->y=crds.y;
     return true;
@@ -164,13 +194,7 @@ coords bElem::getCoords()
 oState bElem::disposeElementUnsafe()
 {
     oState res;
-    if ( this->garbageBin==NULL )
-    {
-#ifdef _debug
-        std::cout<<"Tried to dispose broken element!\n";
-#endif
-        return ERROR;
-    }
+
     if(x>=0 && y>=0)
     {
 
@@ -181,7 +205,7 @@ oState bElem::disposeElementUnsafe()
         }
         else
         {
-            this->attachedBoard->chamberArray[this->x][this->y]=NULL;
+            this->getBoard()->chamberArray[this->x][this->y]=NULL;
             res=NULLREACHED;
         }
     }
@@ -190,11 +214,10 @@ oState bElem::disposeElementUnsafe()
         //res=DISPOSED;
         return DISPOSED;
     }
-    this->garbageBin->addToBin(this); //add myself to to bin - this should be the only way of the object disposal!
+    gCollect::getInstance()->addToBin(this); //add myself to to bin - this should be the only way of the object disposal!
     this->x=-1; //we set the state of the object to be unprovisioned - out of the game.
     this->y=-1;
     this->attachedBoard=NULL;
-    this->garbageBin=NULL;
     return res; // false means that there is no more elements to go.
 }
 
@@ -202,12 +225,11 @@ oState bElem::disposeElement()
 {
     int x0=this->x;//save necessary data, becasue it will be lost after disposeElementUnsafe
     int y0=this->y;
-    gCollect* myGarbage=this->garbageBin;
-    chamber* myChamber=this->attachedBoard;
+    chamber* brd=this->getBoard();
     if(this->disposeElementUnsafe()==NULLREACHED)
     {
-        bElem* newElem=new bElem(myChamber,myGarbage);
-        newElem->stepOnElement(newElem->attachedBoard->getElement(x0,y0));
+        bElem* newElem=new bElem(brd);
+        newElem->stepOnElement(brd->getElement(x0,y0));
     }
     return DISPOSED;
 }
@@ -291,7 +313,7 @@ void bElem::setAmmo()
 
 bool bElem::isProvisioned()
 {
-    if (this->attachedBoard!=NULL && this->x!=-1 && this->y!=-1 && this->garbageBin!=NULL)
+    if (this->attachedBoard!=NULL && this->x!=-1 && this->y!=-1 )
         return true;
     return false;
 }
@@ -304,10 +326,6 @@ bool bElem::moveInDirection(direction d)
 bool bElem::use(bElem *who)
 {
     return false;
-}
-bool bElem::getActive()
-{
-    return true;
 }
 
 
@@ -341,7 +359,7 @@ int bElem::getCnt()
 int bElem::getAnimPh()
 {
     // this->animPhase++;
-    return this->getCntr()>>1;
+    return this->getCntr()>>2;
 }
 
 int bElem::getSwitchId()
@@ -464,6 +482,7 @@ bElem* bElem::removeElement()
 
     if (this->steppingOn!=NULL)
     {
+        this->steppingOn->unstomp();
         this->attachedBoard->chamberArray[this->x][this->y]=this->steppingOn;
         this->steppingOn=NULL;
         this->x=-1;
@@ -472,7 +491,7 @@ bElem* bElem::removeElement()
     }
     else
     {
-        bElem *newElem=new bElem(this->attachedBoard,this->garbageBin,this->x,this->y);
+        bElem *newElem=new bElem(this->attachedBoard,this->x,this->y);
         //we remove the coordinates as well
         this->x=-1;
         this->y=-1;
@@ -513,18 +532,14 @@ bool bElem::collect(bElem *collectible)
 #ifdef _debug
     std::cout<<"Collect "<<collected->getType()<<" st: "<<collected->getSubtype()<<"\n";
 #endif
-    collected->setCollector(this);
+    collected->getCollected(this);
     this->myInventory->addToInventory(collected);
     return true;
 }
 
 bElem* bElem::getCollector()
 {
-    return this->collectedBy;
-}
-void bElem::setCollector(bElem* collector)
-{
-    this->collectedBy=collector;
+    return this->collector;
 }
 
 

@@ -1,11 +1,11 @@
 #include "randomLevelGenerator.h"
 
-randomLevelGenerator::randomLevelGenerator(int w, int h,gCollect *gbin)
+randomLevelGenerator::randomLevelGenerator(int w, int h)
 {
     this->width=w;
     this->height=h;
-    this->mychamber=new chamber(w,h,gbin);
-    this->garbageCollector=gbin;
+    this->mychamber=new chamber(w,h);
+    this->garbageCollector=gCollect::getInstance();
     std::random_device rd;
     std::mt19937::result_type seed = rd() ^ (
                                          (std::mt19937::result_type)
@@ -51,7 +51,7 @@ int randomLevelGenerator::checkWalls(int x, int y)
     if (walls[0] && walls[1] && walls[2] && !walls[3])
     {
         this->mychamber->chamberArray[x-1][y]->disposeElement();
-        this->mychamber->chamberArray[x][y]=new wall(this->mychamber,this->garbageCollector);
+        this->mychamber->chamberArray[x][y]=new wall(this->mychamber);
     }
     if (walls[0] && walls[1] && walls[3] && !walls[2])
     {
@@ -159,7 +159,7 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
             }
             if (this->mychamber->chamberArray[c+1][a]->isSteppable())
             {
-                bElem *newElement=new wall(this->mychamber,this->garbageCollector);
+                bElem *newElement=new wall(this->mychamber);
                 newElement->stepOnElement(this->mychamber->chamberArray[c+1][a]);
             }
             else
@@ -224,7 +224,7 @@ int randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,i
             }
             if (mychamber->chamberArray[a][d+1]->isSteppable())
             {
-                bElem *newElement=new wall(this->mychamber,this->garbageCollector);
+                bElem *newElement=new wall(this->mychamber);
                 newElement->stepOnElement(this->mychamber->chamberArray[a][d+1]);
             }
         }
@@ -393,8 +393,8 @@ bool randomLevelGenerator::generateLevel(int holes)
     int surface=this->lvlGenerate(1,1,this->width-2,this->height-2,_iterations,holes,"B");
     for(int c=0; c<this->width; c++)
     {
-        bElem *newElem=new wall(this->mychamber,this->garbageCollector);
-        bElem *newElem1=new wall(this->mychamber,this->garbageCollector);
+        bElem *newElem=new wall(this->mychamber);
+        bElem *newElem1=new wall(this->mychamber);
         newElem->stepOnElement(this->mychamber->chamberArray[c][0]);
         newElem1->stepOnElement(this->mychamber->chamberArray[c][this->height-1]);
 
@@ -402,8 +402,8 @@ bool randomLevelGenerator::generateLevel(int holes)
     for(int c=0; c<this->height; c++)
     {
 
-        bElem *newElem2=new wall(this->mychamber,this->garbageCollector);
-        bElem *newElem3=new wall(this->mychamber,this->garbageCollector);
+        bElem *newElem2=new wall(this->mychamber);
+        bElem *newElem3=new wall(this->mychamber);
         newElem2->stepOnElement(this->mychamber->chamberArray[0][c]);
         newElem3->stepOnElement(this->mychamber->chamberArray[this->width-1][c]);
     }
@@ -619,30 +619,30 @@ bElem* randomLevelGenerator::createElement(elementToPlace element)
     switch(element.eType)
     {
     case _collectible:
-        return new collectible(this->mychamber,this->garbageCollector);
+        return new collectible(this->mychamber);
         break;
     case _player:
-        return new player(this->mychamber,this->garbageCollector);
+        return new player(this->mychamber);
         break;
     case _door:
-        return new door(this->mychamber,this->garbageCollector,element.eSubType);
+        return new door(this->mychamber,element.eSubType);
         break;
     case _key:
-        return new key(this->mychamber,this->garbageCollector,element.eSubType);
+        return new key(this->mychamber,element.eSubType);
         break;
     case _monster:
-        return new monster(this->mychamber,this->garbageCollector);
+        return new monster(this->mychamber);
         break;
     case _plainGun:
-        return new plainGun(this->mychamber,this->garbageCollector);
+        return new plainGun(this->mychamber);
         break;
     case _bunker:
-        return new bunker(this->mychamber,this->garbageCollector);
+        return new bunker(this->mychamber);
         break;
     case _teleporter:
-        return new teleport(this->mychamber,this->garbageCollector);
+        return new teleport(this->mychamber);
     case _movableType:
-        return new movableElements(this->mychamber,this->garbageCollector);
+        return new movableElements(this->mychamber);
     }
     return NULL;
 }

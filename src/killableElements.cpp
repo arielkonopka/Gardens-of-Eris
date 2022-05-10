@@ -1,11 +1,11 @@
 #include "killableElements.h"
 
-killableElements::killableElements(chamber* board,gCollect* garbageBin) :movableElements(board,garbageBin)
+killableElements::killableElements(chamber* board) :movableElements(board)
 {
     this->movable=false;
 }
 
-killableElements::killableElements(chamber* board, gCollect* garbageBin, int x, int y):movableElements(board,garbageBin,x,y)
+killableElements::killableElements(chamber* board, int x, int y):movableElements(board,x,y)
 {
     this->movable=false;
 }

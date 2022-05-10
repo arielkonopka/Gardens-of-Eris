@@ -3,7 +3,7 @@
 // the static variable must be initialized
 videoElement::videoElementDef* monster::vd=NULL;
 
-monster::monster(chamber *board,gCollect *garbage): killableElements(board,garbage)
+monster::monster(chamber *board): killableElements(board)
 {
     this->animph=0;
     this->internalCnt=0;

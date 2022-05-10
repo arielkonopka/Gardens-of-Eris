@@ -17,7 +17,7 @@ class world
     private:
         std::vector<chamber*> theWorldContainer;
         int chambers;
-        int activeChamber;
+        chamber* activeChamber;
         int secChamb;
         chamber* findActiveChamber();
 

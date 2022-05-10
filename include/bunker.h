@@ -10,8 +10,8 @@ class bunker : public mechanical
     public:
         static videoElement::videoElementDef* vd;
         virtual videoElement::videoElementDef* getVideoElementDef();
-        bunker(chamber *board,gCollect *garbageBin);
-        bunker(chamber *board,gCollect *garbageBin,int x, int y);
+        bunker(chamber *board);
+        bunker(chamber *board,int x, int y);
         virtual ~bunker();
         virtual bool mechanics(bool collected);
         direction findLongestShot();

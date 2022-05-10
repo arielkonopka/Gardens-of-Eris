@@ -5,13 +5,13 @@ videoElement::videoElementDef* movableElements::vd=NULL;
 
 
 
-movableElements::movableElements(chamber *board,gCollect *garbage) : mechanical(board,garbage)
+movableElements::movableElements(chamber *board) : mechanical(board)
 {
     this->_me_moved=0;
     this->_me_canPush=false;
     this->movable=true;
 }
-movableElements::movableElements(chamber *board,gCollect *garbage,int x, int y) : mechanical(board,garbage,x,y)
+movableElements::movableElements(chamber *board,int x, int y) : mechanical(board,x,y)
 {
     this->_me_moved=0;
     this->_me_canPush=false;
@@ -34,40 +34,42 @@ bool movableElements::moveInDirection(direction dir)
 
 bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 {
+    bElem* stepOn=this->getElementInDirection(dir);
     if (this->_me_moved>0 || this->isDying()==true) return false;
     this->setDirection(dir);
     coords ncoord=this->getAbsCoords(dir);
-    if (ncoord==NOCOORDS) return false;
-    if (this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->isSteppable()==true)
+    if (stepOn==NULL) return false;
+    if (stepOn->isSteppable()==true)
     {
-        this->stepOnElement(this->attachedBoard->chamberArray[ncoord.x][ncoord.y]);
+        this->stepOnElement(stepOn);
         this->_me_moved=speed;
         return true;
     }
-    else if (this->canPush()==true && this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->isMovable()==true)
+    else if (this->canPush()==true && stepOn->isMovable()==true)
     {
-        coords ncoord2=this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->getAbsCoords(dir);
-        if (ncoord2==NOCOORDS) return false;
-        if (this->attachedBoard->chamberArray[ncoord2.x][ncoord2.y]->isSteppable())
+        bElem* stepOn2=stepOn->getElementInDirection(dir);
+        if(stepOn2==NULL)
+            return false;
+        if (stepOn2->isSteppable())
         {
-            this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->stepOnElement(this->attachedBoard->chamberArray[ncoord2.x][ncoord2.y]); //move next object in direction
-            this->stepOnElement(this->attachedBoard->chamberArray[ncoord.x][ncoord.y]);  // move the initiating object
+            stepOn->stepOnElement(stepOn2); //move next object in direction
+            this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
             this->_me_moved=speed+1;
             return true;
         }
     }
-    if (this->canCollect()==true && this->myInventory!=NULL && this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->isCollectible()==true)
+    if (this->canCollect()==true && this->myInventory!=NULL && stepOn->isCollectible()==true)
     {
-        if (this->myInventory->addToInventory(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)
+        if (this->myInventory->addToInventory(stepOn)==true)
         //if (this->collect(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)
         {
             this->_me_moved=speed;
             return true;
         }
     }
-    if (this->canInteract()==true && this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->isInteractive()==true)
+    if (this->canInteract()==true && stepOn->isInteractive()==true)
     {
-        if(this->attachedBoard->chamberArray[ncoord.x][ncoord.y]->interact(this)==true)
+        if(stepOn->interact(this)==true)
         {
             this->_me_moved=speed;
             return true;

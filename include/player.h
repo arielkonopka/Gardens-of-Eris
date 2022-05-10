@@ -19,25 +19,26 @@ public:
     bool canInteract();
     bool getVisited();
     int getType();
-    bool getActive();
+    bool isActive();
     int getAnimPh();
-    player(chamber *board,gCollect *garbage);
+    player(chamber *board);
     virtual ~player();
     virtual bool shootGun();
-    static bool findAndActivatePlayer();
- //   bool isDying();
+    virtual oState disposeElement();
+//   bool isDying();
     //     virtual bool tick(bool collected);
 protected:
 //    std::vector<bElem*> weapons;
 //    std::vector<bElem*> usables;
 
 private:
- static std::vector<player*> allPlayers;
+    static std::vector<player*> allPlayers;
     static std::vector<player*> visitedPlayers;
     bool visited=false;
     int animPh;
     int moved;
     int shot;
+    bool activated;
     int used;
     int interacted;
 };

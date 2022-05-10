@@ -11,10 +11,10 @@ public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
-    door(chamber* board, gCollect *garbage);
-    door(chamber* board, gCollect *garbage,int x, int y);
-    door(chamber* board, gCollect *garbage,int subtype);
-    door(chamber* board, gCollect *garbage,int subtype,int x, int y);
+    door(chamber* board);
+    door(chamber* board,int x, int y);
+    door(chamber* board,int subtype);
+    door(chamber* board,int subtype,int x, int y);
     virtual bool interact(bElem *who);
     virtual bool isSteppable();
     virtual bool isOpen();

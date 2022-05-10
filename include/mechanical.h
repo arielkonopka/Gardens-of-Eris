@@ -8,8 +8,8 @@
 class mechanical : public nonSteppable
 {
     public:
-        mechanical(chamber *board,gCollect *garbage);
-        mechanical(chamber *board,gCollect *garbage,int x, int y);
+        mechanical(chamber *board);
+        mechanical(chamber *board,int x, int y);
         virtual ~mechanical();
 
     protected:

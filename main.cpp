@@ -18,7 +18,7 @@ int main( int argc, char * argv[] )
    // delay.tv_sec=0;
    // delay.tv_nsec=2;
     gCollect *garbageBin=gCollect::getInstance();
-    randomLevelGenerator *rndl=new randomLevelGenerator(200,200,garbageBin);
+    randomLevelGenerator *rndl=new randomLevelGenerator(200,200);
 
     chamber* myFirstChamber=rndl->mychamber;
     presenter::presenter *myPresenter=new presenter::presenter(myFirstChamber);
@@ -44,14 +44,14 @@ int main( int argc, char * argv[] )
     rndl->placeElement({_plainGun,0,400,0,5},"B");
     rndl->placeElement({_monster,0,40,0,5},"B");
     rndl->placeElement({_teleporter,0,40,0,5},"B");
-    bElem *mojElement2=new monster(myFirstChamber,garbageBin);
+    bElem *mojElement2=new monster(myFirstChamber);
 
 
 
     mojElement2->stepOnElement(myFirstChamber->chamberArray[2][2]);
-    mojElement2=new door(myFirstChamber,garbageBin,0);
+    mojElement2=new door(myFirstChamber,0);
     mojElement2->stepOnElement(myFirstChamber->chamberArray[2][3]);
-    mojElement2=new key(myFirstChamber,garbageBin,0);
+    mojElement2=new key(myFirstChamber,0);
     mojElement2->stepOnElement(myFirstChamber->chamberArray[2][4]);
     //rndl->lvlGenerate(1,1,48,48,8,4,"B");
 
@@ -74,39 +74,17 @@ int main( int argc, char * argv[] )
 
             finish=true;
             break;
-        case 2: // player died, time to pick another one.
+        case 2:
             finish=true;
             break;
+
         }
     }
 
-
-    /*
-        mojElement->stepOnElement(myFirstChamber->chamberArray[5][5]);
-    //   bool r=mojElement2->stepOnElement(myFirstChamber->chamberArray[3][3]);
-    //   if (r==false)
-        //  {
-        mojElement2->stepOnElement((myFirstChamber->chamberArray[4][5]));
-        mojElement2->moveInDirection(RIGHT);
-        mojElement2->moveInDirection(LEFT);
-        //  mojElement2->stepOnElement((myFirstChamber->chamberArray[4][6]));
-        //  }
-
-    */
- /*   for (int y=0; y<myFirstChamber->height; y++)
-    {
-        for (int x=0; x<myFirstChamber->width; x++)
-        {
-            std::cout<<myFirstChamber->chamberArray[x][y]->getType()<<","<<myFirstChamber->chamberArray[x][y]->getSubtype()<<"|";
-
-        }
-        std::cout<<">\n";
-    }
-*/
-    bElem* n=new key(myFirstChamber,garbageBin,10);
+    bElem* n=new key(myFirstChamber,10);
     n->setSubtype(10);
     std::cout<<"\n\n"<<n->getSubtype();
 
     delete myFirstChamber;
-    return 1;
+    return 0;
 }

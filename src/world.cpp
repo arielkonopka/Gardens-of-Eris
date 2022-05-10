@@ -10,9 +10,9 @@ world::world()
 
 world::~world()
 {
-    this->theInstance=NULL;
+    world::theInstance=NULL;
     this->chambers=-1;
-    this->activeChamber=-1;
+    this->activeChamber=NULL;
 
 }
 world* world::getInstanceId()
@@ -26,32 +26,29 @@ world* world::getInstanceId()
 
 chamber* world::getActiveChamber()
 {
-    if(this->activeChamber>=0 && (int)this->theWorldContainer.size()>this->activeChamber)
+    if (this->activeChamber->player!=NOCOORDS)
     {
-        if (this->theWorldContainer[this->activeChamber]->player!=NOCOORDS)
-        {
-            return this->theWorldContainer[this->activeChamber];
-        }
-        else
-        {
-            return this->findActiveChamber();
-        }
+        return this->activeChamber;
+    }
+    else
+    {
+        return this->findActiveChamber();
     }
     return NULL;
 
 }
+
+
 chamber* world::findActiveChamber()
 {
-    for(int chmbr=0; chmbr<this->theWorldContainer.size();chmbr++)
+    for(auto chmbr:this->theWorldContainer)
     {
-        if(this->theWorldContainer[chmbr]->player!=NOCOORDS)
+        if(chmbr->player!=NOCOORDS)
         {
             this->activeChamber=chmbr;
-            return this->theWorldContainer[chmbr];
+            return chmbr;
         }
     }
-    if (player::findAndActivatePlayer())
-        return this->findActiveChamber();
 
     //None was voted, we should look for a spare player, before we announce that we did not found it
     //TBC
@@ -61,7 +58,7 @@ chamber* world::findActiveChamber()
 
 void world::createAChamber()
 {
-    randomLevelGenerator *rndl=new randomLevelGenerator(150,150,garbageBin);
+    randomLevelGenerator *rndl=new randomLevelGenerator(150,150);
     rndl->generateLevel(4);
 
     this->theWorldContainer.push_back(rndl->mychamber);

@@ -3,7 +3,7 @@
 videoElement::videoElementDef* teleport::vd=NULL;
 std::vector<teleport*> teleport::teleporters;
 
-teleport::teleport(chamber* board, gCollect* garbage):nonSteppable(board,garbage)
+teleport::teleport(chamber* board):nonSteppable(board)
 {
     this->addToTeleports();
     this->theOtherEnd=NULL; // we do not have the other end configured yet. We will configure it on interact method;
@@ -65,7 +65,7 @@ bool teleport::teleportIt(bElem* who)
         if (this->isSteppableDirection(d))
         {
             who->removeElement();
-            who->setBoard(this->attachedBoard);
+            who->setBoard(this->getBoard());
             who->stepOnElement(this->getElementInDirection(d));
             who->setTeleporting(_mov_delay+1*40);
             return true;

@@ -11,7 +11,7 @@ public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
-    teleport(chamber* board, gCollect* garbage);
+    teleport(chamber* board);
     virtual ~teleport();
     virtual bool interact(bElem *who);
     virtual bool isInteractive();

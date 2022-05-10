@@ -17,8 +17,8 @@ class movableElements : public mechanical
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
-        movableElements(chamber *board,gCollect *garbage);
-        movableElements(chamber *board,gCollect *garbage,int x, int y);
+        movableElements(chamber *board);
+        movableElements(chamber *board,int x, int y);
 
         virtual ~movableElements();
         virtual bool isMovable();

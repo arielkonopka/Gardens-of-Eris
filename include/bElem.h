@@ -28,6 +28,7 @@ typedef enum { DISPOSED=0,NULLREACHED=1,ERROR=2} oState;
 class bElem
 {
 public:
+
     static videoElement::videoElementDef* vd;
     virtual int getInstanceid();
     static void resetInstances();
@@ -36,24 +37,31 @@ public:
     void deregisterLiveElement(bElem* who);
     static void runLiveElements();
     bElem();
-    bElem(chamber *board,gCollect *garbage);
-    bElem(chamber *board,gCollect *garbage,int x, int y);
+    bElem(chamber *board);
+    bElem(chamber *board,int x, int y);
 
     virtual sNeighboorhood getSteppableNeighboorhood();
     virtual ~bElem();
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual void setBoard(chamber *board);
-    virtual void setGarbageBin(gCollect *garbage);
     virtual void setCoords(int x, int y);
 
     virtual void setActive(bool active);
     virtual bool selfAlign();
     virtual bool setSubtype(int st);
     virtual bool stepOnElement(bElem *step);
+
+    virtual bElem* getStomper();
+    virtual void stomp(bElem* who); //Notifies an object that other element is stepping on it, we get a stepper's reference
+    virtual void unstomp();         //the object was released
+    virtual bElem* getCollector();
+    virtual void getCollected(bElem* who); //notify the object that it got collected
+    virtual void getDropped(); // notify it got dropped
+
     virtual bool moveInDirection(direction d);
     virtual bool moveInDirectionSpeed(direction d,int speed);
     virtual bool use(bElem *use);
-    virtual bool getActive();
+
     virtual bool interact(bElem *who);
     virtual bool destroy();
     virtual bool kill();
@@ -106,8 +114,7 @@ public:
 
     bElem *steppingOn=NULL;
 //    std::vector<bElem *> collectedItems;
-    virtual bElem* getCollector();
-    virtual void setCollector(bElem* collector);
+
     int interacted;
     std::mt19937 randomNumberGenerator;
     stats myStats;
@@ -120,16 +127,16 @@ public:
     inventory *myInventory;
     static void tick();
     virtual int getCntr();
+     virtual chamber* getBoard();
 protected:
 
-    bElem* collectedBy;
+
     int instance;
     int destroyed;
     int subtype=0;
     int animPhase=0;
     int taterCounter=0; //Internal counter
-    chamber *attachedBoard;
-    gCollect *garbageBin;
+
     int x,y;
     direction myDirection;
     bool amIUsable;
@@ -138,7 +145,9 @@ private:
     static int sTaterCounter;
     virtual void init();
     //  static videoElement::videoElementDef *def;
-
+    bElem *stomping;
+    bElem *collector;
+    chamber *attachedBoard;
 };
 
 #endif // BELEM_H

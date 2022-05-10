@@ -4,12 +4,12 @@
 videoElement::videoElementDef* wall::vd=NULL;
 
 
-wall::wall(chamber* board,gCollect* garbage) : nonSteppable(board,garbage)
+wall::wall(chamber* board) : nonSteppable(board)
 {
         this->subtype=0;
 }
 
-wall::wall(chamber* board,gCollect* garbage,int subtype) : nonSteppable(board,garbage)
+wall::wall(chamber* board,int subtype) : nonSteppable(board)
 {
         this->subtype=subtype;
 }

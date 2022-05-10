@@ -10,8 +10,8 @@ public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
-    collectible(chamber *board,gCollect *garbage);
-    collectible(chamber *board,gCollect *garbage,int x, int y);
+    collectible(chamber *board);
+    collectible(chamber *board,int x, int y);
     virtual bool isSteppable();
     virtual ~collectible();
     virtual bool isCollectible();

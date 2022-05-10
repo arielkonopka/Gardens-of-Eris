@@ -1,11 +1,11 @@
 #include "collectible.h"
 videoElement::videoElementDef* collectible::vd=NULL;
 
-collectible::collectible(chamber *board,gCollect *garbage):killableElements(board,garbage)
+collectible::collectible(chamber *board):killableElements(board)
 {
    // this->setSubtype(0);
 }
-collectible::collectible(chamber* board, gCollect* garbage, int x, int y): killableElements(board,garbage,x,y)
+collectible::collectible(chamber* board, int x, int y): killableElements(board,x,y)
 {
    // this->setSubtype(0);
 }

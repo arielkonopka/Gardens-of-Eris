@@ -12,7 +12,7 @@ class monster : public killableElements
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
-        monster(chamber *board,gCollect *garbage);
+        monster(chamber *board);
         ~monster();
         int getType();
         int getSubtype();
