@@ -31,7 +31,7 @@ int main( int argc, char * argv[] )
 
 
     rndl->placeElement({_monster,5,5,0},"Bba");
-    rndl->placeElement({_collectible,0,20,0},"B");
+    rndl->placeElement({_collectible,0,500,0},"B");
     rndl->placeElement({_key,1,200,0},"B");
     rndl->placeElement({_key,0,100,0},"B");
     //rndl->placeElement({_door,0,200,0},"Ba");
@@ -39,7 +39,7 @@ int main( int argc, char * argv[] )
 
 
      rndl->generateLevel(1);
-    rndl->placeElement({_player,0,1,0,5},"Ba");
+    rndl->placeElement({_player,0,100,0,5},"Ba");
     rndl->placeElement({_bunker,0,100,0,5},"B");
     rndl->placeElement({_plainGun,0,400,0,5},"B");
     rndl->placeElement({_monster,0,40,0,5},"B");
