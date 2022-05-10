@@ -8,6 +8,7 @@ std::vector<player*> player::visitedPlayers;
 player::player(chamber *board) : killableElements::killableElements(board)
 {
     this->used=0;
+    this->movable=true;
     this->interacted=0;
     this->setMoved(0);
     this->animPh=0;
@@ -57,6 +58,7 @@ oState player::disposeElement()
         this->getBoard()->player=NOCOORDS;
         if(player::visitedPlayers.size()>0)
         { // Activate next inactive player avatar
+            std::cout<<"Voting for new player\n";
             bElem* p=player::visitedPlayers[0];
             p->setActive(true);
             p->getBoard()->player=p->getCoords();
@@ -72,6 +74,11 @@ bool player::interact(bElem* who)
 {
     if (who==NULL)
         return false;
+    if(this->isActive())
+        return false;
+    if(this->visited)
+        return true;
+
     if(who->getType()==this->getType())
     {
         player::visitedPlayers.push_back(this);
