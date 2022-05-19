@@ -1,7 +1,7 @@
 #ifndef INVENTORY_H
 #define INVENTORY_H
 #include "commons.h"
-#include "bElem.h"
+//#include "bElem.h"
 #include <vector>
 class bElem;
 

@@ -30,4 +30,8 @@ videoElement::videoElementDef* rubbish::getVideoElementDef()
     return rubbish::vd;
 }
 
+bool rubbish::isCollectible()
+{
+    return true;
+}
 

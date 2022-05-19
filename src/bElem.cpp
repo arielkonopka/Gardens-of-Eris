@@ -1,5 +1,5 @@
 #include "../include/bElem.h"
-
+#include "elements.h"
 videoElement::videoElementDef* bElem::vd=NULL;
 std::vector<bElem*> bElem::liveElems;
 int bElem::sTaterCounter=0;
@@ -194,7 +194,8 @@ coords bElem::getCoords()
 oState bElem::disposeElementUnsafe()
 {
     oState res;
-
+    chamber *myBoard=this->getBoard();
+    coords mycoords=this->getCoords();
     if(x>=0 && y>=0)
     {
 
@@ -208,6 +209,15 @@ oState bElem::disposeElementUnsafe()
             this->getBoard()->chamberArray[this->x][this->y]=NULL;
             res=NULLREACHED;
         }
+        if(this->myInventory!=NULL && this->getType()!=_rubishType && this->getType()!=_plainMissile)
+        {
+            bElem* stash=new rubbish(myBoard);
+            stash->myInventory=this->myInventory;
+            this->myInventory=NULL;
+            stash->stepOnElement(myBoard->getElement(mycoords.x,mycoords.y));
+
+        }
+
     }
     else
     {

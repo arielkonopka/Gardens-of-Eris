@@ -1,5 +1,5 @@
 #include "inventory.h"
-
+#include "bElem.h"
 inventory::inventory()
 {
 
@@ -108,6 +108,9 @@ bool inventory::addToInventory(bElem* what)
     {
         /* this is probably a stash, or something like that. that is why, when we create an object, that shoots infinite ammo, it is better to have gun in non standard places, it would not be picked up that way*/
         this->mergeInventory(what->myInventory);
+        delete what->myInventory;
+        what->myInventory=NULL;
+
     }
 
     if (what->isWeapon()==true)
@@ -130,12 +133,16 @@ bool inventory::addToInventory(bElem* what)
         this->keys.push_back(what->removeElement());
         return true;
     }
-    if(what->isCollectible()==true)
+    if(what->isCollectible()==true && what->getType()!=_rubishType)
     {
         // we do not collect stash items, we already merged its inventory
         if(what->getType()!=_stash)
             this->tokens.push_back(what->removeElement());
         return true;
+    }
+    if (what->getType()==_rubishType)
+    {
+        what->disposeElement();
     }
     return false;
 }
@@ -193,6 +200,7 @@ bool inventory::mergeInventory(inventory* theOtherInventory)
         this->keys.push_back(k);
     }
     theOtherInventory->keys.clear();
+
     return true;
 }
 

@@ -2,10 +2,10 @@
 #define BELEM_H
 #include <stddef.h>
 #include "objectTypes.h"
-//#include "elements.h"
+
 #include "commons.h"
 #include "inventory.h"
-
+//#include "rubbish.h"
 #include "chamber.h"
 #include "gCollect.h"
 #include "videoElementDef.h"
@@ -20,7 +20,8 @@
 class gCollect;
 class chamber;
 
-class inventory;
+//class inventory
+class nonSteppable;
 
 typedef enum { DISPOSED=0,NULLREACHED=1,ERROR=2} oState;
 
