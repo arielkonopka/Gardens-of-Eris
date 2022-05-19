@@ -19,6 +19,7 @@ public:
     bool canInteract();
     bool getVisited();
     int getType();
+    void setActive(bool act);
     bool isActive();
     int getAnimPh();
     player(chamber *board);

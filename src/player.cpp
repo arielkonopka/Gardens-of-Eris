@@ -58,7 +58,6 @@ oState player::disposeElement()
         this->getBoard()->player=NOCOORDS;
         if(player::visitedPlayers.size()>0)
         { // Activate next inactive player avatar
-            std::cout<<"Voting for new player\n";
             bElem* p=player::visitedPlayers[0];
             p->setActive(true);
             p->getBoard()->player=p->getCoords();
@@ -67,8 +66,6 @@ oState player::disposeElement()
     }
     return killableElements::disposeElement();
 }
-
-
 
 bool player::interact(bElem* who)
 {
@@ -183,6 +180,15 @@ bool player::canPush()
 {
     return true;
 }
+
+
+void player::setActive(bool act)
+{
+    this->activated=act;
+}
+
+
+
 bool player::isActive()
 {
     return this->activated; // temporary, in the future only one player should be active in the whole chamber array

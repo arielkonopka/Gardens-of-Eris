@@ -13,7 +13,14 @@ world::~world()
     world::theInstance=NULL;
     this->chambers=-1;
     this->activeChamber=NULL;
-
+    for(auto rls:this->rGens)
+    {
+        delete rls;
+    };
+    for(auto chmbr:this->theWorldContainer)
+    {
+        delete chmbr;
+    };
 }
 world* world::getInstanceId()
 {
@@ -60,7 +67,7 @@ void world::createAChamber()
 {
     randomLevelGenerator *rndl=new randomLevelGenerator(150,150);
     rndl->generateLevel(4);
-
+    this->rGens.push_back(rndl);
     this->theWorldContainer.push_back(rndl->mychamber);
     this->chambers=this->theWorldContainer.size();
 

@@ -23,7 +23,7 @@ randomLevelGenerator::randomLevelGenerator(int w, int h)
 
 randomLevelGenerator::~randomLevelGenerator()
 {
-    //dtor
+
 }
 
 
