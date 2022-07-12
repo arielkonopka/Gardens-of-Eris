@@ -19,6 +19,8 @@ class wall : public nonSteppable
         virtual ~wall();
         int getSubtype();
         int getType();
+        virtual bool canBeKilled();
+        virtual bool canBeDestroyed();
     protected:
 
     private:

@@ -79,7 +79,6 @@ public:
     virtual bool setDirection(direction dir);
     virtual int getType();
     virtual int getSubtype();
-    virtual int getCnt();
     virtual int getAnimPh();
     virtual int getSwitchId();
     virtual int getEnergy();
@@ -116,7 +115,7 @@ public:
     bElem *steppingOn=NULL;
 //    std::vector<bElem *> collectedItems;
 
-    int interacted;
+    unsigned int interacted;
     std::mt19937 randomNumberGenerator;
     stats myStats;
     /*
@@ -127,7 +126,7 @@ public:
     static std::vector<bElem*> liveElems;
     inventory *myInventory;
     static void tick();
-    virtual int getCntr();
+    virtual unsigned int getCntr();
      virtual chamber* getBoard();
 protected:
 
@@ -143,7 +142,7 @@ protected:
     bool amIUsable;
     int killed;
 private:
-    static int sTaterCounter;
+    static unsigned int sTaterCounter;
     virtual void init();
     //  static videoElement::videoElementDef *def;
     bElem *stomping;

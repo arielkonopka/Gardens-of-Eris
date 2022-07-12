@@ -50,7 +50,7 @@ bool killableElements::hurt(int points)
     {
         return false;
     }
-    std::cout<<"\noutch! "<<this->getType()<<" "<<points<<"\n";
+   // std::cout<<"\noutch! "<<this->getType()<<" "<<points<<"\n";
     this->setMoved(_mov_delay);
     this->setEnergy(this->getEnergy()-points);
     if (this->getEnergy()<=0)

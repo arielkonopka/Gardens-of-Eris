@@ -12,11 +12,11 @@ class player : public killableElements
 public:
     virtual videoElement::videoElementDef* getVideoElementDef();
     static videoElement::videoElementDef* vd;
+    static player* getActivePlayer();
     bool mechanics(bool collected);
     bool interact(bElem *who);
     bool canPush();
     bool canCollect();
-    bool canInteract();
     bool getVisited();
     int getType();
     void setActive(bool act);
@@ -33,6 +33,7 @@ protected:
 //    std::vector<bElem*> usables;
 
 private:
+    static player* activePlayer;
     static std::vector<player*> allPlayers;
     static std::vector<player*> visitedPlayers;
     bool visited=false;

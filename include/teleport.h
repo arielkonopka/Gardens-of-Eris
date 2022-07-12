@@ -18,6 +18,8 @@ public:
     virtual bool teleportIt(bElem *who);
     virtual oState disposeElement();
     virtual oState disposeElementUnsafe();
+    virtual bool canBeKilled();
+    virtual bool canBeDestroyed();
 protected:
 private:
     static std::vector<teleport*> teleporters;

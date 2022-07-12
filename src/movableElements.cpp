@@ -37,7 +37,6 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
     bElem* stepOn=this->getElementInDirection(dir);
     if (this->_me_moved>0 || this->isDying()==true) return false;
     this->setDirection(dir);
-    coords ncoord=this->getAbsCoords(dir);
     if (stepOn==NULL) return false;
     if (stepOn->isSteppable()==true)
     {

@@ -3,7 +3,7 @@
 videoElement::videoElementDef* player::vd=NULL;
 std::vector<player*> player::allPlayers;
 std::vector<player*> player::visitedPlayers;
-
+player* player::activePlayer=NULL;
 
 player::player(chamber *board) : killableElements::killableElements(board)
 {
@@ -26,6 +26,25 @@ player::player(chamber *board) : killableElements::killableElements(board)
     player::allPlayers.push_back(this);
 
 }
+player* player::getActivePlayer()
+{
+    if (player::activePlayer==NULL)
+    {
+        /* find active player, because it is null */
+        for(player* p:player::allPlayers)
+        {
+            if (p->isActive())
+            {
+                player::activePlayer=p;
+            }
+        }
+    }
+    /* return value can be null, then no active player found*/
+    return player::activePlayer;
+}
+
+
+
 
 player::~player()
 {
@@ -73,9 +92,11 @@ bool player::interact(bElem* who)
         return false;
     if(this->isActive())
         return false;
-    if(this->visited)
-        return true;
-
+    if (bElem::interact(who)==false)
+        return false;
+   // if(this->visited)
+   //     return true;
+    std::cout<<"Interacting...\n";
     if(who->getType()==this->getType())
     {
         player::visitedPlayers.push_back(this);
@@ -146,7 +167,7 @@ bool player::mechanics(bool collected)
         this->setDirection(this->getBoard()->cntrlItm.dir);
         if (obj==NULL)
             return false;
-        std::cout<<"Interact/n";
+        //std::cout<<"Interact\n";
         res=obj->interact(this);
         if (res)
             this->animPh++;
@@ -161,11 +182,11 @@ bool player::mechanics(bool collected)
 //shoots any suitable gun
 bool player::shootGun()
 {
-    bool res=false;
+   // bool res=false;
     bElem* gun=this->myInventory->getActiveWeapon();
     if(gun!=NULL)
     {
-        std::cout<<"Gun present\n";
+     //   std::cout<<"Gun present\n";
         gun->use(this);
         return true;
     }
@@ -200,11 +221,6 @@ int player::getType()
     return _player;
 }
 
-
-bool player::canInteract()
-{
-    return true;
-}
 
 int player::getAnimPh()
 {

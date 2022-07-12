@@ -38,7 +38,7 @@ bool plainGun::use(bElem* who)
 
     if (this->readyToShoot()==false)
         return true; //The gun is fine, not ready to shoot though
-    this->shot=_mov_delay+_plainMissileSpeed;
+    this->shot=_plainGunCharge;
     if (this->ammo<=0 || who==NULL) //odd subtypes have infinite shots
         if (this->getSubtype()%2)
             return false;

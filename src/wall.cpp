@@ -42,4 +42,13 @@ bool wall::isDying()
 {
     return false;
 }
+bool wall::canBeKilled()
+{
+   return false;
+}
+
+bool wall::canBeDestroyed()
+{
+    return false;
+}
 

@@ -26,6 +26,7 @@ protected:
 
 private:
     void initMe();
+    int interacted;
 
 };
 

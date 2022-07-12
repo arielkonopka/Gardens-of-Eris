@@ -25,6 +25,7 @@
 #define _plainGunAmmo 10
 #define _plainMissileSpeed 1
 #define _plainMissileEnergy 100
+#define _plainGunCharge 30
 
 
 #define _dexterityLevels 50
@@ -35,7 +36,7 @@
 #define _defaultKillTime 10
 #define _defaultDestroyTime 10
 
-#define _interactedTime 6
+#define _interactedTime 26
 #define NOCOORDS   ((coords){-1,-1})
 #define NOSTATS ((stats){-1,-1})
 typedef struct coords

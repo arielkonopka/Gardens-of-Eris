@@ -290,7 +290,7 @@ bool randomLevelGenerator::qualifies(std::string itemLoc, std::string chamLoc)
 
 int randomLevelGenerator::recalculateLocations()
 {
-    int c=0;
+
     int sGlobal=0;
     for(auto ec:this->endChambers)
     {

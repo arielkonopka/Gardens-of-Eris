@@ -13,14 +13,14 @@ teleport::~teleport()
 {
     this->purgeFromTeleporters();
 }
+/* here we will try to teleport an object to the becon connected to this teleporter. if the becon is not yet established, randomly choose one */
 bool teleport::interact(bElem* who)
 {
-    int cx,cy;
+
     if(who==NULL)
         return false;
     if(who->canInteract()==false)
         return false;
-
     if(this->theOtherEnd==NULL)
     {
         int b=(this->randomNumberGenerator()%teleport::teleporters.size());
@@ -53,15 +53,13 @@ int teleport::getType()
     return _teleporter;
 }
 
-//The position must exist!
+//Teleport to this becon
 bool teleport::teleportIt(bElem* who)
 {
-    sNeighboorhood myNeigh;
     int dir=(int)who->getDirection();
     for(int c=0; c<4; c++)
     {
         direction d=(direction)((dir+c)%4);
-
         if (this->isSteppableDirection(d))
         {
             who->removeElement();
@@ -69,10 +67,8 @@ bool teleport::teleportIt(bElem* who)
             who->stepOnElement(this->getElementInDirection(d));
             who->setTeleporting(_mov_delay+1*40);
             return true;
-
         }
     }
-
     return false;
 }
 
@@ -140,3 +136,12 @@ oState teleport::disposeElementUnsafe()
 
 }
 
+bool teleport::canBeKilled()
+{
+    return false;
+}
+
+bool teleport::canBeDestroyed()
+{
+    return true;
+}

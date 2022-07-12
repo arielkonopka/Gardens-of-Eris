@@ -17,8 +17,7 @@ int main( int argc, char * argv[] )
 
    // delay.tv_sec=0;
    // delay.tv_nsec=2;
-    gCollect *garbageBin=gCollect::getInstance();
-    randomLevelGenerator *rndl=new randomLevelGenerator(200,200);
+    randomLevelGenerator *rndl=new randomLevelGenerator(80,80);
 
     chamber* myFirstChamber=rndl->mychamber;
     presenter::presenter *myPresenter=new presenter::presenter(myFirstChamber);
@@ -83,7 +82,7 @@ int main( int argc, char * argv[] )
 
     bElem* n=new key(myFirstChamber,10);
     n->setSubtype(10);
-    std::cout<<"\n\n"<<n->getSubtype();
+    //std::cout<<"\n\n"<<n->getSubtype();
 
     delete myFirstChamber;
     return 0;

@@ -225,3 +225,8 @@ void inventory::mechanics()
 
 }
 
+bool inventory::isEmpty()
+{
+
+    return ((this->keys.size()==0) && (this->mods.size()==0) && (this->tokens.size()==0) && (this->weapons.size()==0));
+}

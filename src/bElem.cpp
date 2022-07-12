@@ -2,7 +2,7 @@
 #include "elements.h"
 videoElement::videoElementDef* bElem::vd=NULL;
 std::vector<bElem*> bElem::liveElems;
-int bElem::sTaterCounter=0;
+unsigned int bElem::sTaterCounter=0;
 int bElem::instances=0;
 
 int bElem::getInstanceid()
@@ -209,7 +209,7 @@ oState bElem::disposeElementUnsafe()
             this->getBoard()->chamberArray[this->x][this->y]=NULL;
             res=NULLREACHED;
         }
-        if(this->myInventory!=NULL && this->getType()!=_rubishType && this->getType()!=_plainMissile)
+        if(this->myInventory!=NULL && this->myInventory->isEmpty()==false && this->getType()!=_rubishType && this->getType()!=_plainMissile)
         {
             bElem* stash=new rubbish(myBoard);
             stash->myInventory=this->myInventory;
@@ -343,9 +343,10 @@ bool bElem::use(bElem *who)
 
 bool bElem::interact(bElem *who)
 {
-    if (who!=NULL)
+    if(this->canInteract()) /* penalty for getting into counter overflow */
     {
-        who->interacted=_interactedTime;
+        this->interacted=this->getCntr()+_interactedTime;
+        return true;
     }
     return false;
 }
@@ -360,11 +361,6 @@ bool bElem::destroy()
     return false;
 }
 
-
-int bElem::getCnt()
-{
-    return 0;
-}
 
 int bElem::getAnimPh()
 {
@@ -434,7 +430,7 @@ bool bElem::isSteppable()
 
 bool bElem::canBeKilled()
 {
-    return false;
+    return true;
 }
 
 bool bElem::canBeDestroyed()
@@ -514,7 +510,11 @@ bElem* bElem::removeElement()
 // this object cannot actively interact with outhers
 bool bElem::canInteract()
 {
-    return false;
+    #ifdef _VerbousMode_
+    if (this->getType()==_player)
+    std::cout<<"interacted "<<this->interacted<<"  taterCounter "<<this->sTaterCounter<<"\n";
+    #endif
+    return (this->interacted<bElem::sTaterCounter || ((this->interacted-bElem::sTaterCounter)>_interactedTime+5));
 }
 
 // Collect another element. The collectible contains location information. that way,
@@ -534,12 +534,12 @@ bool bElem::collect(bElem *collectible)
     collected=collectible->removeElement();
     if (collected==NULL) //this should never happen!
     {
-#ifdef _debug
+#ifdef _VerbousMode_
         std::cout<<"Collecting failed!\n";
 #endif
         return false;
     }
-#ifdef _debug
+#ifdef _VerbousMode_
     std::cout<<"Collect "<<collected->getType()<<" st: "<<collected->getSubtype()<<"\n";
 #endif
     collected->getCollected(this);
@@ -738,9 +738,10 @@ void bElem::setActive(bool active)
 void bElem::tick()
 {
     bElem::sTaterCounter++;
+
 }
 
-int bElem::getCntr()
+unsigned int bElem::getCntr()
 {
     return bElem::sTaterCounter;
 }

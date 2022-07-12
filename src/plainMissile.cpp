@@ -37,6 +37,8 @@ videoElement::videoElementDef* plainMissile::getVideoElementDef()
 {
     return plainMissile::vd;
 }
+
+
 bool plainMissile::mechanics(bool collected)
 {
     bool res;
@@ -48,6 +50,12 @@ bool plainMissile::mechanics(bool collected)
     {
         bElem *myel=this->getElementInDirection(this->getDirection());
         if(myel==NULL)
+        { //that is a dirty hack on situations that are bogus (should not happen, but happen sometimes)
+            if (this->moveInDirectionSpeed(this->getDirection(),_plainMissileSpeed)==false) //if it is out of bounds, just vanish
+                this->disposeElement();
+            return true;
+        }
+        if (myel->isSteppable()==true)
         {
             this->moveInDirectionSpeed(this->getDirection(),_plainMissileSpeed);
             return true;
@@ -62,14 +70,7 @@ bool plainMissile::mechanics(bool collected)
             this->disposeElement();
             return true;
         }
-        if (myel->isSteppable()==true)
-        {
-            this->moveInDirectionSpeed(this->getDirection(),_plainMissileSpeed);
-            return true;
-        }
-
-
-        if(myel->isDying())
+        if(myel->isDying()) // if next element in path is already dying, just disappear.
             this->disposeElement();
         this->kill();
         return true;

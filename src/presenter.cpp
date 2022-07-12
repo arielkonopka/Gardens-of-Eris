@@ -131,7 +131,7 @@ bool presenter::loadCofiguredData()
         auto subtypes=sprlist[c]["AnimDef"].Size();
         auto directions=sprlist[c]["AnimDef"][0].Size();
         auto animphases=sprlist[c]["AnimDef"][0][0].Size();
-        std::cout<<subtypes<<" "<<directions<<" "<<animphases<<"\n";
+   //     std::cout<<subtypes<<" "<<directions<<" "<<animphases<<"\n";
         videoElement::videoElementDef* ved=new videoElement::videoElementDef(subtypes,directions,animphases);
 
         for(unsigned int c0=0; c0<dying.Size(); c0++)
@@ -158,7 +158,7 @@ bool presenter::loadCofiguredData()
                 {
                     int x=sprlist[c]["AnimDef"][c1][c2][c3][0].GetInt();
                     int y=sprlist[c]["AnimDef"][c1][c2][c3][1].GetInt();
-                    std::cout<<c1<<" "<<c2<<" "<<c3<<" "<<x<<" "<<y<<"\n";
+              //      std::cout<<c1<<" "<<c2<<" "<<c3<<" "<<x<<" "<<y<<"\n";
                     ved->setValuesFor(this->sprites,c1,c2,c3,x,y); //We set the sprite frame for that particlular anim phase
 
 
@@ -324,7 +324,7 @@ void presenter::showGameField(int relX,int relY)
     // check if there is a need for top left corner to be recalculated
     if (this->internalBitmap==NULL)
     {
-        std::cout<<"******************* Dupa!!!\n";
+      //  std::cout<<"******************* Dupa!!!\n";
     }
     al_set_target_bitmap(this->internalBitmap);
     al_clear_to_color(al_map_rgba(50,70,120,255));
@@ -375,7 +375,6 @@ int presenter::presentEverything()
     ALLEGRO_EVENT event;
 //   presenter* instance=this;
     controlItem cItem;
-    void* instance=(void*)this;
     bool fin=false;
     int red=20;
     int green=20;
@@ -412,7 +411,7 @@ int presenter::presentEverything()
 
 
                 this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
-                std::cout<<"\033[0G x,y ->"<<this->_cp_attachedBoard->player.x<<","<<this->_cp_attachedBoard->player.y;
+              //  std::cout<<"\033[0G x,y ->"<<this->_cp_attachedBoard->player.x<<","<<this->_cp_attachedBoard->player.y;
                 //  std::cout<<blue<<"\n";
             }
         }
