@@ -321,66 +321,17 @@ int randomLevelGenerator::recalculateLocations()
 
 
 
-bool randomLevelGenerator::claimSpace(spaceToCreate theClaim)
-{/*
-  * This method scatters objects in the maze. It looks for the best fit (required space), picks 5 best fits and then randomly chooses one.
-  * It then uses place Object on all objects from the claim.
-  */
-    rectangle spaces[5];
-    std::string bLocation;
-    int votedSpaceNo=this->gen()%5;
-    int s=theClaim.surface*2;
-    for(int c=0; c<5; c++)
-    {
-        spaces[c].surface=-1;
-    }
-
-    for(auto ec:this->endChambers)
-    {
-        if(ec.banned==false && ec.surface>=s)
-        {
-            for (int c1=0; c1<5; c1++)
-            {
-                if(spaces[c1].surface==-1)
-                {
-                    spaces[c1]=ec;
-                    break;
-                }
-                if(spaces[c1].surface>ec.surface)
-                {
-                    spaces[c1]=ec;
-                    break;
-                }
-            }
-        }
-
-    }
-    bLocation=spaces[votedSpaceNo].location;
-    for(auto cl:theClaim.elementsToBePlaced)
-    {
-        this->placeElement(cl,bLocation);
-    }
-
-    if(theClaim.closing==doorTypeA || theClaim.closing==doorTypeB )
-    {
-        this->placeDoors((elementToPlace){_door,this->doorTypes,1,0,1},bLocation);
-        this->banLocation(bLocation);
-        this->placeElement((elementToPlace){_key,this->doorTypes,1,0,1},"B");
-        this->doorTypes++;
-    }
-    return true;
-}
 
 bool randomLevelGenerator::banLocation(std::string loc)
 {
     std::string bLocation=loc;
-    bLocation.resize(loc.size()-1);
-    for (auto ec:this->endChambers)
+    // bLocation.resize(loc.size()-1);
+    for (int c=0; c<this->endChambers.size(); c++)
     {
-        if(ec.banned==false && ec.location==bLocation)
+        if(this->endChambers[c].banned==false && this->endChambers[c].location==bLocation)
         {
             //We ban added location
-            ec.banned=true;
+            this->endChambers[c].banned=true;
             break;
         }
     }
@@ -391,6 +342,18 @@ bool randomLevelGenerator::banLocation(std::string loc)
 bool randomLevelGenerator::generateLevel(int holes)
 {
     int surface=this->lvlGenerate(1,1,this->width-2,this->height-2,_iterations,holes,"B");
+    int destSurf=surface;
+    std::vector<elementToPlace> elementCollection; // here we will store the elements to be placed on the board
+    std::vector<elementToPlace> elementsToChooseFrom;
+    bool closed;
+    bool spaceFull;
+    int subtype;
+    int surfaceTaken=0;
+    int surfaceFound=surface;
+    std::string location="B";
+    int cnt=0;
+    rectangle currentLocation;
+    int currentChamberLoc=0;
     for(int c=0; c<this->width; c++)
     {
         bElem *newElem=new wall(this->mychamber);
@@ -441,9 +404,76 @@ bool randomLevelGenerator::generateLevel(int holes)
 
 
     */
-    //  this->recalculateLocations();
 
 
+    elementsToChooseFrom.push_back({_monster,0,1,0,9});
+    elementsToChooseFrom.push_back({_monster,1,1,0,9});
+    elementsToChooseFrom.push_back({_collectible,0,1,0,9});
+    elementsToChooseFrom.push_back({_key,0,1,0,9});
+    elementsToChooseFrom.push_back({_plainGun,0,1,0,9});
+//    elementsToChooseFrom.push_back({_plainGun,1,1,0,9});
+    elementsToChooseFrom.push_back({_collectible,0,1,0,9});
+    elementsToChooseFrom.push_back({_bunker,0,1,0,9});
+    elementsToChooseFrom.push_back({_teleporter,0,1,0,9});
+    elementsToChooseFrom.push_back({_teleporter,1,1,0,9});
+    //  std::cout<<"Surface: "<<surface<<"\n";
+
+    int playerNumber=(this->gen()%20)+4;
+    this->placeElement({_player,0,playerNumber,0,playerNumber*9}, {1,1,this->mychamber->width-1,this->mychamber->height-1,(this->mychamber->width*this->mychamber->height)});
+    surface-=playerNumber*9;
+
+    while ((destSurf*100)/surface>2) //leave 20% of the overall surface free
+    {
+        closed=(this->gen() % 5==0); // once every 4 times the space will be closed behind doors
+        spaceFull=false;             // is space full?
+        subtype=this->gen() & 1;      // if there is door, then there must be a key
+        surfaceFound=destSurf;
+        location="B";
+        surfaceTaken=0;
+        cnt=0;
+        while(!spaceFull)
+        {
+            elementToPlace newElement;
+            // we will kinda count the elements to be placed
+            if (cnt>5 || ((this->gen() %555 )==0 ))
+            {
+                spaceFull=true;
+                //     break;
+            }
+            newElement=elementsToChooseFrom[this->gen()%elementsToChooseFrom.size()];
+            elementCollection.push_back(newElement);
+            surfaceTaken+=newElement.surface;
+            cnt++;
+        }
+        //    std::cout<<"SurfaceTaken: "<<surfaceTaken<<"\n";
+        for(int c=0;c<this->endChambers.size();c++)
+        {
+            if(this->endChambers[c].banned) continue;
+            if(this->endChambers[c].surface>=surfaceTaken && this->endChambers[c].surface<surfaceFound)
+            {
+                surfaceFound=this->endChambers[c].surface;
+                location=this->endChambers[c].location;
+                currentLocation=this->endChambers[c];
+                currentChamberLoc=c;
+            }
+
+        }
+        for(elementToPlace el:elementCollection)
+        {
+            //    std::cout<<"Placing element! "<<location<<"\n";
+            this->placeElement(el,currentLocation);
+        }
+        elementCollection.clear();
+        if (closed)
+        {
+            this->placeDoors({_door,subtype,1,0,0},currentLocation);
+            this->placeElement({_key,subtype,1,0,0}, {1,1,this->mychamber->width-1,this->mychamber->height-1,(this->mychamber->width*this->mychamber->height)});
+        }
+        this->endChambers[currentChamberLoc].banned=true;
+        this->bannedPlaces.push_back(this->endChambers[currentChamberLoc]);
+        destSurf-=surfaceTaken;
+
+    }
     return true;
 
 }
@@ -454,7 +484,7 @@ bool randomLevelGenerator::generateLevel(int holes)
 }
 */
 
-int randomLevelGenerator::findSpotsToChoose(std::string location)
+int randomLevelGenerator::findSpotsToChoose(rectangle location)
 {
     /*
     Find all steppable and allowed spots at the location, returns the total amount of free points
@@ -462,21 +492,16 @@ int randomLevelGenerator::findSpotsToChoose(std::string location)
     this->spotsToChoose.clear();
     int surface=0;
 
-    for(auto ec:this->endChambers)
-    {
-        if (ec.banned==false && location==ec.location)
-        {
-            for(int x=ec.x0; x<=ec.x1; x++)
-            {
-                for (int y=ec.y0; y<=ec.y1; y++)
-                {
-                    if (this->mychamber->chamberArray[x][y]->isSteppable() && this->isLocationAllowed(x,y)==true && this->steppableNeighs(x,y)>2)
-                    {
 
-                        this->spotsToChoose.push_back({x,y});
-                        surface++;
-                    }
-                }
+    for(int x=location.x0; x<=location.x1; x++)
+    {
+        for (int y=location.y0; y<=location.y1; y++)
+        {
+            if (this->mychamber->chamberArray[x][y]->isSteppable() && this->isLocationAllowed(x,y)==true && this->steppableNeighs(x,y)>2)
+            {
+
+                this->spotsToChoose.push_back({x,y});
+                surface++;
             }
         }
     }
@@ -488,9 +513,9 @@ bool randomLevelGenerator::isLocationAllowed(int x, int y)
     Checks if the location is allowed. It does that by examining all the allowed rectangles made by the maze generator.
     And then comparing the coordinates with the rectangle topleft and downright corners
     */
-    for (auto ec:this->endChambers)
+    for (auto ec:this->bannedPlaces)
     {
-        if (ec.banned==true && ec.x0>=x && ec.x1<=x && ec.y0>=y && ec.y1<=y)
+        if (ec.x0>=x && ec.x1<=x && ec.y0>=y && ec.y1<=y)
         {
             return false;
         }
@@ -499,60 +524,54 @@ bool randomLevelGenerator::isLocationAllowed(int x, int y)
 }
 
 
-bool randomLevelGenerator::placeDoors(elementToPlace element,std::string location)
+bool randomLevelGenerator::placeDoors(elementToPlace element,rectangle location)
 {
     /*
     Place doors at the location
 
     */
 
-    for(auto ec:this->endChambers)
+
+    //Ok, now we need to place the door.
+    for(int c1=location.x0-1; c1<=location.x1+1; c1++)
     {
-        if (location==ec.location)
+        if (this->mychamber->chamberArray[c1][location.y0-1]->isSteppable())
         {
-            ec.banned=true;
-            //Ok, now we need to place the door.
-            for(int c1=ec.x0-1; c1<=ec.x1+1; c1++)
-            {
-                if (this->mychamber->chamberArray[c1][ec.y0-1]->isSteppable())
-                {
-                    bElem* neEl=this->createElement(element);
-                    neEl->stepOnElement(this->mychamber->chamberArray[c1][ec.y0-1]);
-                }
-                if (this->mychamber->chamberArray[c1][ec.y1+1]->isSteppable())
-                {
-                    bElem* neEl=this->createElement(element);
-                    neEl->stepOnElement(this->mychamber->chamberArray[c1][ec.y1+1]);
-                }
-            }
-            for (int c2=ec.y0; c2<=ec.y1; c2++)
-            {
-                if (this->mychamber->chamberArray[ec.x0-1][c2]->isSteppable())
-                {
-                    bElem* neEl=this->createElement(element);
-                    neEl->stepOnElement(this->mychamber->chamberArray[ec.x0-1][c2]);
-                }
-                if (this->mychamber->chamberArray[ec.x1+1][c2]->isSteppable())
-                {
-                    bElem* neEl=this->createElement(element);
-                    neEl->stepOnElement(this->mychamber->chamberArray[ec.x1+1][c2]);
-                }
-
-            }
-
-            break;
+            bElem* neEl=this->createElement(element);
+            neEl->stepOnElement(this->mychamber->chamberArray[c1][location.y0-1]);
+        }
+        if (this->mychamber->chamberArray[c1][location.y1+1]->isSteppable())
+        {
+            bElem* neEl=this->createElement(element);
+            neEl->stepOnElement(this->mychamber->chamberArray[c1][location.y1+1]);
         }
     }
+    for (int c2=location.y0; c2<=location.y1; c2++)
+    {
+        if (this->mychamber->chamberArray[location.x0-1][c2]->isSteppable())
+        {
+            bElem* neEl=this->createElement(element);
+            neEl->stepOnElement(this->mychamber->chamberArray[location.x0-1][c2]);
+        }
+        if (this->mychamber->chamberArray[location.x1+1][c2]->isSteppable())
+        {
+            bElem* neEl=this->createElement(element);
+            neEl->stepOnElement(this->mychamber->chamberArray[location.x1+1][c2]);
+        }
+
+    }
+
+
     return true;
 }
 int randomLevelGenerator::steppableNeighs(int x, int y)
 {
     int res=0;
-    for (int c=0;c<4;c++)
+    for (int c=0; c<4; c++)
     {
         if (this->mychamber->getElement(x,y)->isSteppableDirection((direction)(c))==true)
         {
-           res++;
+            res++;
         }
     }
 
@@ -563,7 +582,7 @@ int randomLevelGenerator::steppableNeighs(int x, int y)
     return res;
 }
 
-bool randomLevelGenerator::placeElement(elementToPlace element,std::string location)
+bool randomLevelGenerator::placeElement(elementToPlace element,rectangle location)
 {
     /*
     Place element in location.

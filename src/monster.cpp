@@ -38,7 +38,7 @@ bool monster::mechanics(bool collected)
     if (this->internalCnt%5==0)
         this->animph++;
 
-    if(this->isDying()==true)
+    if(this->isDying() || this->isTeleporting())
         return true;
 
     if (this->getMoved()==0)

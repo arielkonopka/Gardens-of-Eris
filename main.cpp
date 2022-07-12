@@ -17,45 +17,15 @@ int main( int argc, char * argv[] )
 
    // delay.tv_sec=0;
    // delay.tv_nsec=2;
-    randomLevelGenerator *rndl=new randomLevelGenerator(80,80);
+    randomLevelGenerator *rndl=new randomLevelGenerator(180,280);
 
     chamber* myFirstChamber=rndl->mychamber;
     presenter::presenter *myPresenter=new presenter::presenter(myFirstChamber);
-    //chamber *myFirstChamber=rndl->mychamber;
 
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
 
-
-
-
-    rndl->placeElement({_monster,5,5,0},"Bba");
-    rndl->placeElement({_collectible,0,500,0},"B");
-    rndl->placeElement({_key,1,200,0},"B");
-    rndl->placeElement({_key,0,100,0},"B");
-    //rndl->placeElement({_door,0,200,0},"Ba");
-    //rndl->placeElement({_door,1,20,0},"Bb");
-
-
-     rndl->generateLevel(1);
-    rndl->placeElement({_player,0,100,0,5},"Ba");
-    rndl->placeElement({_bunker,0,100,0,5},"B");
-    rndl->placeElement({_plainGun,0,400,0,5},"B");
-    rndl->placeElement({_monster,0,40,0,5},"B");
-    rndl->placeElement({_teleporter,0,40,0,5},"B");
-    bElem *mojElement2=new monster(myFirstChamber);
-
-
-
-    mojElement2->stepOnElement(myFirstChamber->chamberArray[2][2]);
-    mojElement2=new door(myFirstChamber,0);
-    mojElement2->stepOnElement(myFirstChamber->chamberArray[2][3]);
-    mojElement2=new key(myFirstChamber,0);
-    mojElement2->stepOnElement(myFirstChamber->chamberArray[2][4]);
-    //rndl->lvlGenerate(1,1,48,48,8,4,"B");
-
-   // std::cout<<bElem::instances<<" instances created\n";
-  //  exit(0);
+    rndl->generateLevel(1);
 
     myPresenter->showGameField(1,1);
 

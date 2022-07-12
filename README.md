@@ -60,6 +60,12 @@ Ba, Baa, Baaab, Baaac, Baaad, Bab, Bac, Bad, Bb, Bc, Bd...
 
 We can now decide where to place our objects, we assign an object to coordinates, and then scatter it across the rectangle.
 
+# Random element placement
+I finally started implementing this. Now it works like this, until there is 10me space available, randomly pick objects to be placed, then find a chamber that fits the best in size. Mark that chamber banned, so it will not be used another time.
+Sometimes close the chamber with doors and loose the key somewhere.
+
+
+
 ## skins.json file 
 
 This file contains the skin definition for the game. It has quite a flexible design, you can for eg. have different animations for different subtypes of element, that are turned in different directions.
@@ -89,7 +95,7 @@ Then after the shot, the guns energy is halved. It restores with mechanics() cal
 
 
 
-
+## Random Level Generator
 
 ## TODO
 * refactor mechanics - the elements should "know" when they are being stepped on, and collected, and react accordingly
