@@ -28,6 +28,8 @@ bool teleport::interact(bElem* who)
         {
             ///////////////////////// New Chamber ///////////////////////////// -> everytime we hit the same object, we create a new chamber, that should have few teleporters there.
             //Here we should create a new chamber
+            randomLevelGenerator *rndl=new randomLevelGenerator((this->randomNumberGenerator()%50)+50,(this->randomNumberGenerator()%50)+50);
+            rndl->generateLevel(2);
             b=(this->randomNumberGenerator()%teleport::teleporters.size());
         }
         this->theOtherEnd=teleport::teleporters[b];

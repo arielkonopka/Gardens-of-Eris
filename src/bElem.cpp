@@ -514,7 +514,7 @@ bool bElem::canInteract()
     if (this->getType()==_player)
     std::cout<<"interacted "<<this->interacted<<"  taterCounter "<<this->sTaterCounter<<"\n";
     #endif
-    return (this->interacted<bElem::sTaterCounter || ((this->interacted-bElem::sTaterCounter)>_interactedTime+5));
+    return (this->interacted+_interactedTime+10<bElem::sTaterCounter || this->interacted>bElem::sTaterCounter);
 }
 
 // Collect another element. The collectible contains location information. that way,

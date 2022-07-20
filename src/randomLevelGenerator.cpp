@@ -410,6 +410,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     elementsToChooseFrom.push_back({_monster,1,1,0,9});
     elementsToChooseFrom.push_back({_collectible,0,1,0,9});
     elementsToChooseFrom.push_back({_key,0,1,0,9});
+    elementsToChooseFrom.push_back({_key,1,1,0,9});
     elementsToChooseFrom.push_back({_plainGun,0,1,0,9});
 //    elementsToChooseFrom.push_back({_plainGun,1,1,0,9});
     elementsToChooseFrom.push_back({_collectible,0,1,0,9});
@@ -424,9 +425,9 @@ bool randomLevelGenerator::generateLevel(int holes)
 
     while ((destSurf*100)/surface>2) //leave 20% of the overall surface free
     {
-        closed=(this->gen() % 5==0); // once every 4 times the space will be closed behind doors
+        closed=(this->gen() % 5==0); // once every 5 times the space will be closed behind doors
         spaceFull=false;             // is space full?
-        subtype=this->gen() & 1;      // if there is door, then there must be a key
+        subtype=this->gen() % 2;      // if there is door, then there must be a key
         surfaceFound=destSurf;
         location="B";
         surfaceTaken=0;
@@ -441,6 +442,10 @@ bool randomLevelGenerator::generateLevel(int holes)
                 //     break;
             }
             newElement=elementsToChooseFrom[this->gen()%elementsToChooseFrom.size()];
+            if (newElement.eType==_key) {
+                newElement.eSubType=subtype;
+                newElement.number=5;
+            }
             elementCollection.push_back(newElement);
             surfaceTaken+=newElement.surface;
             cnt++;
@@ -474,6 +479,12 @@ bool randomLevelGenerator::generateLevel(int holes)
         destSurf-=surfaceTaken;
 
     }
+    //cleanup
+    this->endChambers.clear();
+    this->bannedPlaces.clear();
+    this->elementsToPlace.clear();
+    this->elementsToPlace.clear();
+
     return true;
 
 }
