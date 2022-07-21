@@ -98,5 +98,4 @@ Then after the shot, the guns energy is halved. It restores with mechanics() cal
 ## Random Level Generator
 
 ## TODO
-* refactor mechanics - the elements should "know" when they are being stepped on, and collected, and react accordingly
-* check why the mechanics did not work properly for collected items and remove direct inventory mechanic iterator and use the global list of mechanical objects to animate them.
+* there is probably a bug with mechanics deregistration, which causes a segfault from time to time. I removed most of the references to deregistration. We should not remove the objects from vector, while we are using iterators.
