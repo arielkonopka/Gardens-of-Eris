@@ -13,6 +13,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-march=nocona" />
+					<Add option="-std=gnu++20" />
 					<Add option="-Og" />
 					<Add option="-g" />
 					<Add directory="include" />
@@ -32,6 +33,7 @@
 					<Add option="-march=nocona" />
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
+					<Add option="-std=c++20" />
 					<Add directory="include" />
 				</Compiler>
 				<Linker>
@@ -43,9 +45,13 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-march=nocona" />
 			<Add option="-Wall" />
-			<Add option="-std=c++20" />
+			<Add option="-std=gnu++20" />
 		</Compiler>
+		<Linker>
+			<Add option="-O3" />
+		</Linker>
 		<Unit filename="data/graph/icons64.png" />
 		<Unit filename="data/graph/icons64.xcf" />
 		<Unit filename="data/skins.json" />

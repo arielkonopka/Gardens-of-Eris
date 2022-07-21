@@ -53,11 +53,14 @@ bool door::interact(bElem* who)
 {
     bool bres=bElem::interact(who);
     bElem* key=NULL;
+    if (!bres)
+        return false;
     //That should not happen, as we do not expect object randomly interacting with others without being programmed to do so.
-    if(who->canInteract()==false)
+ /*   if(who->canInteract()==false)
     {
         return false;
     }
+ */
     //std::cout<<"can interact\n";
     if (this->locked==false)
     {

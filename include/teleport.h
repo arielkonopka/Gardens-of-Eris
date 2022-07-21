@@ -4,7 +4,7 @@
 #include "commons.h"
 #include <nonSteppable.h>
 #include "videoElementDef.h"
-
+#include "randomLevelGenerator.h"
 class teleport : public nonSteppable
 {
 public:
