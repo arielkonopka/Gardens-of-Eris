@@ -442,10 +442,11 @@ bool randomLevelGenerator::generateLevel(int holes)
                 //     break;
             }
             newElement=elementsToChooseFrom[this->gen()%elementsToChooseFrom.size()];
-            if (newElement.eType==_key) {
+/*            if (newElement.eType==_key) {
                 newElement.eSubType=subtype;
                 newElement.number=5;
             }
+ */
             elementCollection.push_back(newElement);
             surfaceTaken+=newElement.surface;
             cnt++;
@@ -472,6 +473,7 @@ bool randomLevelGenerator::generateLevel(int holes)
         if (closed)
         {
             this->placeDoors({_door,subtype,1,0,0},currentLocation);
+            this->placeElement({_key,subtype,1,0,0},currentLocation);
             this->placeElement({_key,subtype,1,0,0}, {1,1,this->mychamber->width-1,this->mychamber->height-1,(this->mychamber->width*this->mychamber->height)});
         }
         this->endChambers[currentChamberLoc].banned=true;

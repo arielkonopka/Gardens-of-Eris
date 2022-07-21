@@ -4,6 +4,8 @@ videoElement::videoElementDef* bElem::vd=NULL;
 std::vector<bElem*> bElem::liveElems;
 unsigned int bElem::sTaterCounter=0;
 int bElem::instances=0;
+bool bElem::randomNumberGeneratorInitialized=false;
+std::mt19937 bElem::randomNumberGenerator;
 
 int bElem::getInstanceid()
 {
@@ -26,6 +28,8 @@ bElem::bElem()
 bElem::bElem(chamber* board)
 {
     this->init();
+    this->x=-1;
+    this->y=-1;
     this->attachedBoard=board;
 
 
@@ -69,11 +73,11 @@ bElem::bElem(chamber* board, int x, int y)
 
 void bElem::init()
 {
+
     this->stomping=NULL;
     this->collector=NULL;
     this->attachedBoard=NULL;
-    this->x=-1;
-    this->y=-1;
+
     this->animPhase=0;
     this->setEnergy(_defaultEnergy); // this is rather a durability of an object, if it is killable;
     this->myStats.strength=0; // generic object has no strength
@@ -85,18 +89,22 @@ void bElem::init()
     this->instance=bElem::instances++;
 
     this->myInventory=NULL;
-    std::random_device rd;
-    std::mt19937::result_type seed = rd() ^ (
-                                         (std::mt19937::result_type)
-                                         std::chrono::duration_cast<std::chrono::seconds>(
-                                                 std::chrono::system_clock::now().time_since_epoch()
-                                         ).count() +
-                                         (std::mt19937::result_type)
-                                         std::chrono::duration_cast<std::chrono::microseconds>(
-                                                 std::chrono::high_resolution_clock::now().time_since_epoch()
-                                         ).count() );
-    this->randomNumberGenerator.seed(seed);
-
+    if(!bElem::randomNumberGeneratorInitialized)
+    {
+        std::random_device rd;
+        std::mt19937::result_type seed = rd() ^ (
+                                             (std::mt19937::result_type)
+                                             std::chrono::duration_cast<std::chrono::seconds>(
+                                                     std::chrono::system_clock::now().time_since_epoch()
+                                             ).count() +
+                                             (std::mt19937::result_type)
+                                             std::chrono::duration_cast<std::chrono::microseconds>(
+                                                     std::chrono::high_resolution_clock::now().time_since_epoch()
+                                             ).count() );
+        bElem::randomNumberGenerator.seed(seed);
+        bElem::randomNumberGeneratorInitialized=true;
+    }
+    this->telInProgress=0;
 }
 
 bool bElem::setDirection(direction dir)
@@ -135,7 +143,7 @@ void bElem::setCoords(int x, int y)
 
 bElem* bElem::getStomper()
 {
-        return this->stomping;
+    return this->stomping;
 }
 
 void bElem::stomp(bElem* who)
@@ -148,12 +156,12 @@ void bElem::unstomp()
     this->stomping=NULL;
 }
 
-void bElem::getCollected(bElem* who)
+void bElem::setCollected(bElem* who)
 {
     this->collector=who;
 }
 
-void bElem::getDropped()
+void bElem::setDropped()
 {
     this->collector=NULL;
 }
@@ -297,7 +305,6 @@ bElem::~bElem()
         delete this->myInventory;
 
     }
-
 }
 
 int bElem::getType()
@@ -425,7 +432,7 @@ bool bElem::mechanics(bool collected)
 
 bool bElem::isSteppable()
 {
-    return true;
+    return (!this->isDying()) && (!this->isTeleporting());
 }
 
 bool bElem::canBeKilled()
@@ -465,7 +472,7 @@ bool bElem::isDying()
 
 bool bElem::isTeleporting()
 {
-    return false;
+    return (this->telInProgress>this->getCntr());
 }
 
 
@@ -510,10 +517,10 @@ bElem* bElem::removeElement()
 // this object cannot actively interact with outhers
 bool bElem::canInteract()
 {
-    #ifdef _VerbousMode_
+#ifdef _VerbousMode_
     if (this->getType()==_player)
-    std::cout<<"interacted "<<this->interacted<<"  taterCounter "<<this->sTaterCounter<<"\n";
-    #endif
+        std::cout<<"interacted "<<this->interacted<<"  taterCounter "<<this->sTaterCounter<<"\n";
+#endif
     return (this->interacted<this->getCntr()|| this->interacted>this->getCntr()+_interactedTime+10);
 }
 
@@ -523,11 +530,7 @@ bool bElem::canInteract()
 bool bElem::collect(bElem *collectible)
 {
     bElem *collected;
-    if (this->canCollect()==false)
-    {
-        return false;
-    }
-    if (collectible==NULL)
+    if (collectible==NULL || collectible->isCollectible()==false ||this->canCollect()==false)
     {
         return false;
     }
@@ -542,7 +545,7 @@ bool bElem::collect(bElem *collectible)
 #ifdef _VerbousMode_
     std::cout<<"Collect "<<collected->getType()<<" st: "<<collected->getSubtype()<<"\n";
 #endif
-    collected->getCollected(this);
+    collected->setCollected(this);
     this->myInventory->addToInventory(collected);
     return true;
 }
@@ -690,6 +693,7 @@ int bElem::getMoved()
 }
 void bElem::setTeleporting(int time)
 {
+    this->telInProgress=this->getCntr()+time;
 
 }
 
@@ -697,6 +701,13 @@ void bElem::setTeleporting(int time)
 
 void bElem::registerLiveElement(bElem* who)
 {
+    for(std::vector<bElem*>::iterator p=bElem::liveElems.begin(); p!=bElem::liveElems.end(); p++) //we don't register objects twice
+    {
+        if ((*p)->getInstanceid()==who->getInstanceid())
+        {
+            return;
+        }
+    }
     bElem::liveElems.push_back(who);
 }
 
@@ -708,6 +719,7 @@ void bElem::deregisterLiveElement(bElem* who)
         if(who->getInstanceid()==(*p)->getInstanceid())
         {
             bElem::liveElems.erase(p);
+            std::cout<<"Deregistered element "<<who->getType()<<" "<<who<<"\n";
         }
         else
         {
@@ -718,12 +730,20 @@ void bElem::deregisterLiveElement(bElem* who)
 
 void bElem::runLiveElements()
 {
-    for(auto p=bElem::liveElems.begin(); p!=bElem::liveElems.end(); p++)
-        if((*p)->getCoords()!=NOCOORDS)
-        {
+    for(int p=0; p<bElem::liveElems.size(); p++)
+    {
 
-            (*p)->mechanics(false);
+
+        if(bElem::liveElems[p]->getCoords()!=NOCOORDS)
+        {
+            bElem::liveElems[p]->mechanics(false);
         }
+        else if(bElem::liveElems[p]->getStomper()!=NULL || bElem::liveElems[p]->getCollector()!=NULL)
+        {
+            bElem::liveElems[p]->mechanics(true);
+        }
+
+    }
     bElem::tick();
     if (gCollect::getInstance()->garbageQsize()>0) //clean up, when there is garbage to be cleared
         gCollect::getInstance()->purgeGarbage();

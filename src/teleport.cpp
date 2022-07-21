@@ -16,24 +16,25 @@ teleport::~teleport()
 /* here we will try to teleport an object to the becon connected to this teleporter. if the becon is not yet established, randomly choose one */
 bool teleport::interact(bElem* who)
 {
+    bool bres=bElem::interact(who);
+    if(who->getType()==_player){
+    std::cout<<"Player teleporting\n";
+    int rx=10;
 
-    if(who==NULL)
-        return false;
-    if(who->canInteract()==false)
-        return false;
+  }
     if(this->theOtherEnd==NULL)
     {
-        int b=(this->randomNumberGenerator()%teleport::teleporters.size());
+        int b=(bElem::randomNumberGenerator()%teleport::teleporters.size());
         while(this==teleport::teleporters[b])
         {
             ///////////////////////// New Chamber ///////////////////////////// -> everytime we hit the same object, we create a new chamber, that should have few teleporters there.
             //Here we should create a new chamber
-            randomLevelGenerator *rndl=new randomLevelGenerator((this->randomNumberGenerator()%50)+50,(this->randomNumberGenerator()%50)+50);
+            randomLevelGenerator *rndl=new randomLevelGenerator((bElem::randomNumberGenerator()%50)+50,(bElem::randomNumberGenerator()%50)+50);
             rndl->generateLevel(2);
-            b=(this->randomNumberGenerator()%teleport::teleporters.size());
+            b=(bElem::randomNumberGenerator()%teleport::teleporters.size());
         }
         this->theOtherEnd=teleport::teleporters[b];
-        this->theOtherEnd->removeFromTeleports(); //We remove the other end from teleporters available to choose, as it was already chosen.
+       // this->theOtherEnd->removeFromTeleports(); //We remove the other end from teleporters available to choose, as it was already chosen.
         //this way, we can always have an allocated teleporter
 
     }
@@ -64,10 +65,21 @@ bool teleport::teleportIt(bElem* who)
         direction d=(direction)((dir+c)%4);
         if (this->isSteppableDirection(d))
         {
+            bElem *toStep=NULL;
+            coords origCoords=who->getCoords();
+            chamber* origChamber=who->getBoard();
+            if(who->steppingOn)
+                toStep=who->steppingOn;
             who->removeElement();
+//!!!Review and remove after fixing the root cause
+            if(toStep==NULL)  // if somehow the object under teleported does not exist, we create empty object.
+                toStep=new bElem(origChamber,origCoords.x,origCoords.y);
+/////////////////////////////////////////////////////
+            toStep->setTeleporting(_teleportationTime);
+
             who->setBoard(this->getBoard());
             who->stepOnElement(this->getElementInDirection(d));
-            who->setTeleporting(_mov_delay+1*40);
+            who->setTeleporting(_teleportationTime);
             return true;
         }
     }

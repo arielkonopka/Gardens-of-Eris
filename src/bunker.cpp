@@ -41,7 +41,7 @@ bool bunker::mechanics(bool collected)
     bool res=nonSteppable::mechanics(collected);
     if(this->help>0)
         this->help--;
-    int randomTest=this->randomNumberGenerator()%1000+this->help;
+    int randomTest=bElem::randomNumberGenerator()%1000+this->help;
     res=res || this->myGun->mechanics(collected);
     if(this->myGun->readyToShoot()==false)
         return res;

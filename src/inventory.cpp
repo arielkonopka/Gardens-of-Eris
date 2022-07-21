@@ -103,7 +103,6 @@ bool inventory::addToInventory(bElem* what)
 {
     if(what==NULL)
         return false;
-    what->deregisterLiveElement(what);
     if(what->myInventory!=NULL)
     {
         /* this is probably a stash, or something like that. that is why, when we create an object, that shoots infinite ammo, it is better to have gun in non standard places, it would not be picked up that way*/

@@ -108,6 +108,15 @@ bool door::isInteractive()
 {
     return true;
 }
+bool door::canBeKilled()
+{
+    return false;
+}
+
+bool door::canBeDestroyed()
+{
+    return true;
+}
 
 
 

@@ -16,6 +16,8 @@
 #define _plainGun 200
 #define _bunker 250
 #define _teleporter 400
+#define _teleportationTime (_mov_delay*25)
+
 #define _stash 600
 
 

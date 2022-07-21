@@ -51,7 +51,7 @@ bool plainGun::use(bElem* who)
         int ener=this->getEnergy();;
         if (who->getStats().dexterity>0)
         {
-            ener= this->getEnergy()-this->randomNumberGenerator()%(_dexterityLevels-who->getStats().dexterity);
+            ener= this->getEnergy()-bElem::randomNumberGenerator()%(_dexterityLevels-who->getStats().dexterity);
         }
         if (this->ammo>0)
             if (this->getSubtype()%2==0)

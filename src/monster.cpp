@@ -54,7 +54,7 @@ bool monster::mechanics(bool collected)
             {
                 continue;
             }
-            if (testElem->getType()==_player && testElem->isTeleporting()==false)
+            if (testElem->getType()==_player && testElem->isTeleporting()==false && testElem->isActive()==true)
             {
                 testElem->hurt(6);
                 return true; //no need to leave the place, where we do the damage

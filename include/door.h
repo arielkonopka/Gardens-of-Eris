@@ -20,6 +20,8 @@ public:
     virtual bool isOpen();
     virtual ~door();
     virtual bool isInteractive();
+    virtual bool canBeKilled();
+    virtual bool canBeDestroyed();
 protected:
     bool open;
     bool locked;

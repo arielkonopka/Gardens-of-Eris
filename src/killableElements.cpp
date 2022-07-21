@@ -46,7 +46,7 @@ bool killableElements::canBeDestroyed()
 
 bool killableElements::hurt(int points)
 {
-   if (this->canBeKilled()==false)
+   if (this->canBeKilled()==false && this->isTeleporting()==false)
     {
         return false;
     }

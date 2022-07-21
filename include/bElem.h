@@ -56,8 +56,8 @@ public:
     virtual void stomp(bElem* who); //Notifies an object that other element is stepping on it, we get a stepper's reference
     virtual void unstomp();         //the object was released
     virtual bElem* getCollector();
-    virtual void getCollected(bElem* who); //notify the object that it got collected
-    virtual void getDropped(); // notify it got dropped
+    virtual void setCollected(bElem* who); //notify the object that it got collected
+    virtual void setDropped(); // notify it got dropped
 
     virtual bool moveInDirection(direction d);
     virtual bool moveInDirectionSpeed(direction d,int speed);
@@ -116,7 +116,8 @@ public:
 //    std::vector<bElem *> collectedItems;
 
     unsigned int interacted;
-    std::mt19937 randomNumberGenerator;
+    static std::mt19937 randomNumberGenerator;
+    static bool randomNumberGeneratorInitialized;
     stats myStats;
     /*
         @mechanics(bool collected) - takes care both of time passing (all the timers and so on along with the mechanics itself - every object type can have its own rules
@@ -142,6 +143,7 @@ protected:
     bool amIUsable;
     int killed;
 private:
+    int telInProgress;
     static unsigned int sTaterCounter;
     virtual void init();
     //  static videoElement::videoElementDef *def;
