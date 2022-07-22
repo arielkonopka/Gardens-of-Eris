@@ -19,11 +19,13 @@ class chamber
         boost::multi_array<bElem *,2> chamberArray;
         chamber(int x,int y);
         ~chamber();
-
+        int getInstanceId();
     protected:
 
     private:
-
+        void setInstanceId(int id);
+        int instanceid;
+        static int lastid;
 };
 
 #endif // CHAMBER_H

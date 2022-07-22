@@ -19,23 +19,15 @@ bool teleport::interact(bElem* who)
     bool bres=bElem::interact(who);
     if(who->getType()==_player){
     std::cout<<"Player teleporting\n";
-    int rx=10;
+
 
   }
     if(this->theOtherEnd==NULL)
     {
+        this->removeFromTeleports();
         int b=(bElem::randomNumberGenerator()%teleport::teleporters.size());
-        while(this==teleport::teleporters[b])
-        {
-            ///////////////////////// New Chamber ///////////////////////////// -> everytime we hit the same object, we create a new chamber, that should have few teleporters there.
-            //Here we should create a new chamber
-            randomLevelGenerator *rndl=new randomLevelGenerator((bElem::randomNumberGenerator()%50)+50,(bElem::randomNumberGenerator()%50)+50);
-            rndl->generateLevel(2);
-            b=(bElem::randomNumberGenerator()%teleport::teleporters.size());
-        }
+        this->addToTeleports();
         this->theOtherEnd=teleport::teleporters[b];
-       // this->theOtherEnd->removeFromTeleports(); //We remove the other end from teleporters available to choose, as it was already chosen.
-        //this way, we can always have an allocated teleporter
 
     }
     return this->theOtherEnd->teleportIt(who);

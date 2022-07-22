@@ -326,7 +326,7 @@ bool randomLevelGenerator::banLocation(std::string loc)
 {
     std::string bLocation=loc;
     // bLocation.resize(loc.size()-1);
-    for (int c=0; c<this->endChambers.size(); c++)
+    for (unsigned int c=0; c<this->endChambers.size(); c++)
     {
         if(this->endChambers[c].banned==false && this->endChambers[c].location==bLocation)
         {
@@ -418,7 +418,6 @@ bool randomLevelGenerator::generateLevel(int holes)
     elementsToChooseFrom.push_back({_teleporter,0,1,0,9});
     elementsToChooseFrom.push_back({_teleporter,1,1,0,9});
     //  std::cout<<"Surface: "<<surface<<"\n";
-
     int playerNumber=(this->gen()%20)+4;
     this->placeElement({_player,0,playerNumber,0,playerNumber*9}, {1,1,this->mychamber->width-1,this->mychamber->height-1,(this->mychamber->width*this->mychamber->height)});
     surface-=playerNumber*9;
@@ -452,7 +451,7 @@ bool randomLevelGenerator::generateLevel(int holes)
             cnt++;
         }
         //    std::cout<<"SurfaceTaken: "<<surfaceTaken<<"\n";
-        for(int c=0;c<this->endChambers.size();c++)
+        for(unsigned int c=0;c<this->endChambers.size();c++)
         {
             if(this->endChambers[c].banned) continue;
             if(this->endChambers[c].surface>=surfaceTaken && this->endChambers[c].surface<surfaceFound)

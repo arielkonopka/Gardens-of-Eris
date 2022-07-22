@@ -143,7 +143,7 @@ protected:
     bool amIUsable;
     int killed;
 private:
-    int telInProgress;
+    unsigned int telInProgress;
     static unsigned int sTaterCounter;
     virtual void init();
     //  static videoElement::videoElementDef *def;

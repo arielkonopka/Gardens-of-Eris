@@ -334,8 +334,8 @@ void presenter::showGameField(int relX,int relY)
             this->showObjectTile(x,y,0,0,this->_cp_attachedBoard->getElement(x+(this->positionOnScreen.x/this->sWidth),y+(this->positionOnScreen.y/this->sHeight)));
         }
     al_set_target_bitmap(screen);
-    // al_wait_for_vsync();
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY,0);
+     al_wait_for_vsync();
 
     al_flip_display();
 }
@@ -360,15 +360,6 @@ void presenter::showGameFieldLoop()
 }
 
 
-static void *shGFL(ALLEGRO_THREAD* at,void* instance)
-{
-
-    presenter* myinst=(presenter*)instance;
-    std::cout<<"start thread";
-    myinst->showGameFieldLoop();
-    return NULL;
-}
-
 
 int presenter::presentEverything()
 {
@@ -376,9 +367,6 @@ int presenter::presentEverything()
 //   presenter* instance=this;
     controlItem cItem;
     bool fin=false;
-    int red=20;
-    int green=20;
-    int blue=50;
 
     // ALLEGRO_THREAD* visual=al_create_thread(shGFL,&instance);
 

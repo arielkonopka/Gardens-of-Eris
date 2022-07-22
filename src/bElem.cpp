@@ -719,7 +719,7 @@ void bElem::deregisterLiveElement(bElem* who)
         if(who->getInstanceid()==(*p)->getInstanceid())
         {
             bElem::liveElems.erase(p);
-            std::cout<<"Deregistered element "<<who->getType()<<" "<<who<<"\n";
+            //std::cout<<"Deregistered element "<<who->getType()<<" "<<who<<"\n";
         }
         else
         {
@@ -730,7 +730,7 @@ void bElem::deregisterLiveElement(bElem* who)
 
 void bElem::runLiveElements()
 {
-    for(int p=0; p<bElem::liveElems.size(); p++)
+    for(unsigned int p=0; p<bElem::liveElems.size(); p++)
     {
 
 

@@ -1,13 +1,17 @@
 #!/bin/bash
 
-
+gccbin="gcc-12"
 objPath=./obj/Release/
 extraflags="-g"
 mkdir -p ${objPath}
+opts="-Wall -std=gnu++20 -march=native -Og -g -O3"
+
+
 
 for x in src/*.cpp ./main.cpp ; do 
-    gcc-11 ${extraflags} -O3 -c ${x} -I./include --std=gnu++20 -Wall -march=skylake -o ${objPath}${x%.cpp}.o 
+    ${gccbin} ${extraflags} ${opts} -c ${x} -I./include  -o ${objPath}${x%.cpp}.o 
 done
 
-gcc-11 ${objPath}src/*.o  ${objPath}*.o -o ./gardenOfEris -lstdc++ -lallegro -lallegro_image
+
+${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./gardenOfEris -lstdc++ -lallegro -lallegro_image
 
