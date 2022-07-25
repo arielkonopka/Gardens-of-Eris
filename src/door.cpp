@@ -37,6 +37,7 @@ void door::initMe()
     this->interacted=-1;
     this->open=false;
     this->locked=true;
+    this->setDirection(UP);
 }
 bool door::isSteppable()
 {
@@ -66,6 +67,7 @@ bool door::interact(bElem* who)
     {
         this->interacted=this->getCntr()+10;
         this->open=!this->open;
+        this->setDirection((!this->open)?UP:LEFT);
         return true;
     }
     //If it cannot collect, it cannot hold a key.
@@ -94,6 +96,7 @@ std::cout<<"can not collect\n";
     {
        this->open=true;
        this->locked=false;
+       this->setDirection((!this->open)?UP:LEFT);
     } else
     {
         return false;

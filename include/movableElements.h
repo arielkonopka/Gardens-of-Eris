@@ -27,7 +27,7 @@ class movableElements : public mechanical
         virtual int getType();
         virtual direction getDirection();
         virtual bool setDirection(direction newDirection);
-        virtual int getSubtype();
+     //   virtual int getSubtype();
         virtual bool canPush();
         virtual bool mechanics(bool collected);
         virtual void setMoved(int time);

@@ -347,7 +347,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     std::vector<elementToPlace> elementsToChooseFrom;
     bool closed;
     bool spaceFull;
-    int subtype;
+    int stype;
     int surfaceTaken=0;
     int surfaceFound=surface;
     std::string location="B";
@@ -411,6 +411,9 @@ bool randomLevelGenerator::generateLevel(int holes)
     elementsToChooseFrom.push_back({_collectible,0,1,0,9});
     elementsToChooseFrom.push_back({_key,0,1,0,9});
     elementsToChooseFrom.push_back({_key,1,1,0,9});
+     elementsToChooseFrom.push_back({_key,2,1,0,9});
+    elementsToChooseFrom.push_back({_key,3,1,0,9});
+    elementsToChooseFrom.push_back({_key,4,1,0,9});
     elementsToChooseFrom.push_back({_plainGun,0,1,0,9});
 //    elementsToChooseFrom.push_back({_plainGun,1,1,0,9});
     elementsToChooseFrom.push_back({_collectible,0,1,0,9});
@@ -426,7 +429,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     {
         closed=(this->gen() % 5==0); // once every 5 times the space will be closed behind doors
         spaceFull=false;             // is space full?
-        subtype=this->gen() % 2;      // if there is door, then there must be a key
+        stype=this->gen() % 5;      // if there is door, then there must be a key
         surfaceFound=destSurf;
         location="B";
         surfaceTaken=0;
@@ -441,11 +444,11 @@ bool randomLevelGenerator::generateLevel(int holes)
                 //     break;
             }
             newElement=elementsToChooseFrom[this->gen()%elementsToChooseFrom.size()];
-/*            if (newElement.eType==_key) {
-                newElement.eSubType=subtype;
+           if (newElement.eType==_key) {
+                newElement.eSubType=stype;
                 newElement.number=5;
             }
- */
+
             elementCollection.push_back(newElement);
             surfaceTaken+=newElement.surface;
             cnt++;
@@ -471,9 +474,10 @@ bool randomLevelGenerator::generateLevel(int holes)
         elementCollection.clear();
         if (closed)
         {
-            this->placeDoors({_door,subtype,1,0,0},currentLocation);
-            this->placeElement({_key,subtype,1,0,0},currentLocation);
-            this->placeElement({_key,subtype,1,0,0}, {1,1,this->mychamber->width-1,this->mychamber->height-1,(this->mychamber->width*this->mychamber->height)});
+        std::cout<<"going to place key: "<<stype<<"\n";
+            this->placeDoors({_door,stype,1,0,0},currentLocation);
+            this->placeElement({_key,stype,1,0,0},currentLocation);
+            this->placeElement({_key,stype,1,0,0}, {1,1,this->mychamber->width-1,this->mychamber->height-1,(this->mychamber->width*this->mychamber->height)});
         }
         this->endChambers[currentChamberLoc].banned=true;
         this->bannedPlaces.push_back(this->endChambers[currentChamberLoc]);
@@ -542,7 +546,7 @@ bool randomLevelGenerator::placeDoors(elementToPlace element,rectangle location)
     Place doors at the location
 
     */
-
+std::cout<<"door "<<element.eSubType<<"\n";
 
     //Ok, now we need to place the door.
     for(int c1=location.x0-1; c1<=location.x1+1; c1++)

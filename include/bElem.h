@@ -129,12 +129,13 @@ public:
     static void tick();
     virtual unsigned int getCntr();
      virtual chamber* getBoard();
+          int subtype;
 protected:
 
 
     int instance;
     int destroyed;
-    int subtype=0;
+
     int animPhase=0;
     int taterCounter=0; //Internal counter
 
@@ -144,6 +145,7 @@ protected:
     int killed;
 private:
     unsigned int telInProgress;
+
     static unsigned int sTaterCounter;
     virtual void init();
     //  static videoElement::videoElementDef *def;

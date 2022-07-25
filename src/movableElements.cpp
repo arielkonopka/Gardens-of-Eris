@@ -83,12 +83,12 @@ int movableElements::getType()
 {
     return _movableType;
 }
-
+/*
 int movableElements::getSubtype()
 {
     return 0;
 }
-
+*/
 bool movableElements::canPush()
 {
     return _me_canPush;
