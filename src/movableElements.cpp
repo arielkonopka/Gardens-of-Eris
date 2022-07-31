@@ -137,3 +137,30 @@ int movableElements::getMoved()
 {
     return this->_me_moved;
 }
+
+
+bool movableElements::dragInDirection(direction dragIntoDirection)
+{
+    direction objFromDir=(direction)(((int)dragIntoDirection)+2);
+    bElem *draggedObj=this->getElementInDirection(objFromDir);
+    if(!draggedObj->isSteppable())
+        return false;
+    return draggedObj->moveInDirection(dragIntoDirection);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

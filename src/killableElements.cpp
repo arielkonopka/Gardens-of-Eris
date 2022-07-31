@@ -46,11 +46,11 @@ bool killableElements::canBeDestroyed()
 
 bool killableElements::hurt(int points)
 {
-   if (this->canBeKilled()==false && this->isTeleporting()==false)
+   if (this->canBeKilled()==false || this->isTeleporting() || this->isDying() || this->isDestroyed())
     {
         return false;
     }
-   // std::cout<<"\noutch! "<<this->getType()<<" "<<points<<"\n";
+
     this->setMoved(_mov_delay);
     this->setEnergy(this->getEnergy()-points);
     if (this->getEnergy()<=0)

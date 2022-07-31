@@ -446,7 +446,7 @@ bool randomLevelGenerator::generateLevel(int holes)
             newElement=elementsToChooseFrom[this->gen()%elementsToChooseFrom.size()];
            if (newElement.eType==_key) {
                 newElement.eSubType=stype;
-                newElement.number=5;
+              //  newElement.number=5;
             }
 
             elementCollection.push_back(newElement);
@@ -476,8 +476,8 @@ bool randomLevelGenerator::generateLevel(int holes)
         {
         std::cout<<"going to place key: "<<stype<<"\n";
             this->placeDoors({_door,stype,1,0,0},currentLocation);
-            this->placeElement({_key,stype,1,0,0},currentLocation);
-            this->placeElement({_key,stype,1,0,0}, {1,1,this->mychamber->width-1,this->mychamber->height-1,(this->mychamber->width*this->mychamber->height)});
+            this->placeElement({_key,stype,1,0,9},currentLocation);
+            this->placeElement({_key,stype,1,0,9}, {1,1,this->mychamber->width-1,this->mychamber->height-1,(this->mychamber->width*this->mychamber->height)});
         }
         this->endChambers[currentChamberLoc].banned=true;
         this->bannedPlaces.push_back(this->endChambers[currentChamberLoc]);

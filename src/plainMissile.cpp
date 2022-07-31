@@ -67,7 +67,10 @@ bool plainMissile::mechanics(bool collected)
                 return false;
             }
             myel->hurt(this->getEnergy());
-            this->disposeElement();
+            if(!myel->isDying())
+                this->kill();
+            else
+                this->disposeElement();
             return true;
         }
         if(myel->isDying()) // if next element in path is already dying, just disappear.

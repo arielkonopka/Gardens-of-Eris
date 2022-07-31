@@ -32,7 +32,7 @@ class movableElements : public mechanical
         virtual bool mechanics(bool collected);
         virtual void setMoved(int time);
         virtual int getMoved();
-
+        virtual bool dragInDirection(direction dragIntoDirection);
         int _me_moved;
         direction facing;
         bool movable;

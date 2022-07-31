@@ -18,8 +18,6 @@ bool teleport::interact(bElem* who)
 {
     bool bres=bElem::interact(who);
     if(who->getType()==_player){
-    std::cout<<"Player teleporting\n";
-
 
   }
     if(this->theOtherEnd==NULL)
@@ -68,7 +66,6 @@ bool teleport::teleportIt(bElem* who)
                 toStep=new bElem(origChamber,origCoords.x,origCoords.y);
 /////////////////////////////////////////////////////
             toStep->setTeleporting(_teleportationTime);
-
             who->setBoard(this->getBoard());
             who->stepOnElement(this->getElementInDirection(d));
             who->setTeleporting(_teleportationTime);
