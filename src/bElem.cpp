@@ -618,6 +618,17 @@ modType bElem::getModType()
     return NONE;
 }
 
+
+
+int bElem::getTypeInDirection(direction di)
+{
+    bElem *e=this->getElementInDirection(di);
+    if(e!=NULL)
+        return e->getType();
+    return -1;
+}
+
+
 /*
 Here we want to avoid the duplication of boundary checking, that is why we use getABSCoords, isSteppableInDirection and getElementInDirection;
 */
@@ -629,49 +640,63 @@ sNeighboorhood bElem::getSteppableNeighboorhood()
     left=this->getAbsCoords(LEFT);
     down=this->getAbsCoords(DOWN);
     right=this->getAbsCoords(RIGHT);
+
+    myNeigh.nTypes[0]=this->getTypeInDirection(UP);
     myNeigh.steppable[0]=this->isSteppableDirection(UP);
     myNeigh.steppableClose[0]=myNeigh.steppable[0];
     if (up!=NOCOORDS and left!=NOCOORDS)
     {
         myNeigh.steppable[1]=this->getElementInDirection(UP)->isSteppableDirection(LEFT);
+        myNeigh.nTypes[1]=this->getElementInDirection(UP)->getTypeInDirection(LEFT);
+
     }
     else
     {
         myNeigh.steppable[1]=false;
+        myNeigh.nTypes[1]=-1;
     }
     myNeigh.steppableOther[0]=myNeigh.steppable[1];
     myNeigh.steppable[2]=this->isSteppableDirection(LEFT);
     myNeigh.steppableClose[1]=myNeigh.steppable[2];
+    myNeigh.nTypes[2]=this->getTypeInDirection(LEFT);
 
     if (down!=NOCOORDS and left!=NOCOORDS)
     {
         myNeigh.steppable[3]=this->getElementInDirection(DOWN)->isSteppableDirection(LEFT);
+        myNeigh.nTypes[3]=this->getElementInDirection(DOWN)->getTypeInDirection(LEFT);
     }
     else
     {
         myNeigh.steppable[3]=false;
+        myNeigh.nTypes[3]=-1;
     }
     myNeigh.steppableOther[1]=myNeigh.steppable[3];
     myNeigh.steppable[4]=this->isSteppableDirection(DOWN);
     myNeigh.steppableClose[2]=myNeigh.steppable[4];
+    myNeigh.nTypes[4]=this->getTypeInDirection(DOWN);
     if (down!=NOCOORDS and right!=NOCOORDS)
     {
         myNeigh.steppable[5]=this->getElementInDirection(DOWN)->isSteppableDirection(RIGHT);
+        myNeigh.nTypes[5]=this->getElementInDirection(DOWN)->getTypeInDirection(RIGHT);
     }
     else
     {
         myNeigh.steppable[5]=false;
+        myNeigh.nTypes[5]=-1;
     }
     myNeigh.steppableOther[2]=myNeigh.steppable[5];
     myNeigh.steppable[6]=this->isSteppableDirection(RIGHT);
     myNeigh.steppableClose[3]=myNeigh.steppable[6];
+    myNeigh.nTypes[6]=this->getTypeInDirection(RIGHT);
     if (up!=NOCOORDS and right!=NOCOORDS)
     {
         myNeigh.steppable[7]=this->getElementInDirection(UP)->isSteppableDirection(RIGHT);
+        myNeigh.nTypes[7]=this->getElementInDirection(UP)->getTypeInDirection(RIGHT);
     }
     else
     {
         myNeigh.steppable[7]=false;
+        myNeigh.nTypes[7]=-1;
     }
     myNeigh.steppableOther[3]=myNeigh.steppable[5];
     return myNeigh;

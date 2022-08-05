@@ -38,9 +38,9 @@
 #define _defaultKillTime 10
 #define _defaultDestroyTime 10
 
-#define _interactedTime 26
+#define _interactedTime 5
 #define NOCOORDS   ((coords){-1,-1})
-#define NOSTATS ((stats){-1,-1})
+#define NOSTATS ((stats){-1,-1,-1,-1})
 typedef struct coords
 {
     int x=-1,y=-1;
@@ -78,6 +78,8 @@ typedef struct stats
     int strength;
     int energy;
     int dexterity;
+    int points;
+
 
 } stats;
 
@@ -86,6 +88,6 @@ typedef struct neighboorhood
     bool steppableClose[4]; //up,left,down,right
     bool steppableOther[4]; //up-left,down-left,down-right,up-right
     bool steppable[8]; // whole neighboorhood, starting from up, then up-left, left, down-left, down, down-right, right, up-right
-
+    int  nTypes[8];
 } sNeighboorhood;
  #endif

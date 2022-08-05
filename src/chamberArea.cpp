@@ -173,10 +173,10 @@ void chamberArea::findChambersCloseToSurface(int s)
         last=true;
         for(int cnt=0; cnt<this->children.size(); cnt++)
         {
-            std::cout<<s<<": Demanded surface "<<"Examining child: "<<cnt<<" size "<<this->children[cnt]->children.size()<<" child surface "<<this->children[cnt]->surface<<" mine:"<<this->surface<<"\n";
+      //      std::cout<<s<<": Demanded surface "<<"Examining child: "<<cnt<<" size "<<this->children[cnt]->children.size()<<" child surface "<<this->children[cnt]->surface<<" mine:"<<this->surface<<"\n";
             if (this->children[cnt]->surface>=s)
             {
-                std::cout<<"reach next level child: "<<cnt<<"\n";
+        //        std::cout<<"reach next level child: "<<cnt<<"\n";
                 this->children[cnt]->findChambersCloseToSurface(s);
                 last=false;
             }
@@ -186,7 +186,7 @@ void chamberArea::findChambersCloseToSurface(int s)
     {
         if(this->surface<s*5)
         {
-            std::cout<<"Adding area\n";
+          //  std::cout<<"Adding area\n";
             chamberArea::foundAreas.push_back(this);
         }
     }
@@ -198,13 +198,13 @@ bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
 {
     sNeighboorhood neigh=mychamber->getElement(x,y)->getSteppableNeighboorhood();
     int unstep=0;
-    bool lastStep=neigh.steppable[7]; //last element
+    int lastStep=neigh.nTypes[7]; //last element
     int gap=0;
     for (int c=0; c<8; c++)
     {
-        if(lastStep!=neigh.steppable[c])
+        if(lastStep!=neigh.nTypes[c])
         {
-            if(gap==1 || gap==4)
+            if(gap==1)
             {
                 return false;
             }

@@ -96,9 +96,10 @@ bool player::interact(bElem* who)
         return false;
    // if(this->visited)
    //     return true;
-    std::cout<<"Interacting...\n";
-    if(who->getType()==this->getType())
+    //std::cout<<"Interacting...\n";
+    if(who->getType()==this->getType() && !this->visited)
     {
+        std::cout<<"Adding new avatar\n";
         player::visitedPlayers.push_back(this);
         this->visited=true;
     }

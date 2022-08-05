@@ -70,6 +70,7 @@ public:
     virtual bool isSteppable();
     virtual bool isSteppableDirection(direction di);
     virtual bElem *getElementInDirection(direction di);
+    virtual int getTypeInDirection(direction di);
     virtual bool canBeKilled();
     virtual bool canBeDestroyed();
 
@@ -128,7 +129,7 @@ public:
     inventory *myInventory;
     static void tick();
     virtual unsigned int getCntr();
-     virtual chamber* getBoard();
+    virtual chamber* getBoard();
           int subtype;
 protected:
 

@@ -44,27 +44,23 @@ Now you, the [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism) got 
 
 My implementation of [recursive division](https://en.wikipedia.org/wiki/Maze_generation_algorithm) has some deliberate modifications. For eg. first few divisions are made to be more or less equal - the dividing walls can be set only in certin range of places, instead all. 
 
-Placing the items can be a bit tricky. I thought of few strategies:
-
-1. Scatter randomly across all the steppable places on the maze (maze generated first)
-2. Because of how the maze is generated, we can exactly locate the moment, when the space is not divided anymore. That is where we can place our stuff, that gives us nice options, like place stuff by te walls, place stuff in the middle of free space.
-3. Place elements in walls.
-4. Search for the best fit for spaces requested, we use the way maze was generated to identify appropriate spaces, which we then have scattered with objects. - there is a lot to be done here
-
-
-Since we use the recursive division methon, I thought that the subchambers can have their own *coordinates*.
-First rectangle would be **B**, as beginning, then it would be divided in 4 rectangles: a, b, c, d. Those rectengles would be divided into a, b, c, d, and so on...
-THen we notice, that the rectangles processed by the algorythm would look like this: 
-
-Ba, Baa, Baaab, Baaac, Baaad, Bab, Bac, Bad, Bb, Bc, Bd... 
-
-We can now decide where to place our objects, we assign an object to coordinates, and then scatter it across the rectangle.
 
 # Random element placement
-I finally started implementing this. Now it works like this, until there is 10me space available, randomly pick objects to be placed, then find a chamber that fits the best in size. Mark that chamber banned, so it will not be used another time.
-Sometimes close the chamber with doors and loose the key somewhere.
+During the labirynth creation, we create a spanning tree. Every node can have multiple children (usually 4), and every node has a parent, except for the head, which has no parent.
+Every node has a surface (a number of available elements), which is calculated like this: if the node has children, the surface is a sum of the children's surfaces, otherwise calculate the surface by the node dimensions.
+On node deletion, we delete all the children, and recalculate the surface - we travel to the root, and update the sums. If the node is the last child, we delete the parent.
+First we construct a start list of the objects:
+* player (possibly multiple elements)
+* a gun - one
+* two keys of the type 0
+and then we search the spanning tree for the locations that would be sufficient to contain the elements.
+Of these locations we pick randomly a location, where we would scatter the objects.
+On the object scatter, we get the list of available fields (we check the neighboorhood if we do not try to take the place in a passage.
+We lock the space with the doors of the type 0
+We set the parent node to deny more doors in the node.
+We delete the node that we just filled
 
-
+Now we construct lists of elements to be placed on the board, we also calculate, if we want to close the spaces, and we search the appropriate spaces, until there is no more space left.
 
 ## skins.json file 
 
@@ -98,4 +94,9 @@ Then after the shot, the guns energy is halved. It restores with mechanics() cal
 ## Random Level Generator
 
 ## TODO
-* there is probably a bug with mechanics deregistration, which causes a segfault from time to time. I removed most of the references to deregistration. We should not remove the objects from vector, while we are using iterators.
+* promote stats into a class - now we could keep only a pointer to the stats, and link it to plain bullets, so if a bullet hits something, we would have automagical stats update
+* add blocking mechanism for the garbage collector, so we could like attach foreign stats (or whole bElems) to other objects, these objects could have intependent activity and timespan.
+  like imagine a case:
+    a player shoots a shot and dies just right after.
+    the bullet goes for a while and hits something. (flies longer than the player lives), we would not want the garbage collector to destroy the player, until the bullet finishes its existance.
+    The player would be removed from the board, just the garbage collector would not clean it out.

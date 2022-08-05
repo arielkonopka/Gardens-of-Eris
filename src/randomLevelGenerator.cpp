@@ -301,7 +301,7 @@ bool randomLevelGenerator::generateLevel(int holes)
 
 
     elementsToChooseFrom.push_back({_monster,0,1,0,9});
-    elementsToChooseFrom.push_back({_monster,1,1,0,9});
+   // elementsToChooseFrom.push_back({_monster,1,1,0,9});
     elementsToChooseFrom.push_back({_collectible,0,1,0,9});
     elementsToChooseFrom.push_back({_key,0,1,0,9});
     elementsToChooseFrom.push_back({_key,1,1,0,9});
@@ -313,7 +313,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     //elementsToChooseFrom.push_back({_collectible,0,1,0,9});
     elementsToChooseFrom.push_back({_bunker,0,1,0,9});
     elementsToChooseFrom.push_back({_teleporter,0,1,0,9});
-    elementsToChooseFrom.push_back({_teleporter,1,1,0,9});
+    elementsToChooseFrom.push_back({_player,0,1,0,9});
 
     //first find area for the player and stuff for it
     elementCollection.push_back({_player,0,2,0,9});
