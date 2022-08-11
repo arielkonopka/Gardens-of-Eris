@@ -164,7 +164,7 @@ bool chamberArea::findElementsToStepOn(chamber* myChamber)
 
 
 
-void chamberArea::findChambersCloseToSurface(int s)
+void chamberArea::findChambersCloseToSurface(int s,int tolerance)
 {
     bool last=this->children.size()==0;
     std::cout<<"ch size "<<this->children.size()<<"\n";
@@ -177,14 +177,14 @@ void chamberArea::findChambersCloseToSurface(int s)
             if (this->children[cnt]->surface>=s)
             {
         //        std::cout<<"reach next level child: "<<cnt<<"\n";
-                this->children[cnt]->findChambersCloseToSurface(s);
+                this->children[cnt]->findChambersCloseToSurface(s,tolerance);
                 last=false;
             }
         }
     }
     if (last==true)
     {
-        if(this->surface<s*5)
+        if(this->surface<s+tolerance)
         {
           //  std::cout<<"Adding area\n";
             chamberArea::foundAreas.push_back(this);

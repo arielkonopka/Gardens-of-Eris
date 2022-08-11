@@ -22,7 +22,7 @@ public:
     int calculateSurface(chamber *mychamber);
     bool findElementsToStepOn(chamber *myChamber);
     void findElementsRec(chamber* mychamber);
-    void findChambersCloseToSurface(int s);
+    void findChambersCloseToSurface(int s,int tolerance);
     bool checkIfElementIsFree(int x,int y, chamber *mychamber);
     bool childrenLock;
 };

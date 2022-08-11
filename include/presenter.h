@@ -26,8 +26,8 @@ obiekt się teleportuje (animacja)
 obiekt ginie (animacja)
 
 */
-#define scrWidth 1600
-#define scrHeight 1000
+#define scrWidth 1920
+#define scrHeight 1080
 #define _offsetX 64
 #define _offsetY 64
 

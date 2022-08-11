@@ -253,6 +253,7 @@ bool randomLevelGenerator::placeElementCollection(chamberArea* chmbrArea,std::ve
             int selectedEl=this->gen()%chamberArea::foundElements.size(); //find the position in the found elements
             bElem* newElem=createElement((*elements)[cnt]);
             newElem->stepOnElement(chamberArea::foundElements[selectedEl]); //place element on a board
+            newElem->selfAlign();
             chamberArea::foundElements[selectedEl]=chamberArea::foundElements[chamberArea::foundElements.size()-1]; //remove it from the list, so it would not be used again
             chamberArea::foundElements.pop_back();
 
@@ -274,6 +275,7 @@ bool randomLevelGenerator::placeElementCollection(chamberArea* chmbrArea,std::ve
 
 bool randomLevelGenerator::generateLevel(int holes)
 {
+    int tolerance=5;
     this->headNode=this->lvlGenerate(1,1,this->width-2,this->height-2,_iterations,holes);
 
     int availableSurface=this->headNode->calculateInitialSurface();
@@ -300,29 +302,29 @@ bool randomLevelGenerator::generateLevel(int holes)
     }
 
 
-    elementsToChooseFrom.push_back({_monster,0,1,0,9});
+    elementsToChooseFrom.push_back({_monster,0,1,0,3});
    // elementsToChooseFrom.push_back({_monster,1,1,0,9});
-    elementsToChooseFrom.push_back({_collectible,0,1,0,9});
-    elementsToChooseFrom.push_back({_key,0,1,0,9});
-    elementsToChooseFrom.push_back({_key,1,1,0,9});
-    elementsToChooseFrom.push_back({_key,2,1,0,9});
-    elementsToChooseFrom.push_back({_key,3,1,0,9});
-    elementsToChooseFrom.push_back({_key,4,1,0,9});
-    elementsToChooseFrom.push_back({_plainGun,0,1,0,9});
+    elementsToChooseFrom.push_back({_collectible,0,1,0,3});
+    elementsToChooseFrom.push_back({_key,0,1,0,3});
+    elementsToChooseFrom.push_back({_key,1,1,0,3});
+    elementsToChooseFrom.push_back({_key,2,1,0,3});
+    elementsToChooseFrom.push_back({_key,3,1,0,3});
+    elementsToChooseFrom.push_back({_key,4,1,0,3});
+    elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
 //    elementsToChooseFrom.push_back({_plainGun,1,1,0,9});
     //elementsToChooseFrom.push_back({_collectible,0,1,0,9});
-    elementsToChooseFrom.push_back({_bunker,0,1,0,9});
-    elementsToChooseFrom.push_back({_teleporter,0,1,0,9});
+    elementsToChooseFrom.push_back({_bunker,0,1,0,6});
+    elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
     elementsToChooseFrom.push_back({_player,0,1,0,9});
 
     //first find area for the player and stuff for it
-    elementCollection.push_back({_player,0,2,0,9});
-    elementCollection.push_back({_key,0,2,0,9});
-    elementCollection.push_back({_plainGun,0,1,0,9});
+    elementCollection.push_back({_player,0,2,0,3});
+    elementCollection.push_back({_key,0,2,0,3});
+    elementCollection.push_back({_plainGun,0,1,0,3});
     int demandedSurface=0;
     for(int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
     chamberArea::foundAreas.clear();
-    this->headNode->findChambersCloseToSurface(demandedSurface);
+    this->headNode->findChambersCloseToSurface(demandedSurface,tolerance);
     if (chamberArea::foundAreas.size()==0)
     {
         std::cout<<"Found areas is empty!\n";
@@ -387,7 +389,8 @@ bool randomLevelGenerator::generateLevel(int holes)
         }
         else
         {
-            this->headNode->findChambersCloseToSurface(demandedSurface);
+            tolerance+=5;
+            this->headNode->findChambersCloseToSurface(demandedSurface,tolerance);
             if(chamberArea::foundAreas.size()==0)
                 break;
         }
