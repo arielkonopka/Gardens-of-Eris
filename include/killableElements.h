@@ -1,16 +1,18 @@
 #ifndef KILLABLEELEMENTS_H
 #define KILLABLEELEMENTS_H
 
-#include "movableElements.h"
+#include "mechanical.h"
 #include "commons.h"
 
 
 
-class killableElements : public movableElements
+class killableElements : public mechanical
 {
     public:
         killableElements(chamber* board);
         killableElements(chamber* board,int x, int y);
+        killableElements(chamber *board,bool registerEl);
+        killableElements(chamber *board,int x,int y,bool registerEl);
         virtual ~killableElements();
         virtual bool canBeKilled();
         virtual bool canBeDestroyed();

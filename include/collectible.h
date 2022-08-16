@@ -12,6 +12,9 @@ public:
     virtual int getType();
     collectible(chamber *board);
     collectible(chamber *board,int x, int y);
+    collectible(chamber *board,bool registerEl);
+    collectible(chamber *board,int x, int y,bool registerEl);
+
     virtual bool isSteppable();
     virtual ~collectible();
     virtual bool isCollectible();

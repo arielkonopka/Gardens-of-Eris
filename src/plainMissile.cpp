@@ -2,7 +2,7 @@
 
 
 videoElement::videoElementDef* plainMissile::vd=NULL;
-plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber)
+plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber,true)
 {
     this->setEnergy(_plainMissileEnergy);
     this->_me_moved=_plainMissileSpeed;
@@ -10,7 +10,7 @@ plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber)
     this->setMoved(_plainMissileSpeed);
 
 }
-plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber)
+plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber,true)
 {
     this->setEnergy(energy);
     this->_me_moved=_plainMissileSpeed;

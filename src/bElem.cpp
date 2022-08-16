@@ -73,7 +73,7 @@ bElem::bElem(chamber* board, int x, int y)
 
 void bElem::init()
 {
-
+    this->hasActivatedMechanics=false;
     this->stomping=NULL;
     this->collector=NULL;
     this->attachedBoard=NULL;
@@ -127,7 +127,14 @@ chamber* bElem::getBoard()
 void bElem::setBoard(chamber* board)
 {
     this->attachedBoard=board;
-}
+    if (this->myInventory!=NULL)
+    {
+        this->myInventory->updateBoard(board);
+    }
+
+
+
+    }
 
 
 direction bElem::getDirection()
@@ -300,6 +307,8 @@ bElem* bElem::getElementInDirection(direction di)
 
 bElem::~bElem()
 {
+    if(this->isLiveElement())
+        this->deregisterLiveElement(this);
     if(this->myInventory!=NULL)
     {
         delete this->myInventory;
@@ -360,9 +369,13 @@ bool bElem::interact(bElem *who)
 
 bool bElem::destroy()
 {
+
     if (this->canBeDestroyed()==true && this->isDestroyed()==false)
     {
+        if(!this->isLiveElement())
+            this->registerLiveElement(this);
         this->destroyed=_defaultDestroyTime;
+        this->killed=_defaultDestroyTime;
         return true;
     }
     return false;
@@ -402,24 +415,29 @@ bool bElem::isSwitchOn()
 
 bool bElem::mechanics(bool collected)
 {
-    if(this->myInventory!=NULL)
+  /*  if(this->myInventory!=NULL)
     {
         this->myInventory->mechanics();
     }
+    */
     this->taterCounter++; //this is our source of sequential numbers
-    if (this->steppingOn!=NULL)
-    {
-        this->steppingOn->mechanics(true);
-    }
+//    if (this->steppingOn!=NULL)
+//   {
+//      this->steppingOn->mechanics(true);
+//    }
     this->animPhase++;
 
     if (this->destroyed>0) //We support two modes of destruction, this one is the demolishion thing
     {
         this->destroyed--;
+        std::cout<<"Destroying\n";
         if(this->destroyed==0)
         {
-            if (this->getType()!=_belemType) //We do not dispose the empty elements
+            this->killed=false;
+            if (this->getType()!=_belemType) { //We do not dispose the empty elements
+                this->removeElement();
                 this->disposeElement();
+                }
             return true;
         }
     }
@@ -726,6 +744,10 @@ void bElem::setTeleporting(int time)
 
 void bElem::registerLiveElement(bElem* who)
 {
+    if (this->isLiveElement())
+        return;
+    this->hasActivatedMechanics=true;
+    /*
     for(std::vector<bElem*>::iterator p=bElem::liveElems.begin(); p!=bElem::liveElems.end(); p++) //we don't register objects twice
     {
         if ((*p)->getInstanceid()==who->getInstanceid())
@@ -733,11 +755,14 @@ void bElem::registerLiveElement(bElem* who)
             return;
         }
     }
+    */
     bElem::liveElems.push_back(who);
 }
 
 void bElem::deregisterLiveElement(bElem* who)
 {
+    if (!this->isLiveElement())
+        return;
     std::vector<bElem*>::iterator p;
     for(p=bElem::liveElems.begin(); p!=bElem::liveElems.end();)
     {
@@ -751,10 +776,12 @@ void bElem::deregisterLiveElement(bElem* who)
             p++;
         }
     }
+    this->hasActivatedMechanics=false;
 }
 
 void bElem::runLiveElements()
 {
+    std::cout<<"Active Elements: "<<bElem::liveElems.size()<<"\n";
     for(unsigned int p=0; p<bElem::liveElems.size(); p++)
     {
 
@@ -791,4 +818,8 @@ unsigned int bElem::getCntr()
     return bElem::sTaterCounter;
 }
 
+bool bElem::isLiveElement()
+{
+    return this->hasActivatedMechanics;
+}
 

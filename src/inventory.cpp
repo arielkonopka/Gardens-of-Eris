@@ -229,3 +229,38 @@ bool inventory::isEmpty()
 
     return ((this->keys.size()==0) && (this->mods.size()==0) && (this->tokens.size()==0) && (this->weapons.size()==0));
 }
+
+
+
+
+void inventory::updateBoard(chamber* board)
+{
+    for(auto w:this->weapons)
+    {
+        w->setBoard(board);
+    }
+    for(auto k:this->keys)
+    {
+        k->setBoard(board);
+    }
+    for(auto m:this->mods)
+    {
+        m->setBoard(board);
+    }
+    for(auto t:this->tokens)
+    {
+        t->setBoard(board);
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+

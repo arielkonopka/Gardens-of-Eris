@@ -16,9 +16,12 @@
 #define _plainGun 200
 #define _bunker 250
 #define _teleporter 400
-#define _teleportationTime (_mov_delay*25)
-
+#define _teleportationTime (_mov_delay*15)
+#define _goldenAppleType 900
 #define _stash 600
+#define _explosivesType 601
+
+
 
 
 #define _mov_delay   3
@@ -27,7 +30,7 @@
 #define _plainGunAmmo 10
 #define _plainMissileSpeed 1
 #define _plainMissileEnergy 100
-#define _plainGunCharge 30
+#define _plainGunCharge 10
 
 
 #define _dexterityLevels 50

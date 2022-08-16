@@ -5,13 +5,13 @@ videoElement::videoElementDef* movableElements::vd=NULL;
 
 
 
-movableElements::movableElements(chamber *board) : mechanical(board)
+movableElements::movableElements(chamber *board) : nonSteppable(board)
 {
     this->_me_moved=0;
     this->_me_canPush=false;
     this->movable=true;
 }
-movableElements::movableElements(chamber *board,int x, int y) : mechanical(board,x,y)
+movableElements::movableElements(chamber *board,int x, int y) : nonSteppable(board,x,y)
 {
     this->_me_moved=0;
     this->_me_canPush=false;

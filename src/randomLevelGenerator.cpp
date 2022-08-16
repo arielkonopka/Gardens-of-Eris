@@ -282,7 +282,6 @@ bool randomLevelGenerator::generateLevel(int holes)
 
     std::vector<elementToPlace> elementCollection; // here we will store the elements to be placed on the board
     std::vector<elementToPlace> elementsToChooseFrom;
-
     //draw the walls around the whole chamber
     for(int c=0; c<this->width; c++)
     {
@@ -301,19 +300,32 @@ bool randomLevelGenerator::generateLevel(int holes)
         newElem3->stepOnElement(this->mychamber->chamberArray[this->width-1][c]);
     }
 
+    // build probablility table - this way we can pick random objects with different probablilities
+    for(int c=1; c<(50/holes); c++)
+    {
+        // dangerous elements here, the more holes, the less of them in the gamefield
+        elementsToChooseFrom.push_back({_monster,0,1,0,3});
+        elementsToChooseFrom.push_back({_monster,1,1,0,3});
+        elementsToChooseFrom.push_back({_bunker,0,1,0,6});
 
-    elementsToChooseFrom.push_back({_monster,0,1,0,3});
-   // elementsToChooseFrom.push_back({_monster,1,1,0,9});
-    elementsToChooseFrom.push_back({_collectible,0,1,0,3});
-    elementsToChooseFrom.push_back({_key,0,1,0,3});
-    elementsToChooseFrom.push_back({_key,1,1,0,3});
-    elementsToChooseFrom.push_back({_key,2,1,0,3});
-    elementsToChooseFrom.push_back({_key,3,1,0,3});
-    elementsToChooseFrom.push_back({_key,4,1,0,3});
-    elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
-//    elementsToChooseFrom.push_back({_plainGun,1,1,0,9});
-    //elementsToChooseFrom.push_back({_collectible,0,1,0,9});
-    elementsToChooseFrom.push_back({_bunker,0,1,0,6});
+    }
+    for(int c=0; c<holes*15; c++)
+    {
+        elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,3});
+        elementsToChooseFrom.push_back({_explosivesType,0,1,0,3});
+    }
+    for(int c=0; c<holes*5; c++)
+    {
+        elementsToChooseFrom.push_back({_key,0,1,0,3});
+        elementsToChooseFrom.push_back({_key,1,1,0,3});
+        elementsToChooseFrom.push_back({_key,2,1,0,3});
+        elementsToChooseFrom.push_back({_key,3,1,0,3});
+        elementsToChooseFrom.push_back({_key,4,1,0,3});
+        elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
+        elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
+        elementsToChooseFrom.push_back({_teleporter,1,1,0,6});
+
+    }
     elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
     elementsToChooseFrom.push_back({_player,0,1,0,9});
 
@@ -464,6 +476,10 @@ bElem* randomLevelGenerator::createElement(elementToPlace element)
     case _collectible:
         return new collectible(this->mychamber);
         break;
+    case _goldenAppleType:
+        return new goldenApple(this->mychamber);
+        break;
+
     case _player:
         return new player(this->mychamber);
         break;
@@ -486,6 +502,9 @@ bElem* randomLevelGenerator::createElement(elementToPlace element)
         return new teleport(this->mychamber);
     case _movableType:
         return new movableElements(this->mychamber);
+    case _explosivesType:
+        return new explosives(this->mychamber);
+
     }
     return NULL;
 }

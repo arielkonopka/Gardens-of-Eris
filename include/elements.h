@@ -23,6 +23,9 @@
 #include "plainMissile.h"
 #include "bunker.h"
 #include "teleport.h"
+#include "goldenApple.h"
+#include "explosives.h"
+
 //
 
 

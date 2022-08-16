@@ -51,6 +51,7 @@ public:
     virtual bool selfAlign();
     virtual bool setSubtype(int st);
     virtual bool stepOnElement(bElem *step);
+    virtual bool isLiveElement();
 
     virtual bElem* getStomper();
     virtual void stomp(bElem* who); //Notifies an object that other element is stepping on it, we get a stepper's reference
@@ -146,7 +147,7 @@ protected:
     int killed;
 private:
     unsigned int telInProgress;
-
+    bool hasActivatedMechanics;
     static unsigned int sTaterCounter;
     virtual void init();
     //  static videoElement::videoElementDef *def;

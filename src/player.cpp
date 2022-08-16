@@ -5,7 +5,7 @@ std::vector<player*> player::allPlayers;
 std::vector<player*> player::visitedPlayers;
 player* player::activePlayer=NULL;
 
-player::player(chamber *board) : killableElements::killableElements(board)
+player::player(chamber *board) : killableElements::killableElements(board,true)
 {
     this->used=0;
     this->movable=true;
@@ -74,14 +74,32 @@ oState player::disposeElement()
     if(this->isActive())
     {
         this->setActive(false);
+        player::activePlayer=NULL;
         this->getBoard()->player=NOCOORDS;
         if(player::visitedPlayers.size()>0)
-        { // Activate next inactive player avatar
+        {
+            // Activate next inactive player avatar
             bElem* p=player::visitedPlayers[0];
             p->setActive(true);
             p->getBoard()->player=p->getCoords();
             player::visitedPlayers.erase(player::visitedPlayers.begin());
         }
+    }
+    for(int cnt=0; cnt<player::allPlayers.size();)
+    {
+        if(player::allPlayers[cnt]==this)
+        {
+            player::allPlayers.erase(player::allPlayers.begin()+cnt);
+        }
+        else cnt++;
+    }
+    for(int cnt=0; cnt<player::visitedPlayers.size();)
+    {
+        if(player::visitedPlayers[cnt]==this)
+        {
+            player::visitedPlayers.erase(player::visitedPlayers.begin()+cnt);
+        }
+        else cnt++;
     }
     return killableElements::disposeElement();
 }
@@ -94,8 +112,8 @@ bool player::interact(bElem* who)
         return false;
     if (bElem::interact(who)==false)
         return false;
-   // if(this->visited)
-   //     return true;
+    // if(this->visited)
+    //     return true;
     //std::cout<<"Interacting...\n";
     if(who->getType()==this->getType() && !this->visited)
     {
@@ -183,11 +201,11 @@ bool player::mechanics(bool collected)
 //shoots any suitable gun
 bool player::shootGun()
 {
-   // bool res=false;
+    // bool res=false;
     bElem* gun=this->myInventory->getActiveWeapon();
     if(gun!=NULL)
     {
-     //   std::cout<<"Gun present\n";
+        //   std::cout<<"Gun present\n";
         gun->use(this);
         return true;
     }

@@ -1,14 +1,27 @@
 #include "killableElements.h"
 
-killableElements::killableElements(chamber* board) :movableElements(board)
+killableElements::killableElements(chamber* board) :mechanical(board,false)
 {
     this->movable=false;
 }
 
-killableElements::killableElements(chamber* board, int x, int y):movableElements(board,x,y)
+killableElements::killableElements(chamber* board, int x, int y):mechanical(board,x,y,false)
 {
     this->movable=false;
 }
+
+killableElements::killableElements(chamber* board, bool registerEl):mechanical(board,registerEl)
+{
+   this->movable=false;
+}
+
+killableElements::killableElements(chamber* board, int x, int y, bool registerEl): mechanical(board,x,y,registerEl)
+{
+    killableElements(board,x,y,registerEl);
+}
+
+
+
 
 bool killableElements::mechanics(bool collected)
 {
@@ -64,7 +77,10 @@ bool killableElements::kill()
     {
         return false;
     }
+    mechanical::kill();
+
     this->killed=_defaultKillTime;
+
     return true;
 }
 

@@ -26,8 +26,7 @@ obiekt się teleportuje (animacja)
 obiekt ginie (animacja)
 
 */
-#define scrWidth 1920
-#define scrHeight 1080
+
 #define _offsetX 64
 #define _offsetY 64
 
@@ -76,6 +75,8 @@ private:
     inputManager* inpMngr;
     int sWidth;
     int sHeight;
+    int scrHeight;
+    int scrWidth;
     int spacing;
     int scrTilesX;
     int scrTilesY;

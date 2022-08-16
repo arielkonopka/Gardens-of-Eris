@@ -31,15 +31,21 @@ bool plainGun::isWeapon()
 bool plainGun::use(bElem* who)
 {
     bElem *myel;
-    if(who->getType()==_player)
+    if (who==NULL)
     {
-        std::cout<<"Shoot: "<<this->readyToShoot()<<" s "<<this->shot<<"\n";
+    std::cout<<"Who is null for plain gun!";
+    return false;
+
+    }
+        if(who->getType()==_player)
+    {
+        std::cout<<"Shoot: "<<this->readyToShoot()<<" s "<<this->shot<<" Energy "<<this->getEnergy()<<"\n";
     }
 
     if (this->readyToShoot()==false)
         return true; //The gun is fine, not ready to shoot though
     this->shot=_plainGunCharge;
-    if (this->ammo<=0 || who==NULL) //odd subtypes have infinite shots
+    if (this->ammo<=0) //odd subtypes have infinite shots
         if (this->getSubtype()%2)
             return false;
  //   if(who->getType()==_player)
@@ -55,12 +61,14 @@ bool plainGun::use(bElem* who)
         }
         if (this->ammo>0)
             if (this->getSubtype()%2==0)
+            {
                 this->ammo--;
-        this->setEnergy(this->getEnergy()/2);
+                this->setEnergy(this->getEnergy()-(this->getEnergy()*0.2));
 
+                }
         if (myel->isSteppable()==true)
         {
-            bElem* missile=new plainMissile(this->getBoard(),ener);
+            bElem* missile=new plainMissile(who->getBoard(),ener);
             missile->setEnergy(ener);
             missile->stepOnElement(myel);
             missile->setDirection(who->getDirection());

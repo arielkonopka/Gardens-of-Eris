@@ -7,6 +7,7 @@ namespace presenter
 {
 presenter::presenter(chamber *board)
 {
+    ALLEGRO_MONITOR_INFO info;
     al_init();
     al_install_keyboard();
 
@@ -15,18 +16,16 @@ presenter::presenter(chamber *board)
         std::cout<<"Dupa nie inicjalizacja!\n";
 
     }
-
-
     this->alTimer = al_create_timer(1.0 / 15.0);
     this->scrTimer=al_create_timer(1.0/40);
     this->evQueue= al_create_event_queue();
     al_register_event_source(this->evQueue, al_get_keyboard_event_source());
-
     al_register_event_source(this->evQueue, al_get_timer_event_source(this->alTimer));
     al_register_event_source(this->evQueue, al_get_timer_event_source(this->scrTimer));
-
-
     this->_cp_attachedBoard=board;
+    al_get_monitor_info(0, &info);
+    this->scrWidth = info.x2 - info.x1; /* Assume this is 1366 */
+    this->scrHeight= info.y2 - info.y1; /* Assume this is 768 */
     this->sWidth=0;
     this->sHeight=0;
     this->spacing=0;
@@ -50,10 +49,10 @@ presenter::~presenter()
 }
 bool presenter::initializeDisplay()
 {
-    this->display = al_create_display(scrWidth, scrHeight);
+    this->display = al_create_display(this->scrWidth, this->scrHeight);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
     al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP|ALLEGRO_FULLSCREEN);
-    this->internalBitmap=al_create_bitmap(scrWidth,scrHeight);
+    this->internalBitmap=al_create_bitmap(this->scrWidth,this->scrHeight);
     return true;
 
 }
@@ -110,8 +109,8 @@ bool presenter::loadCofiguredData()
     this->sWidth=this->skinDefJson["width"].GetInt();
     this->sHeight=this->skinDefJson["height"].GetInt();
     this->spacing=this->skinDefJson["spacing"].GetInt();
-    this->scrTilesX=(scrWidth-(2*_offsetX))/this->sWidth;
-    this->scrTilesY=(scrHeight-(2*_offsetY))/this->sHeight;
+    this->scrTilesX=(this->scrWidth-(2*_offsetX))/this->sWidth;
+    this->scrTilesY=(this->scrHeight-(2*_offsetY))/this->sHeight;
     rapidjson::Value& dying=this->skinDefJson["Dying"];
     rapidjson::Value& teleporting=this->skinDefJson["Teleporting"];
     rapidjson::Value& sprlist=this->skinDefJson["SpriteData"];
@@ -131,7 +130,7 @@ bool presenter::loadCofiguredData()
         auto subtypes=sprlist[c]["AnimDef"].Size();
         auto directions=sprlist[c]["AnimDef"][0].Size();
         auto animphases=sprlist[c]["AnimDef"][0][0].Size();
-   //     std::cout<<subtypes<<" "<<directions<<" "<<animphases<<"\n";
+        //     std::cout<<subtypes<<" "<<directions<<" "<<animphases<<"\n";
         videoElement::videoElementDef* ved=new videoElement::videoElementDef(subtypes,directions,animphases);
 
         for(unsigned int c0=0; c0<dying.Size(); c0++)
@@ -158,7 +157,7 @@ bool presenter::loadCofiguredData()
                 {
                     int x=sprlist[c]["AnimDef"][c1][c2][c3][0].GetInt();
                     int y=sprlist[c]["AnimDef"][c1][c2][c3][1].GetInt();
-              //      std::cout<<c1<<" "<<c2<<" "<<c3<<" "<<x<<" "<<y<<"\n";
+                    //      std::cout<<c1<<" "<<c2<<" "<<c3<<" "<<x<<" "<<y<<"\n";
                     ved->setValuesFor(this->sprites,c1,c2,c3,x,y); //We set the sprite frame for that particlular anim phase
 
 
@@ -215,6 +214,13 @@ bool presenter::loadCofiguredData()
         case _teleporter:
             ::teleport::vd=ved;
             break;
+        case _goldenAppleType:
+            ::goldenApple::vd=ved;
+            break;
+        case _explosivesType:
+            ::explosives::vd=ved;
+            break;
+
 
         }
     }
@@ -324,7 +330,7 @@ void presenter::showGameField(int relX,int relY)
     // check if there is a need for top left corner to be recalculated
     if (this->internalBitmap==NULL)
     {
-      //  std::cout<<"******************* Dupa!!!\n";
+        //  std::cout<<"******************* Dupa!!!\n";
     }
     al_set_target_bitmap(this->internalBitmap);
     al_clear_to_color(al_map_rgba(50,70,120,255));
@@ -335,7 +341,7 @@ void presenter::showGameField(int relX,int relY)
         }
     al_set_target_bitmap(screen);
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY,0);
-     al_wait_for_vsync();
+    al_wait_for_vsync();
 
     al_flip_display();
 }
@@ -363,6 +369,7 @@ void presenter::showGameFieldLoop()
 
 int presenter::presentEverything()
 {
+    player* currentPlayer=NULL;
     ALLEGRO_EVENT event;
 //   presenter* instance=this;
     controlItem cItem;
@@ -389,17 +396,20 @@ int presenter::presentEverything()
                 this->_cp_attachedBoard->player=NOCOORDS;
                 bElem::runLiveElements();
                 gCollect::getInstance()->purgeGarbage();
-                if (this->_cp_attachedBoard->player==NOCOORDS)
+                if((currentPlayer=player::getActivePlayer())==NULL)
                 {
                     return 2;
                 }
+                this->_cp_attachedBoard=currentPlayer->getBoard();
+
             }
+
             if(event.timer.source==this->scrTimer)
             {
 
 
                 this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
-              //  std::cout<<"\033[0G x,y ->"<<this->_cp_attachedBoard->player.x<<","<<this->_cp_attachedBoard->player.y;
+                //  std::cout<<"\033[0G x,y ->"<<this->_cp_attachedBoard->player.x<<","<<this->_cp_attachedBoard->player.y;
                 //  std::cout<<blue<<"\n";
             }
         }

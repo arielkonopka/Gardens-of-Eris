@@ -4,12 +4,14 @@
 //#include "bElem.h"
 #include <vector>
 class bElem;
+class chamber;
 
 class inventory
 {
     public:
         inventory();
         virtual ~inventory();
+        virtual void updateBoard(chamber *board);
         virtual bElem* getKey(int type,int subType,bool removeIt);
         virtual bElem* getUsable();
         virtual bool nextUsable();

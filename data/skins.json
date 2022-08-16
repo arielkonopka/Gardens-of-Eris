@@ -49,8 +49,8 @@
                         ]
         },
         {
-            "Type":50,
-            "Name": "Collectible",
+            "Type":900,
+            "Name": "goldenApple",
             "AnimDef": [
                         [
                          [[6,11]]
@@ -129,6 +129,14 @@
             "AnimDef": [
                         [
                            [[0,4],[1,4]]
+                        ]
+                        ]
+        } ,{
+            "Type":601,
+            "Name": "explosives",
+            "AnimDef": [
+                        [
+                           [[8,0]]
                         ]
                         ]
         }
