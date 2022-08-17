@@ -95,6 +95,16 @@ bool presenter::loadCofiguredData()
     fclose(fp);
     al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
 // ok the sprite filename should be available now, let's load it
+    al_init_font_addon();
+    al_init_ttf_addon();
+    std::cout<<this->skinDefJson["FontFile"].GetString()<<"\n";
+    this->myfont=al_load_ttf_font(this->skinDefJson["FontFile"].GetString(),32,0);
+    if(this->myfont==NULL)
+    {
+        std::cout<<"Fonty się nie załadowały\n";
+        return false;
+    }
+
     this->sprites=al_load_bitmap(this->skinDefJson["SpriteFile"].GetString());
 
     if (this->sprites==NULL)
@@ -110,7 +120,7 @@ bool presenter::loadCofiguredData()
     this->sHeight=this->skinDefJson["height"].GetInt();
     this->spacing=this->skinDefJson["spacing"].GetInt();
     this->scrTilesX=(this->scrWidth-(2*_offsetX))/this->sWidth;
-    this->scrTilesY=(this->scrHeight-(2*_offsetY))/this->sHeight;
+    this->scrTilesY=((this->scrHeight-(2*_offsetY))/this->sHeight)-2;
     rapidjson::Value& dying=this->skinDefJson["Dying"];
     rapidjson::Value& teleporting=this->skinDefJson["Teleporting"];
     rapidjson::Value& sprlist=this->skinDefJson["SpriteData"];
@@ -289,9 +299,23 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
     al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
 }
 
+
+void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  text)
+{
+    ALLEGRO_COLOR c=al_map_rgb(255,255,255);
+    int scrx=offsetX+(x*this->sWidth),scry=offsetY+(y*this->sHeight);
+    if(this->myfont!=NULL)
+    {
+        al_draw_text(this->myfont,c,(float)scrx,(float)scry,0,text.c_str());
+       // std::cout<<"drawing text\n";
+    }
+}
+
+
 // This method shows the gameField. now it uses only one chamber, no chamber selection or other fancy stuff - will probably move that to other class
 void presenter::showGameField(int relX,int relY)
 {
+    bElem* player;
 
     int x,y;
     int bx=(relX)-((this->scrTilesX)/2);
@@ -332,6 +356,7 @@ void presenter::showGameField(int relX,int relY)
     {
         //  std::cout<<"******************* Dupa!!!\n";
     }
+
     al_set_target_bitmap(this->internalBitmap);
     al_clear_to_color(al_map_rgba(50,70,120,255));
     for(x=0; x<this->scrTilesX+1; x++)
@@ -339,8 +364,31 @@ void presenter::showGameField(int relX,int relY)
         {
             this->showObjectTile(x,y,0,0,this->_cp_attachedBoard->getElement(x+(this->positionOnScreen.x/this->sWidth),y+(this->positionOnScreen.y/this->sHeight)));
         }
+
     al_set_target_bitmap(screen);
+    al_clear_to_color(al_map_rgba(25,25,25,255));
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY,0);
+    player=player::getActivePlayer();
+    if(player!=NULL)
+    {
+        this->showObjectTile(1,this->scrTilesY+2,0,0,player);
+        this->showText(2,this->scrTilesY+2,0,0,std::to_string(player->getEnergy()));
+        this->showObjectTile(4,this->scrTilesY+2,0,0,player->myInventory->getActiveWeapon());
+        if( player->myInventory->getActiveWeapon()!=NULL)
+        {
+            this->showText(5,this->scrTilesY+2,0,0,std::to_string(player->myInventory->getActiveWeapon()->getEnergy()));
+
+        }
+        this->showObjectTile(7,this->scrTilesY+2,0,0,player->myInventory->getKey(_key,0,false));
+        this->showObjectTile(10,this->scrTilesY+2,0,0,player->myInventory->getKey(_key,1,false));
+        this->showObjectTile(13,this->scrTilesY+2,0,0,player->myInventory->getKey(_key,2,false));
+        this->showObjectTile(16,this->scrTilesY+2,0,0,player->myInventory->getKey(_key,3,false));
+        this->showObjectTile(19,this->scrTilesY+2,0,0,player->myInventory->getKey(_key,4,false));
+
+
+
+
+    }
     al_wait_for_vsync();
 
     al_flip_display();
@@ -362,6 +410,7 @@ void presenter::showGameFieldLoop()
             this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
             //std::cout<<"zZz";
         }
+
     }
 }
 

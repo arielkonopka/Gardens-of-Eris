@@ -14,5 +14,5 @@ echo    ${gccbin} ${extraflags} ${opts} -c ${x} -I./include  -o ${objPath}${x%.c
 done
 
 
-${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./gardenOfEris -lstdc++ -lallegro -lallegro_image
+${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./gardenOfEris -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf
 

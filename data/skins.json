@@ -1,4 +1,5 @@
 {
+    "FontFile": "data/FreeSerifBold.ttf",
     "SpriteFile": "data/graph/icons64.png",
     "width": 64,
     "height": 64,

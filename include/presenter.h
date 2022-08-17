@@ -3,6 +3,7 @@
 
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 #include "allegro5/allegro_native_dialog.h"
@@ -11,6 +12,7 @@
 #include <rapidjson/filereadstream.h>
 #include <rapidjson/stringbuffer.h>
 #include <vector>
+#include <string>
 #include "chamber.h"
 #include "videoElementDef.h"
 #include "elements.h"
@@ -63,6 +65,7 @@ public:
     bool presentAChamber(presenterMode mod);
     bool loadCofiguredData();
     void showObjectTile(int x,int y,int offsetX,int offsetY,bElem *elem);
+    void showText(int x,int y,int offsetX,int offsetY,std::string text);
     //relX and relY are coordinates on a board, that indicate where the player is
     void showGameField(int relX, int relY);
     ALLEGRO_EVENT_QUEUE* evQueue;
@@ -72,6 +75,7 @@ protected:
     bool attachGraphicsToSPrites;
 
 private:
+    ALLEGRO_FONT* myfont;
     inputManager* inpMngr;
     int sWidth;
     int sHeight;
