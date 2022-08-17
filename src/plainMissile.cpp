@@ -50,7 +50,8 @@ bool plainMissile::mechanics(bool collected)
     {
         bElem *myel=this->getElementInDirection(this->getDirection());
         if(myel==NULL)
-        { //that is a dirty hack on situations that are bogus (should not happen, but happen sometimes)
+        {
+            //that is a dirty hack on situations that are bogus (should not happen, but happen sometimes)
             if (this->moveInDirectionSpeed(this->getDirection(),_plainMissileSpeed)==false) //if it is out of bounds, just vanish
                 this->disposeElement();
             return true;
@@ -69,7 +70,7 @@ bool plainMissile::mechanics(bool collected)
             myel->hurt(this->getEnergy());
             if(!myel->isDying())
                 this->kill();
-            else
+            else if (!this->isDying())
                 this->disposeElement();
             return true;
         }
