@@ -10,6 +10,7 @@
 class player : public killableElements
 {
 public:
+    static unsigned int countVisitedPlayers();
     virtual videoElement::videoElementDef* getVideoElementDef();
     static videoElement::videoElementDef* vd;
     static player* getActivePlayer();

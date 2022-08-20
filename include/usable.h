@@ -12,7 +12,9 @@ public:
     virtual ~usable();
 
     usable(chamber *board);
+    usable(chamber *board,bool registerEl);
     usable(chamber *board,int x, int y);
+    usable(chamber *board,int x, int y, bool registerEl);
     virtual bool use(bElem *who);
     virtual bool use(bElem *who,direction dir);
     virtual bool isCollectible();

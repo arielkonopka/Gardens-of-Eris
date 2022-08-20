@@ -1,8 +1,9 @@
 #include "inventory.h"
 #include "bElem.h"
-inventory::inventory()
-{
 
+inventory::inventory(bElem *owner)
+{
+    this->owner=owner;
     this->wPos=0;
     this->uPos=0;
 
@@ -23,6 +24,10 @@ inventory::~inventory()
 
 }
 
+
+
+
+
 bElem* inventory::getKey(int type, int subtype,bool removeIt)
 {
     /* finds a key in the inventory and returns it, when nothing found, NULL is returned*/
@@ -34,6 +39,7 @@ bElem* inventory::getKey(int type, int subtype,bool removeIt)
             res=this->keys[c];
             if (removeIt==true)
             {
+                this->decrementTokenNumber({type,subtype});
                 this->keys.erase(this->keys.begin()+c);
             }
             return res;
@@ -42,6 +48,19 @@ bElem* inventory::getKey(int type, int subtype,bool removeIt)
     return NULL;
 }
 
+int inventory::countTokens(int type, int subtype)
+{
+    if(this->tokenNumbers.find({type,subtype})!= this->tokenNumbers.end())
+    {
+        tType token;
+        token.tokenType=type;
+        token.tokenSubtype=subtype;
+        int result=this->tokenNumbers[token];
+        return result;
+
+    }
+    return 0;
+}
 
 
 
@@ -69,7 +88,9 @@ bool inventory::removeActiveWeapon()
      {
          this->wPos=0;
      } */
+    this->decrementTokenNumber({this->weapons.at(this->wPos)->getType(),this->weapons.at(this->wPos)->getSubtype()});
     this->weapons.at(this->wPos)->disposeElement();
+
     this->weapons.erase(this->weapons.begin()+this->wPos);
     if (this->wPos>=(int)this->weapons.size())
         this->wPos=0;
@@ -101,16 +122,12 @@ bool inventory::nextGun()
 
 bool inventory::addToInventory(bElem* what)
 {
+    bool res=false;
     if(what==NULL)
         return false;
-    if(what->myInventory!=NULL)
-    {
-        /* this is probably a stash, or something like that. that is why, when we create an object, that shoots infinite ammo, it is better to have gun in non standard places, it would not be picked up that way*/
-        this->mergeInventory(what->myInventory);
-        delete what->myInventory;
-        what->myInventory=NULL;
+    what->setCollected(this->owner);
 
-    }
+    this->incrementTokenNumber({what->getType(),what->getSubtype()});
 
     if (what->isWeapon()==true)
     {
@@ -130,6 +147,9 @@ bool inventory::addToInventory(bElem* what)
     if(what->getType()==_key)
     {
         this->keys.push_back(what->removeElement());
+
+
+
         return true;
     }
     if(what->isCollectible()==true && what->getType()!=_rubishType)
@@ -139,11 +159,17 @@ bool inventory::addToInventory(bElem* what)
             this->tokens.push_back(what->removeElement());
         return true;
     }
-    if (what->getType()==_rubishType)
+    if(what->myInventory!=NULL)
     {
+        /* this is probably a stash, or something like that. that is why, when we create an object, that shoots infinite ammo, it is better to have gun in non standard places, it would not be picked up that way*/
+        this->mergeInventory(what->myInventory);
+        delete what->myInventory;
+        what->myInventory=NULL;
         what->disposeElement();
+        res=true;
     }
-    return false;
+
+    return res;
 }
 
 int inventory::requestTokens(int number, int type, int subType)
@@ -157,6 +183,7 @@ int inventory::requestTokens(int number, int type, int subType)
             if(this->tokens[c]->getType()==type && this->tokens[c]->getSubtype()==subType)
             {
                 found=true;
+                this->decrementTokenNumber( {type,subType});
                 this->removeToken(c); // this also disposes the token! Use it with care
                 break;
             }
@@ -169,33 +196,71 @@ int inventory::requestTokens(int number, int type, int subType)
     return 0;
 }
 
+
+void inventory::incrementTokenNumber(tType token)
+{
+    if(this->tokenNumbers.find(token)!= this->tokenNumbers.end())
+    {
+        this->tokenNumbers[token]+=1;
+
+    }
+    else
+    {
+        this->tokenNumbers[token]=1;
+
+    }
+}
+
+void inventory::decrementTokenNumber(tType token)
+{
+    if(this->tokenNumbers.find(token)!= this->tokenNumbers.end())
+    {
+        this->tokenNumbers[token]-=1;
+
+    }
+    else
+    {
+        this->tokenNumbers[token]=1;
+
+    }
+
+}
+
+
+
+
 bool inventory::mergeInventory(inventory* theOtherInventory)
 {
     if(theOtherInventory==NULL)
         return false;
     for(auto w:theOtherInventory->weapons)
     {
+        this->incrementTokenNumber({w->getType(),w->getSubtype()});
         this->weapons.push_back(w);
     }
     theOtherInventory->weapons.clear();
     for(auto u:theOtherInventory->usables)
     {
+        this->incrementTokenNumber({u->getType(),u->getSubtype()});
         this->usables.push_back(u);
     }
     theOtherInventory->usables.clear();
 
     for(auto m:theOtherInventory->mods)
     {
+        this->incrementTokenNumber({m->getType(),m->getSubtype()});
         this->mods.push_back(m);
     }
     theOtherInventory->mods.clear();
     for(auto t:theOtherInventory->tokens)
     {
+        this->incrementTokenNumber({t->getType(),t->getSubtype()});
         this->tokens.push_back(t);
     }
     theOtherInventory->tokens.clear();
     for(auto k:theOtherInventory->keys)
     {
+        this->incrementTokenNumber({k->getType(),k->getSubtype()});
         this->keys.push_back(k);
     }
     theOtherInventory->keys.clear();
@@ -207,9 +272,13 @@ bool inventory::mergeInventory(inventory* theOtherInventory)
 
 bool inventory::removeToken(int position)
 {
+    tType token;
     /* removes a token from tokens pocket, warning, it performs disposeElement on it, so it should not be referenced anywhere else!*/
     if(position>=(int)this->tokens.size())
         return false;
+    token.tokenType=this->tokens[position]->getType();
+    token.tokenSubtype=this->tokens[position]->getSubtype();
+    this->decrementTokenNumber(token);
     this->tokens[position]->disposeElement();
     this->tokens.erase(this->tokens.begin()+position);
     return true;
@@ -217,12 +286,14 @@ bool inventory::removeToken(int position)
 
 }
 
+/*
 void inventory::mechanics()
 {
     for(auto n:this->weapons)
         n->mechanics(true);
 
 }
+*/
 
 bool inventory::isEmpty()
 {
@@ -233,8 +304,9 @@ bool inventory::isEmpty()
 
 
 
-void inventory::updateBoard(chamber* board)
+void inventory::updateBoard()
 {
+    chamber* board=this->owner->getBoard();
     for(auto w:this->weapons)
     {
         w->setBoard(board);

@@ -8,11 +8,11 @@ videoElement::videoElementDef* plainGun::getVideoElementDef()
     return plainGun::vd;
 }
 
-plainGun::plainGun(chamber *board): usable(board)
+plainGun::plainGun(chamber *board): usable(board,true)
 {
     this->maxEnergy=_plainMissileEnergy;
     this->ammo=_plainGunAmmo;
-    this->myInventory=new inventory();
+    this->myInventory=new inventory(this);
 }
 
 int plainGun::getType()

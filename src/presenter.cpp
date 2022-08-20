@@ -307,7 +307,7 @@ void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  tex
     if(this->myfont!=NULL)
     {
         al_draw_text(this->myfont,c,(float)scrx,(float)scry,0,text.c_str());
-       // std::cout<<"drawing text\n";
+        // std::cout<<"drawing text\n";
     }
 }
 
@@ -315,7 +315,7 @@ void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  tex
 // This method shows the gameField. now it uses only one chamber, no chamber selection or other fancy stuff - will probably move that to other class
 void presenter::showGameField(int relX,int relY)
 {
-    bElem* player;
+    player* player;
 
     int x,y;
     int bx=(relX)-((this->scrTilesX)/2);
@@ -372,19 +372,29 @@ void presenter::showGameField(int relX,int relY)
     if(player!=NULL)
     {
         this->showObjectTile(1,this->scrTilesY+2,0,0,player);
-        this->showText(2,this->scrTilesY+2,0,0,std::to_string(player->getEnergy()));
+        this->showText(2,this->scrTilesY+2,0,0,std::to_string(player->countVisitedPlayers()));
+        this->showText(2,this->scrTilesY+2,0,32,std::to_string(player->getEnergy()));
         this->showObjectTile(4,this->scrTilesY+2,0,0,player->myInventory->getActiveWeapon());
         if( player->myInventory->getActiveWeapon()!=NULL)
         {
-            this->showText(5,this->scrTilesY+2,0,0,std::to_string(player->myInventory->getActiveWeapon()->getEnergy()));
+            this->showText(5,this->scrTilesY+2,0,32,std::to_string(player->myInventory->getActiveWeapon()->getEnergy()));
+            this->showText(5,this->scrTilesY+2,0,0,std::to_string(player->myInventory->getActiveWeapon()->getAmmo()));
+
 
         }
-        this->showObjectTile(7,this->scrTilesY+2,0,0,player->myInventory->getKey(_key,0,false));
-        this->showObjectTile(10,this->scrTilesY+2,0,0,player->myInventory->getKey(_key,1,false));
-        this->showObjectTile(13,this->scrTilesY+2,0,0,player->myInventory->getKey(_key,2,false));
-        this->showObjectTile(16,this->scrTilesY+2,0,0,player->myInventory->getKey(_key,3,false));
-        this->showObjectTile(19,this->scrTilesY+2,0,0,player->myInventory->getKey(_key,4,false));
+        for (int cnt=0; cnt<5; cnt++)
+        {
+            int tokens;
+            bElem *key=player->myInventory->getKey(_key,cnt,false);
+            if(key!=NULL)
+            {
+                tokens=player->myInventory->countTokens(key->getType(),key->getSubtype());
+                this->showObjectTile(7+(cnt*2),this->scrTilesY+2,0,0,key);
+                this->showText(8+(cnt*2),this->scrTilesY+2,0,16,std::to_string(tokens));
 
+
+            }
+        }
 
 
 

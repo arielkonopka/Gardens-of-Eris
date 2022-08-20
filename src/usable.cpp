@@ -32,3 +32,16 @@ usable::usable(chamber* board, int x, int y) : collectible(board)
 {
 
 }
+
+
+usable::usable(chamber* board, int x, int y, bool registerEl):collectible(board,x,y,registerEl)
+{
+
+}
+
+usable::usable(chamber* board, bool registerEl) :collectible(board,registerEl)
+{
+
+}
+
+

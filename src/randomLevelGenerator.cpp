@@ -80,7 +80,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
     std::vector<int> doorPlaces1,doorPlaces2;
     int Hmin_=((y2-y1)/2);
     int Wmin_=((x2-x1)/2);
-    int sa=0,sb=0,sc=0,sd=0;
+
     if(Hmin_<Hmin)
         Hmin_=Hmin;
     if(Wmin_<Wmin)
@@ -230,7 +230,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
         }
     }
 
-    for(int cnt=0; cnt<mychamberArea->children.size(); cnt++) // add parent to the children
+    for(unsigned int cnt=0; cnt<mychamberArea->children.size(); cnt++) // add parent to the children
     {
         mychamberArea->children[cnt]->parent=mychamberArea;
     }
@@ -245,7 +245,7 @@ bool randomLevelGenerator::placeElementCollection(chamberArea* chmbrArea,std::ve
     chmbrArea->findElementsToStepOn(mychamber);
     std::cout<<"Chosen area properties - surface: "<<chmbrArea->surface<<" x,y,x1,y1:"<<chmbrArea->upLeft.x<<" "<<chmbrArea->upLeft.y<<" "<<chmbrArea->downRight.x<<" "<<chmbrArea->downRight.y<<"\n";
 
-    for(int cnt=0; cnt<elements->size(); cnt++)
+    for(unsigned int cnt=0; cnt<elements->size(); cnt++)
     {
         //   std::cout<<"Type: "<<(*elements)[cnt].eType<<"\n";
         for (int cnt2=0; cnt2<(*elements)[cnt].number; cnt2++) // We sometimes must produce more than one element (we count from 0)
@@ -314,19 +314,24 @@ bool randomLevelGenerator::generateLevel(int holes)
         elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,3});
         elementsToChooseFrom.push_back({_explosivesType,0,1,0,3});
     }
+    for(int cnt=0; cnt<5; cnt++)
+    {
+        elementsToChooseFrom.push_back({_key,1,1,0,3});
+        elementsToChooseFrom.push_back({_key,3,1,0,3});
+        elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
+    }
+
     for(int c=0; c<holes*5; c++)
     {
         elementsToChooseFrom.push_back({_key,0,1,0,3});
-        elementsToChooseFrom.push_back({_key,1,1,0,3});
         elementsToChooseFrom.push_back({_key,2,1,0,3});
-        elementsToChooseFrom.push_back({_key,3,1,0,3});
         elementsToChooseFrom.push_back({_key,4,1,0,3});
-        elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
+
         elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
         elementsToChooseFrom.push_back({_teleporter,1,1,0,6});
 
     }
-    elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
+  //  elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
     elementsToChooseFrom.push_back({_player,0,1,0,9});
 
     //first find area for the player and stuff for it
@@ -334,7 +339,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     elementCollection.push_back({_key,0,2,0,3});
     elementCollection.push_back({_plainGun,0,1,0,3});
     int demandedSurface=0;
-    for(int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
+    for(unsigned int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
     chamberArea::foundAreas.clear();
     this->headNode->findChambersCloseToSurface(demandedSurface,tolerance);
     if (chamberArea::foundAreas.size()==0)
@@ -368,7 +373,7 @@ bool randomLevelGenerator::generateLevel(int holes)
             elementCollection.push_back(_nel);
 
         }
-        for(int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
+        for(unsigned int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
         if(chamberArea::foundAreas.size()>0)
         {
             int selectedChamberNo=(this->gen()%chamberArea::foundAreas.size());

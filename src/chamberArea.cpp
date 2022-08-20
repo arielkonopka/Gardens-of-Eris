@@ -20,7 +20,7 @@ chamberArea::~chamberArea() // if we remove the node, we remove all its children
          placing the objects
          */
 
-        for(int cnt=0; cnt<this->parent->children.size();)  //find and delete me from children list
+        for(unsigned int cnt=0; cnt<this->parent->children.size();)  //find and delete me from children list
         {
             if (this->parent->children[cnt]==this)
             {
@@ -36,7 +36,7 @@ chamberArea::~chamberArea() // if we remove the node, we remove all its children
         while(_par!=NULL)
         {
             int _surf=0;
-            for(int c=0; c<_par->children.size(); c++)
+            for(unsigned int c=0; c<_par->children.size(); c++)
             {
                 _surf+=_par->children[c]->surface;
             }
@@ -48,7 +48,7 @@ chamberArea::~chamberArea() // if we remove the node, we remove all its children
             delete _originalParent;
     }
 
-    for(int cnt=0; cnt<this->children.size(); cnt++)
+    for(unsigned int cnt=0; cnt<this->children.size(); cnt++)
     {
         this->children[cnt]->parent=NULL;
         delete this->children[cnt];
@@ -80,7 +80,7 @@ int chamberArea::calculateInitialSurface()
     int s=0;
     if(this->children.size()>0)
     {
-        for(int cnt=0; cnt<this->children.size(); cnt++)
+        for(unsigned int cnt=0; cnt<this->children.size(); cnt++)
         {
             s=s+this->children[cnt]->calculateInitialSurface();
         }
@@ -116,7 +116,7 @@ int chamberArea::calculateSurface(chamber* mychamber)
     }
     else
     {
-        for(int cnt=0; cnt<this->children.size(); cnt++)
+        for(unsigned int cnt=0; cnt<this->children.size(); cnt++)
         {
             surface_=surface_+this->children[cnt]->calculateSurface(mychamber);
         }
@@ -146,7 +146,7 @@ void chamberArea::findElementsRec(chamber* mychamber)
     }
     else
     {
-        for(int cnt=0; cnt<this->children.size(); cnt++)
+        for(unsigned int cnt=0; cnt<this->children.size(); cnt++)
         {
             this->children[cnt]->findElementsRec(mychamber);
         }
@@ -171,7 +171,7 @@ void chamberArea::findChambersCloseToSurface(int s,int tolerance)
     if (this->surface>s && this->children.size()>0)
     {
         last=true;
-        for(int cnt=0; cnt<this->children.size(); cnt++)
+        for(unsigned int cnt=0; cnt<this->children.size(); cnt++)
         {
       //      std::cout<<s<<": Demanded surface "<<"Examining child: "<<cnt<<" size "<<this->children[cnt]->children.size()<<" child surface "<<this->children[cnt]->surface<<" mine:"<<this->surface<<"\n";
             if (this->children[cnt]->surface>=s)

@@ -129,7 +129,7 @@ void bElem::setBoard(chamber* board)
     this->attachedBoard=board;
     if (this->myInventory!=NULL)
     {
-        this->myInventory->updateBoard(board);
+        this->myInventory->updateBoard();
     }
 
 
@@ -441,10 +441,12 @@ bool bElem::mechanics(bool collected)
             return true;
         }
     }
-    if(this->canCollect()==true && this->myInventory!=NULL)
+  /*  if(this->canCollect()==true && this->myInventory!=NULL)
     {
+
         this->myInventory->mechanics();
     }
+    */
     return false;
 }
 

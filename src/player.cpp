@@ -13,7 +13,7 @@ player::player(chamber *board) : killableElements::killableElements(board,true)
     this->setMoved(0);
     this->animPh=0;
     this->myStats.dexterity=_initialDexterity;
-    this->myInventory=new inventory();
+    this->myInventory=new inventory(this);
     this->visited=false;
     if(player::allPlayers.size()>0)
     {
@@ -69,6 +69,13 @@ player::~player()
 
 }
 
+
+unsigned int player::countVisitedPlayers()
+{
+    return player::visitedPlayers.size();
+}
+
+
 oState player::disposeElement()
 {
     if(this->isActive())
@@ -85,7 +92,7 @@ oState player::disposeElement()
             player::visitedPlayers.erase(player::visitedPlayers.begin());
         }
     }
-    for(int cnt=0; cnt<player::allPlayers.size();)
+    for(unsigned int cnt=0; cnt<player::allPlayers.size();)
     {
         if(player::allPlayers[cnt]==this)
         {
@@ -93,7 +100,7 @@ oState player::disposeElement()
         }
         else cnt++;
     }
-    for(int cnt=0; cnt<player::visitedPlayers.size();)
+    for(unsigned int cnt=0; cnt<player::visitedPlayers.size();)
     {
         if(player::visitedPlayers[cnt]==this)
         {
