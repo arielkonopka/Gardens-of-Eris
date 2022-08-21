@@ -8,6 +8,12 @@ teleport::teleport(chamber* board):nonSteppable(board)
     this->addToTeleports();
     this->theOtherEnd=NULL; // we do not have the other end configured yet. We will configure it on interact method;
 }
+teleport::teleport(chamber* board,int newSubtype):nonSteppable(board)
+{
+    this->addToTeleports();
+    this->theOtherEnd=NULL; // we do not have the other end configured yet. We will configure it on interact method;
+    this->setSubtype(newSubtype);
+}
 
 teleport::~teleport()
 {

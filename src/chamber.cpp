@@ -38,6 +38,17 @@ bElem* chamber::getElement(int x, int y)
         return NULL;
     return this->chamberArray[x][y];
 }
+
+
+void chamber::setElement(int x, int y, bElem* elem)
+{
+     if (x<0 || x>this->width-1 || y<0 || y>this->height-1)
+        return;
+    this->chamberArray[x][y]=elem;
+}
+
+
+
 int chamber::getInstanceId()
 {
     return this->instanceid;

@@ -187,13 +187,13 @@ bool bElem::stepOnElement(bElem* step)
     else
     {
 
-        this->getBoard()->chamberArray[this->x][this->y]=this->steppingOn;
-        this->getBoard()->chamberArray[this->x][this->y]->unstomp();
+        this->getBoard()->setElement(this->x,this->y,this->steppingOn);
+        this->getBoard()->getElement(this->x,this->y)->unstomp();
         this->steppingOn=step;
         step->stomp(this);
     }
     coords crds=this->steppingOn->getCoords();
-    this->getBoard()->chamberArray[crds.x][crds.y]=this;
+    this->getBoard()->setElement(crds.x,crds.y,this);
     this->x=crds.x;
     this->y=crds.y;
     return true;
@@ -221,10 +221,10 @@ oState bElem::disposeElementUnsafe()
         }
         else
         {
-            this->getBoard()->chamberArray[this->x][this->y]=NULL;
+            this->getBoard()->setElement(this->x,this->y,NULL);
             res=NULLREACHED;
         }
-        if(this->myInventory!=NULL && this->myInventory->isEmpty()==false && this->getType()!=_rubishType && this->getType()!=_plainMissile)
+        if(this->myInventory!=NULL && this->myInventory->isEmpty()==false && this->getType()!=_rubishType && this->getType()!=_plainMissile && this->getType()!=_plainGun )
         {
             bElem* stash=new rubbish(myBoard);
             stash->myInventory=this->myInventory;
@@ -430,12 +430,12 @@ bool bElem::mechanics(bool collected)
     if (this->destroyed>0) //We support two modes of destruction, this one is the demolishion thing
     {
         this->destroyed--;
-        std::cout<<"Destroying\n";
+    //    std::cout<<"Destroying\n";
         if(this->destroyed==0)
         {
             this->killed=false;
             if (this->getType()!=_belemType) { //We do not dispose the empty elements
-                this->removeElement();
+                //this->removeElement();
                 this->disposeElement();
                 }
             return true;
@@ -524,6 +524,7 @@ bElem* bElem::removeElement()
     }
     else
     {
+
         bElem *newElem=new bElem(this->attachedBoard,this->x,this->y);
         //we remove the coordinates as well
         this->x=-1;
@@ -783,7 +784,7 @@ void bElem::deregisterLiveElement(bElem* who)
 
 void bElem::runLiveElements()
 {
-    std::cout<<"Active Elements: "<<bElem::liveElems.size()<<"\n";
+//    std::cout<<"Active Elements: "<<bElem::liveElems.size()<<"\n";
     for(unsigned int p=0; p<bElem::liveElems.size(); p++)
     {
 

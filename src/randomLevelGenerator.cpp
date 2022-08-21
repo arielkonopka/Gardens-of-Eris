@@ -314,12 +314,12 @@ bool randomLevelGenerator::generateLevel(int holes)
         elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,3});
         elementsToChooseFrom.push_back({_explosivesType,0,1,0,3});
     }
-    for(int cnt=0; cnt<5; cnt++)
-    {
+   // for(int cnt=0; cnt<5; cnt++)
+   // {
         elementsToChooseFrom.push_back({_key,1,1,0,3});
         elementsToChooseFrom.push_back({_key,3,1,0,3});
         elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
-    }
+    //}
 
     for(int c=0; c<holes*5; c++)
     {
@@ -495,16 +495,16 @@ bElem* randomLevelGenerator::createElement(elementToPlace element)
         return new key(this->mychamber,element.eSubType);
         break;
     case _monster:
-        return new monster(this->mychamber);
+        return new monster(this->mychamber,element.eSubType);
         break;
     case _plainGun:
-        return new plainGun(this->mychamber);
+        return new plainGun(this->mychamber,element.eSubType);
         break;
     case _bunker:
         return new bunker(this->mychamber);
         break;
     case _teleporter:
-        return new teleport(this->mychamber);
+        return new teleport(this->mychamber,element.eSubType);
     case _movableType:
         return new movableElements(this->mychamber);
     case _explosivesType:

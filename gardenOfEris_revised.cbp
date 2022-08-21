@@ -12,16 +12,12 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-march=nocona" />
-					<Add option="-std=gnu++20" />
 					<Add option="-Og" />
 					<Add option="-g" />
+					<Add option="-march=skylake" />
+					<Add option="-std=gnu++20" />
 					<Add directory="include" />
 				</Compiler>
-				<Linker>
-					<Add library="allegro" />
-					<Add library="allegro_image" />
-				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/gardenOfEris_revised" prefix_auto="1" extension_auto="1" />
@@ -30,7 +26,7 @@
 				<Option compiler="gcc" />
 				<Option use_console_runner="0" />
 				<Compiler>
-					<Add option="-march=nocona" />
+					<Add option="-march=skylake" />
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
 					<Add option="-std=c++20" />
@@ -45,12 +41,16 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-march=nocona" />
 			<Add option="-Wall" />
+			<Add option="-march=skylake" />
 			<Add option="-std=gnu++20" />
 		</Compiler>
 		<Linker>
 			<Add option="-O3" />
+			<Add library="allegro" />
+			<Add library="allegro_image" />
+			<Add library="allegro_font" />
+			<Add library="allegro_ttf" />
 		</Linker>
 		<Unit filename="data/graph/icons64.png" />
 		<Unit filename="data/graph/icons64.xcf" />
@@ -58,11 +58,14 @@
 		<Unit filename="include/bElem.h" />
 		<Unit filename="include/bunker.h" />
 		<Unit filename="include/chamber.h" />
+		<Unit filename="include/chamberArea.h" />
 		<Unit filename="include/collectible.h" />
 		<Unit filename="include/commons.h" />
 		<Unit filename="include/door.h" />
 		<Unit filename="include/elements.h" />
+		<Unit filename="include/explosives.h" />
 		<Unit filename="include/gCollect.h" />
+		<Unit filename="include/goldenApple.h" />
 		<Unit filename="include/inputManager.h" />
 		<Unit filename="include/inventory.h" />
 		<Unit filename="include/key.h" />
@@ -89,9 +92,12 @@
 		<Unit filename="src/bElem.cpp" />
 		<Unit filename="src/bunker.cpp" />
 		<Unit filename="src/chamber.cpp" />
+		<Unit filename="src/chamberArea.cpp" />
 		<Unit filename="src/collectible.cpp" />
 		<Unit filename="src/door.cpp" />
+		<Unit filename="src/explosives.cpp" />
 		<Unit filename="src/gCollect.cpp" />
+		<Unit filename="src/goldenApple.cpp" />
 		<Unit filename="src/inputManager.cpp" />
 		<Unit filename="src/inventory.cpp" />
 		<Unit filename="src/key.cpp" />

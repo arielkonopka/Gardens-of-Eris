@@ -97,7 +97,7 @@ bool presenter::loadCofiguredData()
 // ok the sprite filename should be available now, let's load it
     al_init_font_addon();
     al_init_ttf_addon();
-    std::cout<<this->skinDefJson["FontFile"].GetString()<<"\n";
+//    std::cout<<this->skinDefJson["FontFile"].GetString()<<"\n";
     this->myfont=al_load_ttf_font(this->skinDefJson["FontFile"].GetString(),32,0);
     if(this->myfont==NULL)
     {
@@ -395,7 +395,9 @@ void presenter::showGameField(int relX,int relY)
 
             }
         }
-
+        this->showObjectTile(18,this->scrTilesY+2,0,0,goldenApple::getApple(1));
+        this->showText(19,this->scrTilesY+2,0,0,std::to_string(goldenApple::getAppleNumber()));
+        this->showText(19,this->scrTilesY+2,0,32,std::to_string(player->myInventory->countTokens(_goldenAppleType,0)));
 
 
     }

@@ -236,12 +236,14 @@ bool inventory::mergeInventory(inventory* theOtherInventory)
     for(auto w:theOtherInventory->weapons)
     {
         this->incrementTokenNumber({w->getType(),w->getSubtype()});
+        w->setCollected(this->owner);
         this->weapons.push_back(w);
     }
     theOtherInventory->weapons.clear();
     for(auto u:theOtherInventory->usables)
     {
         this->incrementTokenNumber({u->getType(),u->getSubtype()});
+        u->setCollected(this->owner);
         this->usables.push_back(u);
     }
     theOtherInventory->usables.clear();
@@ -249,18 +251,21 @@ bool inventory::mergeInventory(inventory* theOtherInventory)
     for(auto m:theOtherInventory->mods)
     {
         this->incrementTokenNumber({m->getType(),m->getSubtype()});
+        m->setCollected(this->owner);
         this->mods.push_back(m);
     }
     theOtherInventory->mods.clear();
     for(auto t:theOtherInventory->tokens)
     {
         this->incrementTokenNumber({t->getType(),t->getSubtype()});
+        t->setCollected(this->owner);
         this->tokens.push_back(t);
     }
     theOtherInventory->tokens.clear();
     for(auto k:theOtherInventory->keys)
     {
         this->incrementTokenNumber({k->getType(),k->getSubtype()});
+        k->setCollected(this->owner);
         this->keys.push_back(k);
     }
     theOtherInventory->keys.clear();

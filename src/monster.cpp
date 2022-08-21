@@ -10,6 +10,15 @@ monster::monster(chamber *board): killableElements(board,true)
     this->setDirection(UP);
 }
 
+monster::monster(chamber* board, int newSubtype): killableElements(board,true)
+{
+    this->animph=0;
+    this->internalCnt=0;
+    this->setDirection(UP);
+    this->setSubtype(newSubtype);
+}
+
+
 monster::~monster()
 {
     //dtor

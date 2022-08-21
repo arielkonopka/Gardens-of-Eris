@@ -15,6 +15,17 @@ plainGun::plainGun(chamber *board): usable(board,true)
     this->myInventory=new inventory(this);
 }
 
+plainGun::plainGun(chamber* board, int newSubtype): usable(board,true)
+{
+    this->maxEnergy=_plainMissileEnergy;
+    this->ammo=_plainGunAmmo;
+    this->myInventory=new inventory(this);
+    this->setSubtype(newSubtype);
+}
+
+
+
+
 int plainGun::getType()
 {
     return _plainGun;
@@ -33,11 +44,11 @@ bool plainGun::use(bElem* who)
     bElem *myel;
     if (who==NULL)
     {
-    std::cout<<"Who is null for plain gun!";
-    return false;
+        std::cout<<"Who is null for plain gun!";
+        return false;
 
     }
-        if(who->getType()==_player)
+    if(who->getType()==_player)
     {
         std::cout<<"Shoot: "<<this->readyToShoot()<<" s "<<this->shot<<" Energy "<<this->getEnergy()<<"\n";
     }
@@ -48,8 +59,8 @@ bool plainGun::use(bElem* who)
     if (this->ammo<=0) //odd subtypes have infinite shots
         if (this->getSubtype()%2)
             return false;
- //   if(who->getType()==_player)
- //       std::cout<<"energy: "<<this->getEnergy()<<"\n";
+//   if(who->getType()==_player)
+//       std::cout<<"energy: "<<this->getEnergy()<<"\n";
     myel=who->getElementInDirection(who->getDirection());
     if(myel!=NULL)
     {
@@ -65,14 +76,14 @@ bool plainGun::use(bElem* who)
                 this->ammo--;
                 this->setEnergy(this->getEnergy()-(this->getEnergy()*0.2));
 
-                }
+            }
         if (myel->isSteppable()==true)
         {
             bElem* missile=new plainMissile(who->getBoard(),ener);
             missile->setEnergy(ener);
             missile->stepOnElement(myel);
             missile->setDirection(who->getDirection());
-          //  missile->setMoved(_plainMissileSpeed);
+            //  missile->setMoved(_plainMissileSpeed);
             return true;
 
         }
@@ -105,7 +116,7 @@ bool plainGun::mechanics(bool collected)
 
     if(this->shot>0)
     {
-     //   std::cout<<"mechanics gun\n";
+        //   std::cout<<"mechanics gun\n";
         this->shot--;
     }
     if(this->getEnergy()<this->maxEnergy)

@@ -13,6 +13,7 @@ public:
     virtual int getType();
     virtual bool use(bElem *who);
     plainGun(chamber *board);
+    plainGun(chamber *board,int newSubtype);
     virtual bool mechanics(bool collected);
     virtual ~plainGun();
     bool isWeapon();

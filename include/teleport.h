@@ -12,6 +12,7 @@ public:
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
     teleport(chamber* board);
+    teleport(chamber* board,int newSubtype);
     virtual ~teleport();
     virtual bool interact(bElem *who);
     virtual bool isInteractive();

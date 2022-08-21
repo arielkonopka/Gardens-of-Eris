@@ -167,7 +167,7 @@ bool chamberArea::findElementsToStepOn(chamber* myChamber)
 void chamberArea::findChambersCloseToSurface(int s,int tolerance)
 {
     bool last=this->children.size()==0;
-    std::cout<<"ch size "<<this->children.size()<<"\n";
+    //std::cout<<"ch size "<<this->children.size()<<"\n";
     if (this->surface>s && this->children.size()>0)
     {
         last=true;
