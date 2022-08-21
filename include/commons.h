@@ -33,9 +33,9 @@
 #define _plainGunCharge 10
 
 
-#define _dexterityLevels 50
+#define _dexterityLevels 64
 
-#define _initialDexterity 5
+#define _initialDexterity 1
 
 #define _defaultEnergy 80
 #define _defaultKillTime 10

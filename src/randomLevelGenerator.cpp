@@ -314,12 +314,12 @@ bool randomLevelGenerator::generateLevel(int holes)
         elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,3});
         elementsToChooseFrom.push_back({_explosivesType,0,1,0,3});
     }
-   // for(int cnt=0; cnt<5; cnt++)
-   // {
+    for(int cnt=0; cnt<5; cnt++)
+    {
         elementsToChooseFrom.push_back({_key,1,1,0,3});
         elementsToChooseFrom.push_back({_key,3,1,0,3});
         elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
-    //}
+    }
 
     for(int c=0; c<holes*5; c++)
     {

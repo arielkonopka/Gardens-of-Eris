@@ -121,6 +121,7 @@ public:
     static std::mt19937 randomNumberGenerator;
     static bool randomNumberGeneratorInitialized;
     stats myStats;
+
     /*
         @mechanics(bool collected) - takes care both of time passing (all the timers and so on along with the mechanics itself - every object type can have its own rules
         collected==true when the method is invoked from an objects inventory. useful for objects that do something when collected like mines, automatic weapons and so on
@@ -131,9 +132,12 @@ public:
     static void tick();
     virtual unsigned int getCntr();
     virtual chamber* getBoard();
-          int subtype;
+    int subtype;
+    virtual bool isLocked();
+    virtual bool lockThisObject(bElem* who);
+    virtual bool unlockThisObject(bElem* who);
 protected:
-
+    std::vector<bElem*> lockers;
 
     int instance;
     int destroyed;
@@ -146,6 +150,7 @@ protected:
     bool amIUsable;
     int killed;
 private:
+
     unsigned int telInProgress;
     bool hasActivatedMechanics;
     static unsigned int sTaterCounter;

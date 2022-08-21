@@ -79,7 +79,13 @@ bool plainGun::use(bElem* who)
             }
         if (myel->isSteppable()==true)
         {
-            bElem* missile=new plainMissile(who->getBoard(),ener);
+
+            plainMissile* missile=new plainMissile(who->getBoard(),ener);
+            if(who->getType()==_player)
+            {
+                missile->setOwner(who);
+                who->lockThisObject(missile);
+            }
             missile->setEnergy(ener);
             missile->stepOnElement(myel);
             missile->setDirection(who->getDirection());

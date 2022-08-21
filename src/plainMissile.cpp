@@ -8,7 +8,7 @@ plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber,true
     this->_me_moved=_plainMissileSpeed;
     this->setDirection(UP);
     this->setMoved(_plainMissileSpeed);
-
+    this->owner=NULL;
 }
 plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber,true)
 {
@@ -17,10 +17,16 @@ plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(my
     this->setDirection(UP);
     this->myInventory=new inventory(this ); // This is for a mod, that could be installed on the ammo
     this->setMoved(_plainMissileSpeed);
+    this->owner=NULL;
 }
 
 plainMissile::~plainMissile()
 {
+    if(this->owner!=NULL)
+    {
+        this->owner->unlockThisObject(this);
+        this->owner=NULL;
+    }
     //dtor
 }
 int plainMissile::getType()
@@ -68,8 +74,19 @@ bool plainMissile::mechanics(bool collected)
                 return false;
             }
             myel->hurt(this->getEnergy());
+            if(this->owner!=NULL)
+            {
+                stats st=this->owner->getStats();
+                st.points++;
+                st.dexterity=(int)(log2(st.points))+1;
+                std::cout<<"points: "<<st.points<<"\n";
+                this->owner->setStats(st);
+
+            }
             if(!myel->isDying())
+            {
                 this->kill();
+            }
             else if (!this->isDying())
                 this->disposeElement();
             return true;
@@ -80,6 +97,14 @@ bool plainMissile::mechanics(bool collected)
         return true;
     }
     return res;
+}
+void plainMissile::setOwner(bElem* owner)
+{
+    if(owner!=NULL)
+    {
+        this->owner=owner;
+       // this->owner->lockThisObject(this);
+    }
 }
 
 

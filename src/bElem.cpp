@@ -7,6 +7,7 @@ int bElem::instances=0;
 bool bElem::randomNumberGeneratorInitialized=false;
 std::mt19937 bElem::randomNumberGenerator;
 
+
 int bElem::getInstanceid()
 {
     return this->instance;
@@ -73,6 +74,7 @@ bElem::bElem(chamber* board, int x, int y)
 
 void bElem::init()
 {
+
     this->hasActivatedMechanics=false;
     this->stomping=NULL;
     this->collector=NULL;
@@ -134,7 +136,7 @@ void bElem::setBoard(chamber* board)
 
 
 
-    }
+}
 
 
 direction bElem::getDirection()
@@ -415,11 +417,11 @@ bool bElem::isSwitchOn()
 
 bool bElem::mechanics(bool collected)
 {
-  /*  if(this->myInventory!=NULL)
-    {
-        this->myInventory->mechanics();
-    }
-    */
+    /*  if(this->myInventory!=NULL)
+      {
+          this->myInventory->mechanics();
+      }
+      */
     this->taterCounter++; //this is our source of sequential numbers
 //    if (this->steppingOn!=NULL)
 //   {
@@ -430,23 +432,24 @@ bool bElem::mechanics(bool collected)
     if (this->destroyed>0) //We support two modes of destruction, this one is the demolishion thing
     {
         this->destroyed--;
-    //    std::cout<<"Destroying\n";
+        //    std::cout<<"Destroying\n";
         if(this->destroyed==0)
         {
             this->killed=false;
-            if (this->getType()!=_belemType) { //We do not dispose the empty elements
+            if (this->getType()!=_belemType)   //We do not dispose the empty elements
+            {
                 //this->removeElement();
                 this->disposeElement();
-                }
+            }
             return true;
         }
     }
-  /*  if(this->canCollect()==true && this->myInventory!=NULL)
-    {
+    /*  if(this->canCollect()==true && this->myInventory!=NULL)
+      {
 
-        this->myInventory->mechanics();
-    }
-    */
+          this->myInventory->mechanics();
+      }
+      */
     return false;
 }
 
@@ -825,4 +828,33 @@ bool bElem::isLiveElement()
 {
     return this->hasActivatedMechanics;
 }
+
+bool bElem::isLocked()
+{
+    return this->lockers.size()!=0;
+}
+
+bool bElem::lockThisObject(bElem* who)
+{
+    this->lockers.push_back(who);
+    return true;
+}
+
+bool bElem::unlockThisObject(bElem* who)
+{
+    for(int cnt=0; cnt<this->lockers.size();)
+    {
+        if(this->lockers.at(cnt)->getInstanceid()==who->getInstanceid())
+        {
+            this->lockers.erase(this->lockers.begin()+cnt);
+        }
+        else
+        {
+            cnt++;
+        }
+    }
+    return true;
+}
+
+
 
