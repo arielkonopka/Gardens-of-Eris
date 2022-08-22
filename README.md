@@ -89,12 +89,11 @@ If other end is established, we check if the teleporter has any steppable fields
 A plain gun shoots plain missiles. It is used by an element that can collect it (or create it like bunker) and can use it. A gun takes the operators dexterity, then finds a random value that will be used to decrease missile energy. 
 Then after the shot, the guns energy is halved. It restores with mechanics() calls. So the faster you shoot, the weaker shots you produce.
 
+# Stats 
+Element stats is a class that will be responsible for element's stats. You can have a monster, that could shoot and gain better skills with time. :)
 
-
-## Random Level Generator
 
 ## TODO
-* promote stats into a class - now we could keep only a pointer to the stats, and link it to plain bullets, so if a bullet hits something, we would have automagical stats update
 * add blocking mechanism for the garbage collector, so we could like attach foreign stats (or whole bElems) to other objects, these objects could have intependent activity and timespan.
   like imagine a case:
     a player shoots a shot and dies just right after.

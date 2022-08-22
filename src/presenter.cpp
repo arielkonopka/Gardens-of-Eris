@@ -403,8 +403,8 @@ void presenter::showGameField(int relX,int relY)
         this->showText(21,this->scrTilesY+2,5,0,"P:");
         this->showText(21,this->scrTilesY+2,5,32,"Dex:");
 
-        this->showText(22,this->scrTilesY+2,5,0,std::to_string(player->getStats().points));
-        this->showText(22,this->scrTilesY+2,5,32,std::to_string(player->getStats().dexterity));
+        this->showText(22,this->scrTilesY+2,5,0,std::to_string(player->getStats()->getGlobalPoints()));
+        this->showText(22,this->scrTilesY+2,5,32,std::to_string(player->getStats()->getDexterity()));
 
     }
     al_wait_for_vsync();

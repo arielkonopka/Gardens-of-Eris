@@ -66,11 +66,6 @@ bool plainGun::use(bElem* who)
     {
 
         int ener=this->getEnergy();;
-        if (who->getStats().dexterity>0)
-        {
-            ener= this->getEnergy()-bElem::randomNumberGenerator()%(_dexterityLevels-who->getStats().dexterity);
-          //  if(who->getType()==_player) std::cout<<"Will shoot with: "<<ener<<"\n";
-        }
         if (this->ammo>0)
             if (this->getSubtype()%2==0)
             {
@@ -80,7 +75,6 @@ bool plainGun::use(bElem* who)
             }
         if (myel->isSteppable()==true)
         {
-
             plainMissile* missile=new plainMissile(who->getBoard(),ener);
             if(who->getType()==_player)
             {
@@ -101,11 +95,7 @@ bool plainGun::use(bElem* who)
         }
         else if (myel->canBeKilled() )
         {
-            stats st=who->getStats();
-            st.points++;
-            st.dexterity=(int)(log2(st.points))+1;
-           // std::cout<<"points: "<<st.points<<"\n";
-            who->setStats(st);
+            who->getStats()->countKill(myel);
             myel->hurt(this->getEnergy());
 
             // this->disposeElement();

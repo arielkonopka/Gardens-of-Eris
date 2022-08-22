@@ -12,7 +12,7 @@ player::player(chamber *board) : killableElements::killableElements(board,true)
     this->interacted=0;
     this->setMoved(0);
     this->animPh=0;
-    this->myStats.dexterity=_initialDexterity;
+
     this->myInventory=new inventory(this);
     this->visited=false;
     if(player::allPlayers.size()>0)

@@ -62,6 +62,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
         if (this->myInventory->addToInventory(stepOn)==true)
         //if (this->collect(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)
         {
+            this->getStats()->countCollect(stepOn);
             this->_me_moved=speed;
             return true;
         }

@@ -15,7 +15,7 @@ gCollect::~gCollect()
 }
 bool gCollect::purgeGarbage()
 {
-    for(int cnt=0;cnt<this->garbageVector.size();)
+    for(unsigned int cnt=0;cnt<this->garbageVector.size();)
     {
         if(this->garbageVector.at(cnt)->isLocked()) //We do not touch the locked elements, these are probably waiting for something, and cannot be purged.
         {

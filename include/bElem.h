@@ -16,6 +16,8 @@
 
 #include "gCollect.h"
 
+#include "elemStats.h"
+
 
 class gCollect;
 class chamber;
@@ -106,8 +108,7 @@ public:
     virtual bool isActive();
     virtual bool isOpen();
     virtual bool isSwitchOn();
-    virtual stats getStats();
-    virtual void setStats(stats newStats);
+    virtual elemStats* getStats();
     virtual bool isMod(); // is the element a mod of another element? - mod is an object that changes other object's behavior
     virtual modType getModType();
     virtual bElem* removeElement(); // removes element from the board, and returns it for further processing, usefull for eg. for collecting stuff
@@ -120,7 +121,7 @@ public:
     unsigned int interacted;
     static std::mt19937 randomNumberGenerator;
     static bool randomNumberGeneratorInitialized;
-    stats myStats;
+
 
     /*
         @mechanics(bool collected) - takes care both of time passing (all the timers and so on along with the mechanics itself - every object type can have its own rules
@@ -150,7 +151,7 @@ protected:
     bool amIUsable;
     int killed;
 private:
-
+    elemStats* myStats;
     unsigned int telInProgress;
     bool hasActivatedMechanics;
     static unsigned int sTaterCounter;

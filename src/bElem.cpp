@@ -81,10 +81,7 @@ void bElem::init()
     this->attachedBoard=NULL;
 
     this->animPhase=0;
-    this->setEnergy(_defaultEnergy); // this is rather a durability of an object, if it is killable;
-    this->myStats.strength=0; // generic object has no strength
-    this->myStats.points=1;
-    this->myStats.dexterity=1;
+    this->myStats=new elemStats(_defaultEnergy);
     this->killed=0;
     this->steppingOn=NULL;
     this->interacted=0;
@@ -310,6 +307,7 @@ bElem* bElem::getElementInDirection(direction di)
 
 bElem::~bElem()
 {
+    delete this->myStats;
     if(this->isLiveElement())
         this->deregisterLiveElement(this);
     if(this->myInventory!=NULL)
@@ -559,6 +557,7 @@ bool bElem::collect(bElem *collectible)
     {
         return false;
     }
+
     collected=collectible->removeElement();
     if (collected==NULL) //this should never happen!
     {
@@ -604,13 +603,13 @@ bool bElem::hurt(int points)
 
 int bElem::getEnergy()
 {
-    return this->myStats.energy;
+    return this->myStats->getEnergy();
 }
 
 bool bElem::setEnergy(int points)
 {
-    this->myStats.energy=(points>=0)?points:0;
-    return (points==0);
+    this->myStats->setEnergy(points);
+    return true;
 }
 
 bool bElem::kill()
@@ -623,14 +622,9 @@ bool bElem::isDestroyed()
     return (this->destroyed>0);
 }
 
-stats bElem::getStats()
+elemStats* bElem::getStats()
 {
-    return myStats;
-}
-void bElem::setStats(stats newStats)
-{
-    this->myStats=newStats;
-
+    return this->myStats;
 }
 
 bool bElem::isMod()

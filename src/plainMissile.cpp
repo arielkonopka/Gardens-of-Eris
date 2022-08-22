@@ -73,15 +73,16 @@ bool plainMissile::mechanics(bool collected)
             {
                 return false;
             }
-            myel->hurt(this->getEnergy());
+            int energy=this->getEnergy();
             if(this->statsOwner!=NULL)
             {
-                stats st=this->statsOwner->getStats();
-                st.points++;
-                st.dexterity=(int)(log2(st.points))+1;
-                if(this->statsOwner->getType()==_player) std::cout<<"points: "<<st.points<<"\n";
-                this->statsOwner->setStats(st);
-
+                if(this->statsOwner->getStats()->getDexterity()<_dexterityLevels)
+                energy=this->getEnergy()- (bElem::randomNumberGenerator()% (_dexterityLevels-this->statsOwner->getStats()->getDexterity()));
+            }
+            myel->hurt(energy);
+            if(this->statsOwner!=NULL)
+            {
+                this->statsOwner->getStats()->countHit(myel);
             }
             if(!myel->isDying())
             {
@@ -91,11 +92,7 @@ bool plainMissile::mechanics(bool collected)
             {
                 if(this->statsOwner!=NULL)
                 {
-                    stats st=this->statsOwner->getStats();
-                    st.points+=4; // so to sum the points number to 5, when killing something
-                    st.dexterity=(int)(log2(st.points))+1;
-                    if(this->statsOwner->getType()==_player) std::cout<<"points: "<<st.points<<" dx:"<<st.dexterity<<"\n";
-                    this->statsOwner->setStats(st);
+                   this->statsOwner->getStats()->countKill(myel);
                 }
                 if (!this->isDying())
                     this->disposeElement();
