@@ -8,7 +8,7 @@ plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber,true
     this->_me_moved=_plainMissileSpeed;
     this->setDirection(UP);
     this->setMoved(_plainMissileSpeed);
-    this->owner=NULL;
+    this->statsOwner=NULL;
 }
 plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber,true)
 {
@@ -17,15 +17,15 @@ plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(my
     this->setDirection(UP);
     this->myInventory=new inventory(this ); // This is for a mod, that could be installed on the ammo
     this->setMoved(_plainMissileSpeed);
-    this->owner=NULL;
+    this->statsOwner=NULL;
 }
 
 plainMissile::~plainMissile()
 {
-    if(this->owner!=NULL)
+    if(this->statsOwner!=NULL)
     {
-        this->owner->unlockThisObject(this);
-        this->owner=NULL;
+        this->statsOwner->unlockThisObject(this);
+        this->statsOwner=NULL;
     }
     //dtor
 }
@@ -74,21 +74,32 @@ bool plainMissile::mechanics(bool collected)
                 return false;
             }
             myel->hurt(this->getEnergy());
-            if(this->owner!=NULL)
+            if(this->statsOwner!=NULL)
             {
-                stats st=this->owner->getStats();
+                stats st=this->statsOwner->getStats();
                 st.points++;
                 st.dexterity=(int)(log2(st.points))+1;
-                std::cout<<"points: "<<st.points<<"\n";
-                this->owner->setStats(st);
+                if(this->statsOwner->getType()==_player) std::cout<<"points: "<<st.points<<"\n";
+                this->statsOwner->setStats(st);
 
             }
             if(!myel->isDying())
             {
                 this->kill();
             }
-            else if (!this->isDying())
-                this->disposeElement();
+            else
+            {
+                if(this->statsOwner!=NULL)
+                {
+                    stats st=this->statsOwner->getStats();
+                    st.points+=4; // so to sum the points number to 5, when killing something
+                    st.dexterity=(int)(log2(st.points))+1;
+                    if(this->statsOwner->getType()==_player) std::cout<<"points: "<<st.points<<" dx:"<<st.dexterity<<"\n";
+                    this->statsOwner->setStats(st);
+                }
+                if (!this->isDying())
+                    this->disposeElement();
+            }
             return true;
         }
         if(myel->isDying()) // if next element in path is already dying, just disappear.
@@ -98,11 +109,11 @@ bool plainMissile::mechanics(bool collected)
     }
     return res;
 }
-void plainMissile::setOwner(bElem* owner)
+void plainMissile::setStatsOwner(bElem* owner)
 {
     if(owner!=NULL)
     {
-        this->owner=owner;
+        this->statsOwner=owner;
        // this->owner->lockThisObject(this);
     }
 }

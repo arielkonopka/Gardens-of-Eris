@@ -12,7 +12,7 @@ public:
     virtual int getSubtype();
     plainMissile(chamber *mychamber);
     plainMissile(chamber *mychamber,int energy);
-    void setOwner(bElem* owner);
+    void setStatsOwner(bElem* owner);
     virtual ~plainMissile();
     virtual bool mechanics(bool collected);
 
@@ -21,7 +21,7 @@ protected:
 
     bool killing;
 private:
-    bElem* owner;
+    bElem* statsOwner;
 };
 
 #endif // PLAINMISSILE_H

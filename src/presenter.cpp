@@ -398,7 +398,13 @@ void presenter::showGameField(int relX,int relY)
         this->showObjectTile(18,this->scrTilesY+2,0,0,goldenApple::getApple(1));
         this->showText(19,this->scrTilesY+2,0,0,std::to_string(goldenApple::getAppleNumber()));
         this->showText(19,this->scrTilesY+2,0,32,std::to_string(player->myInventory->countTokens(_goldenAppleType,0)));
+       // this->showText(21,this->scrTilesY+1,0,0,"Player");
+        this->showText(21,this->scrTilesY+1,6,32,"Stats");
+        this->showText(21,this->scrTilesY+2,5,0,"P:");
+        this->showText(21,this->scrTilesY+2,5,32,"Dex:");
 
+        this->showText(22,this->scrTilesY+2,5,0,std::to_string(player->getStats().points));
+        this->showText(22,this->scrTilesY+2,5,32,std::to_string(player->getStats().dexterity));
 
     }
     al_wait_for_vsync();

@@ -14,5 +14,5 @@ echo    ${gccbin} ${extraflags} ${opts} -c ${x} -I./include  -o ${objPath}${x%.c
 done
 
 
-${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./GoE -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf
+${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./GoE -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm
 

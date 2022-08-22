@@ -598,7 +598,7 @@
 	"presenter.h"
 	"randomLevelGenerator.h"
 
-1661085505 /storage/home/c/git/Gardens-of-Eris/include/commons.h
+1661117532 /storage/home/c/git/Gardens-of-Eris/include/commons.h
 
 1660664183 /storage/home/c/git/Gardens-of-Eris/include/elements.h
 	"bElem.h"
@@ -621,7 +621,7 @@
 	"goldenApple.h"
 	"explosives.h"
 
-1660678129 /storage/home/c/git/Gardens-of-Eris/include/bElem.h
+1661117391 /storage/home/c/git/Gardens-of-Eris/include/bElem.h
 	<stddef.h>
 	"objectTypes.h"
 	"commons.h"
@@ -744,7 +744,7 @@
 	"chamberArea.h"
 	<vector>
 
-1661083940 source:/storage/home/c/git/Gardens-of-Eris/src/bElem.cpp
+1661199920 source:/storage/home/c/git/Gardens-of-Eris/src/bElem.cpp
 	"../include/bElem.h"
 	"elements.h"
 
@@ -757,7 +757,7 @@
 1658787340 source:/storage/home/c/git/Gardens-of-Eris/src/door.cpp
 	"door.h"
 
-1652109696 source:/storage/home/c/git/Gardens-of-Eris/src/gCollect.cpp
+1661117183 source:/storage/home/c/git/Gardens-of-Eris/src/gCollect.cpp
 	"gCollect.h"
 
 1650753503 source:/storage/home/c/git/Gardens-of-Eris/src/inputManager.cpp
@@ -786,7 +786,7 @@
 1661038180 source:/storage/home/c/git/Gardens-of-Eris/src/presenter.cpp
 	"presenter.h"
 
-1661085506 source:/storage/home/c/git/Gardens-of-Eris/src/randomLevelGenerator.cpp
+1661117424 source:/storage/home/c/git/Gardens-of-Eris/src/randomLevelGenerator.cpp
 	"randomLevelGenerator.h"
 
 1652976885 source:/storage/home/c/git/Gardens-of-Eris/src/rubbish.cpp
@@ -804,14 +804,15 @@
 1661026165 /storage/home/c/git/Gardens-of-Eris/include/usable.h
 	"collectible.h"
 
-1661085241 /storage/home/c/git/Gardens-of-Eris/include/plainGun.h
+1661116753 /storage/home/c/git/Gardens-of-Eris/include/plainGun.h
 	"usable.h"
 	"videoElementDef.h"
 	"plainMissile.h"
 
-1652129518 /storage/home/c/git/Gardens-of-Eris/include/plainMissile.h
+1661199573 /storage/home/c/git/Gardens-of-Eris/include/plainMissile.h
 	"killableElements.h"
 	"videoElementDef.h"
+	<math.h>
 
 1652129361 /storage/home/c/git/Gardens-of-Eris/include/bunker.h
 	"commons.h"
@@ -821,10 +822,10 @@
 1658434767 source:/storage/home/c/git/Gardens-of-Eris/src/bunker.cpp
 	"bunker.h"
 
-1661085283 source:/storage/home/c/git/Gardens-of-Eris/src/plainGun.cpp
+1661199922 source:/storage/home/c/git/Gardens-of-Eris/src/plainGun.cpp
 	"plainGun.h"
 
-1661027114 source:/storage/home/c/git/Gardens-of-Eris/src/plainMissile.cpp
+1661199555 source:/storage/home/c/git/Gardens-of-Eris/src/plainMissile.cpp
 	"plainMissile.h"
 
 1661026198 source:/storage/home/c/git/Gardens-of-Eris/src/usable.cpp

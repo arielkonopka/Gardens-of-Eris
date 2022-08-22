@@ -83,7 +83,8 @@ void bElem::init()
     this->animPhase=0;
     this->setEnergy(_defaultEnergy); // this is rather a durability of an object, if it is killable;
     this->myStats.strength=0; // generic object has no strength
-    this->myStats.dexterity=_initialDexterity; // We do not have the dexterity;
+    this->myStats.points=1;
+    this->myStats.dexterity=1;
     this->killed=0;
     this->steppingOn=NULL;
     this->interacted=0;
