@@ -24,7 +24,7 @@ protected:
 
 private:
     int ammo=-1;
-    int shot=0;
+    unsigned int shot=0;
     int energy=-1;
     int maxEnergy=-1;
 };

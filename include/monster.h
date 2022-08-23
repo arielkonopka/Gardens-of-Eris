@@ -18,7 +18,6 @@ class monster : public killableElements
         int getType();
         int getSubtype();
         virtual bool mechanics(bool collected);
-        int getAnimPh();
 
 
         bool steppableNeigh();

@@ -18,6 +18,8 @@ public:
     virtual bool interact(bElem *who);
     virtual bool isSteppable();
     virtual bool isOpen();
+    virtual void stomp(bElem* who);
+    virtual void unstomp();
     virtual ~door();
     virtual bool isInteractive();
     virtual bool canBeKilled();

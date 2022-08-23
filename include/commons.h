@@ -24,8 +24,8 @@
 
 
 
-#define _mov_delay   3
-#define _mov_delay_push   4
+#define _mov_delay   5
+#define _mov_delay_push   6
 
 #define _plainGunAmmo 10
 #define _plainMissileSpeed 1

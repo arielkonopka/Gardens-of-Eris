@@ -24,6 +24,8 @@ class bunker : public mechanical
         plainGun *myGun;
         int rotated;
     private:
+        elemStats* backUp;
+        bElem* activatedBy;
 };
 
 #endif // BUNKER_H

@@ -109,6 +109,7 @@ public:
     virtual bool isOpen();
     virtual bool isSwitchOn();
     virtual elemStats* getStats();
+    virtual void setStats(elemStats* stat); // warning, unsafe method
     virtual bool isMod(); // is the element a mod of another element? - mod is an object that changes other object's behavior
     virtual modType getModType();
     virtual bElem* removeElement(); // removes element from the board, and returns it for further processing, usefull for eg. for collecting stuff

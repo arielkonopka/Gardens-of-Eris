@@ -36,7 +36,7 @@ Now you, the [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism) got 
 1. The game has only random generated levels. 
 2. Everything should be randomly placed. 
 3. It must be possible to walk from any steppable place on a board [class chamber](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/include/chamber.h) to any other steppable place, if we remove all the doors and teleports.
-4. The game actually should never end. Player gets to a teleport to another chamber at some point. When the player reaches that, new chamber is created, and a link between chambers is established - the best option would be to have the teleport class, that would contain that link. The newly created world should contain a teleport to the prevoius one, this way we can get the player to go between chambers. This way we could theoretically plan element placements for more than one chamber. Like we can place a key to specific door in different chamber, and behind that door, we can place golden apples.
+4. The game actually should be very very large. 5 different chambers are created with different number of holes in the walls - that is something like the difficulty level. The chambers are connected with teleports. There are two types of teleports: stable one - always teleports you to other chamber, than you are currently in, but are bidirectional, you can always come back. Unstable teleports (subType==0) - they are not bidirectional like the stable ones, they randomly get the counter part, and then the counterpart will randomly choose its counter part and so on...
 5. Elements on board do not replace each other when they are moved, they instead step on each other. So we start with a board full of [empty](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/include/bElem.h) elements. We then create new elements and step on the board empty elements. It goes deeper. If we call ellement's mechanics, it would call the mechanics of all the elements that are below (with a flag suggesting, that something is standing on it). I also plan, to have the mechanics being run on collected elements (that could allow to make a shield, or fake apples, which would kill the player, if not used - thrown - possibilities are endless)
 6. No code duplications, whenever possible. Now that rule is broken with the video engine, but the engine is to be modified anyway, so this will get eliminated.
 
@@ -81,8 +81,11 @@ One is for registering a mechanical object (there has to be implemeted mechanics
 
 # Teleporters
 Every new teleporter is placed in a vector (actually it is a vector of pointers). As soon, as the player interacts with a teleporter it checks if it has attached link to a corresponding teleporter.
-If not, we take randomly chosen teleporter from the list, and we remove the interacted element from the list. We set the chosen teleport as the other end.
-If other end is established, we check if the teleporter has any steppable fields in it. If so, we take the player from the original location, and place it into the steppable field found in the teleport.
+We check the type of a teleporter, if it is even, we:
+    If not, we take randomly chosen teleporter from the list, and we remove the interacted element from the list. We set the chosen teleport as the other end.
+    If other end is established, we check if the teleporter has any steppable fields in it. If so, we take the player from the original location, and place it into the steppable field found in the teleport.
+When it is odd:
+    We find the first teleport of the same type but on different chamber. Then we establish connection, where the counterpart will direct to the first teleport.
 
 
 # Shooting guns
