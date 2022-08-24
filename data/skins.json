@@ -4,6 +4,10 @@
     "width": 64,
     "height": 64,
     "spacing":4,
+    "sylables": [ "a","o","u","i","ba","ca","da","fa","ga","ha","ja","ka","la","ma","na","pa","ra","sa","va","wa","xa","za",
+		"bo","co","do","fo","go","ho","jo","ko","lo","mo","no","po","ro","so","vo","wo","xo","zo",
+		"bu","cu","du","fu","gu","hu","ju","ku","lu","mu","nu","pu","ru","su","vu","wu","xu","zu",
+		"bi","ci","di","fi","gi","hi","ji","ki","li","mi","ni","pi","ri","si","vi","wi","xi","zi"],
     "Dying": [ [0,7],[1,7],[2,7],[3,7],[4,7] ],
     "Teleporting": [ [10,2],[10,3],[10,4],[10,5],[10,6],[10,7] ],
 

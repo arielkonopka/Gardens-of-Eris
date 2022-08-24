@@ -106,7 +106,9 @@ bElem* inventory::getActiveWeapon()
     if (this->weapons[this->wPos]->getAmmo()<=0)
     {
         std::cout<<"remove weapon\n";
+
         this->removeActiveWeapon();
+
         return this->getActiveWeapon(); // We will remove empty Weapons recursively, if it is necessary
     }
     return this->weapons[this->wPos];

@@ -33,7 +33,7 @@ int plainGun::getType()
 
 plainGun::~plainGun()
 {
-    //dtor
+
 }
 bool plainGun::isWeapon()
 {
@@ -55,75 +55,61 @@ bool plainGun::use(bElem* who)
 
     if (this->readyToShoot()==false)
         return true; //The gun is fine, not ready to shoot though
-    this->shot=_plainGunCharge;
+    this->shot=this->getCntr()+_plainGunCharge;
     if (this->ammo<=0) //odd subtypes have infinite shots
         if (this->getSubtype()%2)
             return false;
-//   if(who->getType()==_player)
-//       std::cout<<"energy: "<<this->getEnergy()<<"\n";
     myel=who->getElementInDirection(who->getDirection());
     if(myel!=NULL)
     {
-
-        int ener=this->getEnergy();;
-        if (this->ammo>0)
+        if (this->ammo>0 || this->getSubtype()%2==1)
+        {
+            if (myel->isSteppable()==true)
+            {
+                plainMissile* missile=new plainMissile(who->getBoard(),this->getEnergy());
+               // if(who->getType()==_player)
+               // {
+                missile->setStatsOwner(who);
+                who->lockThisObject(missile);
+                //}
+                missile->setDirection(who->getDirection());
+                missile->stepOnElement(myel);
+            }
+            else if ( myel->getType()==_plainMissile && myel->getDirection()==who->getDirection())
+            {
+                myel->setEnergy(myel->getEnergy()+this->getEnergy()); // if somehow you hit a missile going in the same direction, the show would be boosted;
+            }
+            else if (myel->canBeKilled() )
+            {
+                who->getStats()->countKill(myel);
+                myel->hurt(this->getEnergy());
+                // this->disposeElement();
+            }
             if (this->getSubtype()%2==0)
             {
                 this->ammo--;
                 this->setEnergy(this->getEnergy()-(this->getEnergy()*0.2));
 
             }
-        if (myel->isSteppable()==true)
-        {
-            plainMissile* missile=new plainMissile(who->getBoard(),ener);
-            if(who->getType()==_player)
-            {
-                missile->setStatsOwner(who);
-                who->lockThisObject(missile);
-            }
-            missile->setEnergy(ener);
-            missile->stepOnElement(myel);
-            missile->setDirection(who->getDirection());
-            //  missile->setMoved(_plainMissileSpeed);
-            return true;
-
         }
-        else if ( myel->getType()==_plainMissile && myel->getDirection()==who->getDirection())
-        {
-            myel->setEnergy(myel->getEnergy()+ener);
 
-        }
-        else if (myel->canBeKilled() )
-        {
-            who->getStats()->countKill(myel);
-            myel->hurt(this->getEnergy());
-
-            // this->disposeElement();
-        }
     }
-
     return true;
 }
 
 
 bool plainGun::readyToShoot()
 {
-    return this->shot<=0;
+    return (this->shot<this->getCntr()); // the gun will jam on counter reset, but only this instance
 }
 
 
 bool plainGun::mechanics(bool collected)
 {
     bool res=usable::mechanics(collected);
-
-    if(this->shot>0)
-    {
-        //   std::cout<<"mechanics gun\n";
-        this->shot--;
-    }
     if(this->getEnergy()<this->maxEnergy)
     {
-        if (bElem::getCntr()%3==0)
+        if (bElem::getCntr()%5==0)
             this->setEnergy(this->getEnergy()+1);
     }
     return res;

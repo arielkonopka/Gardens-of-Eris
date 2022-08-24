@@ -313,26 +313,31 @@ bool randomLevelGenerator::generateLevel(int holes)
     {
         elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,3});
         elementsToChooseFrom.push_back({_explosivesType,0,1,0,3});
+
+
     }
-    for(int cnt=0; cnt<5; cnt++)
+    for(int cnt=0; cnt<holes*5; cnt++)
     {
         elementsToChooseFrom.push_back({_key,1,1,0,3});
         elementsToChooseFrom.push_back({_key,3,1,0,3});
-        elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
+
+
+
     }
 
-    for(int c=0; c<holes*5; c++)
+    for(int c=0; c<5; c++)
     {
         elementsToChooseFrom.push_back({_key,0,1,0,3});
         elementsToChooseFrom.push_back({_key,2,1,0,3});
         elementsToChooseFrom.push_back({_key,4,1,0,3});
-
-        elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
         elementsToChooseFrom.push_back({_teleporter,1,1,0,6});
+        elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
 
     }
   //  elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
     elementsToChooseFrom.push_back({_player,0,1,0,9});
+    elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
+  //
 
     //first find area for the player and stuff for it
     elementCollection.push_back({_player,0,2,0,3});

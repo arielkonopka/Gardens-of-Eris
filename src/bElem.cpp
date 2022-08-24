@@ -179,23 +179,17 @@ void bElem::setDropped()
 bool bElem::stepOnElement(bElem* step)
 {
     if (this->getBoard()==NULL || step==NULL || step->isSteppable()==false || step->getBoard()==NULL)  return false;
-    if (this->steppingOn==NULL)
+    if (this->steppingOn!=NULL)
     {
-        step->stomp(this);
-        this->steppingOn=step;
-    }
-    else
-    {
-
+        this->steppingOn->unstomp();
         this->getBoard()->setElement(this->x,this->y,this->steppingOn);
-        this->getBoard()->getElement(this->x,this->y)->unstomp();
-        this->steppingOn=step;
-        step->stomp(this);
     }
-    coords crds=this->steppingOn->getCoords();
-    this->getBoard()->setElement(crds.x,crds.y,this);
-    this->x=crds.x;
-    this->y=crds.y;
+    this->steppingOn=step;
+    step->stomp(this);
+    coords crds=step->getCoords();
+    if(crds!=NOCOORDS)
+        this->getBoard()->setElement(crds.x,crds.y,this);
+    this->setCoords(crds.x,crds.y);
     return true;
 }
 
@@ -416,18 +410,10 @@ bool bElem::isSwitchOn()
 
 bool bElem::mechanics(bool collected)
 {
-    /*  if(this->myInventory!=NULL)
-      {
-          this->myInventory->mechanics();
-      }
-      */
     this->taterCounter++; //this is our source of sequential numbers
-//    if (this->steppingOn!=NULL)
-//   {
-//      this->steppingOn->mechanics(true);
-//    }
     this->animPhase++;
-
+    if(this->getBoard()==NULL || this->getCoords()==NOCOORDS)
+        return false;
     if (this->destroyed>0) //We support two modes of destruction, this one is the demolishion thing
     {
         this->destroyed--;
@@ -440,16 +426,12 @@ bool bElem::mechanics(bool collected)
                 //this->removeElement();
                 this->disposeElement();
             }
-            return true;
         }
-    }
-    /*  if(this->canCollect()==true && this->myInventory!=NULL)
-      {
+        return false;
 
-          this->myInventory->mechanics();
-      }
-      */
-    return false;
+    }
+
+    return true;
 }
 
 bool bElem::isSteppable()
@@ -625,6 +607,10 @@ bool bElem::isDestroyed()
 elemStats* bElem::getStats()
 {
     return this->myStats;
+}
+void bElem::setStats(elemStats* stat)
+{
+    this->myStats=stat; // we do not do anything with the stats, please use it wisely
 }
 
 bool bElem::isMod()
@@ -837,7 +823,7 @@ bool bElem::lockThisObject(bElem* who)
 
 bool bElem::unlockThisObject(bElem* who)
 {
-    for(int cnt=0; cnt<this->lockers.size();)
+    for(unsigned int cnt=0; cnt<this->lockers.size();)
     {
         if(this->lockers.at(cnt)->getInstanceid()==who->getInstanceid())
         {

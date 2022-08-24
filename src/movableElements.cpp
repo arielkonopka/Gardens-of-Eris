@@ -35,7 +35,7 @@ bool movableElements::moveInDirection(direction dir)
 bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 {
     bElem* stepOn=this->getElementInDirection(dir);
-    if (this->_me_moved>0 || this->isDying()==true) return false;
+    if (this->_me_moved>0 || this->isDying()==true || this->isTeleporting() || this->isDestroyed()) return false;
     this->setDirection(dir);
     if (stepOn==NULL) return false;
     if (stepOn->isSteppable()==true)
@@ -97,14 +97,14 @@ bool movableElements::canPush()
 
 bool movableElements::mechanics(bool collected)
 {
-    nonSteppable::mechanics(collected);
+    bool res=nonSteppable::mechanics(collected);
     if (this->_me_moved>0)
     {
         this->_me_moved--;
         return false;
     }
 
-    return true;
+    return res;
 }
 
 

@@ -47,6 +47,35 @@ bool door::isOpen()
 {
     return this->open;
 }
+void door::stomp(bElem* who)
+{
+    bElem* key=NULL;
+    if(this->getSubtype()%2==1)
+    {
+        if(who->myInventory!=NULL)
+        {
+            key=who->myInventory->getKey(_key,this->getSubtype(),true); // take the key on your way out. you don't have a key? Kill, could be used as tricky traps for monsters
+            if(key==NULL)
+            {
+                who->kill();
+            }
+        }
+        else
+        {
+            who->kill();
+        }
+    }
+    return; // True means you can safely continue
+}
+void door::unstomp()
+{
+   if(this->getSubtype()%2==1)
+    {
+        this->locked=true;
+        this->open=false;
+        this->setDirection((!this->open)?UP:LEFT);
+    }
+}
 
 
 /* open the door if you can */
@@ -56,12 +85,6 @@ bool door::interact(bElem* who)
     bElem* key=NULL;
     if (!bres)
         return false;
-    //That should not happen, as we do not expect object randomly interacting with others without being programmed to do so.
- /*   if(who->canInteract()==false)
-    {
-        return false;
-    }
- */
     //std::cout<<"can interact\n";
     if (this->locked==false)
     {
@@ -76,28 +99,21 @@ bool door::interact(bElem* who)
         return false;
     }
     //if Door is unlocked, only open/close thing
-#ifdef _VerbousMode_
-std::cout<<"can not collect\n";
-#endif
     if (this->getSubtype()%2==0)
     {
         key=who->myInventory->getKey(_key,this->getSubtype(),true);
-#ifdef _VerbousMode_
-        std::cout<<"Get key, even\n";
-#endif
-    }else
+    }
+    else
     {
         key=who->myInventory->getKey(_key,this->getSubtype(),false);
-#ifdef _VerbousMode_
-        std::cout<<"Get key, odd\n";
-#endif
     }
     if(key!=NULL)
     {
-       this->open=true;
-       this->locked=false;
-       this->setDirection((!this->open)?UP:LEFT);
-    } else
+        this->open=true;
+        this->locked=false;
+        this->setDirection((!this->open)?UP:LEFT);
+    }
+    else
     {
         return false;
     }

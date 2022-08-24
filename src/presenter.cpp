@@ -16,7 +16,7 @@ presenter::presenter(chamber *board)
         std::cout<<"Dupa nie inicjalizacja!\n";
 
     }
-    this->alTimer = al_create_timer(1.0 / 15.0);
+    this->alTimer = al_create_timer(1.0 / 30.0);
     this->scrTimer=al_create_timer(1.0/40);
     this->evQueue= al_create_event_queue();
     al_register_event_source(this->evQueue, al_get_keyboard_event_source());
@@ -302,7 +302,7 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
 
 void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  text)
 {
-    ALLEGRO_COLOR c=al_map_rgb(255,255,255);
+    ALLEGRO_COLOR c=al_map_rgb(255,255,155);
     int scrx=offsetX+(x*this->sWidth),scry=offsetY+(y*this->sHeight);
     if(this->myfont!=NULL)
     {
@@ -315,7 +315,7 @@ void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  tex
 // This method shows the gameField. now it uses only one chamber, no chamber selection or other fancy stuff - will probably move that to other class
 void presenter::showGameField(int relX,int relY)
 {
-    player* player;
+    player* player=player::getActivePlayer();;
 
     int x,y;
     int bx=(relX)-((this->scrTilesX)/2);
@@ -366,9 +366,8 @@ void presenter::showGameField(int relX,int relY)
         }
 
     al_set_target_bitmap(screen);
-    al_clear_to_color(al_map_rgba(25,25,25,255));
+    al_clear_to_color(al_map_rgba(15,15,25,255));
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY,0);
-    player=player::getActivePlayer();
     if(player!=NULL)
     {
         this->showObjectTile(1,this->scrTilesY+2,0,0,player);

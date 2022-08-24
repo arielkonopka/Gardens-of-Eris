@@ -26,14 +26,15 @@ killableElements::killableElements(chamber* board, int x, int y, bool registerEl
 bool killableElements::mechanics(bool collected)
 {
     bool res=movableElements::mechanics(collected);
-    if(this->killed>0)
+    if(this->isDying()>0)
     {
         this->killed--;
         if(this->killed==0)
         {
             this->disposeElement(); //it seems we really died. what a waste
-            return true;
+
         }
+        return false;
     }
     return res;
 }

@@ -148,7 +148,7 @@ videoElement::videoElementDef* player::getVideoElementDef()
 
 bool player::mechanics(bool collected)
 {
-    killableElements::mechanics(collected);
+    bool res=killableElements::mechanics(collected);
     if (this->getCoords()==NOCOORDS)
         return false; // It was disposed, so we do not want to process this
     if (this->isActive()==true)
@@ -161,14 +161,10 @@ bool player::mechanics(bool collected)
         this->animPh=this->getCntr()>>2;
         return true; // Inactive player, not very useful;
     }
-    if(this->isTeleporting())
-    {
-        this->animPh=this->teleporting;
-        return true;
-    }
-    if ( (this->isDying()==true))
-        return true;
-    switch(this->getBoard()->cntrlItm.type)
+    if(!res)
+        return false;
+
+   switch(this->getBoard()->cntrlItm.type)
     {
     case 0:
     {
@@ -199,6 +195,23 @@ bool player::mechanics(bool collected)
             this->animPh++;
         return true;
     }
+    break;
+    case 3:
+        this->myInventory->nextUsable();
+        this->setMoved(_mov_delay);
+        break;
+    case 4:
+        if (this->myInventory->getUsable()!=NULL)
+        {
+            this->myInventory->getUsable()->use(this->getElementInDirection(this->getBoard()->cntrlItm.dir));
+        };
+        break;
+    case 5:
+        this->myInventory->nextGun();
+        this->setMoved(_mov_delay);
+        break;
+    case 6:
+        this->kill();
     }
 
     return false;
@@ -212,7 +225,6 @@ bool player::shootGun()
     bElem* gun=this->myInventory->getActiveWeapon();
     if(gun!=NULL)
     {
-        //   std::cout<<"Gun present\n";
         gun->use(this);
         return true;
     }
@@ -232,6 +244,7 @@ bool player::canPush()
 void player::setActive(bool act)
 {
     this->activated=act;
+    this->teleporting=_teleportationTime;
 }
 
 
@@ -250,6 +263,8 @@ int player::getType()
 
 int player::getAnimPh()
 {
+    if(this->isTeleporting() || this->isDying() || this->isDestroyed())
+        return killableElements::getAnimPh();
     return this->animPh;
 }
 

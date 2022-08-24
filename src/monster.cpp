@@ -38,75 +38,59 @@ int monster::getSubtype()
 }
 bool monster::mechanics(bool collected)
 {
-    killableElements::mechanics(collected);
+    if (!killableElements::mechanics(collected))
+        return false;
     coords tmpcoords;
-
-    //this->tick(collected);
-
-    this->internalCnt++;
-    if (this->internalCnt%5==0)
-        this->animph++;
-
-    if(this->isDying() || this->isTeleporting())
-        return true;
-
-    if (this->getMoved()==0)
+    sNeighboorhood myNeigh=this->getSteppableNeighboorhood();
+    bool _empty=true;
+    for(int c=0; c<4; c++)
     {
-        sNeighboorhood myNeigh=this->getSteppableNeighboorhood();
-        bool _empty=true;
-        for(int c=0; c<4; c++)
+        if(myNeigh.steppableClose[c]==false)
+            _empty=false;
+        bElem* testElem=this->getElementInDirection((direction)c);
+        if (testElem==NULL)
         {
-            if(myNeigh.steppableClose[c]==false)
-                _empty=false;
-            bElem* testElem=this->getElementInDirection((direction)c);
-            if (testElem==NULL)
-            {
-                continue;
-            }
-            if (testElem->getType()==_player && testElem->isTeleporting()==false && testElem->isActive()==true)
-            {
-                testElem->hurt(6);
-                return true; //no need to leave the place, where we do the damage
-                break;
-            }
+            continue;
         }
-        if(_empty)
+        if (testElem->getType()==_player && testElem->isTeleporting()==false && testElem->isActive()==true)
         {
-            this->moveInDirection(this->getDirection());
-            return true;
+            testElem->hurt(6);
+            return true; //no need to leave the place, where we do the damage
+            break;
         }
-        if(this->moveInDirection(this->getDirection()))
-        {
+    }
+    if(_empty)
+    {
+        this->moveInDirection(this->getDirection());
+        return true;
+    }
+    if(this->moveInDirection(this->getDirection()))
+    {
 
-            bElem* testElem=this->getElementInDirection((direction)(((int)this->getDirection()+3)%4));
-            if (testElem!=NULL)
-            {
-                if (testElem->isSteppable())
-                    this->setDirection((direction)(((int)this->getDirection()+3)%4));
-            }
-        }
-        else
+        bElem* testElem=this->getElementInDirection((direction)(((int)this->getDirection()+3)%4));
+        if (testElem!=NULL)
         {
-            this->setDirection((direction)(((int)this->getDirection()+1)%4));
-            this->_me_moved=_mov_delay;
-
+            if (testElem->isSteppable())
+                this->setDirection((direction)(((int)this->getDirection()+3)%4));
         }
+    }
+    else
+    {
+        this->setDirection((direction)(((int)this->getDirection()+1)%4));
+        this->setMoved(_mov_delay);
 
     }
+
     return true;
 }
-int monster::getAnimPh()
-{
-    return this->animph;
 
-}
 
 
 bool monster::steppableNeigh()
 {
     for (int c=0; c<4; c++)
     {
-        if (this->isSteppableDirection((direction)c)==false)
+        if (!this->isSteppableDirection((direction)c))
         {
             return false;
         }

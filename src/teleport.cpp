@@ -17,23 +17,46 @@ teleport::teleport(chamber* board,int newSubtype):nonSteppable(board)
 
 teleport::~teleport()
 {
+
     this->purgeFromTeleporters();
 }
 /* here we will try to teleport an object to the becon connected to this teleporter. if the becon is not yet established, randomly choose one */
 bool teleport::interact(bElem* who)
 {
     bool bres=bElem::interact(who);
-    if(who->getType()==_player){
-
-  }
+    unsigned int sizeT;
     if(this->theOtherEnd==NULL)
     {
-        this->removeFromTeleports();
-        int b=(bElem::randomNumberGenerator()%teleport::teleporters.size());
-        this->addToTeleports();
-        this->theOtherEnd=teleport::teleporters[b];
 
+        this->removeFromTeleports();
+        sizeT=teleport::teleporters.size(); // last teleporter is looped
+        if(sizeT==0)
+        {
+            this->addToTeleports();
+            sizeT++;
+        }
+        int b=(bElem::randomNumberGenerator()%sizeT);;
+        if(this->getSubtype()%2==1)
+        {
+            for(int c=0;c<teleport::teleporters.size();c++)
+            {
+                if((teleport::teleporters.at(c)->getBoard()!=this->getBoard()) && (teleport::teleporters.at(c)->getSubtype()==this->getSubtype()))
+                {
+                    b=c;
+                    break;
+                }
+            }
+        }
+
+        this->theOtherEnd=teleport::teleporters[b];
+        if(this->getSubtype()%2==1)
+        {
+            this->theOtherEnd->theOtherEnd=this;
+            this->theOtherEnd->removeFromTeleports();
+        }
     }
+    if(this->theOtherEnd->getBoard()==NULL)
+        return false;
     return this->theOtherEnd->teleportIt(who);
 
 }
@@ -84,23 +107,32 @@ bool teleport::teleportIt(bElem* who)
 void teleport::purgeFromTeleporters()
 {
     std::vector<teleport*>::iterator ptr;
-    for(ptr=teleport::teleporters.begin(); ptr!=teleport::teleporters.end(); )
+    if(this->theOtherEnd!=NULL)
     {
-        if((*ptr)->getInstanceid()==this->getInstanceid())
+        this->theOtherEnd->theOtherEnd=NULL; // We removed the other end from the list, so we need to add it back
+        this->theOtherEnd->addToTeleports();
+        this->theOtherEnd=NULL;
+    }
+    else
+    {
+        for(ptr=teleport::teleporters.begin(); ptr!=teleport::teleporters.end(); )
         {
-            teleport::teleporters.erase(ptr); //
-        }
-        else
-        {
-            if ((*ptr)->theOtherEnd!=NULL)
+            if((*ptr)->getInstanceid()==this->getInstanceid())
             {
-                if((*ptr)->theOtherEnd->getInstanceid()==this->getInstanceid())
-                {
-                    (*ptr)->theOtherEnd->addToTeleports(); // not sure if we should do the teleport recycling
-                    (*ptr)->theOtherEnd=NULL; //We remove the reference to the disposed teleport
-                }
+                teleport::teleporters.erase(ptr); //
             }
-            ptr++;
+            else
+            {
+                if ((*ptr)->theOtherEnd!=NULL)
+                {
+                    if((*ptr)->theOtherEnd->getInstanceid()==this->getInstanceid())
+                    {
+                        (*ptr)->theOtherEnd->addToTeleports(); // not sure if we should do the teleport recycling
+                        (*ptr)->theOtherEnd=NULL; //We remove the reference to the disposed teleport
+                    }
+                }
+                ptr++;
+            }
         }
     }
 

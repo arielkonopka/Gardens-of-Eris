@@ -3,22 +3,23 @@
 videoElement::videoElementDef* bunker::vd=NULL;
 bunker::bunker(chamber *board):mechanical(board)
 {
-    this->myGun=new plainGun(board);
-    this->myGun->setSubtype(1); // we have a gun, and we are not afraid to use it.
+    this->myGun=new plainGun(board,1);
     this->setDirection(UP);
     this->rotated=0;
     this->interacted=-1;
     this->help=0;
+    this->activatedBy=NULL;
 }
 bunker::bunker(chamber* board, int x, int y):mechanical(board,x,y)
 {
-    this->myGun=new plainGun(board);
-    this->myGun->setSubtype(1); // we have a gun, and we are not afraid to use it.
+    this->myGun=new plainGun(board,1);
     this->setDirection(UP);
     this->rotated=0;
     this->interacted=-1;
     this->help=0;
+    this->activatedBy=NULL;
 }
+
 
 videoElement::videoElementDef* bunker::getVideoElementDef()
 {
@@ -27,6 +28,12 @@ videoElement::videoElementDef* bunker::getVideoElementDef()
 
 bunker::~bunker()
 {
+    if(this->activatedBy!=NULL)
+    {
+        this->setStats(this->backUp);
+        this->activatedBy->unlockThisObject(this);
+        this->activatedBy=NULL;
+    }
     delete this->myGun;
 }
 
@@ -39,22 +46,51 @@ bool bunker::isMovable()
 bool bunker::mechanics(bool collected)
 {
     bool res=nonSteppable::mechanics(collected);
-    if(this->help>0)
-        this->help--;
-    int randomTest=bElem::randomNumberGenerator()%1000+this->help;
-    res=res || this->myGun->mechanics(collected);
-    if(this->myGun->readyToShoot()==false)
-        return res;
-    if(randomTest>990)
-        this->myGun->use(this);
-    return true;
+    if(res)
+    {
+        if(this->help>0)
+        {
+            this->help--;
+            if (this->help==0)
+            {
+                if(this->activatedBy!=NULL)
+                {
+                    this->setStats(this->backUp);
+                    this->activatedBy->unlockThisObject(this);
+                    this->activatedBy=NULL;
+                }
+            }
+
+        }
+
+        int randomTest=bElem::randomNumberGenerator()%1000+this->help;
+
+        if(this->myGun->readyToShoot()==false)
+            return res;
+        if(randomTest>990)
+        {
+
+            this->myGun->use(this);
+            this->setMoved(_plainGunCharge);
+        }
+    }
+    return res;
 }
 
 bool bunker::interact(bElem* Who)
 {
     if(this->interacted>0)
         return false;
-    this->help=999;
+    this->help=5555;
+    if(Who->getStats()!=NULL && this->activatedBy==NULL)
+    {
+        this->activatedBy=Who;
+        this->backUp=this->getStats();
+        this->setStats(Who->getStats());
+        Who->lockThisObject(this);
+    }
+
+
     return true;
 }
 

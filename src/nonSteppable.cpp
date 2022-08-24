@@ -38,7 +38,10 @@ bool nonSteppable::mechanics(bool collected)
 {
     bool res= bElem::mechanics(collected);
     if(this->teleporting>0)
+    {
         this->teleporting--;
+        return false;
+    }
     return res;
 
 }

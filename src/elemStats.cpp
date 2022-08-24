@@ -41,7 +41,7 @@ unsigned int elemStats::getDexterity()
 }
 void elemStats::updateDexterity()
 {
-    this->dexterity=log2(this->_dPoints);
+    this->dexterity=log2(this->_dPoints)+_initialDexterity;
 }
 
 void elemStats::countHit(bElem* what)

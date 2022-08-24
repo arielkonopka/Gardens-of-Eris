@@ -197,7 +197,7 @@ void chamberArea::findChambersCloseToSurface(int s,int tolerance)
 bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
 {
     sNeighboorhood neigh=mychamber->getElement(x,y)->getSteppableNeighboorhood();
-    int unstep=0;
+  //  int unstep=0;
     int lastStep=neigh.nTypes[7]; //last element
     int gap=0;
     for (int c=0; c<8; c++)

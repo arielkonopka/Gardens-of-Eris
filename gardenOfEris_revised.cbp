@@ -62,6 +62,7 @@
 		<Unit filename="include/collectible.h" />
 		<Unit filename="include/commons.h" />
 		<Unit filename="include/door.h" />
+		<Unit filename="include/elemStats.h" />
 		<Unit filename="include/elements.h" />
 		<Unit filename="include/explosives.h" />
 		<Unit filename="include/gCollect.h" />
@@ -95,6 +96,7 @@
 		<Unit filename="src/chamberArea.cpp" />
 		<Unit filename="src/collectible.cpp" />
 		<Unit filename="src/door.cpp" />
+		<Unit filename="src/elemStats.cpp" />
 		<Unit filename="src/explosives.cpp" />
 		<Unit filename="src/gCollect.cpp" />
 		<Unit filename="src/goldenApple.cpp" />
