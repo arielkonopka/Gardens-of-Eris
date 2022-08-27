@@ -204,10 +204,11 @@ bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
     {
         if(lastStep!=neigh.nTypes[c])
         {
-            if(gap==1)
+            if(gap==0 && c>0)
             {
                 return false;
             }
+            lastStep=neigh.nTypes[c];
             gap=0;
         }
         else
