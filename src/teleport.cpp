@@ -25,6 +25,7 @@ bool teleport::interact(bElem* who)
 {
     bool bres=bElem::interact(who);
     unsigned int sizeT;
+    if(!bres) return false;
     if(this->theOtherEnd==NULL)
     {
 
@@ -38,7 +39,7 @@ bool teleport::interact(bElem* who)
         int b=(bElem::randomNumberGenerator()%sizeT);;
         if(this->getSubtype()%2==1)
         {
-            for(int c=0;c<teleport::teleporters.size();c++)
+            for(unsigned int c=0;c<teleport::teleporters.size();c++)
             {
                 if((teleport::teleporters.at(c)->getBoard()!=this->getBoard()) && (teleport::teleporters.at(c)->getSubtype()==this->getSubtype()))
                 {

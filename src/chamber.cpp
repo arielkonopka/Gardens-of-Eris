@@ -5,6 +5,7 @@ int chamber::lastid=0;
 
 chamber::chamber(int x,int y)
 {
+    randomWordGen *rwg=new randomWordGen();
     this->chamberArray.resize(boost::extents[x][y]);
     this->width=x;
     this->height=y;
@@ -17,7 +18,13 @@ chamber::chamber(int x,int y)
             this->chamberArray[cX][cY]=new bElem(this,cX,cY);
         }
     }
+    this->chamberName=rwg->generateWord(3);
+    delete rwg;
+
+
+
 }
+
 
 chamber::~chamber()
 {
@@ -31,6 +38,15 @@ chamber::~chamber()
 
     }
 }
+
+
+std::string chamber::getName()
+{
+    return this->chamberName;
+}
+
+
+
 
 bElem* chamber::getElement(int x, int y)
 {

@@ -302,7 +302,7 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
 
 void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  text)
 {
-    ALLEGRO_COLOR c=al_map_rgb(255,255,155);
+    ALLEGRO_COLOR c=al_map_rgb(255,255,200);
     int scrx=offsetX+(x*this->sWidth),scry=offsetY+(y*this->sHeight);
     if(this->myfont!=NULL)
     {
@@ -370,6 +370,8 @@ void presenter::showGameField(int relX,int relY)
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY,0);
     if(player!=NULL)
     {
+        this->showText(1,this->scrTilesY+3,0,5,"Garden: "+player->getBoard()->getName());
+
         this->showObjectTile(1,this->scrTilesY+2,0,0,player);
         this->showText(2,this->scrTilesY+2,0,0,std::to_string(player->countVisitedPlayers()));
         this->showText(2,this->scrTilesY+2,0,32,std::to_string(player->getEnergy()));

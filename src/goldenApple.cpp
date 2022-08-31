@@ -32,7 +32,7 @@ goldenApple::goldenApple(chamber* board, int x, int y):collectible(board,x,y)
 goldenApple::~goldenApple()
 {
     goldenApple::appleNumber--;
-    for(int cnt=0;cnt<goldenApple::apples.size();)
+    for(unsigned int cnt=0;cnt<goldenApple::apples.size();)
     {
         if(goldenApple::apples[cnt]==this)
         {

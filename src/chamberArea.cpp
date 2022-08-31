@@ -216,11 +216,11 @@ bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
             gap++;
         }
     }
-    if(gap==1 || gap==4)
+ /*   if(gap==0 || gap==4)
     {
         return false;
     }
-
+*/
     return true;
 
 

@@ -4,6 +4,9 @@
 #include "commons.h"
 //#include  "bElem.h"
 #include "gCollect.h"
+#include "randomWordGen.h"
+
+
 class bElem;
 class gCollect;
 //using boost::multi_array;
@@ -21,9 +24,11 @@ class chamber
         chamber(int x,int y);
         ~chamber();
         int getInstanceId();
+        std::string getName();
     protected:
 
     private:
+        std::string chamberName;
         void setInstanceId(int id);
         int instanceid;
         static int lastid;

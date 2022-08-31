@@ -327,16 +327,16 @@ bool randomLevelGenerator::generateLevel(int holes)
 
     for(int c=0; c<5; c++)
     {
-        elementsToChooseFrom.push_back({_key,0,1,0,3});
-        elementsToChooseFrom.push_back({_key,2,1,0,3});
-        elementsToChooseFrom.push_back({_key,4,1,0,3});
+        elementsToChooseFrom.push_back({_key,0,1,0,2});
+        elementsToChooseFrom.push_back({_key,2,1,0,2});
+        elementsToChooseFrom.push_back({_key,4,1,0,2});
         elementsToChooseFrom.push_back({_teleporter,1,1,0,6});
         elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
 
     }
   //  elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
-    elementsToChooseFrom.push_back({_player,0,1,0,9});
-    elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
+    elementsToChooseFrom.push_back({_player,0,1,0,5});
+    elementsToChooseFrom.push_back({_plainGun,0,1,0,1});
   //
 
     //first find area for the player and stuff for it
@@ -379,6 +379,8 @@ bool randomLevelGenerator::generateLevel(int holes)
 
         }
         for(unsigned int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
+        chamberArea::foundAreas.clear();
+        this->headNode->findChambersCloseToSurface(demandedSurface,tolerance);
         if(chamberArea::foundAreas.size()>0)
         {
             int selectedChamberNo=(this->gen()%chamberArea::foundAreas.size());
