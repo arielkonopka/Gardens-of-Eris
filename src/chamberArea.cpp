@@ -118,7 +118,7 @@ int chamberArea::calculateSurface(chamber* mychamber)
     {
         for(unsigned int cnt=0; cnt<this->children.size(); cnt++)
         {
-            surface_=surface_+this->children[cnt]->calculateSurface(mychamber);
+            surface_+=this->children[cnt]->calculateSurface(mychamber);
         }
 
     }
@@ -137,6 +137,7 @@ void chamberArea::findElementsRec(chamber* mychamber)
                 if (mychamber->getElement(x,y)->isSteppable() && this->checkIfElementIsFree(x,y,mychamber))
                 {
                     chamberArea::foundElements.push_back(mychamber->getElement(x,y));
+                    std::cout<<".";
                 }
             }
         }
@@ -156,8 +157,10 @@ void chamberArea::findElementsRec(chamber* mychamber)
 
 bool chamberArea::findElementsToStepOn(chamber* myChamber)
 {
+    std::cout<<"FindElementsToStepOn\n[";
     chamberArea::foundElements.clear();
     this->findElementsRec(myChamber);
+    std::cout<<"]\n-----------------\n";
     return chamberArea::foundElements.size()>0;
 
 }
@@ -193,11 +196,11 @@ void chamberArea::findChambersCloseToSurface(int s,int tolerance)
     return;
 }
 
-// We are checking the neighboorhood. We are doing it in kind of naive way, we assume, that if there are sequences steppable/not steppable of length 1 or 4, then we say, it is impossible to put an object there.
+// We are checking the neighboorhood. We are doing it in kind of naive way, we assume,
+//that if there are sequences steppable/not steppable of length 1, then we say, it is impossible to put an object there.
 bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
 {
     sNeighboorhood neigh=mychamber->getElement(x,y)->getSteppableNeighboorhood();
-  //  int unstep=0;
     int lastStep=neigh.nTypes[7]; //last element
     int gap=0;
     for (int c=0; c<8; c++)
@@ -216,14 +219,7 @@ bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
             gap++;
         }
     }
- /*   if(gap==0 || gap==4)
-    {
-        return false;
-    }
-*/
     return true;
-
-
 }
 
 

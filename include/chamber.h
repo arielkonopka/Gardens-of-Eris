@@ -6,7 +6,12 @@
 #include "gCollect.h"
 #include "randomWordGen.h"
 
-
+typedef struct color {
+    int r;
+    int g;
+    int b;
+    int a;
+    } colour;
 class bElem;
 class gCollect;
 //using boost::multi_array;
@@ -25,9 +30,11 @@ class chamber
         ~chamber();
         int getInstanceId();
         std::string getName();
+        colour getChColour();
     protected:
 
     private:
+        colour chamberColour;
         std::string chamberName;
         void setInstanceId(int id);
         int instanceid;

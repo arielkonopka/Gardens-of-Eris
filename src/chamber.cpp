@@ -19,10 +19,19 @@ chamber::chamber(int x,int y)
         }
     }
     this->chamberName=rwg->generateWord(3);
+    this->chamberColour.a=255;
+    this->chamberColour.r=30+rwg->randomNumberGenerator()%50;
+    this->chamberColour.g=30+rwg->randomNumberGenerator()%50;
+    this->chamberColour.b=50+rwg->randomNumberGenerator()%70;
     delete rwg;
 
 
 
+}
+
+colour chamber::getChColour()
+{
+    return this->chamberColour;
 }
 
 

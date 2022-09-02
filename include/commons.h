@@ -8,6 +8,8 @@
 #define _wallType       4
 #define _movableType    5
 #define _monster 6
+#define _patrollingDrone 7
+
 #define _player  (100)
 #define _collectible 50
 #define _key 51
@@ -63,7 +65,7 @@ typedef struct coords
 
 } coords;
 
-typedef enum { UP=0,LEFT=1,DOWN=2,RIGHT=3} direction;
+typedef enum { UP=0,LEFT=1,DOWN=2,RIGHT=3,NODIRECTION=5} direction;
  typedef struct controlItem
  {
      int type; /*-1 - nocommand, 0-move,1-shoot,2-interact,3-gun cycle,4-use element in inventory,5 - cycle inventory,6 - die, 7 - exit */

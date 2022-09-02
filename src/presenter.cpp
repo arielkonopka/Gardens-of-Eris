@@ -230,6 +230,9 @@ bool presenter::loadCofiguredData()
         case _explosivesType:
             ::explosives::vd=ved;
             break;
+        case _patrollingDrone:
+            ::patrollingDrone::vd=ved;
+            break;
 
 
         }
@@ -358,7 +361,8 @@ void presenter::showGameField(int relX,int relY)
     }
 
     al_set_target_bitmap(this->internalBitmap);
-    al_clear_to_color(al_map_rgba(50,70,120,255));
+    colour c=this->_cp_attachedBoard->getChColour();
+    al_clear_to_color(al_map_rgba(c.r,c.g,c.b,c.a));
     for(x=0; x<this->scrTilesX+1; x++)
         for(y=0; y<this->scrTilesY+1; y++)
         {

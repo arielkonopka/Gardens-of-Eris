@@ -12,6 +12,7 @@ class randomWordGen
         randomWordGen();
         virtual ~randomWordGen();
         std::string generateWord(int length);
+         std::mt19937 randomNumberGenerator;
     protected:
     private:
         std::vector<std::string> sylables={"a","o","u","i","ba","ca","da","fa","ga","gwa","ha","ja","ka","la","ma","na","pa","ra","sa","va","wa","xa","za",
@@ -22,7 +23,7 @@ class randomWordGen
                 "be","ce","de","fe","ge","he","je","ke","le","me","ne","pe","re","se","ve","we","xe","ze",
                 "bu","cu","du","fu","gu","hu","ju","ku","lu","mu","nu","pu","ru","su","vu","wu","xu","zu",
                 "bi","ci","di","fi","gi","hi","ji","ki","li","mi","ni","pi","ri","si","vi","wi","xi","zi"};
-    std::mt19937 randomNumberGenerator;
+
 };
 
 #endif // RANDOMWORDGEN_H
