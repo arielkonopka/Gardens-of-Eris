@@ -318,21 +318,21 @@ bool randomLevelGenerator::generateLevel(int holes)
     for(int c=1; c<(50/holes); c++)
     {
         // dangerous elements here, the more holes, the less of them in the gamefield
-        elementsToChooseFrom.push_back({_monster,0,1,0,6});
-        elementsToChooseFrom.push_back({_bunker,0,1,0,9});
+        elementsToChooseFrom.push_back({_monster,0,1,0,5});
+        elementsToChooseFrom.push_back({_bunker,0,1,0,5});
 
     }
     for(int c=0; c<holes*15; c++)
     {
-        elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,6});
-        elementsToChooseFrom.push_back({_explosivesType,0,1,0,6});
+        elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,5});
+        elementsToChooseFrom.push_back({_explosivesType,0,1,0,5});
 
 
     }
     for(int cnt=0; cnt<holes*5; cnt++)
     {
-        elementsToChooseFrom.push_back({_key,1,1,0,6});
-        elementsToChooseFrom.push_back({_key,3,1,0,6});
+        elementsToChooseFrom.push_back({_key,1,1,0,5});
+        elementsToChooseFrom.push_back({_key,3,1,0,5});
 
 
 
@@ -385,8 +385,9 @@ bool randomLevelGenerator::generateLevel(int holes)
         int demandedSurface=0;
 
         int cnt;
+        int elementsToMake=5;
         elementCollection.clear();
-        for(cnt=0; cnt<5; cnt++)
+        for(cnt=0; cnt<elementsToMake; cnt++)
         {
             _nel=elementsToChooseFrom[this->gen()%elementsToChooseFrom.size()];
             elementCollection.push_back(_nel);
@@ -410,7 +411,7 @@ bool randomLevelGenerator::generateLevel(int holes)
                     if(dice<(50/holes))
                     {
                         this->placeDoors({_door,keyType,1,0,9},chamberArea::foundAreas[selectedChamberNo]);
-                        elementCollection.push_back({_key,keyType,2,0,9}); // place key for the door and store it somewhere - warning, the door placed at the end might never receive the key
+                        elementCollection.push_back({_key,keyType,1,0,9}); // place key for the door and store it somewhere - warning, the door placed at the end might never receive the key
                         chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock=true;
 
                     }

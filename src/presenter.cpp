@@ -82,7 +82,15 @@ _cp_gameReasonOut presenter::presentGamePlay()
     return USERREQ;
 }
 
-
+void presenter::showSplash()
+{
+    ALLEGRO_BITMAP *splash=al_load_bitmap(this->splashFname.c_str());
+    al_clear_to_color(al_map_rgba(15,15,25,255));
+    al_draw_bitmap(splash,450,0,0);
+    al_wait_for_vsync();
+    al_flip_display();
+    //  delete splash;
+}
 bool presenter::loadCofiguredData()
 {
     /*
@@ -116,6 +124,7 @@ bool presenter::loadCofiguredData()
 
 
     //load all the necessary constants about the graphics in the game
+    this->splashFname=this->skinDefJson["splash screen"].GetString();
     this->sWidth=this->skinDefJson["width"].GetInt();
     this->sHeight=this->skinDefJson["height"].GetInt();
     this->spacing=this->skinDefJson["spacing"].GetInt();
@@ -255,11 +264,18 @@ bool presenter::loadCofiguredData()
 
 */
 
-void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* elem)
+void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* elem,bool ignoreOffset)
 {
-    coords coords;
+    coords coords,offset= {0,0};
     int sx,sy;
     int aphs,subtyps,dirs;
+    if(!ignoreOffset)
+    {
+        if(elem!=NULL)
+            offset=elem->getOffset();
+        offsetX=offset.x;
+        offsetY=offset.y;
+    }
     videoElement::aphases *phs; //Video element, that defines the animation of an object
 //the tile would not fit in the screen? ignore
     // if(elem!=NULL)
@@ -271,7 +287,7 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
         return;
 //check if object is standing on something, if so, draw that first.
     if (elem->steppingOn!=NULL)
-        this->showObjectTile(x,y,offsetX,offsetY,elem->steppingOn);
+        this->showObjectTile(x,y,offsetX,offsetY,elem->steppingOn,ignoreOffset);
 
 //No video object definition? ignore This way we can have "invisible" objects if we want to.
     if (elem->getVideoElementDef()==NULL)
@@ -319,7 +335,8 @@ void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  tex
 void presenter::showGameField(int relX,int relY)
 {
     player* player=player::getActivePlayer();;
-
+    std::vector<movingSprite> mSprites;
+    mSprites.clear();
     int x,y;
     int bx=(relX)-((this->scrTilesX)/2);
     int by=(relY)-((this->scrTilesY)/2);
@@ -366,9 +383,20 @@ void presenter::showGameField(int relX,int relY)
     for(x=0; x<this->scrTilesX+1; x++)
         for(y=0; y<this->scrTilesY+1; y++)
         {
-            this->showObjectTile(x,y,0,0,this->_cp_attachedBoard->getElement(x+(this->positionOnScreen.x/this->sWidth),y+(this->positionOnScreen.y/this->sHeight)));
+            bElem* elemToDisplay=this->_cp_attachedBoard->getElement(x+(this->positionOnScreen.x/this->sWidth),y+(this->positionOnScreen.y/this->sHeight));
+            if(elemToDisplay!=NULL && elemToDisplay->getMoved()>0)
+            {
+                mSprites.push_back({x,y,elemToDisplay});
+                continue;
+            }
+            this->showObjectTile(x,y,0,0,elemToDisplay,false);
         }
+    for(int cnt=0; cnt<mSprites.size(); cnt++)
+    {
+        movingSprite ms=mSprites.at(cnt);
+        this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false);
 
+    }
     al_set_target_bitmap(screen);
     al_clear_to_color(al_map_rgba(15,15,25,255));
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY,0);
@@ -376,10 +404,10 @@ void presenter::showGameField(int relX,int relY)
     {
         this->showText(1,this->scrTilesY+3,0,5,"Garden: "+player->getBoard()->getName());
 
-        this->showObjectTile(1,this->scrTilesY+2,0,0,player);
+        this->showObjectTile(1,this->scrTilesY+2,0,0,player,true);
         this->showText(2,this->scrTilesY+2,0,0,std::to_string(player->countVisitedPlayers()));
         this->showText(2,this->scrTilesY+2,0,32,std::to_string(player->getEnergy()));
-        this->showObjectTile(4,this->scrTilesY+2,0,0,player->myInventory->getActiveWeapon());
+        this->showObjectTile(4,this->scrTilesY+2,0,0,player->myInventory->getActiveWeapon(),true);
         if( player->myInventory->getActiveWeapon()!=NULL)
         {
             this->showText(5,this->scrTilesY+2,0,32,std::to_string(player->myInventory->getActiveWeapon()->getEnergy()));
@@ -394,16 +422,16 @@ void presenter::showGameField(int relX,int relY)
             if(key!=NULL)
             {
                 tokens=player->myInventory->countTokens(key->getType(),key->getSubtype());
-                this->showObjectTile(7+(cnt*2),this->scrTilesY+2,0,0,key);
+                this->showObjectTile(7+(cnt*2),this->scrTilesY+2,0,0,key,true);
                 this->showText(8+(cnt*2),this->scrTilesY+2,0,16,std::to_string(tokens));
 
 
             }
         }
-        this->showObjectTile(18,this->scrTilesY+2,0,0,goldenApple::getApple(1));
+        this->showObjectTile(18,this->scrTilesY+2,0,0,goldenApple::getApple(1),true);
         this->showText(19,this->scrTilesY+2,0,0,std::to_string(goldenApple::getAppleNumber()));
         this->showText(19,this->scrTilesY+2,0,32,std::to_string(player->myInventory->countTokens(_goldenAppleType,0)));
-       // this->showText(21,this->scrTilesY+1,0,0,"Player");
+        // this->showText(21,this->scrTilesY+1,0,0,"Player");
         this->showText(21,this->scrTilesY+1,6,32,"Stats");
         this->showText(21,this->scrTilesY+2,5,0,"P:");
         this->showText(21,this->scrTilesY+2,5,32,"Dex:");
@@ -472,6 +500,8 @@ int presenter::presentEverything()
                 {
                     return 2;
                 }
+                if(currentPlayer->myInventory->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
+                    fin=true;
                 this->_cp_attachedBoard=currentPlayer->getBoard();
 
             }

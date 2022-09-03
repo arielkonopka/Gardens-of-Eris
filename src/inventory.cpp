@@ -26,6 +26,82 @@ inventory::~inventory()
 
 
 
+bool inventory::removeCollectibleFromInventory(int instance)
+{
+    for(int c=0; c<this->weapons.size();)
+    {
+        if(this->weapons.at(c)->getInstanceid()==instance)
+        {
+            this->decrementTokenNumber({this->weapons.at(c)->getType(),this->weapons.at(c)->getSubtype()});
+            this->weapons.erase(this->weapons.begin()+c);
+
+        }
+        else
+        {
+            c++;
+        }
+
+    }
+    for(int c=0; c<this->usables.size();)
+    {
+        if(this->usables.at(c)->getInstanceid()==instance)
+        {
+            this->decrementTokenNumber({this->usables.at(c)->getType(),this->usables.at(c)->getSubtype()});
+
+            this->usables.erase(this->usables.begin()+c);
+
+        }
+        else
+        {
+            c++;
+        }
+
+    }
+    for(int c=0; c<this->tokens.size();)
+    {
+        if(this->tokens.at(c)->getInstanceid()==instance)
+        {
+            this->decrementTokenNumber({this->tokens.at(c)->getType(),this->tokens.at(c)->getSubtype()});
+            this->tokens.erase(this->tokens.begin()+c);
+
+        }
+        else
+        {
+            c++;
+        }
+
+    }
+    for(int c=0; c<this->keys.size();)
+    {
+        if(this->keys.at(c)->getInstanceid()==instance)
+        {
+            this->decrementTokenNumber({this->keys.at(c)->getType(),this->keys.at(c)->getSubtype()});
+            this->keys.erase(this->keys.begin()+c);
+
+        }
+        else
+        {
+            c++;
+        }
+
+    }
+       for(int c=0; c<this->mods.size();)
+    {
+        if(this->mods.at(c)->getInstanceid()==instance)
+        {
+             this->decrementTokenNumber({this->mods.at(c)->getType(),this->mods.at(c)->getSubtype()});
+            this->mods.erase(this->mods.begin()+c);
+
+        }
+        else
+        {
+            c++;
+        }
+
+    }
+    return true;
+
+}
 
 
 bElem* inventory::getKey(int type, int subtype,bool removeIt)
@@ -102,13 +178,11 @@ bElem* inventory::getActiveWeapon()
 {
     if (this->weapons.size()<=0)
         return NULL;
-
+    this->wPos=this->wPos%this->weapons.size();
     if (this->weapons[this->wPos]->getAmmo()<=0)
     {
         std::cout<<"remove weapon\n";
-
         this->removeActiveWeapon();
-
         return this->getActiveWeapon(); // We will remove empty Weapons recursively, if it is necessary
     }
     return this->weapons[this->wPos];
@@ -127,6 +201,8 @@ bool inventory::addToInventory(bElem* what)
     bool res=false;
     if(what==NULL)
         return false;
+   // if(what->isDying() || what->isTeleporting() || what->isDestroyed())
+   //     return false;
     what->setCollected(this->owner);
 
     this->incrementTokenNumber({what->getType(),what->getSubtype()});

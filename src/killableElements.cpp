@@ -25,7 +25,7 @@ killableElements::killableElements(chamber* board, int x, int y, bool registerEl
 
 bool killableElements::mechanics(bool collected)
 {
-    bool res=movableElements::mechanics(collected);
+
     if(this->isDying()>0)
     {
         this->killed--;
@@ -36,6 +36,7 @@ bool killableElements::mechanics(bool collected)
         }
         return false;
     }
+    bool res=movableElements::mechanics(collected);
     return res;
 }
 
@@ -65,7 +66,7 @@ bool killableElements::hurt(int points)
         return false;
     }
 
-    this->setMoved(_mov_delay);
+    //this->setMoved(_mov_delay);
     this->setEnergy(this->getEnergy()-points);
     if (this->getEnergy()<=0)
         this->kill();

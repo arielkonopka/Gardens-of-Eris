@@ -56,7 +56,7 @@ class randomLevelGenerator
 {
 public:
     chamberArea* headNode;
-
+    std::mt19937 gen;
     bElem* createElement(elementToPlace element);
 
 
@@ -80,7 +80,7 @@ private:
     gCollect *garbageCollector;
     int width;
     int height;
-    std::mt19937 gen;
+
     std::vector<coords> spotsToChoose;
 
 };

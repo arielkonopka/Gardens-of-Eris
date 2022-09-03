@@ -5,7 +5,7 @@ videoElement::videoElementDef* plainMissile::vd=NULL;
 plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber,true)
 {
     this->setEnergy(_plainMissileEnergy);
-    this->_me_moved=_plainMissileSpeed;
+    this->setMoved(_plainMissileSpeed);
     this->setDirection(UP);
     this->setMoved(_plainMissileSpeed);
     this->statsOwner=NULL;
@@ -13,7 +13,7 @@ plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber,true
 plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber,true)
 {
     this->setEnergy(energy);
-    this->_me_moved=_plainMissileSpeed;
+    this->setMoved(_plainMissileSpeed);
     this->setDirection(UP);
     this->myInventory=new inventory(this ); // This is for a mod, that could be installed on the ammo
     this->setMoved(_plainMissileSpeed);
@@ -48,11 +48,11 @@ videoElement::videoElementDef* plainMissile::getVideoElementDef()
 bool plainMissile::mechanics(bool collected)
 {
     bool res;
-    int mvd=this->_me_moved;
+    int mvd=this->getMoved();
     res=killableElements::mechanics(collected);
     if(this->isDying())
         return true;
-    if (this->_me_moved==0 && mvd==0)
+    if (this->getMoved()==0 && mvd==0)
     {
         bElem *myel=this->getElementInDirection(this->getDirection());
         if(myel==NULL)
@@ -77,7 +77,7 @@ bool plainMissile::mechanics(bool collected)
             if(this->statsOwner!=NULL)
             {
                 if(this->statsOwner->getStats()->getDexterity()<_dexterityLevels)
-                energy=this->getEnergy()- (bElem::randomNumberGenerator()% (_dexterityLevels-this->statsOwner->getStats()->getDexterity()));
+                    energy=this->getEnergy()- (bElem::randomNumberGenerator()% (_dexterityLevels-this->statsOwner->getStats()->getDexterity()));
             }
             myel->hurt(energy);
             if(this->statsOwner!=NULL)
@@ -92,7 +92,7 @@ bool plainMissile::mechanics(bool collected)
             {
                 if(this->statsOwner!=NULL)
                 {
-                   this->statsOwner->getStats()->countKill(myel);
+                    this->statsOwner->getStats()->countKill(myel);
                 }
                 if (!this->isDying())
                     this->disposeElement();
@@ -111,7 +111,7 @@ void plainMissile::setStatsOwner(bElem* owner)
     if(owner!=NULL)
     {
         this->statsOwner=owner;
-       // this->owner->lockThisObject(this);
+        // this->owner->lockThisObject(this);
     }
 }
 

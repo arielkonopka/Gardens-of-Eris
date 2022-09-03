@@ -35,13 +35,13 @@ bool movableElements::moveInDirection(direction dir)
 bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 {
     bElem* stepOn=this->getElementInDirection(dir);
-    if (this->_me_moved>0 || this->isDying()==true || this->isTeleporting() || this->isDestroyed()) return false;
+    if (this->getMoved()>0 || this->isDying()==true || this->isTeleporting() || this->isDestroyed()) return false;
     this->setDirection(dir);
     if (stepOn==NULL) return false;
     if (stepOn->isSteppable()==true)
     {
         this->stepOnElement(stepOn);
-        this->_me_moved=speed;
+        this->setMoved(speed);
         return true;
     }
     else if (this->canPush()==true && stepOn->isMovable()==true)
@@ -53,17 +53,19 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
         {
             stepOn->stepOnElement(stepOn2); //move next object in direction
             this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
-            this->_me_moved=speed+1;
+            this->setMoved(speed+1);
+            stepOn->setMoved(speed+1);
+            stepOn->setDirection(dir);
             return true;
         }
     }
     if (this->canCollect()==true && this->myInventory!=NULL && stepOn->isCollectible()==true)
     {
         if (this->myInventory->addToInventory(stepOn)==true)
-        //if (this->collect(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)
+            //if (this->collect(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)
         {
             this->getStats()->countCollect(stepOn);
-            this->_me_moved=speed;
+            // this->setMoved(speed);
             return true;
         }
     }
@@ -71,7 +73,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
     {
         if(stepOn->interact(this)==true)
         {
-            this->_me_moved=speed;
+            // this->setMoved(speed);
             return true;
 
         }
@@ -98,12 +100,8 @@ bool movableElements::canPush()
 bool movableElements::mechanics(bool collected)
 {
     bool res=nonSteppable::mechanics(collected);
-    if (this->_me_moved>0)
-    {
-        this->_me_moved--;
-        return false;
-    }
-
+    if(this->getMoved()>0)
+        res=false;
     return res;
 }
 
@@ -115,28 +113,20 @@ videoElement::videoElementDef* movableElements::getVideoElementDef()
 }
 
 
-direction movableElements::getDirection()
-{
-
-    return nonSteppable::getDirection();
-}
-
-bool movableElements::setDirection(direction newDirection)
-{
-    nonSteppable::setDirection(newDirection);
-
-    return true;
-}
 
 
 void movableElements::setMoved(int time)
 {
-    this->_me_moved=time;
+    this->_me_moved=this->getCntr()+time;
+    this->movingTotalTime=time;
 }
 
 int movableElements::getMoved()
 {
-    return this->_me_moved;
+
+    if(this->_me_moved-this->getCntr()>50)
+        this->_me_moved=0;
+    return (this->_me_moved<this->getCntr())?0:this->_me_moved-this->getCntr();
 }
 
 
@@ -150,6 +140,30 @@ bool movableElements::dragInDirection(direction dragIntoDirection)
 
 }
 
+coords movableElements::getOffset()
+{
+    coords res= {0,0};
+    if(this->getMoved()>0 && this->movingTotalTime>0)
+    {
+        switch(this->getDirection())
+        {
+        case(UP):
+            res.y=((this->getMoved())*64)/this->movingTotalTime;
+            break;
+        case (DOWN):
+            res.y=-((this->getMoved())*64)/this->movingTotalTime;
+            break;
+        case(LEFT):
+            res.x=((this->getMoved())*64)/this->movingTotalTime;
+            break;
+        case(RIGHT):
+            res.x=-((this->getMoved())*64)/this->movingTotalTime;
+            break;
+        }
+    }
+
+    return res;
+}
 
 
 

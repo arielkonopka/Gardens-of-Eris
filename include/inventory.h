@@ -53,6 +53,7 @@ public:
     virtual bool mergeInventory(inventory* theOtherInventory);
     virtual bool removeToken(int position);
     virtual bool isEmpty();
+    virtual bool removeCollectibleFromInventory(int instance);
     std::vector<bElem*> weapons;
     std::vector<bElem*> mods;
     std::vector<bElem*> tokens;

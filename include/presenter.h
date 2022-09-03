@@ -64,7 +64,8 @@ public:
     int presentEverything();
     bool presentAChamber(presenterMode mod);
     bool loadCofiguredData();
-    void showObjectTile(int x,int y,int offsetX,int offsetY,bElem *elem);
+    void showSplash();
+    void showObjectTile(int x,int y,int offsetX,int offsetY,bElem *elem,bool ignoreOffset);
     void showText(int x,int y,int offsetX,int offsetY,std::string text);
     //relX and relY are coordinates on a board, that indicate where the player is
     void showGameField(int relX, int relY);
@@ -76,6 +77,7 @@ protected:
 
 private:
     ALLEGRO_FONT* myfont;
+    std::string splashFname;
     inputManager* inpMngr;
     int sWidth;
     int sHeight;
@@ -98,6 +100,16 @@ private:
     ALLEGRO_DISPLAY* display;
 
     ALLEGRO_BITMAP *sprites;
+    typedef struct movingSprite
+    {
+        int x;
+        int y;
+        bElem* elem;
+
+    } movingSprite;
+
+
+
 };
 
 #endif // CHAMBERPRESENTER_H

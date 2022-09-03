@@ -41,44 +41,48 @@ bool monster::mechanics(bool collected)
     if (!killableElements::mechanics(collected))
         return false;
     coords tmpcoords;
-    sNeighboorhood myNeigh=this->getSteppableNeighboorhood();
-    bool _empty=true;
-    for(int c=0; c<4; c++)
+    bElem* te=this->getElementInDirection(this->getDirection());
+    if(te!=NULL)
     {
-        if(myNeigh.steppableClose[c]==false)
-            _empty=false;
-        bElem* testElem=this->getElementInDirection((direction)c);
-        if (testElem==NULL)
+        if(te->isInteractive())
+            te->interact(this);
+    }
+      for(int c=0; c<4; c++)
+      {
+          bElem* testElem=this->getElementInDirection((direction)c);
+          if (testElem==NULL)
+          {
+              continue;
+          }
+          if (testElem->getType()==_player && testElem->isTeleporting()==false && testElem->isActive()==true)
+          {
+              testElem->hurt(6);
+              return true; //no need to leave the place, where we do the damage
+              break;
+          }
+
+      }
+
+    if(!this->isSteppableDirection(this->getDirection()) && this->isSteppableDirection((direction)(((int)this->getDirection()+1)%4)) && this->isSteppableDirection((direction)(((int)this->getDirection()+3)%4)))
         {
-            continue;
+            this->moveInDirection((direction)(((int)this->getDirection()+1)%2));
+            return true;
         }
-        if (testElem->getType()==_player && testElem->isTeleporting()==false && testElem->isActive()==true)
+    if(this->steppableNeigh())
+    {
+            this->moveInDirection(this->getDirection());
+            return true;
+    }
+
+    for(int c=3; c<7; c++)
+    {
+        direction d=(direction)((((int)this->getDirection())+c )%4);
+        if(this->isSteppableDirection(d))
         {
-            testElem->hurt(6);
-            return true; //no need to leave the place, where we do the damage
+            this->moveInDirection(d);
             break;
-        }
-    }
-    if(_empty)
-    {
-        this->moveInDirection(this->getDirection());
-        return true;
-    }
-    if(this->moveInDirection(this->getDirection()))
-    {
 
-        bElem* testElem=this->getElementInDirection((direction)(((int)this->getDirection()+3)%4));
-        if (testElem!=NULL)
-        {
-            if (testElem->isSteppable())
-                this->setDirection((direction)(((int)this->getDirection()+3)%4));
         }
-    }
-    else
-    {
-        this->setDirection((direction)(((int)this->getDirection()+1)%4));
-        this->setMoved(_mov_delay);
-
     }
 
     return true;
@@ -88,12 +92,11 @@ bool monster::mechanics(bool collected)
 
 bool monster::steppableNeigh()
 {
-    for (int c=0; c<4; c++)
+    sNeighboorhood n=this->getSteppableNeighboorhood();
+    for(int c=0;c<8;c++)
     {
-        if (!this->isSteppableDirection((direction)c))
-        {
+        if(n.steppable[c]==false)
             return false;
-        }
 
     }
     return true;

@@ -88,6 +88,7 @@ bool patrollingDrone::mechanics(bool collected)
         return false;
     if(this->isActive()==false)
         return false;
+
     int length=555;
     direction dir=NODIRECTION;
     coords c=this->getCoords();
@@ -126,11 +127,16 @@ bool patrollingDrone::mechanics(bool collected)
     std::cout<<"Length "<<length<<" "<<dir<<"\n";
     if(dir!=NODIRECTION && length<50 && dir!=(direction)(((int)this->getDirection()+2)%4))
     {
-        this->moveInDirectionSpeed(dir,_mov_delay*8);
+        this->moveInDirection(dir);
     }
     else
-        this->moveInDirectionSpeed((direction)((this->randomNumberGenerator()%4)),_mov_delay*8);
-
+    {
+        int newDirection=this->randomNumberGenerator()%3; // 0 - forward, 1 - forward, 2 - right
+        newDirection=(newDirection==2)?3:newDirection;
+        direction newD=(direction)(((int)this->getDirection()+newDirection)%4);
+        this->moveInDirection(newD);
+    }
+    this->setWait(_mov_delay*2);
     return true;
 
 

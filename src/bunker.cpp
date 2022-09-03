@@ -71,7 +71,7 @@ bool bunker::mechanics(bool collected)
         {
 
             this->myGun->use(this);
-            this->setMoved(_plainGunCharge);
+         //   this->setMoved(_plainGunCharge);
         }
     }
     return res;

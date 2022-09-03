@@ -115,6 +115,9 @@ public:
     virtual bElem* removeElement(); // removes element from the board, and returns it for further processing, usefull for eg. for collecting stuff
     virtual oState disposeElement();
     virtual oState disposeElementUnsafe();
+    virtual coords getOffset();
+    virtual bool isWaiting();
+    virtual void setWait(int time);
 
     bElem *steppingOn=NULL;
 //    std::vector<bElem *> collectedItems;
@@ -140,7 +143,7 @@ public:
     virtual bool unlockThisObject(bElem* who);
 protected:
     std::vector<bElem*> lockers;
-
+    int waiting;
     int instance;
     int destroyed;
 

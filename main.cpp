@@ -18,22 +18,23 @@ int main( int argc, char * argv[] )
    // delay.tv_sec=0;
    // delay.tv_nsec=2;
     randomLevelGenerator *rndl;
-    rndl=new randomLevelGenerator(180,280);
+    rndl=new randomLevelGenerator(300,300);
     chamber* myFirstChamber=rndl->mychamber;
     presenter::presenter *myPresenter=new presenter::presenter(myFirstChamber);
 
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
+    myPresenter->showSplash();
 
     for (int cnt=5;cnt>0;cnt--)
     {
-        rndl=new randomLevelGenerator(280,280);
+        rndl=new randomLevelGenerator(200+(rndl->gen()%100),200+(rndl->gen()%100));
         rndl->generateLevel(cnt);
     }
 
 
 
-    myPresenter->showGameField(1,1);
+  //  myPresenter->showGameField(1,1);
 
   //  int blue=0;
 

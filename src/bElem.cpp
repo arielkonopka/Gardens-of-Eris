@@ -70,10 +70,26 @@ bElem::bElem(chamber* board, int x, int y)
     }
 
 }
+coords bElem::getOffset()
+{
+    return {0,0};
+}
+bool bElem::isWaiting()
+{
+    if(this->waiting-this->getCntr() >40) // the counter can get overloaded
+        this->waiting=0;
+    return this->waiting>this->getCntr();
+}
+
+void bElem::setWait(int time)
+{
+    this->waiting=this->getCntr()+time;
+}
 
 
 void bElem::init()
 {
+    this->waiting=0;
 
     this->hasActivatedMechanics=false;
     this->stomping=NULL;
@@ -205,7 +221,7 @@ oState bElem::disposeElementUnsafe()
     oState res;
     chamber *myBoard=this->getBoard();
     coords mycoords=this->getCoords();
-    if(x>=0 && y>=0)
+    if(mycoords.x>=0 && mycoords.y>=0)
     {
 
         if(this->steppingOn!=NULL)
@@ -223,8 +239,26 @@ oState bElem::disposeElementUnsafe()
             bElem* stash=new rubbish(myBoard);
             stash->myInventory=this->myInventory;
             this->myInventory=NULL;
-            stash->stepOnElement(myBoard->getElement(mycoords.x,mycoords.y));
+            if(myBoard->getElement(mycoords.x,mycoords.y)->isSteppable())
+            {
+                stash->stepOnElement(myBoard->getElement(mycoords.x,mycoords.y));
+            } else
+            {
+                bool stashed=false;
+                for(int c=0;c<4;c++)
+                {
+                    if(myBoard->getElement(mycoords.x,mycoords.y)->isSteppableDirection((direction)c))
+                    {
+                        stash->stepOnElement(myBoard->getElement(mycoords.x,mycoords.y)->getElementInDirection((direction)c));
+                        stashed=true;
+                        break;
+                    }
 
+                }
+                if(!stashed)
+                    stash->disposeElement(); // no place to place the stash? Burn!
+
+            }
         }
 
     }
@@ -244,8 +278,15 @@ oState bElem::disposeElement()
 {
     int x0=this->x;//save necessary data, becasue it will be lost after disposeElementUnsafe
     int y0=this->y;
+    bool collectedItem=false;
+    if(this->getCollector()!=NULL)
+    {
+        collectedItem=true;
+        this->getCollector()->myInventory->removeCollectibleFromInventory(this->getInstanceid());
+        this->setDropped();
+    }
     chamber* brd=this->getBoard();
-    if(this->disposeElementUnsafe()==NULLREACHED)
+    if(this->disposeElementUnsafe()==NULLREACHED && !collectedItem)
     {
         bElem* newElem=new bElem(brd);
         newElem->stepOnElement(brd->getElement(x0,y0));
@@ -430,6 +471,7 @@ bool bElem::mechanics(bool collected)
         return false;
 
     }
+    if(this->isWaiting()) return false;
 
     return true;
 }
