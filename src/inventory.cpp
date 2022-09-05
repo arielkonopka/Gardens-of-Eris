@@ -28,7 +28,7 @@ inventory::~inventory()
 
 bool inventory::removeCollectibleFromInventory(int instance)
 {
-    for(int c=0; c<this->weapons.size();)
+    for(unsigned int c=0; c<this->weapons.size();)
     {
         if(this->weapons.at(c)->getInstanceid()==instance)
         {
@@ -42,7 +42,7 @@ bool inventory::removeCollectibleFromInventory(int instance)
         }
 
     }
-    for(int c=0; c<this->usables.size();)
+    for(unsigned int c=0; c<this->usables.size();)
     {
         if(this->usables.at(c)->getInstanceid()==instance)
         {
@@ -57,7 +57,7 @@ bool inventory::removeCollectibleFromInventory(int instance)
         }
 
     }
-    for(int c=0; c<this->tokens.size();)
+    for(unsigned int c=0; c<this->tokens.size();)
     {
         if(this->tokens.at(c)->getInstanceid()==instance)
         {
@@ -71,7 +71,7 @@ bool inventory::removeCollectibleFromInventory(int instance)
         }
 
     }
-    for(int c=0; c<this->keys.size();)
+    for(unsigned int c=0; c<this->keys.size();)
     {
         if(this->keys.at(c)->getInstanceid()==instance)
         {
@@ -85,7 +85,7 @@ bool inventory::removeCollectibleFromInventory(int instance)
         }
 
     }
-       for(int c=0; c<this->mods.size();)
+       for(unsigned int c=0; c<this->mods.size();)
     {
         if(this->mods.at(c)->getInstanceid()==instance)
         {

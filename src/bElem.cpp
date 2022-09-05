@@ -78,7 +78,7 @@ bool bElem::isWaiting()
 {
     if(this->waiting-this->getCntr() >40) // the counter can get overloaded
         this->waiting=0;
-    return this->waiting>this->getCntr();
+    return (unsigned int)this->waiting>this->getCntr();
 }
 
 void bElem::setWait(int time)
@@ -218,12 +218,12 @@ coords bElem::getCoords()
 }
 oState bElem::disposeElementUnsafe()
 {
-    oState res;
+    oState res=DISPOSED;
     chamber *myBoard=this->getBoard();
     coords mycoords=this->getCoords();
+
     if(mycoords.x>=0 && mycoords.y>=0)
     {
-
         if(this->steppingOn!=NULL)
         {
             this->removeElement();
@@ -234,7 +234,7 @@ oState bElem::disposeElementUnsafe()
             this->getBoard()->setElement(this->x,this->y,NULL);
             res=NULLREACHED;
         }
-        if(this->myInventory!=NULL && this->myInventory->isEmpty()==false && this->getType()!=_rubishType && this->getType()!=_plainMissile && this->getType()!=_plainGun )
+        if(this->getType()!=_stash && this->myInventory!=NULL && this->myInventory->isEmpty()==false && this->getType()!=_rubishType && this->getType()!=_plainMissile && this->getType()!=_plainGun )
         {
             bElem* stash=new rubbish(myBoard);
             stash->myInventory=this->myInventory;
@@ -242,10 +242,11 @@ oState bElem::disposeElementUnsafe()
             if(myBoard->getElement(mycoords.x,mycoords.y)->isSteppable())
             {
                 stash->stepOnElement(myBoard->getElement(mycoords.x,mycoords.y));
-            } else
+            }
+            else
             {
                 bool stashed=false;
-                for(int c=0;c<4;c++)
+                for(int c=0; c<4; c++)
                 {
                     if(myBoard->getElement(mycoords.x,mycoords.y)->isSteppableDirection((direction)c))
                     {
@@ -262,12 +263,9 @@ oState bElem::disposeElementUnsafe()
         }
 
     }
-    else
-    {
-        //res=DISPOSED;
-        return DISPOSED;
-    }
-    gCollect::getInstance()->addToBin(this); //add myself to to bin - this should be the only way of the object disposal!
+
+    if(this->getBoard()!=NULL) // do not throw things to the bin twice
+        gCollect::getInstance()->addToBin(this); //add myself to to bin - this should be the only way of the object disposal!
     this->x=-1; //we set the state of the object to be unprovisioned - out of the game.
     this->y=-1;
     this->attachedBoard=NULL;
@@ -279,13 +277,18 @@ oState bElem::disposeElement()
     int x0=this->x;//save necessary data, becasue it will be lost after disposeElementUnsafe
     int y0=this->y;
     bool collectedItem=false;
+    chamber* brd=this->getBoard();
+    /* if(this->isLiveElement())
+     {
+         this->deregisterLiveElement(this);
+     }
+    */
     if(this->getCollector()!=NULL)
     {
         collectedItem=true;
         this->getCollector()->myInventory->removeCollectibleFromInventory(this->getInstanceid());
         this->setDropped();
     }
-    chamber* brd=this->getBoard();
     if(this->disposeElementUnsafe()==NULLREACHED && !collectedItem)
     {
         bElem* newElem=new bElem(brd);
@@ -318,6 +321,8 @@ coords bElem::getAbsCoords(direction dir)
         break;
     case RIGHT:
         res.x++;
+        break;
+    case NODIRECTION:
         break;
     }
     if (this->attachedBoard==NULL)
@@ -455,6 +460,7 @@ bool bElem::mechanics(bool collected)
     this->animPhase++;
     if(this->getBoard()==NULL || this->getCoords()==NOCOORDS)
         return false;
+
     if (this->destroyed>0) //We support two modes of destruction, this one is the demolishion thing
     {
         this->destroyed--;
@@ -536,7 +542,7 @@ bElem* bElem::removeElement()
 {
     if (this->x<0 || this->y<0)
     {
-        return NULL;
+        return this;
     }
 
     if (this->steppingOn!=NULL)
@@ -577,7 +583,7 @@ bool bElem::canInteract()
 bool bElem::collect(bElem *collectible)
 {
     bElem *collected;
-    if (collectible==NULL || collectible->isCollectible()==false ||this->canCollect()==false)
+    if (collectible==NULL || collectible->isCollectible()==false ||this->canCollect()==false || collectible->isDying() || collectible->isTeleporting() || collectible->isDestroyed())
     {
         return false;
     }

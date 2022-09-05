@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gccbin="gcc-11"
+gccbin="gcc-12"
 objPath=./obj/Release/
 extraflags="-g"
 mkdir -p ${objPath}/src

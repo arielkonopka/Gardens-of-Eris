@@ -43,6 +43,9 @@
 #define _defaultKillTime 10
 #define _defaultDestroyTime 10
 
+#define _defaultRecurrenceDepth 35
+
+
 #define _interactedTime 5
 #define NOCOORDS   ((coords){-1,-1})
 #define NOSTATS ((stats){-1,-1,-1,-1})

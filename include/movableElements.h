@@ -38,7 +38,7 @@ class movableElements : public nonSteppable
     protected:
 
     private:
-        int _me_moved;
+        unsigned int _me_moved;
         int movingTotalTime;
         bool _me_canPush;
 

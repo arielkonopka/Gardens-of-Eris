@@ -61,7 +61,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
     }
     if (this->canCollect()==true && this->myInventory!=NULL && stepOn->isCollectible()==true)
     {
-        if (this->myInventory->addToInventory(stepOn)==true)
+        if (this->collect(stepOn)==true)
             //if (this->collect(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)
         {
             this->getStats()->countCollect(stepOn);
@@ -159,6 +159,9 @@ coords movableElements::getOffset()
         case(RIGHT):
             res.x=-((this->getMoved())*64)/this->movingTotalTime;
             break;
+        case (NODIRECTION):
+            break;
+
         }
     }
 

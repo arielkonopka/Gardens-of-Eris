@@ -8,10 +8,10 @@ patrollingDrone::patrollingDrone(chamber* board): killableElements(board,false)
     this->movable=true;
     this->myInventory=new inventory(this);
     this->setActive(false);
-    this->steppables=new bool*[board->height];
-    for(int c=0; c<board->height; c++)
+    this->steppables=new bool*[(_defaultRecurrenceDepth*2)+1];
+    for(int c=0; c<(_defaultRecurrenceDepth*2)+1; c++)
     {
-        this->steppables[c]=new bool[board->width];
+        this->steppables[c]=new bool[(_defaultRecurrenceDepth*2)+1];
     }
     this->boardSize.x=board->width;
     this->boardSize.y=board->height;
@@ -20,7 +20,7 @@ patrollingDrone::patrollingDrone(chamber* board): killableElements(board,false)
 
 patrollingDrone::~patrollingDrone()
 {
-    for(int c=0; c<this->boardSize.y; c++)
+    for(int c=0; c<(_defaultRecurrenceDepth*2)+1; c++)
     {
         delete this->steppables[c];
     }
@@ -33,13 +33,46 @@ patrollingDrone::patrollingDrone(chamber* board, int x, int y):killableElements(
     this->movable=true;
     this->myInventory=new inventory(this);
     this->setActive(false);
-    this->steppables=new bool*[board->height];
-    for(int c=0; c<board->height; c++)
+    this->steppables=new bool*[(_defaultRecurrenceDepth*2)+1];
+    for(int c=0; c<(_defaultRecurrenceDepth*2)+1; c++)
     {
-        this->steppables[c]=new bool[board->width];
+        this->steppables[c]=new bool[(_defaultRecurrenceDepth*2)+1];
     }
     this->boardSize.x=board->width;
     this->boardSize.y=board->height;
+
+}
+bool patrollingDrone::canCollect()
+{
+   return true;
+}
+void patrollingDrone::setVisited(int x, int y)
+{
+        coords mycrds=this->getCoords();
+        int nx=mycrds.x-x+(_defaultRecurrenceDepth*2)+1;
+        int ny=mycrds.y-y+(_defaultRecurrenceDepth*2)+1;
+        if (nx<0 || nx>=(_defaultRecurrenceDepth*2)+1 || ny<0 || ny>=(_defaultRecurrenceDepth*2)+1)
+            return;
+        this->steppables[nx][ny]=true;
+}
+
+bool patrollingDrone::wasVisited(int x, int y)
+{
+        coords mycrds=this->getCoords();
+        int nx=mycrds.x-x+(_defaultRecurrenceDepth*2)+1;
+        int ny=mycrds.y-y+(_defaultRecurrenceDepth*2)+1;
+        if (nx<0 || nx>=(_defaultRecurrenceDepth*2)+1 || ny<0 || ny>=(_defaultRecurrenceDepth*2)+1)
+            return true;
+        return this->steppables[nx][ny];
+}
+
+void patrollingDrone::clearVisited()
+{
+    for(int cx=0; cx<(_defaultRecurrenceDepth*2)+1; cx++)
+            for(int cy=0; cy<(_defaultRecurrenceDepth*2)+1; cy++)
+            {
+                this->steppables[cx][cy]=false;
+            }
 
 }
 
@@ -50,7 +83,7 @@ int patrollingDrone::findSomething(bElem* elem,int n,int denyDir)
     coords eCrds=elem->getCoords();
     if(n<0)
         return 555;
-    this->steppables[eCrds.y][eCrds.x]=true;
+    this->setVisited(eCrds.x,eCrds.y);
     for(int d=0; d<4; d++)
     {
         bElem* el=elem->getElementInDirection((direction)d);
@@ -68,7 +101,7 @@ int patrollingDrone::findSomething(bElem* elem,int n,int denyDir)
         if(el!=NULL && el->isSteppable())
         {
             coords crds=el->getCoords();
-            if(this->steppables[crds.y][crds.x])
+            if(this->wasVisited(crds.x,crds.y))
                 continue;
             int _len=this->findSomething(el,n-1,denyDir);
             if (_len<length)
@@ -92,7 +125,6 @@ bool patrollingDrone::mechanics(bool collected)
     int length=555;
     direction dir=NODIRECTION;
     coords c=this->getCoords();
-    this->steppables[c.y][c.x]=true;
     for(int cnt=0; cnt<4; cnt++)
     {
 
@@ -101,19 +133,16 @@ bool patrollingDrone::mechanics(bool collected)
         bElem* el=this->getElementInDirection(d);
         if(el->getType()==_key || el->getType()==_goldenAppleType || el->getType()==_plainGun)
         {
-            myInventory->addToInventory(el);
+            this->collect(el);
             return true;
         }
-        for(int cx=0; cx<this->getBoard()->width; cx++)
-            for(int cy=0; cy<this->getBoard()->height; cy++)
-            {
-                this->steppables[cy][cx]=false;
-            }
+
 
         if(el!=NULL && el->isSteppable())
         {
-
-            l=this->findSomething(el,25,(direction)cnt);
+            this->clearVisited();
+            this->setVisited(c.x,c.y);
+            l=this->findSomething(el,_defaultRecurrenceDepth,(direction)cnt);
             //    std::cout<<"Length "<<l<<" "<<d<<"\n";
             if(l<length)
             {

@@ -264,7 +264,7 @@ bool presenter::loadCofiguredData()
 
 */
 
-void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* elem,bool ignoreOffset)
+void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* elem,bool ignoreOffset,int mode)
 {
     coords coords,offset= {0,0};
     int sx,sy;
@@ -285,12 +285,14 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
 //empty element? ignore or end the recursion cycle
     if (elem==NULL)
         return;
-//check if object is standing on something, if so, draw that first.
-    if (elem->steppingOn!=NULL)
-        this->showObjectTile(x,y,offsetX,offsetY,elem->steppingOn,ignoreOffset);
-
-//No video object definition? ignore This way we can have "invisible" objects if we want to.
-    if (elem->getVideoElementDef()==NULL)
+/* We check, if the object is standing on anything, to draw it first, we also make sure, we were called the right way */
+    if (elem->steppingOn!=NULL && (mode==_mode_all || mode==_mode_onlyFloor))
+        this->showObjectTile(x,y,offsetX,offsetY,elem->steppingOn,ignoreOffset,_mode_all);
+/*
+    No video object definition? ignore This way we can have "invisible" objects if we want to.
+    mode==_mode_onlyFLoor means, only object that are being stepped on, are drawn
+*/
+    if (elem->getVideoElementDef()==NULL || (mode==_mode_onlyFloor))
         return;
 
     phs=elem->getVideoElementDef()->defArray;
@@ -387,14 +389,16 @@ void presenter::showGameField(int relX,int relY)
             if(elemToDisplay!=NULL && elemToDisplay->getMoved()>0)
             {
                 mSprites.push_back({x,y,elemToDisplay});
+                this->showObjectTile(x,y,0,0,elemToDisplay,false,_mode_onlyFloor);
+
                 continue;
             }
-            this->showObjectTile(x,y,0,0,elemToDisplay,false);
+            this->showObjectTile(x,y,0,0,elemToDisplay,false,_mode_all);
         }
-    for(int cnt=0; cnt<mSprites.size(); cnt++)
+    for(unsigned int cnt=0; cnt<mSprites.size(); cnt++)
     {
         movingSprite ms=mSprites.at(cnt);
-        this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false);
+        this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false,_mode_onlyTop);
 
     }
     al_set_target_bitmap(screen);
@@ -404,10 +408,10 @@ void presenter::showGameField(int relX,int relY)
     {
         this->showText(1,this->scrTilesY+3,0,5,"Garden: "+player->getBoard()->getName());
 
-        this->showObjectTile(1,this->scrTilesY+2,0,0,player,true);
+        this->showObjectTile(1,this->scrTilesY+2,0,0,player,true,_mode_onlyTop);
         this->showText(2,this->scrTilesY+2,0,0,std::to_string(player->countVisitedPlayers()));
         this->showText(2,this->scrTilesY+2,0,32,std::to_string(player->getEnergy()));
-        this->showObjectTile(4,this->scrTilesY+2,0,0,player->myInventory->getActiveWeapon(),true);
+        this->showObjectTile(4,this->scrTilesY+2,0,0,player->myInventory->getActiveWeapon(),true,_mode_onlyTop);
         if( player->myInventory->getActiveWeapon()!=NULL)
         {
             this->showText(5,this->scrTilesY+2,0,32,std::to_string(player->myInventory->getActiveWeapon()->getEnergy()));
@@ -422,13 +426,13 @@ void presenter::showGameField(int relX,int relY)
             if(key!=NULL)
             {
                 tokens=player->myInventory->countTokens(key->getType(),key->getSubtype());
-                this->showObjectTile(7+(cnt*2),this->scrTilesY+2,0,0,key,true);
+                this->showObjectTile(7+(cnt*2),this->scrTilesY+2,0,0,key,true,_mode_onlyTop);
                 this->showText(8+(cnt*2),this->scrTilesY+2,0,16,std::to_string(tokens));
 
 
             }
         }
-        this->showObjectTile(18,this->scrTilesY+2,0,0,goldenApple::getApple(1),true);
+        this->showObjectTile(18,this->scrTilesY+2,0,0,goldenApple::getApple(1),true,_mode_onlyTop);
         this->showText(19,this->scrTilesY+2,0,0,std::to_string(goldenApple::getAppleNumber()));
         this->showText(19,this->scrTilesY+2,0,32,std::to_string(player->myInventory->countTokens(_goldenAppleType,0)));
         // this->showText(21,this->scrTilesY+1,0,0,"Player");
