@@ -16,12 +16,12 @@ presenter::presenter(chamber *board)
         std::cout<<"Dupa nie inicjalizacja!\n";
 
     }
-    this->alTimer = al_create_timer(1.0 / 30.0);
-    this->scrTimer=al_create_timer(1.0/40);
+    this->alTimer = al_create_timer(1.0 / 40.0);
+//    this->scrTimer=al_create_timer(1.0/40);
     this->evQueue= al_create_event_queue();
     al_register_event_source(this->evQueue, al_get_keyboard_event_source());
     al_register_event_source(this->evQueue, al_get_timer_event_source(this->alTimer));
-    al_register_event_source(this->evQueue, al_get_timer_event_source(this->scrTimer));
+//    al_register_event_source(this->evQueue, al_get_timer_event_source(this->scrTimer));
     this->_cp_attachedBoard=board;
     al_get_monitor_info(0, &info);
     this->scrWidth = info.x2 - info.x1; /* Assume this is 1366 */
@@ -480,10 +480,10 @@ int presenter::presentEverything()
     bool fin=false;
 
     // ALLEGRO_THREAD* visual=al_create_thread(shGFL,&instance);
-
+    bElem::runLiveElements();
     //  al_start_thread(visual);
     al_start_timer(this->alTimer);
-    al_start_timer(this->scrTimer);
+//    al_start_timer(this->scrTimer);
     while(!fin)
     {
         al_wait_for_event(this->evQueue, &event);
@@ -495,8 +495,8 @@ int presenter::presentEverything()
         }
         if(event.type == ALLEGRO_EVENT_TIMER)
         {
-            if(event.timer.source==this->alTimer)
-            {
+    //        if(event.timer.source==this->alTimer)
+    //        {
                 this->_cp_attachedBoard->player=NOCOORDS;
                 bElem::runLiveElements();
                 gCollect::getInstance()->purgeGarbage();
@@ -508,16 +508,16 @@ int presenter::presentEverything()
                     fin=true;
                 this->_cp_attachedBoard=currentPlayer->getBoard();
 
-            }
+//            }
 
-            if(event.timer.source==this->scrTimer)
-            {
+//            if(event.timer.source==this->scrTimer)
+//            {
 
 
                 this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
                 //  std::cout<<"\033[0G x,y ->"<<this->_cp_attachedBoard->player.x<<","<<this->_cp_attachedBoard->player.y;
                 //  std::cout<<blue<<"\n";
-            }
+//            }
         }
         cItem=this->inpMngr->translateEvent(&event); //We always got a status on what to do. remember, everything must have a timer!
         // the idea is to serve the keyboard state constantly, we avoid actions that are too fast

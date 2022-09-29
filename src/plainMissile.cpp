@@ -5,18 +5,20 @@ videoElement::videoElementDef* plainMissile::vd=NULL;
 plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber,true)
 {
     this->setEnergy(_plainMissileEnergy);
-    this->setMoved(_plainMissileSpeed);
+    this->setMoved(0);
+    this->setWait(_plainMissileSpeed);
     this->setDirection(UP);
-    this->setMoved(_plainMissileSpeed);
+    this->setMoved(0);
     this->statsOwner=NULL;
 }
 plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber,true)
 {
     this->setEnergy(energy);
-    this->setMoved(_plainMissileSpeed);
+    this->setMoved(0);
+    this->setWait(_plainMissileSpeed);
     this->setDirection(UP);
     this->myInventory=new inventory(this ); // This is for a mod, that could be installed on the ammo
-    this->setMoved(_plainMissileSpeed);
+    this->setMoved(0);
     this->statsOwner=NULL;
 }
 
@@ -50,6 +52,7 @@ bool plainMissile::mechanics(bool collected)
     bool res;
     int mvd=this->getMoved();
     res=killableElements::mechanics(collected);
+    if(!res) return false;
     if(this->isDying())
         return true;
     if (this->getMoved()==0 && mvd==0)

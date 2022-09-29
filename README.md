@@ -29,6 +29,11 @@ Ones upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology)) w
 
 Now you, the [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism) got yourself a mission. The goddes scattered your avatars across the strange world, that she had created for her apples. You must collect all of them, and bring them to your Goddess.
 
+## Building the game.
+To build the game, you need following libraries:
+liballegro5 - better install all of it along with dev packages,
+libboost - I would recommend all of it - including unit-test-framework
+The repository is equipped with build.sh shell script (Bash), you can use it to build the game and the unit tests.
 
 
 ## Main assumptions
@@ -94,6 +99,9 @@ Then after the shot, the guns energy is halved. It restores with mechanics() cal
 
 # Stats 
 Element stats is a class that will be responsible for element's stats. You can have a monster, that could shoot and gain better skills with time. :)
+
+## Unit tests.
+This is more or less first commit. We will be using boost for the unit tests, as it seems very convenient.
 
 
 ## TODO

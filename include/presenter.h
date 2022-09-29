@@ -98,7 +98,7 @@ private:
     _cp_gameReasonOut presentGamePlay();
     chamber *_cp_attachedBoard;
     ALLEGRO_TIMER* alTimer;
-    ALLEGRO_TIMER* scrTimer;
+   // ALLEGRO_TIMER* scrTimer;
 
     ALLEGRO_DISPLAY* display;
 

@@ -26,11 +26,11 @@
 
 
 
-#define _mov_delay   5
-#define _mov_delay_push   6
+#define _mov_delay   8
+#define _mov_delay_push   9
 
 #define _plainGunAmmo 10
-#define _plainMissileSpeed 1
+#define _plainMissileSpeed 4
 #define _plainMissileEnergy 100
 #define _plainGunCharge 10
 
@@ -40,13 +40,13 @@
 #define _initialDexterity 1
 
 #define _defaultEnergy 80
-#define _defaultKillTime 10
-#define _defaultDestroyTime 10
+#define _defaultKillTime 25
+#define _defaultDestroyTime 25
 
 #define _defaultRecurrenceDepth 35
 
 
-#define _interactedTime 5
+#define _interactedTime 10
 #define NOCOORDS   ((coords){-1,-1})
 #define NOSTATS ((stats){-1,-1,-1,-1})
 typedef struct coords
