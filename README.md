@@ -101,7 +101,8 @@ Then after the shot, the guns energy is halved. It restores with mechanics() cal
 Element stats is a class that will be responsible for element's stats. You can have a monster, that could shoot and gain better skills with time. :)
 
 ## Unit tests.
-This is more or less first commit. We will be using boost for the unit tests, as it seems very convenient.
+The unit tests should be written in *.cpp files that should be located in unitTests directory.
+When running build.sh, the unit tests would be built as well. You can then run them, they are built as separate executables.
 
 
 ## TODO

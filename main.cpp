@@ -1,3 +1,4 @@
+#ifndef _UNIT_TEST_BUILD_
 #include <exception>
 #include <string>
 #include <iostream>
@@ -28,7 +29,7 @@ int main( int argc, char * argv[] )
 
     for (int cnt=5;cnt>0;cnt--)
     {
-        rndl=new randomLevelGenerator(500+(rndl->gen()%10)*5,500+(rndl->gen()%10)*5);
+        rndl=new randomLevelGenerator(200+(rndl->gen()%10)*5,200+(rndl->gen()%10)*5);
         rndl->generateLevel(cnt);
     }
 
@@ -64,3 +65,7 @@ int main( int argc, char * argv[] )
     delete myFirstChamber;
     return 0;
 }
+
+#endif
+
+

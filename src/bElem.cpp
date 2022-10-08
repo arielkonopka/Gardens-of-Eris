@@ -76,7 +76,7 @@ coords bElem::getOffset()
 }
 bool bElem::isWaiting()
 {
-    if(this->waiting-this->getCntr() >40) // the counter can get overloaded
+    if(this->waiting-this->getCntr() >_maxWaitingTtime) // the counter can get overloaded
         this->waiting=0;
     return (unsigned int)this->waiting>this->getCntr();
 }
@@ -284,11 +284,11 @@ oState bElem::disposeElement()
     int y0=this->y;
     bool collectedItem=false;
     chamber* brd=this->getBoard();
-    /* if(this->isLiveElement())
-     {
-         this->deregisterLiveElement(this);
-     }
-    */
+    if(this->isLiveElement())
+    {
+        this->deregisterLiveElement(this);
+    }
+
     if(this->getCollector()!=NULL)
     {
         collectedItem=true;
@@ -483,7 +483,8 @@ bool bElem::mechanics(bool collected)
         return false;
 
     }
-    if(this->isWaiting()) return false;
+    if(this->isWaiting())
+        return false;
 
     return true;
 }
@@ -580,9 +581,8 @@ bElem* bElem::removeElement()
 
         } else
         {
-
-
         bElem *newElem=new bElem(this->attachedBoard,this->x,this->y);
+        newElem->setTeleporting(4);
         //this->attachedBoard->chamberArray[this->x][this->y]=newElem;
         //we remove the coordinates as well
         }
