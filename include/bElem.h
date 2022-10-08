@@ -19,7 +19,7 @@
 #include "elemStats.h"
 
 
-class gCollect;
+//class gCollect;
 class chamber;
 
 //class inventory
@@ -155,6 +155,7 @@ protected:
     bool amIUsable;
     int killed;
 private:
+    bool disposed;
     elemStats* myStats;
     unsigned int telInProgress;
     bool hasActivatedMechanics;

@@ -20,12 +20,13 @@ class gCollect
         void addToBin(bElem *element);
         int garbageQsize();
         static gCollect* getInstance();
+         std::vector<bElem *> garbageVector;
     protected:
 
     private:
         gCollect();
         static gCollect *instanceId;
-        std::vector<bElem *> garbageVector;
+
 };
 
 #endif // GCOLLECT_H

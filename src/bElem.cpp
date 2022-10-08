@@ -90,7 +90,7 @@ void bElem::setWait(int time)
 void bElem::init()
 {
     this->waiting=0;
-
+    this->disposed=false;
     this->hasActivatedMechanics=false;
     this->stomping=NULL;
     this->collector=NULL;
@@ -194,12 +194,15 @@ void bElem::setDropped()
 // release the field it is residingg and step on the new one (replace it on a board)
 bool bElem::stepOnElement(bElem* step)
 {
-    if (this->getBoard()==NULL || step==NULL || step->isSteppable()==false || step->getBoard()==NULL)  return false;
+    if (step==NULL || step->isSteppable()==false || step->getBoard()==NULL)  return false;
     if (this->steppingOn!=NULL)
     {
         this->steppingOn->unstomp();
-        this->getBoard()->setElement(this->x,this->y,this->steppingOn);
+        if (this->getBoard()!=NULL)
+            this->getBoard()->setElement(this->x,this->y,this->steppingOn);
     }
+    this->setBoard(step->getBoard());
+
     this->steppingOn=step;
     step->stomp(this);
     coords crds=step->getCoords();
@@ -224,7 +227,7 @@ oState bElem::disposeElementUnsafe()
 
     if(mycoords.x>=0 && mycoords.y>=0)
     {
-        if(this->steppingOn!=NULL)
+        if(this->steppingOn!=NULL || this->getStomper()!=NULL)
         {
             this->removeElement();
             res=DISPOSED;
@@ -264,8 +267,11 @@ oState bElem::disposeElementUnsafe()
 
     }
 
-    if(this->getBoard()!=NULL) // do not throw things to the bin twice
-        gCollect::getInstance()->addToBin(this); //add myself to to bin - this should be the only way of the object disposal!
+    if(this->disposed==false) // do not throw things to the bin twice
+        {
+            gCollect::getInstance()->addToBin(this); //add myself to to bin - this should be the only way of the object disposal!
+            this->disposed=true;
+        }
     this->x=-1; //we set the state of the object to be unprovisioned - out of the game.
     this->y=-1;
     this->attachedBoard=NULL;
@@ -544,7 +550,17 @@ bElem* bElem::removeElement()
     {
         return this;
     }
-
+    if(this->steppingOn!=NULL && this->getStomper()!=NULL)
+    {
+        this->getStomper()->steppingOn=this->steppingOn;
+        this->steppingOn->stomp(this->getStomper());
+        this->unstomp();
+        this->steppingOn=NULL;
+        this->x=-1;
+        this->y=-1;
+        this->attachedBoard=NULL;
+        return this;
+    }
     if (this->steppingOn!=NULL)
     {
         this->steppingOn->unstomp();
@@ -552,16 +568,28 @@ bElem* bElem::removeElement()
         this->steppingOn=NULL;
         this->x=-1;
         this->y=-1;
+        this->attachedBoard=NULL;
         return this;
     }
     else
     {
+        if(this->getStomper()!=NULL)
+        {
+            this->getStomper()->steppingOn=NULL;
+
+
+        } else
+        {
+
 
         bElem *newElem=new bElem(this->attachedBoard,this->x,this->y);
+        //this->attachedBoard->chamberArray[this->x][this->y]=newElem;
         //we remove the coordinates as well
+        }
         this->x=-1;
         this->y=-1;
-        this->attachedBoard->chamberArray[this->x][this->y]=newElem;
+
+        this->attachedBoard=NULL;
         return this;
     }
     return NULL; // Should never happen!
