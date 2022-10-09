@@ -149,8 +149,7 @@ videoElement::videoElementDef* player::getVideoElementDef()
 bool player::mechanics(bool collected)
 {
     bool res=killableElements::mechanics(collected);
-    if(!res)
-        return false;
+
     if (this->isActive()==true)
     {
         this->getBoard()->player.x=this->x;
@@ -161,6 +160,8 @@ bool player::mechanics(bool collected)
         this->animPh=this->getCntr()>>2;
         return true; // Inactive player, not very useful;
     }
+     if(!res)
+        return false;
    switch(this->getBoard()->cntrlItm.type)
     {
     case 0:
@@ -212,7 +213,7 @@ bool player::mechanics(bool collected)
         break;
     }
 
-    return true;
+    return false;
 
 }
 
