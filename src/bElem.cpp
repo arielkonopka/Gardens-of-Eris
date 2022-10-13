@@ -224,8 +224,10 @@ oState bElem::disposeElementUnsafe()
     oState res=DISPOSED;
     chamber *myBoard=this->getBoard();
     coords mycoords=this->getCoords();
-
-    if(mycoords.x>=0 && mycoords.y>=0)
+    if(this->disposed==true)
+        return ERROR;
+    this->disposed=true;
+    if(mycoords.x>=0 && mycoords.y>=0 && this->getBoard()!=NULL) //object on a board? need extra steps
     {
         if(this->steppingOn!=NULL || this->getStomper()!=NULL)
         {
@@ -260,18 +262,15 @@ oState bElem::disposeElementUnsafe()
 
                 }
                 if(!stashed)
-                    stash->disposeElement(); // no place to place the stash? Burn!
+                    stash->disposeElement(); // no place for the stash? Burn!
 
             }
         }
 
     }
 
-    if(this->disposed==false) // do not throw things to the bin twice
-        {
-            gCollect::getInstance()->addToBin(this); //add myself to to bin - this should be the only way of the object disposal!
-            this->disposed=true;
-        }
+    gCollect::getInstance()->addToBin(this); //add myself to to bin - this should be the only way of the object disposal!
+    this->disposed=true;
     this->x=-1; //we set the state of the object to be unprovisioned - out of the game.
     this->y=-1;
     this->attachedBoard=NULL;
@@ -579,12 +578,13 @@ bElem* bElem::removeElement()
             this->getStomper()->steppingOn=NULL;
 
 
-        } else
+        }
+        else
         {
-        bElem *newElem=new bElem(this->attachedBoard,this->x,this->y);
-        newElem->setTeleporting(4);
-        //this->attachedBoard->chamberArray[this->x][this->y]=newElem;
-        //we remove the coordinates as well
+            bElem *newElem=new bElem(this->attachedBoard,this->x,this->y);
+            newElem->setTeleporting(4);
+            //this->attachedBoard->chamberArray[this->x][this->y]=newElem;
+            //we remove the coordinates as well
         }
         this->x=-1;
         this->y=-1;

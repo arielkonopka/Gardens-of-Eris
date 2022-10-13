@@ -160,9 +160,9 @@ bool player::mechanics(bool collected)
         this->animPh=this->getCntr()>>2;
         return true; // Inactive player, not very useful;
     }
-     if(!res)
+    if(!res)
         return false;
-   switch(this->getBoard()->cntrlItm.type)
+    switch(this->getBoard()->cntrlItm.type)
     {
     case 0:
     {
@@ -176,14 +176,14 @@ bool player::mechanics(bool collected)
         bool res=this->shootGun();
         if (res)
             this->animPh+=(this->taterCounter%2);
-      //  this->setMoved(_mov_delay_push);
+        //  this->setMoved(_mov_delay_push);
         return true;
     }
     case 2:
     {
         bElem* obj=this->getElementInDirection(this->getBoard()->cntrlItm.dir);
         bool res;
-      //  this->setMoved(_mov_delay_push);
+        //  this->setMoved(_mov_delay_push);
         this->setDirection(this->getBoard()->cntrlItm.dir);
         if (obj==NULL)
             return false;
@@ -213,7 +213,7 @@ bool player::mechanics(bool collected)
         break;
     }
 
-    return false;
+    return true;
 
 }
 

@@ -118,7 +118,7 @@ void teleport::purgeFromTeleporters()
     {
         for(ptr=teleport::teleporters.begin(); ptr!=teleport::teleporters.end(); )
         {
-            if((*ptr)->getInstanceid()==this->getInstanceid())
+            if((*ptr)->getInstanceid()==this->getInstanceid()) //!!!!!!!
             {
                 teleport::teleporters.erase(ptr); //
             }

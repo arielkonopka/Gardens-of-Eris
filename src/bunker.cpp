@@ -79,7 +79,7 @@ bool bunker::mechanics(bool collected)
 
 bool bunker::interact(bElem* Who)
 {
-    if(this->interacted>0)
+    if(mechanical::interact(Who)==false)
         return false;
     this->help=5555;
     if(Who->getStats()!=NULL && this->activatedBy==NULL)

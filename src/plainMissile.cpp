@@ -74,7 +74,7 @@ bool plainMissile::mechanics(bool collected)
         {
             if (myel->getType()==this->getType() && myel->getDirection()==this->getDirection() && myel->getSubtype()==this->getSubtype())
             {
-                return false;
+                return true;
             }
             int energy=this->getEnergy();
             if(this->statsOwner!=NULL)

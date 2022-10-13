@@ -1,10 +1,7 @@
 //#ifndef _UNIT_TEST_BUILD_
 //#ifndef BELEM_H_INCLUDED
 //#define BELEM_H_INCLUDED
-#include "bElem.h"
-#include "player.h"
-#include "mechanical.h"
-#include "killableElements.h"
+#include "elements.h"
 #include "commons.h"
 #include "chamber.h"
 #include "gCollect.h"
@@ -16,7 +13,9 @@
 
 
 
-typedef boost::mpl::list<bElem,killableElements,player,mechanical> test_types;
+typedef boost::mpl::list<bElem,killableElements,player,mechanical,collectible,door,explosives,movableElements> base_test_types;
+
+typedef boost::mpl::list<bElem,bunker,door,explosives,goldenApple,key,killableElements,mechanical,monster,movableElements,nonSteppable,patrollingDrone,plainGun,plainMissile,player,rubbish,stillElem,teleport,usable,wall> all_test_types;
 
 
 /* bElem class unit tests */
@@ -32,7 +31,7 @@ BOOST_AUTO_TEST_CASE( bElemCreateDestroy )
 
 }
 //create an object, a whole chamber, and then place an object somewhere, and remove it, very simple case
-BOOST_AUTO_TEST_CASE( bElemCreateDestroyChamber)
+BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
 {
     chamber* chmbr=new chamber(10,10); // we need only a small chamber
     BOOST_ASSERT( chmbr!=NULL );
@@ -51,7 +50,7 @@ BOOST_AUTO_TEST_CASE( bElemCreateDestroyChamber)
         }
 
     bElem* beOrig=chmbr->getElement(0,0); // ok, now let's step on something
-    bElem* be=new bElem(chmbr);
+    bElem* be=new T(chmbr);
     BOOST_ASSERT( be!=NULL );
     be->stepOnElement(chmbr->getElement(0,0));
     BOOST_CHECK(be->getBoard()==chmbr);
@@ -79,6 +78,46 @@ BOOST_AUTO_TEST_CASE( bElemCreateDestroyChamber)
 
 
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateThenDispose,T,all_test_types)
+{
+    chamber* chmbr=new chamber(10,10); // we need only a small chamber
+    BOOST_ASSERT( chmbr!=NULL );
+    bElem* beOrig=chmbr->getElement(0,0); // ok, now let's step on something
+    bElem* be=new T(chmbr);
+    BOOST_ASSERT( be!=NULL );
+    be->stepOnElement(chmbr->getElement(0,0));
+    BOOST_CHECK(be->getBoard()==chmbr);
+    bElem* be2=chmbr->getElement(0,0); // check if the element is placed
+    BOOST_CHECK(be->getInstanceid()==be2->getInstanceid());
+    BOOST_ASSERT(be->steppingOn!=NULL); // something is under the new object
+    BOOST_CHECK(be->steppingOn->getInstanceid()==beOrig->getInstanceid()); // check it is original background
+    BOOST_CHECK(beOrig->getStomper()!=NULL); // check, that the object below, "knows" it is below.
+    BOOST_CHECK(beOrig->getStomper()->getInstanceid()==be->getInstanceid());
+    be->disposeElement(); // remove the object from the board
+    BOOST_CHECK(beOrig->getStomper()==NULL); //check if the original object is being stepped on
+    be2=chmbr->getElement(0,0); // fetch the element from the board, and compare it with the original object, there should be a match
+    BOOST_CHECK(beOrig->getInstanceid()==be2->getInstanceid());
+    BOOST_CHECK(beOrig->getBoard()==chmbr);
+    BOOST_CHECK(be->getBoard()==NULL);
+    BOOST_CHECK(be->getCoords()==NOCOORDS);
+    gCollect::getInstance()->purgeGarbage();
+    delete chmbr;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
 bool searchForIdInSteppers(bElem* el,int id)
 {
     while(el!=NULL)
@@ -123,7 +162,7 @@ bElem* findLastStep(bElem* first)
 }
 
 //Place few objects on each other, then remove some from the top, bottom, middle
-BOOST_AUTO_TEST_CASE(StackingAndRemovingTest)
+BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndRemovingTest,T,all_test_types)
 {
     chamber* mc=new chamber(5,5);
     bElem* te;
@@ -135,6 +174,9 @@ BOOST_AUTO_TEST_CASE(StackingAndRemovingTest)
         BOOST_ASSERT(mc->getElement(3,3)->getInstanceid()==be->getInstanceid());
         BOOST_ASSERT(mc->getElement(3,3)->steppingOn!=NULL);
     }
+    bElem* last=new T(mc);
+    last->stepOnElement(mc->getElement(3,3));
+
     //we at first take the last element, at the bottom, because it usually causes issues
     te=findLastStep(mc->getElement(3,3));
     te2=te->removeElement();
@@ -160,14 +202,6 @@ BOOST_AUTO_TEST_CASE(StackingAndRemovingTest)
             BOOST_ASSERT(te2!=NULL);
             if(mc->getElement(3,3)!=NULL)
                 BOOST_CHECK(searchForIdInSteppers(mc->getElement(3,3),te2->getInstanceid())==false);
-            /*            te2=mc->getElement(3,3);
-            /*            while(te2!=NULL)
-                        {
-                            std::cout<<" "<<te2->getInstanceid();
-                            te2=te2->steppingOn;
-                        }
-                        std::cout<<"EndOFDump\n\n";
-                        */
             delete te2;
         }
         else
@@ -184,7 +218,7 @@ BOOST_AUTO_TEST_CASE(StackingAndRemovingTest)
 
 bool findInstanceInGarbage(int instance)
 {
-    for(int cnt=0; cnt<gCollect::getInstance()->garbageVector.size(); cnt++)
+    for(unsigned int cnt=0; cnt<gCollect::getInstance()->garbageVector.size(); cnt++)
     {
         if (instance==gCollect::getInstance()->garbageVector[cnt]->getInstanceid())
             return true;
@@ -194,18 +228,21 @@ bool findInstanceInGarbage(int instance)
 }
 
 //Place few objects on each other, then remove some from the top, bottom, middle
-BOOST_AUTO_TEST_CASE(StackingAndDisposingTest)
+BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDisposingTest,T,all_test_types)
 {
     chamber* mc=new chamber(5,5);
     bElem* te;
     int myId;
-    for(int x=0; x<10; x++)
+    for(int x=0; x<100; x++)
     {
         bElem* be=new bElem(mc,3,3);
         BOOST_ASSERT(mc->getElement(3,3)->getInstanceid()==be->getInstanceid());
         BOOST_ASSERT(mc->getElement(3,3)->steppingOn!=NULL);
     }
+    bElem* last=new T(mc);
+    last->stepOnElement(mc->getElement(3,3));
     te=findLastStep(mc->getElement(3,3));
+    BOOST_CHECK(te->getInstanceid()!=mc->getElement(3,3)->getInstanceid());
     myId=te->getInstanceid();
     te->disposeElement();
     if(mc->getElement(3,3)!=NULL)
@@ -251,11 +288,12 @@ BOOST_AUTO_TEST_CASE(SubTypeChecker)
 }
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(WaitMechanismTest,T,test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(WaitMechanismTest,T,base_test_types)
 {
     chamber* mc=new chamber(5,5);
     bElem* testObj=new T(mc);
     testObj->stepOnElement(mc->getElement(3,3));
+    //  testObj->setActive(true);
     for(int d=1; d<1000; d++)
     {
         int c=0;
@@ -267,6 +305,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(WaitMechanismTest,T,test_types)
             c++;
             bElem::tick();
         }
+        //  bElem::tick();
         BOOST_ASSERT(testObj->mechanics(false)==true); // mechanics is unblocked after the waiting time
         //std::cout<<"c="<<c<<"\n";
         if(d<=_maxWaitingTtime)
@@ -285,13 +324,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(WaitMechanismTest,T,test_types)
 
 // Check destroying mechanism. Remember, that for bElem types, the object is not disposed
 // We do not check the disposal process itself, as it should be tested with other tests
-BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
 {
     chamber* mc=new chamber(5,5);
 
     bElem* myObj=new T(mc);
     int origType=myObj->getType();
-   // std::cout<<"type:"<<myObj->getType()<<" "<<_belemType<<"\n";
+    // std::cout<<"type:"<<myObj->getType()<<" "<<_belemType<<"\n";
     int instance=myObj->getInstanceid();
     bElem::tick();
     myObj->stepOnElement(mc->getElement(3,3));
@@ -310,8 +349,75 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,test_types)
     else
     {
 
-     BOOST_CHECK(mc->getElement(3,3)->getInstanceid()!=instance);
+        BOOST_CHECK(mc->getElement(3,3)->getInstanceid()!=instance);
     }
+}
+
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(ElementsLockUnlockFeature,T,all_test_types)
+{
+    chamber* mc=new chamber(5,5);
+    bElem* myElement=new T(mc);
+    bElem* blocker=new T(mc);
+    bElem* blocker2=new T(mc);
+    myElement->stepOnElement(mc->getElement(2,2));
+    blocker->stepOnElement(mc->getElement(2,3));
+    blocker2->stepOnElement(mc->getElement(3,2));
+    BOOST_CHECK(myElement->isLocked()==false);
+    myElement->lockThisObject(blocker);
+    BOOST_CHECK(myElement->isLocked()==true);
+    myElement->lockThisObject(blocker);
+    BOOST_CHECK(myElement->isLocked()==true);
+
+    myElement->lockThisObject(blocker2);
+    BOOST_CHECK(myElement->isLocked()==true);
+    myElement->unlockThisObject(blocker);
+    BOOST_CHECK(myElement->isLocked()==true);
+    myElement->unlockThisObject(blocker2);
+    BOOST_CHECK(myElement->isLocked()==false);
+    myElement->unlockThisObject(blocker2);
+    BOOST_CHECK(myElement->isLocked()==false);
+//another round
+    /*
+        myElement->lockThisObject(blocker);
+        BOOST_CHECK(myElement->isLocked()==true);
+        myElement->lockThisObject(blocker2);
+        BOOST_CHECK(myElement->isLocked()==true);
+        blocker2->disposeElement();
+        BOOST_CHECK(myElement->isLocked()==true);
+        blocker->disposeElement();
+        BOOST_CHECK(myElement->isLocked()==false);
+        gCollect::getInstance()->purgeGarbage();
+        BOOST_CHECK(myElement->isLocked()==false);
+    */
+    delete mc;
+
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(InteractTimerMechanismChecker,T,all_test_types)
+{
+
+    chamber* mc=new chamber(5,5);
+    bElem* tElem=new T(mc);
+
+    tElem->stepOnElement(mc->getElement(3,3));
+    tElem=new T(mc);
+    tElem->stepOnElement(mc->getElement(2,2));
+
+    for(int c=0; c<1000; c++) bElem::tick();
+    tElem->interact(mc->getElement(1,1));
+    BOOST_CHECK(tElem->canInteract()==false);
+    for(int c=0; c<_interactedTime+1; c++) bElem::tick();
+    for(int c=0; c<1000; c++)
+    {
+        bElem::tick();
+
+        BOOST_CHECK(tElem->canInteract()==true);
+    }
+    tElem->disposeElement();
+    delete mc;
+    gCollect::getInstance()->purgeGarbage();
+
 }
 
 // BOOST_AUTO_TEST_CASE()

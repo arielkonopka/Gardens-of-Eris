@@ -19,7 +19,6 @@ class bunker : public mechanical
         virtual bool interact(bElem* Who);
         virtual bool isMovable();
     protected:
-        int interacted;
         int help;
         plainGun *myGun;
         int rotated;
