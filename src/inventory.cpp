@@ -160,16 +160,12 @@ here we care about the sequence, so we move the other elements. that would be a 
 */
 bool inventory::removeActiveWeapon()
 {
-    /* if(this->wPos>this->weapons.size)
+     if((unsigned int)this->wPos>=this->weapons.size())
      {
-         this->wPos=0;
-     } */
+         return false;
+     }
     this->decrementTokenNumber({this->weapons.at(this->wPos)->getType(),this->weapons.at(this->wPos)->getSubtype()});
     this->weapons.at(this->wPos)->disposeElement();
-
-    this->weapons.erase(this->weapons.begin()+this->wPos);
-    if (this->wPos>=(int)this->weapons.size())
-        this->wPos=0;
     return true;
 }
 
@@ -178,12 +174,12 @@ bElem* inventory::getActiveWeapon()
 {
     if (this->weapons.size()<=0)
         return NULL;
+
     this->wPos=this->wPos%this->weapons.size();
     if (this->weapons[this->wPos]->getAmmo()<=0)
     {
-        std::cout<<"remove weapon\n";
         this->removeActiveWeapon();
-        return this->getActiveWeapon(); // We will remove empty Weapons recursively, if it is necessary
+        return NULL; // We will remove empty Weapons recursively, if it is necessary
     }
     return this->weapons[this->wPos];
 }

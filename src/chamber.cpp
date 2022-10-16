@@ -15,7 +15,10 @@ chamber::chamber(int x,int y)
     {
         for (int cY=0; cY<y; cY++)
         {
-            this->chamberArray[cX][cY]=new bElem(this,cX,cY);
+            bElem* neEl=new bElem(this); // With chambers it is different. The stepOnElement cannot work on Nulls.
+            this->setElement(cX,cY,neEl);
+            neEl->setCoords(cX,cY);
+
         }
     }
     this->chamberName=rwg->generateWord(3);

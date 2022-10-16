@@ -227,6 +227,7 @@ bool player::shootGun()
         gun->use(this);
         return true;
     }
+    this->setWait(_interactedTime*2);
     return false;
 
 }

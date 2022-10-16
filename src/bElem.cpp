@@ -192,9 +192,11 @@ void bElem::setDropped()
 
 // the way it should operate is:
 // release the field it is residingg and step on the new one (replace it on a board)
+// This can also step on things, that are under something. We just squeeze the object between to bottom and top
 bool bElem::stepOnElement(bElem* step)
 {
     if (step==NULL || step->isSteppable()==false || step->getBoard()==NULL)  return false;
+    coords crds=step->getCoords();
     if (this->steppingOn!=NULL)
     {
         this->steppingOn->unstomp();
@@ -202,12 +204,19 @@ bool bElem::stepOnElement(bElem* step)
             this->getBoard()->setElement(this->x,this->y,this->steppingOn);
     }
     this->setBoard(step->getBoard());
-
     this->steppingOn=step;
+    if(step->getStomper()!=NULL)
+    {
+        bElem* stmpr=step->getStomper();
+        step->unstomp();
+        this->stomp(stmpr);
+    }
+    else
+    {
+        if(crds!=NOCOORDS)
+            this->getBoard()->setElement(crds.x,crds.y,this);
+    }
     step->stomp(this);
-    coords crds=step->getCoords();
-    if(crds!=NOCOORDS)
-        this->getBoard()->setElement(crds.x,crds.y,this);
     this->setCoords(crds.x,crds.y);
     return true;
 }

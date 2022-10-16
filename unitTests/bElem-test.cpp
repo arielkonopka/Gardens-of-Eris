@@ -40,8 +40,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
         for(int d=0; d<chmbr->height; d++)
         {
             bElem* beOrig=chmbr->getElement(c,d);
+            coords mcoords={c,d};
             BOOST_ASSERT(beOrig!=NULL);
             BOOST_CHECK( beOrig->getType()==_belemType);
+            BOOST_CHECK(beOrig->getCoords()==mcoords); // just check if the allocation is correct
             coords crds=beOrig->getCoords();
             BOOST_ASSERT(crds.x==c);
             BOOST_ASSERT(crds.y==d);
@@ -272,6 +274,42 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDisposingTest,T,all_test_types)
     }
     delete mc;
     gCollect::getInstance()->purgeGarbage();
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDestroyingTheWholeChamber,T,all_test_types)
+{
+    chamber* mc=new chamber(11,11);
+    bElem* be=NULL;
+    bElem* be1=new bElem(mc);
+    BOOST_CHECK(be1!=NULL);
+    BOOST_CHECK(be1->stepOnElement(mc->getElement(10,10))==true);
+    for(int x=0;x<10;x++)
+    {
+        for(int y=0;y<10;y++)
+        {
+            be=new T(mc);
+            be->stepOnElement(mc->getElement(x,y));
+            BOOST_CHECK(be->getInstanceid()==mc->getElement(x,y)->getInstanceid());
+            be->setActive(true);
+            be->interact(be1);
+            //be->mechanics(false);
+           // be->use(be1);
+        }
+   //     std::cout<<"\n";
+    }
+    for(int x=0;x<11;x++)
+    {
+     for(int y=0;y<11;y++)
+        {
+            mc->getElement(x,y)->mechanics(false);
+        }
+
+    }
+
+
+
+    delete mc;
+
 }
 
 

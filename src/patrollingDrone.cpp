@@ -131,6 +131,7 @@ bool patrollingDrone::mechanics(bool collected)
         int l;
         direction d=(direction)cnt;
         bElem* el=this->getElementInDirection(d);
+        if(el==NULL) continue;
         if(el->getType()==_key || el->getType()==_goldenAppleType || el->getType()==_plainGun)
         {
             this->collect(el);
@@ -153,7 +154,7 @@ bool patrollingDrone::mechanics(bool collected)
         }
     }
 
-    std::cout<<"Length "<<length<<" "<<dir<<"\n";
+  //  std::cout<<"Length "<<length<<" "<<dir<<"\n";
     if(dir!=NODIRECTION && length<50 && dir!=(direction)(((int)this->getDirection()+2)%4))
     {
         this->moveInDirection(dir);
