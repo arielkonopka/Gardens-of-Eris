@@ -458,6 +458,45 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(InteractTimerMechanismChecker,T,all_test_types)
 
 }
 
+
+/*
+Check the collect feature, especially, when we:
+1. dispose something from the inventory
+2. destroy an object with an inventory
+3. destroy the whole board
+
+*/
+BOOST_AUTO_TEST_CASE_TEMPLATE(TryToCollectAnObject,T,all_test_types)
+{
+    chamber* mc=new chamber(5,5);
+    bool collectedObject=false;
+    bElem* mO=new T(mc);
+    bElem* mC=new T(mc);
+    inventory* nInv=new inventory(mO);
+    mO->myInventory=nInv;
+    mO->collect(mc->getElement(2,3));
+    mO->stepOnElement(mc->getElement(2,2));
+    mC->stepOnElement(mc->getElement(2,3));
+    collectedObject=mO->collect(mc->getElement(2,3));
+    mC->disposeElement();
+    BOOST_ASSERT(mC->disposed==true);
+    mC=new T(mc);
+    mC->stepOnElement(mc->getElement(2,3));
+    collectedObject=mO->collect(mc->getElement(2,3));
+    if(mO->canCollect()==true && mC->isCollectible()==true)
+    {
+            BOOST_ASSERT(collectedObject==true);
+            BOOST_CHECK(mc->getElement(2,3)->getType()==_belemType);
+            BOOST_CHECK(mc->getElement(2,3)->getInstanceid()!=mC->getInstanceid());
+    } else
+    {
+        BOOST_ASSERT(collectedObject==false);
+    }
+    delete mc;
+}
+
+
+
 // BOOST_AUTO_TEST_CASE()
 
 BOOST_AUTO_TEST_SUITE_END()

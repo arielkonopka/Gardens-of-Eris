@@ -292,7 +292,8 @@ bool randomLevelGenerator::generateLevel(int holes)
     int tolerance=5;
     this->headNode=this->lvlGenerate(1,1,this->width-2,this->height-2,_iterations,holes);
 
-    int availableSurface=this->headNode->calculateInitialSurface();
+    //int availableSurface=
+    this->headNode->calculateInitialSurface();
 
     std::vector<elementToPlace> elementCollection; // here we will store the elements to be placed on the board
     std::vector<elementToPlace> elementsToChooseFrom;

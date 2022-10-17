@@ -14,9 +14,9 @@ if [ "${1}" = "-a" ] ; then
 
 
 for x in src/*.cpp ./main.cpp ; do 
-#	echo    ${gccbin} ${extraflags} ${opts} -c ${x} -I./include  -o ${objPath}${x%.cpp}.o 
-    echo -n "5"
-    ${gccbin} ${extraflags} ${opts} -c ${x} -I./include  -o ${objPath}${x%.cpp}.o  2>&1 3>&1 >>compile.log
+	echo    ${gccbin} ${extraflags} ${opts} -c ${x} -I./include  -o ${objPath}${x%.cpp}.o 
+#    echo -n "5"
+    ${gccbin} ${extraflags} ${opts} -c ${x} -I./include  -o ${objPath}${x%.cpp}.o  #2>&1 3>&1 >>compile.log
 done
 
 fi

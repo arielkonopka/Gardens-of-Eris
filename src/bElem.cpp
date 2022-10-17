@@ -252,6 +252,7 @@ oState bElem::disposeElementUnsafe()
         {
             bElem* stash=new rubbish(myBoard);
             stash->myInventory=this->myInventory;
+            stash->myInventory->changeOwner(stash);
             this->myInventory=NULL;
             if(myBoard->getElement(mycoords.x,mycoords.y)->isSteppable())
             {
@@ -290,20 +291,33 @@ oState bElem::disposeElement()
 {
     int x0=this->x;//save necessary data, becasue it will be lost after disposeElementUnsafe
     int y0=this->y;
-    bool collectedItem=false;
     chamber* brd=this->getBoard();
+    if(this->disposed==true)
+    {
+        std::cout<<"Tried to dispose the same element another time!\n";
+        return ERROR;
+
+    }
     if(this->isLiveElement())
     {
         this->deregisterLiveElement(this);
     }
-
     if(this->getCollector()!=NULL)
     {
-        collectedItem=true;
-        this->getCollector()->myInventory->removeCollectibleFromInventory(this->getInstanceid());
+      //  std::cout<<"Removing collected item from"<<this->getCollector()->myInventory<<"\n";
+
+        inventory* cInv=this->getCollector()->myInventory;
+        if(cInv!=NULL)
+            cInv->removeCollectibleFromInventory(this->getInstanceid());
         this->setDropped();
+        this->disposed=true;
+        this->attachedBoard=NULL;
+        this->x=-1;
+        this->y=-1;
+        gCollect::getInstance()->addToBin(this);
+        return DISPOSED;
     }
-    if(this->disposeElementUnsafe()==NULLREACHED && !collectedItem)
+    if(this->disposeElementUnsafe()==NULLREACHED)
     {
         bElem* newElem=new bElem(brd);
         newElem->stepOnElement(brd->getElement(x0,y0));
@@ -550,7 +564,7 @@ bool bElem::isCollectible()
 
 bool bElem::canCollect()
 {
-    return false;
+    return myInventory!=NULL;
 }
 // remove element from the board, and return it for further processing(if not needed, run .dispose() on it)
 bElem* bElem::removeElement()
@@ -636,8 +650,8 @@ bool bElem::collect(bElem *collectible)
 #ifdef _VerbousMode_
     std::cout<<"Collect "<<collected->getType()<<" st: "<<collected->getSubtype()<<"\n";
 #endif
-    collected->setCollected(this);
-    this->myInventory->addToInventory(collected);
+    collectible->setCollected(this);
+    this->myInventory->addToInventory(collectible);
     return true;
 }
 

@@ -57,6 +57,6 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
 //    }
     plr->disposeElement();
 
-    BOOST_CHECK(mc->getElement(2,2)->getType()==_stash);
+    BOOST_CHECK(mc->getElement(2,2)->getType()==_rubishType);
     delete mc;
 }

@@ -10,24 +10,75 @@ inventory::inventory(bElem *owner)
 }
 inventory::~inventory()
 {
+
+  //  std::cout<<"Destroy inventory "<<this->owner<<"\n";
     //We place the objects in the garbage collector.
+ //   std::cout<<"Remove weapons\n";
     for(auto  w:this->weapons)
         w->disposeElement();
+  //  std::cout<<"Remove usables\n";
     for(auto u: this->usables)
         u->disposeElement();
+  //  std::cout<<"Remove tokens\n";
     for(auto t:this->tokens)
+    {
+
+    //    std::cout<<"Token owner"<<t->getCollector()<<"\n";
         t->disposeElement();
+    }
+   // std::cout<<"Remove keys\n";
     for(auto k:this->keys)
         k->disposeElement();
+   // std::cout<<"Remove mods\n";
     for(auto m:this->mods)
         m->disposeElement();
 
 }
 
 
+void inventory::changeOwner(bElem* who)
+{
+    this->owner=who;
+    for(auto w:this->weapons)
+    {
+        w->setDropped();
+        w->setCollected(who);
+    }
+    for(auto t:this->tokens)
+    {
+        t->setDropped();
+        t->setCollected(who);
+    }
+    for(auto k:this->keys)
+    {
+        k->setDropped();
+        k->setCollected(who);
+    }
+    for(auto u:this->usables)
+    {
+        u->setDropped();
+        u->setCollected(who);
+    }
+    for(auto m:this->mods)
+    {
+        m->setDropped();
+        m->setCollected(who);
+    }
+
+
+
+
+
+}
+
+
+
+
 
 bool inventory::removeCollectibleFromInventory(int instance)
 {
+ //   std::cout<<"Remove from Inventory: "<<instance<<"\n";
+ //   std::cout<<"[w";
     for(unsigned int c=0; c<this->weapons.size();)
     {
         if(this->weapons.at(c)->getInstanceid()==instance)
@@ -42,6 +93,7 @@ bool inventory::removeCollectibleFromInventory(int instance)
         }
 
     }
+  //  std::cout<<"u";
     for(unsigned int c=0; c<this->usables.size();)
     {
         if(this->usables.at(c)->getInstanceid()==instance)
@@ -57,6 +109,7 @@ bool inventory::removeCollectibleFromInventory(int instance)
         }
 
     }
+  //  std::cout<<"t";
     for(unsigned int c=0; c<this->tokens.size();)
     {
         if(this->tokens.at(c)->getInstanceid()==instance)
@@ -71,6 +124,7 @@ bool inventory::removeCollectibleFromInventory(int instance)
         }
 
     }
+ //   std::cout<<"k";
     for(unsigned int c=0; c<this->keys.size();)
     {
         if(this->keys.at(c)->getInstanceid()==instance)
@@ -85,7 +139,8 @@ bool inventory::removeCollectibleFromInventory(int instance)
         }
 
     }
-       for(unsigned int c=0; c<this->mods.size();)
+   // std::cout<<"m";
+    for(unsigned int c=0; c<this->mods.size();)
     {
         if(this->mods.at(c)->getInstanceid()==instance)
         {
@@ -310,6 +365,7 @@ bool inventory::mergeInventory(inventory* theOtherInventory)
     for(auto w:theOtherInventory->weapons)
     {
         this->incrementTokenNumber({w->getType(),w->getSubtype()});
+        w->setDropped();
         w->setCollected(this->owner);
         this->weapons.push_back(w);
     }
@@ -317,6 +373,7 @@ bool inventory::mergeInventory(inventory* theOtherInventory)
     for(auto u:theOtherInventory->usables)
     {
         this->incrementTokenNumber({u->getType(),u->getSubtype()});
+        u->setDropped();
         u->setCollected(this->owner);
         this->usables.push_back(u);
     }
@@ -325,6 +382,7 @@ bool inventory::mergeInventory(inventory* theOtherInventory)
     for(auto m:theOtherInventory->mods)
     {
         this->incrementTokenNumber({m->getType(),m->getSubtype()});
+        m->setDropped();
         m->setCollected(this->owner);
         this->mods.push_back(m);
     }
@@ -332,6 +390,7 @@ bool inventory::mergeInventory(inventory* theOtherInventory)
     for(auto t:theOtherInventory->tokens)
     {
         this->incrementTokenNumber({t->getType(),t->getSubtype()});
+        t->setDropped();
         t->setCollected(this->owner);
         this->tokens.push_back(t);
     }
@@ -339,6 +398,7 @@ bool inventory::mergeInventory(inventory* theOtherInventory)
     for(auto k:theOtherInventory->keys)
     {
         this->incrementTokenNumber({k->getType(),k->getSubtype()});
+        k->setDropped();
         k->setCollected(this->owner);
         this->keys.push_back(k);
     }

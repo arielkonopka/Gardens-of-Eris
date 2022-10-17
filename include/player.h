@@ -17,7 +17,6 @@ public:
     bool mechanics(bool collected);
     bool interact(bElem *who);
     bool canPush();
-    bool canCollect();
     bool getVisited();
     int getType();
     void setActive(bool act);

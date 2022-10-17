@@ -270,9 +270,5 @@ int player::getAnimPh()
 
 
 
-bool player::canCollect()
-{
-    return true;
-}
 
 

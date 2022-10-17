@@ -17,7 +17,6 @@ class patrollingDrone : public killableElements
         virtual int findSomething(bElem* elem,int n,int denyDir);
         virtual bool interact(bElem* who);
         int getType();
-        virtual bool canCollect();
 
     protected:
 

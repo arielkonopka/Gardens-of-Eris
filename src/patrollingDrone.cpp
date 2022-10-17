@@ -42,10 +42,6 @@ patrollingDrone::patrollingDrone(chamber* board, int x, int y):killableElements(
     this->boardSize.y=board->height;
 
 }
-bool patrollingDrone::canCollect()
-{
-   return true;
-}
 void patrollingDrone::setVisited(int x, int y)
 {
         coords mycrds=this->getCoords();

@@ -40,6 +40,7 @@ public:
     inventory(bElem *owner);
     virtual ~inventory();
     virtual void updateBoard();
+    virtual void changeOwner(bElem* who);
     virtual bElem* getKey(int type,int subType,bool removeIt);
     virtual bElem* getUsable();
     virtual bool nextUsable();
