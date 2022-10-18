@@ -12,7 +12,6 @@ class stillElem :  public nonSteppable
         stillElem(chamber *board);
         ~stillElem();
         int getType();
-        int getSubtype();
     protected:
 
     private:

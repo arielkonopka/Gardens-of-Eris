@@ -6,19 +6,16 @@ videoElement::videoElementDef* wall::vd=NULL;
 
 wall::wall(chamber* board) : nonSteppable(board)
 {
-        this->subtype=0;
+        this->setSubtype(0);
 }
 
 wall::wall(chamber* board,int subtype) : nonSteppable(board)
 {
-        this->subtype=subtype;
+        this->setSubtype(subtype);
 }
 
 
-int wall::getSubtype()
-{
-    return this->subtype;
-}
+
 
 int wall::getType()
 {

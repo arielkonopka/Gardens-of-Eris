@@ -17,14 +17,12 @@ class wall : public nonSteppable
         wall(chamber *board,int subtype);
         virtual  bool isDying();
         virtual ~wall();
-        int getSubtype();
         int getType();
         virtual bool canBeKilled();
         virtual bool canBeDestroyed();
     protected:
 
-    private:
-        int subtype;
+
 };
 
 #endif // WALL_H

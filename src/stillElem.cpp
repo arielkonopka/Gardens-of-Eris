@@ -12,11 +12,6 @@ int stillElem::getType()
     return _stillElemType;
 }
 
-int stillElem::getSubtype()
-{
-    return 0;
-}
-
 stillElem::stillElem(chamber* board) :nonSteppable(board)
 {
     return;

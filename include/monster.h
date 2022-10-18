@@ -16,7 +16,6 @@ class monster : public killableElements
         monster(chamber *board,int newSubtype);
         ~monster();
         int getType();
-        int getSubtype();
         virtual bool mechanics(bool collected);
 
 

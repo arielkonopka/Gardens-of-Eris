@@ -9,7 +9,6 @@ public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
-    virtual int getSubtype();
     plainMissile(chamber *mychamber);
     plainMissile(chamber *mychamber,int energy);
     void setStatsOwner(bElem* owner);

@@ -8,6 +8,7 @@ monster::monster(chamber *board): killableElements(board,true)
     this->animph=0;
     this->internalCnt=0;
     this->setDirection(UP);
+    this->setSubtype(0);
 }
 
 monster::monster(chamber* board, int newSubtype): killableElements(board,true)
@@ -32,10 +33,7 @@ int monster::getType()
     return _monster;
 }
 
-int monster::getSubtype()
-{
-    return 0;
-}
+
 bool monster::mechanics(bool collected)
 {
     if (!killableElements::mechanics(collected))

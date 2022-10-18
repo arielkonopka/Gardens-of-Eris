@@ -15,7 +15,6 @@ class rubbish :public stillElem
         bool isCollectible();
         virtual ~rubbish();
         int getType();
-        int getSubtype();
     protected:
 
     private:

@@ -10,6 +10,7 @@ plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber,true
     this->setDirection(UP);
     this->setMoved(0);
     this->statsOwner=NULL;
+    this->setSubtype(0);
 }
 plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber,true)
 {
@@ -20,6 +21,7 @@ plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(my
     this->myInventory=new inventory(this ); // This is for a mod, that could be installed on the ammo
     this->setMoved(0);
     this->statsOwner=NULL;
+    this->setSubtype(0);
 }
 
 plainMissile::~plainMissile()
@@ -36,10 +38,7 @@ int plainMissile::getType()
     return _plainMissile;
 }
 
-int plainMissile::getSubtype()
-{
-    return 0;
-}
+
 
 videoElement::videoElementDef* plainMissile::getVideoElementDef()
 {
