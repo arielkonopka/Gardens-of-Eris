@@ -52,9 +52,9 @@ void door::stomp(bElem* who)
     bElem* key=NULL;
     if(this->getSubtype()%2==1)
     {
-        if(who->myInventory!=NULL)
+        if(who->getInventory()!=NULL)
         {
-            key=who->myInventory->getKey(_key,this->getSubtype(),true); // take the key on your way out. you don't have a key? Kill, could be used as tricky traps for monsters
+            key=who->getInventory()->getKey(_key,this->getSubtype(),true); // take the key on your way out. you don't have a key? Kill, could be used as tricky traps for monsters
             if(key==NULL)
             {
                 who->kill();
@@ -94,18 +94,18 @@ bool door::interact(bElem* who)
         return true;
     }
     //If it cannot collect, it cannot hold a key.
-    if (who->canCollect()==false || who->myInventory==NULL)
+    if (who->canCollect()==false)
     {
         return false;
     }
     //if Door is unlocked, only open/close thing
     if (this->getSubtype()%2==0)
     {
-        key=who->myInventory->getKey(_key,this->getSubtype(),true);
+        key=who->getInventory()->getKey(_key,this->getSubtype(),true);
     }
     else
     {
-        key=who->myInventory->getKey(_key,this->getSubtype(),false);
+        key=who->getInventory()->getKey(_key,this->getSubtype(),false);
     }
     if(key!=NULL)
     {

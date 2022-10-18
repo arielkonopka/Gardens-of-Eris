@@ -19,12 +19,12 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
     pGun->stepOnElement(mc->getElement(3,2));
     plr->setActive(true);
     plr->collect(pGun);
-    BOOST_CHECK(plr->myInventory->getActiveWeapon()!=NULL);
-    BOOST_CHECK(plr->myInventory->getActiveWeapon()->getInstanceid()==pGun->getInstanceid());
+    BOOST_CHECK(plr->getInventory()->getActiveWeapon()!=NULL);
+    BOOST_CHECK(plr->getInventory()->getActiveWeapon()->getInstanceid()==pGun->getInstanceid());
     plr->setDirection(UP);
     for(int c=0;c<50;c++)
     {
-        bElem* wep=plr->myInventory->getActiveWeapon();
+        bElem* wep=plr->getInventory()->getActiveWeapon();
         if(wep!=NULL)
         {
             plr->shootGun();
@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
             bElem::tick();
 
     }
-    BOOST_CHECK(plr->myInventory->getActiveWeapon()==NULL);
+    BOOST_CHECK(plr->getInventory()->getActiveWeapon()==NULL);
     for(unsigned int c=0;c<gCollect::getInstance()->garbageVector.size();c++)
     {
         if(gCollect::getInstance()->garbageVector[c]->getInstanceid()==pGun->getInstanceid())

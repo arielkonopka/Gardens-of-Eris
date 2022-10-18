@@ -197,9 +197,9 @@ bool bElem::stepOnElement(bElem* step)
 {
     if (step==NULL || step->isSteppable()==false || step->getBoard()==NULL)  return false;
     coords crds=step->getCoords();
-    if (this->steppingOn!=NULL)
+    if (this->getSteppingOnElement()!=NULL)
     {
-        this->steppingOn->unstomp();
+        this->getSteppingOnElement()->unstomp();
         if (this->getBoard()!=NULL)
             this->getBoard()->setElement(this->x,this->y,this->steppingOn);
     }
@@ -238,7 +238,7 @@ oState bElem::disposeElementUnsafe()
     this->disposed=true;
     if(mycoords.x>=0 && mycoords.y>=0 && this->getBoard()!=NULL) //object on a board? need extra steps
     {
-        if(this->steppingOn!=NULL || this->getStomper()!=NULL)
+        if(this->getSteppingOnElement()!=NULL || this->getStomper()!=NULL)
         {
             this->removeElement();
             res=DISPOSED;
@@ -573,10 +573,10 @@ bElem* bElem::removeElement()
     {
         return this;
     }
-    if(this->steppingOn!=NULL && this->getStomper()!=NULL)
+    if(this->getSteppingOnElement()!=NULL && this->getStomper()!=NULL)
     {
         this->getStomper()->steppingOn=this->steppingOn;
-        this->steppingOn->stomp(this->getStomper());
+        this->getSteppingOnElement()->stomp(this->getStomper());
         this->unstomp();
         this->steppingOn=NULL;
         this->x=-1;
@@ -584,10 +584,10 @@ bElem* bElem::removeElement()
         this->attachedBoard=NULL;
         return this;
     }
-    if (this->steppingOn!=NULL)
+    if (this->getSteppingOnElement()!=NULL)
     {
-        this->steppingOn->unstomp();
-        this->attachedBoard->chamberArray[this->x][this->y]=this->steppingOn;
+        this->getSteppingOnElement()->unstomp();
+        this->attachedBoard->chamberArray[this->x][this->y]=this->getSteppingOnElement();
         this->steppingOn=NULL;
         this->x=-1;
         this->y=-1;
@@ -936,5 +936,9 @@ bool bElem::unlockThisObject(bElem* who)
     return true;
 }
 
+void bElem::setInventory(inventory* inv)
+{
+    this->myInventory=inv;
+}
 
 

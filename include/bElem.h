@@ -31,17 +31,18 @@ typedef enum { DISPOSED=0,NULLREACHED=1,ERROR=2} oState;
 class bElem
 {
 public:
-
-    static videoElement::videoElementDef* vd;
-    virtual int getInstanceid();
-    static void resetInstances();
-    static int instances;
-    void registerLiveElement(bElem* who);
-    void deregisterLiveElement(bElem* who);
-    static void runLiveElements();
     bElem();
     bElem(chamber *board);
     bElem(chamber *board,int x, int y);
+
+    static videoElement::videoElementDef* vd;
+
+    virtual int getInstanceid();
+    static void resetInstances();
+
+    void registerLiveElement(bElem* who);
+    void deregisterLiveElement(bElem* who);
+    static void runLiveElements();
 
     virtual sNeighboorhood getSteppableNeighboorhood();
     virtual ~bElem();
@@ -119,10 +120,10 @@ public:
     virtual bool isWaiting();
     virtual void setWait(int time);
 
-    bElem *steppingOn=NULL;
+
 //    std::vector<bElem *> collectedItems;
 
-    unsigned int interacted;
+
     static std::mt19937 randomNumberGenerator;
     static bool randomNumberGeneratorInitialized;
 
@@ -133,15 +134,24 @@ public:
     */
     virtual bool mechanics(bool collected);
     static std::vector<bElem*> liveElems;
-    inventory *myInventory;
+
     static void tick();
     virtual unsigned int getCntr();
     virtual chamber* getBoard();
-    int subtype;
+
     virtual bool isLocked();
     virtual bool lockThisObject(bElem* who);
     virtual bool unlockThisObject(bElem* who);
+    constexpr bool isDisposed() { return this->disposed;};
+    constexpr inventory* getInventory() { return this->myInventory ;};
+    constexpr bElem* getSteppingOnElement() { return this->steppingOn; };
+    void setInventory(inventory* inv);
+
 protected:
+    unsigned int interacted;
+    bElem *steppingOn=NULL;
+    int subtype;
+    inventory *myInventory;
     std::vector<bElem*> lockers;
     int waiting;
     int instance;
@@ -155,6 +165,7 @@ protected:
     bool amIUsable;
     int killed;
 private:
+    static int instances;
     bool disposed;
     elemStats* myStats;
     unsigned int telInProgress;

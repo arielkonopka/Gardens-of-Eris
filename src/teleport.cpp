@@ -88,8 +88,8 @@ bool teleport::teleportIt(bElem* who)
             bElem *toStep=NULL;
             coords origCoords=who->getCoords();
             chamber* origChamber=who->getBoard();
-            if(who->steppingOn)
-                toStep=who->steppingOn;
+            if(who->getSteppingOnElement())
+                toStep=who->getSteppingOnElement();
             who->removeElement();
 //!!!Review and remove after fixing the root cause
             if(toStep==NULL)  // if somehow the object under teleported does not exist, we create empty object.

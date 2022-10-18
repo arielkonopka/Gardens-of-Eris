@@ -288,12 +288,12 @@ bool inventory::addToInventory(bElem* what)
             this->tokens.push_back(what->removeElement());
         return true;
     }
-    if(what->myInventory!=NULL)
+    if(what->canCollect()==true)
     {
         /* this is probably a stash, or something like that. that is why, when we create an object, that shoots infinite ammo, it is better to have gun in non standard places, it would not be picked up that way*/
-        this->mergeInventory(what->myInventory);
-        delete what->myInventory;
-        what->myInventory=NULL;
+        this->mergeInventory(what->getInventory());
+        delete what->getInventory();
+        what->setInventory(NULL);
         what->disposeElement();
         res=true;
     }
@@ -425,14 +425,24 @@ bool inventory::removeToken(int position)
 
 }
 
-/*
-void inventory::mechanics()
+bool inventory::findInInventory(int instanceId)
 {
-    for(auto n:this->weapons)
-        n->mechanics(true);
-
+    for(auto k:this->keys)
+        if(k->getInstanceid()==instanceId)
+            return true;
+    for(auto m:this->mods)
+        if(m->getInstanceid()==instanceId)
+            return true;
+    for(auto t:this->tokens)
+        if(t->getInstanceid()==instanceId)
+            return true;
+    for(auto w:this->weapons)
+        if(w->getInstanceid()==instanceId)
+            return true;
+    return false;
 }
-*/
+
+
 
 bool inventory::isEmpty()
 {

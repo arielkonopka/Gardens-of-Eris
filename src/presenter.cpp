@@ -51,7 +51,7 @@ bool presenter::initializeDisplay()
 {
     this->display = al_create_display(this->scrWidth, this->scrHeight);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
-    al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP|ALLEGRO_FULLSCREEN);
+    al_set_new_bitmap_flags((int)ALLEGRO_VIDEO_BITMAP|(int)ALLEGRO_FULLSCREEN);
     this->internalBitmap=al_create_bitmap(this->scrWidth,this->scrHeight);
     return true;
 
@@ -59,7 +59,7 @@ bool presenter::initializeDisplay()
 
 bool presenter::presentAChamber(presenterMode mod)
 {
-    _cp_gameReasonOut reason=USERREQ;
+    //_cp_gameReasonOut reason=USERREQ;
     switch(mod)
     {
     case MENU:
@@ -71,7 +71,7 @@ bool presenter::presentAChamber(presenterMode mod)
     case SETTINGS:
         break;
     case GAME:
-        reason=this->presentGamePlay();
+        this->presentGamePlay();
         break;
     }
     return true;
@@ -286,8 +286,8 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
     if (elem==NULL)
         return;
 /* We check, if the object is standing on anything, to draw it first, we also make sure, we were called the right way */
-    if (elem->steppingOn!=NULL && (mode==_mode_all || mode==_mode_onlyFloor))
-        this->showObjectTile(x,y,offsetX,offsetY,elem->steppingOn,ignoreOffset,_mode_all);
+    if (elem->getSteppingOnElement()!=NULL && (mode==_mode_all || mode==_mode_onlyFloor))
+        this->showObjectTile(x,y,offsetX,offsetY,elem->getSteppingOnElement(),ignoreOffset,_mode_all);
 /*
     No video object definition? ignore This way we can have "invisible" objects if we want to.
     mode==_mode_onlyFLoor means, only object that are being stepped on, are drawn
@@ -411,21 +411,21 @@ void presenter::showGameField(int relX,int relY)
         this->showObjectTile(1,this->scrTilesY+2,0,0,player,true,_mode_onlyTop);
         this->showText(2,this->scrTilesY+2,0,0,std::to_string(player->countVisitedPlayers()));
         this->showText(2,this->scrTilesY+2,0,32,std::to_string(player->getEnergy()));
-        this->showObjectTile(4,this->scrTilesY+2,0,0,player->myInventory->getActiveWeapon(),true,_mode_onlyTop);
-        if( player->myInventory->getActiveWeapon()!=NULL)
+        this->showObjectTile(4,this->scrTilesY+2,0,0,player->getInventory()->getActiveWeapon(),true,_mode_onlyTop);
+        if( player->getInventory()->getActiveWeapon()!=NULL)
         {
-            this->showText(5,this->scrTilesY+2,0,32,std::to_string(player->myInventory->getActiveWeapon()->getEnergy()));
-            this->showText(5,this->scrTilesY+2,0,0,std::to_string(player->myInventory->getActiveWeapon()->getAmmo()));
+            this->showText(5,this->scrTilesY+2,0,32,std::to_string(player->getInventory()->getActiveWeapon()->getEnergy()));
+            this->showText(5,this->scrTilesY+2,0,0,std::to_string(player->getInventory()->getActiveWeapon()->getAmmo()));
 
 
         }
         for (int cnt=0; cnt<5; cnt++)
         {
             int tokens;
-            bElem *key=player->myInventory->getKey(_key,cnt,false);
+            bElem *key=player->getInventory()->getKey(_key,cnt,false);
             if(key!=NULL)
             {
-                tokens=player->myInventory->countTokens(key->getType(),key->getSubtype());
+                tokens=player->getInventory()->countTokens(key->getType(),key->getSubtype());
                 this->showObjectTile(7+(cnt*2),this->scrTilesY+2,0,0,key,true,_mode_onlyTop);
                 this->showText(8+(cnt*2),this->scrTilesY+2,0,16,std::to_string(tokens));
 
@@ -434,7 +434,7 @@ void presenter::showGameField(int relX,int relY)
         }
         this->showObjectTile(18,this->scrTilesY+2,0,0,goldenApple::getApple(1),true,_mode_onlyTop);
         this->showText(19,this->scrTilesY+2,0,0,std::to_string(goldenApple::getAppleNumber()));
-        this->showText(19,this->scrTilesY+2,0,32,std::to_string(player->myInventory->countTokens(_goldenAppleType,0)));
+        this->showText(19,this->scrTilesY+2,0,32,std::to_string(player->getInventory()->countTokens(_goldenAppleType,0)));
         // this->showText(21,this->scrTilesY+1,0,0,"Player");
         this->showText(21,this->scrTilesY+1,6,32,"Stats");
         this->showText(21,this->scrTilesY+2,5,0,"P:");
@@ -504,7 +504,7 @@ int presenter::presentEverything()
                 {
                     return 2;
                 }
-                if(currentPlayer->myInventory->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
+                if(currentPlayer->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
                     fin=true;
                 this->_cp_attachedBoard=currentPlayer->getBoard();
 
