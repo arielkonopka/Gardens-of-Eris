@@ -146,9 +146,9 @@ videoElement::videoElementDef* player::getVideoElementDef()
 }
 
 
-bool player::mechanics(bool collected)
+bool player::mechanics()
 {
-    bool res=killableElements::mechanics(collected);
+    bool res=killableElements::mechanics();
 
     if (this->isActive()==true)
     {

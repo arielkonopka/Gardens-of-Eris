@@ -23,7 +23,7 @@ killableElements::killableElements(chamber* board, int x, int y, bool registerEl
 
 
 
-bool killableElements::mechanics(bool collected)
+bool killableElements::mechanics()
 {
 
     if(this->isDying()>0)
@@ -36,7 +36,7 @@ bool killableElements::mechanics(bool collected)
         }
         return false;
     }
-    bool res=movableElements::mechanics(collected);
+    bool res=movableElements::mechanics();
     return res;
 }
 

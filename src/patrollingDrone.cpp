@@ -111,9 +111,9 @@ int patrollingDrone::findSomething(bElem* elem,int n,int denyDir)
 
 
 
-bool patrollingDrone::mechanics(bool collected)
+bool patrollingDrone::mechanics()
 {
-    if(!killableElements::mechanics(collected))
+    if(!killableElements::mechanics())
         return false;
     if(this->isActive()==false)
         return false;

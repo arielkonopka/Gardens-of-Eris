@@ -482,7 +482,7 @@ bool bElem::isSwitchOn()
     return false;
 }
 
-bool bElem::mechanics(bool collected)
+bool bElem::mechanics()
 {
     this->taterCounter++; //this is our source of sequential numbers
     this->animPhase++;
@@ -874,11 +874,11 @@ void bElem::runLiveElements()
 
         if(bElem::liveElems[p]->getCoords()!=NOCOORDS)
         {
-            bElem::liveElems[p]->mechanics(false);
+            bElem::liveElems[p]->mechanics();
         }
         else if(bElem::liveElems[p]->getStomper()!=NULL || bElem::liveElems[p]->getCollector()!=NULL)
         {
-            bElem::liveElems[p]->mechanics(true);
+            bElem::liveElems[p]->mechanics();
         }
 
     }

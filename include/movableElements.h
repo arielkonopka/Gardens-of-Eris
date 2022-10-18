@@ -28,7 +28,7 @@ class movableElements : public nonSteppable
 
      //   virtual int getSubtype();
         virtual bool canPush();
-        virtual bool mechanics(bool collected);
+        virtual bool mechanics();
         virtual void setMoved(int time);
         virtual int getMoved();
         virtual bool dragInDirection(direction dragIntoDirection);

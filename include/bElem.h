@@ -74,7 +74,7 @@ public:
     virtual bool isSteppable();
     virtual bool isSteppableDirection(direction di);
     virtual bElem *getElementInDirection(direction di);
-    virtual int getTypeInDirection(direction di);
+
     virtual bool canBeKilled();
     virtual bool canBeDestroyed();
 
@@ -120,19 +120,9 @@ public:
     virtual bool isWaiting();
     virtual void setWait(int time);
 
-
-//    std::vector<bElem *> collectedItems;
-
-
     static std::mt19937 randomNumberGenerator;
     static bool randomNumberGeneratorInitialized;
-
-
-    /*
-        @mechanics(bool collected) - takes care both of time passing (all the timers and so on along with the mechanics itself - every object type can have its own rules
-        collected==true when the method is invoked from an objects inventory. useful for objects that do something when collected like mines, automatic weapons and so on
-    */
-    virtual bool mechanics(bool collected);
+    virtual bool mechanics();
     static std::vector<bElem*> liveElems;
 
     static void tick();
@@ -142,9 +132,18 @@ public:
     virtual bool isLocked();
     virtual bool lockThisObject(bElem* who);
     virtual bool unlockThisObject(bElem* who);
-    constexpr bool isDisposed() { return this->disposed;};
-    constexpr inventory* getInventory() { return this->myInventory ;};
-    constexpr bElem* getSteppingOnElement() { return this->steppingOn; };
+    constexpr bool isDisposed()
+    {
+        return this->disposed;
+    };
+    constexpr inventory* getInventory()
+    {
+        return this->myInventory ;
+    };
+    constexpr bElem* getSteppingOnElement()
+    {
+        return this->steppingOn;
+    };
     void setInventory(inventory* inv);
 
 protected:
@@ -165,6 +164,7 @@ protected:
     bool amIUsable;
     int killed;
 private:
+    virtual int getTypeInDirection(direction di);
     static int instances;
     bool disposed;
     elemStats* myStats;

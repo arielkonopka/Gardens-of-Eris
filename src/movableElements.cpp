@@ -97,9 +97,9 @@ bool movableElements::canPush()
     return _me_canPush;
 }
 
-bool movableElements::mechanics(bool collected)
+bool movableElements::mechanics()
 {
-    bool res=nonSteppable::mechanics(collected);
+    bool res=nonSteppable::mechanics();
     if(this->getMoved()>0)
         res=false;
     return res;

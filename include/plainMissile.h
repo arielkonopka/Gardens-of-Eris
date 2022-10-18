@@ -13,7 +13,7 @@ public:
     plainMissile(chamber *mychamber,int energy);
     void setStatsOwner(bElem* owner);
     virtual ~plainMissile();
-    virtual bool mechanics(bool collected);
+    virtual bool mechanics();
 
 protected:
 

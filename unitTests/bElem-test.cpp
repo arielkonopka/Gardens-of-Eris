@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDestroyingTheWholeChamber,T,all_test_ty
     {
         for(int y=0; y<11; y++)
         {
-            mc->getElement(x,y)->mechanics(false);
+            mc->getElement(x,y)->mechanics();
         }
 
     }
@@ -341,12 +341,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(WaitMechanismTest,T,base_test_types)
         testObj->setWait(d);
         while(testObj->isWaiting())
         {
-            BOOST_ASSERT(testObj->mechanics(false)==false); //mechanics is blocked during waiting time
+            BOOST_ASSERT(testObj->mechanics()==false); //mechanics is blocked during waiting time
             c++;
             bElem::tick();
         }
         //  bElem::tick();
-        BOOST_ASSERT(testObj->mechanics(false)==true); // mechanics is unblocked after the waiting time
+        BOOST_ASSERT(testObj->mechanics()==true); // mechanics is unblocked after the waiting time
         //std::cout<<"c="<<c<<"\n";
         if(d<=_maxWaitingTtime)
         {

@@ -46,11 +46,11 @@ videoElement::videoElementDef* plainMissile::getVideoElementDef()
 }
 
 
-bool plainMissile::mechanics(bool collected)
+bool plainMissile::mechanics()
 {
     bool res;
     int mvd=this->getMoved();
-    res=killableElements::mechanics(collected);
+    res=killableElements::mechanics();
     if(!res) return false;
     if(this->isDying())
         return true;

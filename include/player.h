@@ -14,7 +14,7 @@ public:
     virtual videoElement::videoElementDef* getVideoElementDef();
     static videoElement::videoElementDef* vd;
     static player* getActivePlayer();
-    bool mechanics(bool collected);
+    bool mechanics();
     bool interact(bElem *who);
     bool canPush();
     bool getVisited();

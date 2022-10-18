@@ -16,7 +16,7 @@ class killableElements : public mechanical
         virtual ~killableElements();
         virtual bool canBeKilled();
         virtual bool canBeDestroyed();
-        virtual bool mechanics(bool collected);
+        virtual bool mechanics();
         virtual bool kill();
         virtual bool hurt(int points);
     protected:

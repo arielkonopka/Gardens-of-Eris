@@ -16,7 +16,7 @@ class monster : public killableElements
         monster(chamber *board,int newSubtype);
         ~monster();
         int getType();
-        virtual bool mechanics(bool collected);
+        virtual bool mechanics();
 
 
         bool steppableNeigh();

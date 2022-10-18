@@ -104,9 +104,9 @@ bool plainGun::readyToShoot()
 }
 
 
-bool plainGun::mechanics(bool collected)
+bool plainGun::mechanics()
 {
-    bool res=usable::mechanics(collected);
+    bool res=usable::mechanics();
     if(this->getEnergy()<this->maxEnergy)
     {
         if (bElem::getCntr()%5==0)

@@ -8,13 +8,13 @@
 class plainGun : public usable
 {
 public:
-        static videoElement::videoElementDef* vd;
+    static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
     virtual bool use(bElem *who);
     plainGun(chamber *board);
     plainGun(chamber *board,int newSubtype);
-    virtual bool mechanics(bool collected);
+    virtual bool mechanics();
     virtual ~plainGun();
     bool isWeapon();
     virtual bool readyToShoot();

@@ -13,7 +13,7 @@ class bunker : public mechanical
         bunker(chamber *board);
         bunker(chamber *board,int x, int y);
         virtual ~bunker();
-        virtual bool mechanics(bool collected);
+        virtual bool mechanics();
         direction findLongestShot();
         virtual bool selfAlign();
         virtual bool interact(bElem* Who);

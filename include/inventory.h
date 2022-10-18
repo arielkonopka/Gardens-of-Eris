@@ -46,7 +46,6 @@ public:
     virtual bool nextUsable();
     virtual bElem* getActiveWeapon();
     virtual int countTokens(int type, int subtype);
-    // virtual void mechanics();
     virtual bool nextGun();
     virtual bool addToInventory(bElem* what);  // this will qualify the category of the object, that will be collected, if object could not be collected, return false
     virtual int requestTokens(int number,int type,int subType); // this will "burn" number of tokens, that are of a type and a subType, if there are less tokens, it will return number of tokens remaining, otherwise 0

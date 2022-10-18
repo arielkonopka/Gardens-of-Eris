@@ -43,9 +43,9 @@ bool bunker::isMovable()
 }
 
 
-bool bunker::mechanics(bool collected)
+bool bunker::mechanics()
 {
-    bool res=nonSteppable::mechanics(collected);
+    bool res=nonSteppable::mechanics();
     if(res)
     {
         if(this->help>0)

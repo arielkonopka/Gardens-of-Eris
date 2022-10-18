@@ -34,9 +34,9 @@ int monster::getType()
 }
 
 
-bool monster::mechanics(bool collected)
+bool monster::mechanics()
 {
-    if (!killableElements::mechanics(collected))
+    if (!killableElements::mechanics())
         return false;
     coords tmpcoords;
     bElem* te=this->getElementInDirection(this->getDirection());
