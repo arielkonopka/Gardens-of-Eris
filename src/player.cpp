@@ -244,7 +244,7 @@ bool player::canPush()
 void player::setActive(bool act)
 {
     this->activated=act;
-    this->teleporting=_teleportationTime;
+    this->setTeleporting(_teleportationTime);
 }
 
 

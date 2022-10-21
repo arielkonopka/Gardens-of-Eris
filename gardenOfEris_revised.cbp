@@ -140,6 +140,9 @@
 		<Unit filename="src/world.cpp" />
 		<Unit filename="unitTests/bElem-test.cpp" />
 		<Unit filename="unitTests/player-test.cpp" />
+		<Unit filename="unitTests/teleport-test.cpp">
+			<Option target="Tests" />
+		</Unit>
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

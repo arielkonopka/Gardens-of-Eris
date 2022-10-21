@@ -342,26 +342,25 @@ bool randomLevelGenerator::generateLevel(int holes)
 
     for(int c=0; c<5; c++)
     {
-        elementsToChooseFrom.push_back({_key,0,1,0,5});
-        elementsToChooseFrom.push_back({_key,2,1,0,5});
-        elementsToChooseFrom.push_back({_key,4,1,0,5});
-        elementsToChooseFrom.push_back({_teleporter,1,1,0,5});
-        elementsToChooseFrom.push_back({_teleporter,0,1,0,5});
+        elementsToChooseFrom.push_back({_key,0,1,0,4});
+        elementsToChooseFrom.push_back({_key,2,1,0,4});
+        elementsToChooseFrom.push_back({_key,4,1,0,4});
+        elementsToChooseFrom.push_back({_teleporter,this->mychamber->getInstanceId()+1,1,0,4});
 
     }
     //  elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
-    elementsToChooseFrom.push_back({_player,0,1,0,5});
+    elementsToChooseFrom.push_back({_player,0,1,0,4});
     elementsToChooseFrom.push_back({_plainGun,0,1,0,5});
     //
     elementsToChooseFrom.push_back({_patrollingDrone,1,1,0,5});
 
     //first find area for the player and stuff for it
 
-    elementCollection.push_back({_player,0,2,0,5});
-    elementCollection.push_back({_key,1,2,0,5});
-    elementCollection.push_back({_plainGun,0,2,0,5});
-    elementCollection.push_back({_patrollingDrone,1,1,0,6});
-    elementCollection.push_back({_teleporter,1,1,0,5});
+    elementCollection.push_back({_player,0,2,0,4});
+    elementCollection.push_back({_key,1,2,0,4});
+    elementCollection.push_back({_plainGun,0,2,0,4});
+    elementCollection.push_back({_patrollingDrone,1,1,0,4});
+
    /***************************refactor me******************************/
     int demandedSurface=0;
     for(unsigned int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
@@ -383,7 +382,20 @@ bool randomLevelGenerator::generateLevel(int holes)
     delete chamberArea::foundAreas[selectedChamberNo];
     chamberArea::foundAreas[selectedChamberNo]=chamberArea::foundAreas[chamberArea::foundAreas.size()-1];
     chamberArea::foundAreas.pop_back();
+    elementCollection.clear();
 
+    elementCollection.push_back({_teleporter,0,1,0,5});
+    selectedChamberNo=(this->gen()%chamberArea::foundAreas.size());
+    this->placeElementCollection(chamberArea::foundAreas[selectedChamberNo],&elementCollection);
+    this->placeDoors({_door,0,1,0,9},chamberArea::foundAreas[selectedChamberNo]);
+    if (chamberArea::foundAreas[selectedChamberNo]->parent!=NULL)
+    {
+        chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock=true;
+    }
+
+    delete chamberArea::foundAreas[selectedChamberNo];
+    chamberArea::foundAreas[selectedChamberNo]=chamberArea::foundAreas[chamberArea::foundAreas.size()-1];
+    chamberArea::foundAreas.pop_back();
 
 
 

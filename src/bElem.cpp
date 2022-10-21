@@ -89,6 +89,8 @@ void bElem::setWait(int time)
 
 void bElem::init()
 {
+    this->telTimeReq=0;
+
     this->waiting=0;
     this->disposed=false;
     this->hasActivatedMechanics=false;
@@ -197,11 +199,9 @@ bool bElem::stepOnElement(bElem* step)
 {
     if (step==NULL || step->isSteppable()==false || step->getBoard()==NULL)  return false;
     coords crds=step->getCoords();
-    if (this->getSteppingOnElement()!=NULL)
+    if(this->getStomper()!=NULL || this->getSteppingOnElement()!=NULL)
     {
-        this->getSteppingOnElement()->unstomp();
-        if (this->getBoard()!=NULL)
-            this->getBoard()->setElement(this->x,this->y,this->steppingOn);
+        this->removeElement();
     }
     this->setBoard(step->getBoard());
     this->steppingOn=step;
@@ -553,7 +553,8 @@ bool bElem::isDying()
 
 bool bElem::isTeleporting()
 {
-    return (this->telInProgress>this->getCntr());
+
+    return (this->telTimeReq!=0 && std::abs((long int)(this->telInProgress-this->getCntr()))<=this->telTimeReq);
 }
 
 
@@ -822,6 +823,7 @@ int bElem::getMoved()
 }
 void bElem::setTeleporting(int time)
 {
+    this->telTimeReq=time;
     this->telInProgress=this->getCntr()+time;
 
 }

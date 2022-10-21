@@ -21,12 +21,13 @@ public:
     virtual oState disposeElementUnsafe();
     virtual bool canBeKilled();
     virtual bool canBeDestroyed();
+    virtual bool createConnectionsWithinSUbtype();
 protected:
 private:
-    static std::vector<teleport*> teleporters;
-    bool removeFromTeleports();
-    void purgeFromTeleporters();
-    bool addToTeleports();
+
+    static std::vector<teleport*> allTeleporters;
+    bool removeFromAllTeleporters();
+    bool connectionsMade;
     teleport *theOtherEnd;
 };
 

@@ -20,10 +20,10 @@ class nonSteppable : public bElem
         virtual ~nonSteppable();
         bool isSteppable();
         virtual int getType();
-        virtual void setTeleporting(int time);
-        virtual bool isTeleporting();
+       // virtual void setTeleporting(int time);
+       // virtual bool isTeleporting();
     protected:
-        int teleporting;
+       // int teleporting;
     private:
 
 };

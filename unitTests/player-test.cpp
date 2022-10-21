@@ -7,6 +7,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
+BOOST_AUTO_TEST_SUITE( PlayerTests )
 
 BOOST_AUTO_TEST_CASE(PlayerShootsGun)
 {
@@ -60,3 +61,8 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
     BOOST_CHECK(mc->getElement(2,2)->getType()==_rubishType);
     delete mc;
 }
+
+
+
+BOOST_AUTO_TEST_SUITE_END()
+

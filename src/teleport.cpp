@@ -1,16 +1,18 @@
 #include "teleport.h"
 
 videoElement::videoElementDef* teleport::vd=NULL;
-std::vector<teleport*> teleport::teleporters;
+std::vector<teleport*> teleport::allTeleporters;
 
 teleport::teleport(chamber* board):nonSteppable(board)
 {
-    this->addToTeleports();
+    this->connectionsMade=false;
+    teleport::allTeleporters.push_back(this);
     this->theOtherEnd=NULL; // we do not have the other end configured yet. We will configure it on interact method;
 }
 teleport::teleport(chamber* board,int newSubtype):nonSteppable(board)
 {
-    this->addToTeleports();
+    this->connectionsMade=false;
+    teleport::allTeleporters.push_back(this);
     this->theOtherEnd=NULL; // we do not have the other end configured yet. We will configure it on interact method;
     this->setSubtype(newSubtype);
 }
@@ -18,49 +20,43 @@ teleport::teleport(chamber* board,int newSubtype):nonSteppable(board)
 teleport::~teleport()
 {
 
-    this->purgeFromTeleporters();
+    this->removeFromAllTeleporters();
+
+
 }
 /* here we will try to teleport an object to the becon connected to this teleporter. if the becon is not yet established, randomly choose one */
 bool teleport::interact(bElem* who)
 {
-    bool bres=bElem::interact(who);
-    unsigned int sizeT;
-    if(!bres) return false;
-    if(this->theOtherEnd==NULL)
-    {
-
-        this->removeFromTeleports();
-        sizeT=teleport::teleporters.size(); // last teleporter is looped
-        if(sizeT==0)
-        {
-            this->addToTeleports();
-            sizeT++;
-        }
-        int b=(bElem::randomNumberGenerator()%sizeT);;
-        if(this->getSubtype()%2==1)
-        {
-            for(unsigned int c=0;c<teleport::teleporters.size();c++)
-            {
-                if((teleport::teleporters.at(c)->getBoard()!=this->getBoard()) && (teleport::teleporters.at(c)->getSubtype()==this->getSubtype()))
-                {
-                    b=c;
-                    break;
-                }
-            }
-        }
-
-        this->theOtherEnd=teleport::teleporters[b];
-        if(this->getSubtype()%2==1)
-        {
-            this->theOtherEnd->theOtherEnd=this;
-            this->theOtherEnd->removeFromTeleports();
-        }
-    }
-    if(this->theOtherEnd->getBoard()==NULL)
+    if (bElem::interact(who)==false)
         return false;
+    if(this->connectionsMade==false)
+        this->createConnectionsWithinSUbtype();
     return this->theOtherEnd->teleportIt(who);
 
 }
+
+
+bool teleport::createConnectionsWithinSUbtype()
+{
+    std::vector<teleport*> candidates;
+    for(unsigned int c=0;c<teleport::allTeleporters.size();c++)
+    {
+        if(teleport::allTeleporters[c]->getSubtype()==this->getSubtype())
+        {
+            teleport::allTeleporters[c]->connectionsMade=true;
+            candidates.push_back(teleport::allTeleporters[c]);
+        }
+    }
+    for(unsigned int c=0;c<candidates.size()-1;c++)
+    {
+        candidates[c]->theOtherEnd=candidates[c+1];
+    }
+    candidates[candidates.size()-1]->theOtherEnd=candidates[0];
+    return true;
+}
+
+
+
 
 bool teleport::isInteractive()
 {
@@ -80,86 +76,47 @@ int teleport::getType()
 bool teleport::teleportIt(bElem* who)
 {
     int dir=(int)who->getDirection();
+    who->setTeleporting(_teleportationTime);
+    if(who->getSteppingOnElement()!=NULL)
+        who->getSteppingOnElement()->setTeleporting(_teleportationTime);
     for(int c=0; c<4; c++)
     {
         direction d=(direction)((dir+c)%4);
         if (this->isSteppableDirection(d))
         {
-            bElem *toStep=NULL;
-            coords origCoords=who->getCoords();
-            chamber* origChamber=who->getBoard();
-            if(who->getSteppingOnElement())
-                toStep=who->getSteppingOnElement();
-            who->removeElement();
-//!!!Review and remove after fixing the root cause
-            if(toStep==NULL)  // if somehow the object under teleported does not exist, we create empty object.
-                toStep=new bElem(origChamber,origCoords.x,origCoords.y);
-/////////////////////////////////////////////////////
-            toStep->setTeleporting(_teleportationTime);
-            who->setBoard(this->getBoard());
             who->stepOnElement(this->getElementInDirection(d));
-            who->setTeleporting(_teleportationTime);
             return true;
         }
     }
     return false;
 }
 
-void teleport::purgeFromTeleporters()
+
+
+
+
+
+
+bool teleport::removeFromAllTeleporters()
 {
-    std::vector<teleport*>::iterator ptr;
-    if(this->theOtherEnd!=NULL)
+    for(unsigned int c=0;c<teleport::allTeleporters.size();c++)
     {
-        this->theOtherEnd->theOtherEnd=NULL; // We removed the other end from the list, so we need to add it back
-        this->theOtherEnd->addToTeleports();
-        this->theOtherEnd=NULL;
-    }
-    else
-    {
-        for(ptr=teleport::teleporters.begin(); ptr!=teleport::teleporters.end(); )
+        if(teleport::allTeleporters[c]->getSubtype()==this->getSubtype())
         {
-            if((*ptr)->getInstanceid()==this->getInstanceid()) //!!!!!!!
-            {
-                teleport::teleporters.erase(ptr); //
-            }
-            else
-            {
-                if ((*ptr)->theOtherEnd!=NULL)
-                {
-                    if((*ptr)->theOtherEnd->getInstanceid()==this->getInstanceid())
-                    {
-                        (*ptr)->theOtherEnd->addToTeleports(); // not sure if we should do the teleport recycling
-                        (*ptr)->theOtherEnd=NULL; //We remove the reference to the disposed teleport
-                    }
-                }
-                ptr++;
-            }
+            teleport::allTeleporters[c]->connectionsMade=false;
         }
     }
-
-}
-
-
-bool teleport::removeFromTeleports()
-{
-    std::vector<teleport*>::iterator ptr;
-    for(ptr=teleport::teleporters.begin(); ptr!=teleport::teleporters.end(); )
+    for(unsigned int c=0; c<teleport::allTeleporters.size();)
     {
-        if((*ptr)->getInstanceid()==this->getInstanceid())
+        if(teleport::allTeleporters[c]->getInstanceid()==this->getInstanceid())
         {
-            teleport::teleporters.erase(ptr); //
+            teleport::allTeleporters.erase(teleport::allTeleporters.begin()+c);
         }
         else
         {
-            ptr++;
+            c++;
         }
     }
-    return true;
-}
-
-bool teleport::addToTeleports()
-{
-    teleport::teleporters.push_back(this);  //we add this object to the teleport list
     return true;
 }
 
@@ -167,13 +124,13 @@ bool teleport::addToTeleports()
 
 oState teleport::disposeElement()
 {
-    this->purgeFromTeleporters();
+    this->removeFromAllTeleporters();
     return nonSteppable::disposeElement();
 }
 
 oState teleport::disposeElementUnsafe()
 {
-    this->purgeFromTeleporters();
+    this->removeFromAllTeleporters();
     return nonSteppable::disposeElementUnsafe();
 
 }
@@ -185,5 +142,9 @@ bool teleport::canBeKilled()
 
 bool teleport::canBeDestroyed()
 {
-    return true;
+    return false;
 }
+
+
+
+

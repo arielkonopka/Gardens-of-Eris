@@ -164,6 +164,8 @@ protected:
     bool amIUsable;
     int killed;
 private:
+    unsigned int telTimeReq;
+
     virtual int getTypeInDirection(direction di);
     static int instances;
     bool disposed;

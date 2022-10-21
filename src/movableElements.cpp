@@ -123,7 +123,7 @@ void movableElements::setMoved(int time)
 
 int movableElements::getMoved()
 {
-
+    if(this->isTeleporting()) return 0;
     if(this->_me_moved-this->getCntr()>50)
         this->_me_moved=0;
     return (this->_me_moved<this->getCntr())?0:this->_me_moved-this->getCntr();

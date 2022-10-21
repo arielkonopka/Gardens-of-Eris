@@ -6,12 +6,11 @@ videoElement::videoElementDef* nonSteppable::vd=NULL;
 
 nonSteppable::nonSteppable(chamber *board):bElem(board)
 {
-    this->teleporting=0;
+
 
 }
 nonSteppable::nonSteppable(chamber* board,int x, int y) : bElem(board,x,y)
 {
-    this->teleporting=0;
 }
 
 
@@ -37,20 +36,9 @@ videoElement::videoElementDef* nonSteppable::getVideoElementDef()
 bool nonSteppable::mechanics()
 {
     bool res= bElem::mechanics();
-    if(this->teleporting>0)
-    {
-        this->teleporting--;
-        return false;
-    }
+
     return res;
 
 }
-void nonSteppable::setTeleporting(int time)
-{
-    this->teleporting=time;
-}
-bool nonSteppable::isTeleporting()
-{
-    return (this->teleporting>0);
-}
+
 

@@ -26,11 +26,9 @@ public:
     virtual ~player();
     virtual bool shootGun();
     virtual oState disposeElement();
-//   bool isDying();
-    //     virtual bool tick(bool collected);
+
 protected:
-//    std::vector<bElem*> weapons;
-//    std::vector<bElem*> usables;
+
 
 private:
     static player* activePlayer;
