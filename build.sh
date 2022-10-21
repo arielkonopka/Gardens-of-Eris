@@ -9,7 +9,7 @@ opts="-Wall -std=gnu++20 -march=native -Og -g -O3"
 
 
 #
-if [ "${1}" = "-a" ] ; then
+if [ "${1}" = "-a" ] || [ "${1}" = "-g" ] ; then
 
 echo -n "Building the game ["
 
@@ -26,7 +26,6 @@ fi
 if [ "${1}" = "-t" ] || [ "${1}" = "-a" ] ; then
 
 echo "Building unit tests"
-
 for x in unitTests/*.cpp ; do
 #    echo -n "5"
     echo "${gccbin} ${extraflags} ${opts} -c ${x} -I./include  -o ${objPath}/${x%.cpp}.o -D_UNIT_TEST_BUILD_ "
@@ -34,7 +33,11 @@ for x in unitTests/*.cpp ; do
     a=$(basename $x)
     echo "${gccbin} ${objPath}src/*.o  ${objPath}/${x%.cpp}.o -o ./GoE-tests-${a%.cpp} -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm -lboost_unit_test_framework"
     ${gccbin} ${objPath}src/*.o  ${objPath}/${x%.cpp}.o -o ./GoE-tests-${a%.cpp} -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm -lboost_unit_test_framework  3>&1 2>&1 >>compile.log
-
+    ./GoE-tests-${a%.cpp} -r detailed -m CLF -e "Report_${a%.cpp}.log" -k testslog.log 
+    r=$?
+    if [ ${r} -gt 0 ] ; then
+	echo "Module ${a%.cpp} has failed the tests".
+    fi
 done
 
 fi

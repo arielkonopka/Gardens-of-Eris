@@ -312,6 +312,52 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDestroyingTheWholeChamber,T,all_test_ty
 
 }
 
+/*
+ This test is supposed to check if stepOnElement can place an object between two instances of bElem placed on each other
+ It works by first build 100 object high "pile"
+ then it iterates downwards and places new elements on each iterated object. This way we can check that:
+ first object would be covered (that we know from previous tests)
+ second object can be covered with new one
+ */
+BOOST_AUTO_TEST_CASE( StepOverElementTests)
+{
+    chamber* mc=new chamber(10,10);
+    bElem* nElement=NULL;
+    for(int c=0; c<100; c++)
+    {
+        nElement=new bElem(mc);
+        BOOST_CHECK(nElement->stepOnElement(mc->getElement(2,2))==true);
+    }
+    nElement=mc->getElement(2,2);
+    while(nElement!=NULL)
+    {
+        int origId=0;
+        origId=mc->getElement(2,2)->getInstanceid();
+        bElem* nE2=new bElem(mc);
+        bElem *stmp,*steppOn;
+        stmp=nElement->getStomper();
+        steppOn=nElement->getSteppingOnElement();
+        nE2->stepOnElement(nElement);
+        BOOST_CHECK(nElement->getStomper()->getInstanceid()==nE2->getInstanceid());
+        BOOST_CHECK(nE2->getSteppingOnElement()->getInstanceid()==nElement->getInstanceid());
+        BOOST_CHECK(mc->getElement(2,2)->getInstanceid()!=nElement->getInstanceid());
+        if(steppOn!=NULL)
+        {
+            BOOST_CHECK(steppOn->getInstanceid()==nElement->getSteppingOnElement()->getInstanceid());
+
+        }
+        if(stmp!=NULL)
+        {
+            BOOST_CHECK(origId==mc->getElement(2,2)->getInstanceid());
+            BOOST_CHECK(stmp->getInstanceid()==nE2->getStomper()->getInstanceid());
+        }
+        nElement=nElement->getSteppingOnElement();
+    }
+    delete mc;
+
+}
+
+
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(SubTypeChecker,T,all_test_types)
 {
@@ -553,7 +599,3 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 
-
-
-//#endif // BELEM_H_INCLUDED
-//#endif
