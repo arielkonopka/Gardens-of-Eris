@@ -55,13 +55,10 @@ bElem::bElem(chamber* board, int x, int y)
     // If we fail to place the object on a board, we will let it hanging, check, if x or y are ==-1
     if (this->attachedBoard->chamberArray[x][y]!=NULL)
     {
-
-
         if (this->stepOnElement(this->attachedBoard->chamberArray[x][y])==false)
         {
             this->x=-1;
             this->y=-1;
-
         }
     }
     else
@@ -76,9 +73,11 @@ coords bElem::getOffset()
 }
 bool bElem::isWaiting()
 {
-    if(this->waiting-this->getCntr() >_maxWaitingTtime) // the counter can get overloaded
+    if((long int)this->waiting>(long int)this->getCntr()+_maxWaitingTtime)
         this->waiting=0;
-    return (unsigned int)this->waiting>this->getCntr();
+    if ((long int)(this->getCntr())<(long int)(this->waiting)) // the counter can get overloaded
+        return true;
+    return false;
 }
 
 void bElem::setWait(int time)
@@ -165,6 +164,10 @@ void bElem::setCoords(int x, int y)
     this->x=x;
     this->y=y;
 }
+void bElem::setCoords(coords point)
+{
+    this->setCoords(point.x,point.y);
+}
 
 bElem* bElem::getStomper()
 {
@@ -191,18 +194,19 @@ void bElem::setDropped()
     this->collector=NULL;
 }
 
-
-// the way it should operate is:
-// release the field it is residingg and step on the new one (replace it on a board)
-// This can also step on things, that are under something. We just squeeze the object between to bottom and top
+/*
+   This is the most basic method for dealing with all objects. Because all of them must be put to a place on a boart at some point,
+   and this is the method that is to be used for that purpose.
+   It should work on all types of configurations, except standing on an empty point
+   If places on an object that already is covered by another one, the newly placed object is placed in between
+   This method takes "steppable" flag into consideration
+*/
 bool bElem::stepOnElement(bElem* step)
 {
     if (step==NULL || step->isSteppable()==false || step->getBoard()==NULL)  return false;
-    coords crds=step->getCoords();
     if(this->getStomper()!=NULL || this->getSteppingOnElement()!=NULL)
-    {
         this->removeElement();
-    }
+    this->setCoords(step->getCoords());
     this->setBoard(step->getBoard());
     this->steppingOn=step;
     if(step->getStomper()!=NULL)
@@ -210,16 +214,19 @@ bool bElem::stepOnElement(bElem* step)
         bElem* stmpr=step->getStomper();
         step->unstomp();
         this->stomp(stmpr);
+        stmpr->steppingOn=this;
     }
     else
     {
-        if(crds!=NOCOORDS)
-            this->getBoard()->setElement(crds.x,crds.y,this);
+        if(step->getCoords()!=NOCOORDS)
+            this->getBoard()->setElement(step->getCoords(),this);
     }
     step->stomp(this);
-    this->setCoords(crds.x,crds.y);
     return true;
 }
+
+
+
 
 coords bElem::getCoords()
 {
@@ -454,7 +461,7 @@ bool bElem::destroy()
 int bElem::getAnimPh()
 {
     // this->animPhase++;
-    return this->getCntr()>>2;
+    return this->getCntr()>>3;
 }
 
 int bElem::getSwitchId()
@@ -484,28 +491,25 @@ bool bElem::isSwitchOn()
 
 bool bElem::mechanics()
 {
-    this->taterCounter++; //this is our source of sequential numbers
-    this->animPhase++;
-    if(this->getBoard()==NULL || this->getCoords()==NOCOORDS)
+    this->taterCounter++; //this is our own source of sequential numbers
+    if((this->getBoard()==NULL || this->getCoords()==NOCOORDS) && (this->getCollector()==NULL))
         return false;
 
     if (this->destroyed>0) //We support two modes of destruction, this one is the demolishion thing
     {
         this->destroyed--;
-        //    std::cout<<"Destroying\n";
         if(this->destroyed==0)
         {
             this->killed=false;
             if (this->getType()!=_belemType)   //We do not dispose the empty elements
             {
-                //this->removeElement();
                 this->disposeElement();
             }
         }
         return false;
 
     }
-    if(this->isWaiting())
+    if(this->isWaiting() || this->isTeleporting())
         return false;
 
     return true;
@@ -553,8 +557,12 @@ bool bElem::isDying()
 
 bool bElem::isTeleporting()
 {
+ if((long int)this->telInProgress>(long int)this->getCntr()+_maxWaitingTtime)
+        this->telInProgress=0;
+    if ((long int)(this->getCntr())<(long int)(this->telInProgress)) // the counter can get overloaded
+        return true;
+    return false;
 
-    return (this->telTimeReq!=0 && std::abs((long int)(this->telInProgress-this->getCntr()))<=this->telTimeReq);
 }
 
 

@@ -34,14 +34,11 @@ BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
     BOOST_CHECK(mc->getElement(crds.x,crds.y)->isTeleporting()==true);
     for(int a=0; a<_teleportationTime; a++)
     {
+        BOOST_CHECK(mc->getElement(2,3)->isTeleporting()==true);
+        BOOST_CHECK(mc->getElement(crds.x,crds.y)->isTeleporting()==true);
         bElem::tick();
     }
-    BOOST_CHECK(mc->getElement(2,3)->isTeleporting()==true);
-    BOOST_CHECK(mc->getElement(crds.x,crds.y)->isTeleporting()==true);
-    bElem::tick();
-
     BOOST_CHECK(mc->getElement(crds.x,crds.y)->isTeleporting()==false);
-
     BOOST_CHECK(mc->getElement(2,3)->isTeleporting()==false);
     delete mc;
     gCollect::getInstance()->purgeGarbage();
@@ -96,14 +93,44 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
     BOOST_CHECK(tr1c==t1crds);
     coords tr2c=_tr2->getCoords();
     BOOST_CHECK(tr2c==t2crds);
-
-
     delete mc;
     gCollect::getInstance()->purgeGarbage();
-
-
-
 }
+
+BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
+{
+    chamber* mc=new chamber(10,10);
+    coords pointA={3,5};
+    coords pointAt={2,5};
+    coords pointB={5,5};
+
+    bElem *tel1,*tel2,*transported;
+    bElem::tick();
+
+    transported=new bElem(mc);
+    transported->stepOnElement(mc->getElement(pointAt));
+    transported->setDirection(RIGHT);
+    BOOST_CHECK(transported->isTeleporting()==false);
+    tel1=new teleport(mc,1);
+    tel2=new teleport(mc,1);
+    tel1->stepOnElement(mc->getElement(pointA));
+    tel2->stepOnElement(mc->getElement(pointB));
+    //ok now step on that teleport
+    transported->stepOnElement(tel1);
+    BOOST_CHECK(tel1->isLiveElement()==true);
+    BOOST_CHECK(transported->getCoords()==pointA);
+    BOOST_CHECK(mc->getElement(pointA)->getInstanceid()==transported->getInstanceid());
+    BOOST_CHECK(transported->isTeleporting()==false);
+    for(int c=0;c<_teleportationTime;c++)
+    {
+        bElem::runLiveElements();
+        BOOST_CHECK(transported->isTeleporting()==false);
+    }
+    BOOST_CHECK(transported->isTeleporting()!=true);
+
+    delete mc;
+}
+
 
 
 BOOST_AUTO_TEST_SUITE_END()

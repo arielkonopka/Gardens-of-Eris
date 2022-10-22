@@ -18,6 +18,30 @@ typedef boost::mpl::list<bElem,killableElements,player,mechanical,collectible,do
 typedef boost::mpl::list<bElem,bunker,door,explosives,goldenApple,key,killableElements,mechanical,monster,movableElements,nonSteppable,patrollingDrone,plainGun,plainMissile,player,rubbish,stillElem,teleport,usable,wall> all_test_types;
 
 
+int countTheStack(bElem* in)
+{
+    bElem* f=in->getBoard()->getElement(in->getCoords());
+    int cnt=0;
+    while(f!=NULL)
+    {
+        cnt++;
+        f=f->getSteppingOnElement();
+    }
+    return cnt;
+}
+int findHowManyTimesObjectIsInStack(bElem* in,int instanceId)
+{
+    bElem* f=in->getBoard()->getElement(in->getCoords());
+    int cnt=0;
+    while(f!=NULL)
+    {
+        if(f->getInstanceid()==instanceId)
+            cnt++;
+        f=f->getSteppingOnElement();
+    }
+    return cnt;
+}
+
 /* bElem class unit tests */
 
 BOOST_AUTO_TEST_SUITE( BasicObjectTests )
@@ -44,9 +68,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
             BOOST_ASSERT(beOrig!=NULL);
             BOOST_CHECK( beOrig->getType()==_belemType);
             BOOST_CHECK(beOrig->getCoords()==mcoords); // just check if the allocation is correct
-            coords crds=beOrig->getCoords();
-            BOOST_ASSERT(crds.x==c);
-            BOOST_ASSERT(crds.y==d);
             BOOST_CHECK(beOrig->getStomper()==NULL);
             BOOST_ASSERT(beOrig->getSteppingOnElement()==NULL);
         }
@@ -83,14 +104,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateThenDispose,T,all_test_types)
 {
+    coords point= {3,3};
     chamber* chmbr=new chamber(10,10); // we need only a small chamber
     BOOST_ASSERT( chmbr!=NULL );
-    bElem* beOrig=chmbr->getElement(0,0); // ok, now let's step on something
+    bElem* beOrig=chmbr->getElement(point); // ok, now let's step on something
     bElem* be=new T(chmbr);
     BOOST_ASSERT( be!=NULL );
-    be->stepOnElement(chmbr->getElement(0,0));
+    be->stepOnElement(chmbr->getElement(point));
     BOOST_CHECK(be->getBoard()==chmbr);
-    bElem* be2=chmbr->getElement(0,0); // check if the element is placed
+    BOOST_CHECK(be->getCoords()==point); // we check, that the coordinates are set properly
+    bElem* be2=chmbr->getElement(point); // check if the element is placed
     BOOST_CHECK(be->getInstanceid()==be2->getInstanceid());
     BOOST_ASSERT(be->getSteppingOnElement()!=NULL); // something is under the new object
     BOOST_CHECK(be->getSteppingOnElement()->getInstanceid()==beOrig->getInstanceid()); // check it is original background
@@ -98,7 +121,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateThenDispose,T,all_test_types)
     BOOST_CHECK(beOrig->getStomper()->getInstanceid()==be->getInstanceid());
     be->disposeElement(); // remove the object from the board
     BOOST_CHECK(beOrig->getStomper()==NULL); //check if the original object is being stepped on
-    be2=chmbr->getElement(0,0); // fetch the element from the board, and compare it with the original object, there should be a match
+    be2=chmbr->getElement(point); // fetch the element from the board, and compare it with the original object, there should be a match
     BOOST_CHECK(beOrig->getInstanceid()==be2->getInstanceid());
     BOOST_CHECK(beOrig->getBoard()==chmbr);
     BOOST_CHECK(be->getBoard()==NULL);
@@ -321,38 +344,56 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDestroyingTheWholeChamber,T,all_test_ty
  */
 BOOST_AUTO_TEST_CASE( StepOverElementTests)
 {
+    coords point= {2,2};
+
     chamber* mc=new chamber(10,10);
+    int stackSize=countTheStack(mc->getElement(point));
     bElem* nElement=NULL;
     for(int c=0; c<100; c++)
     {
         nElement=new bElem(mc);
-        BOOST_CHECK(nElement->stepOnElement(mc->getElement(2,2))==true);
+        BOOST_CHECK(nElement->stepOnElement(mc->getElement(point))==true);
+        BOOST_CHECK(nElement->getInstanceid()==mc->getElement(point)->getInstanceid());
+        BOOST_CHECK(nElement->getCoords()==point);
+        BOOST_CHECK(stackSize<countTheStack(mc->getElement(point)));
+        stackSize=countTheStack(mc->getElement(point));
     }
-    nElement=mc->getElement(2,2);
+    nElement=mc->getElement(point);
+    int elementCnt=0;
     while(nElement!=NULL)
     {
         int origId=0;
-        origId=mc->getElement(2,2)->getInstanceid();
+        int nEInstanceId=nElement->getInstanceid();
+        origId=mc->getElement(point)->getInstanceid();
         bElem* nE2=new bElem(mc);
         bElem *stmp,*steppOn;
         stmp=nElement->getStomper();
         steppOn=nElement->getSteppingOnElement();
-        nE2->stepOnElement(nElement);
+        BOOST_CHECK(nE2->stepOnElement(nElement)==true);
+        BOOST_CHECK(nE2->getCoords()==point);
+        BOOST_CHECK(findHowManyTimesObjectIsInStack(nElement,nEInstanceId)==1);
         BOOST_CHECK(nElement->getStomper()->getInstanceid()==nE2->getInstanceid());
         BOOST_CHECK(nE2->getSteppingOnElement()->getInstanceid()==nElement->getInstanceid());
-        BOOST_CHECK(mc->getElement(2,2)->getInstanceid()!=nElement->getInstanceid());
+        BOOST_CHECK(mc->getElement(point)->getInstanceid()!=nElement->getInstanceid());
         if(steppOn!=NULL)
         {
             BOOST_CHECK(steppOn->getInstanceid()==nElement->getSteppingOnElement()->getInstanceid());
+            BOOST_CHECK(steppOn->getStomper()->getInstanceid()==nElement->getInstanceid());
 
         }
         if(stmp!=NULL)
         {
-            BOOST_CHECK(origId==mc->getElement(2,2)->getInstanceid());
+            BOOST_CHECK(origId==mc->getElement(point)->getInstanceid());
             BOOST_CHECK(stmp->getInstanceid()==nE2->getStomper()->getInstanceid());
+            BOOST_CHECK(stmp->getSteppingOnElement()->getStomper()->getInstanceid()==stmp->getInstanceid());
         }
+        BOOST_CHECK(stackSize<countTheStack(mc->getElement(point)));
+        stackSize=countTheStack(mc->getElement(point));
+
         nElement=nElement->getSteppingOnElement();
+        elementCnt++;
     }
+    BOOST_CHECK(countTheStack(mc->getElement(point))>200); // it is because when we create the chamber, there is already one element placed in the chamber
     delete mc;
 
 }
@@ -380,21 +421,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(WaitMechanismTest,T,base_test_types)
     bElem* testObj=new T(mc);
     testObj->stepOnElement(mc->getElement(3,3));
     //  testObj->setActive(true);
-    for(int d=1; d<1000; d++)
+    for(int d=1; d<100; d++)
     {
         int c=0;
         //std::cout<<"d="<<d<<"\n";
         testObj->setWait(d);
         while(testObj->isWaiting())
         {
-            BOOST_ASSERT(testObj->mechanics()==false); //mechanics is blocked during waiting time
+//            BOOST_ASSERT(testObj->isWaiting()==true); //mechanics is blocked during waiting time
             c++;
             bElem::tick();
+            if(c>_maxWaitingTtime+10) break;
         }
-        //  bElem::tick();
-        BOOST_ASSERT(testObj->mechanics()==true); // mechanics is unblocked after the waiting time
-        //std::cout<<"c="<<c<<"\n";
-        if(d<=_maxWaitingTtime)
+       // std::cout<<"c="<<c<<" d: "<<d<<"\n";
+        BOOST_ASSERT(testObj->isWaiting()==false); // mechanics is unblocked after the waiting time
+        if(d<_maxWaitingTtime+1)
         {
             BOOST_ASSERT(c==d);
         }

@@ -33,12 +33,5 @@ videoElement::videoElementDef* nonSteppable::getVideoElementDef()
 {
     return nonSteppable::vd;
 }
-bool nonSteppable::mechanics()
-{
-    bool res= bElem::mechanics();
-
-    return res;
-
-}
 
 

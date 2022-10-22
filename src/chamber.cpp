@@ -58,6 +58,10 @@ std::string chamber::getName()
 }
 
 
+bElem* chamber::getElement(coords point)
+{
+    return this->getElement(point.x,point.y);
+}
 
 
 bElem* chamber::getElement(int x, int y)
@@ -75,6 +79,11 @@ void chamber::setElement(int x, int y, bElem* elem)
     this->chamberArray[x][y]=elem;
 }
 
+
+void chamber::setElement(coords point, bElem* elem)
+{
+    this->setElement(point.x,point.y,elem);
+}
 
 
 int chamber::getInstanceId()

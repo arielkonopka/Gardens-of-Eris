@@ -25,7 +25,7 @@
 
 
 
-#define _maxWaitingTtime 40
+#define _maxWaitingTtime 65535
 #define _mov_delay   8
 #define _mov_delay_push   9
 

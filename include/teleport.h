@@ -22,6 +22,11 @@ public:
     virtual bool canBeKilled();
     virtual bool canBeDestroyed();
     virtual bool createConnectionsWithinSUbtype();
+    virtual bool isSteppable();
+    virtual void stomp(bElem* who);
+    virtual void unstomp();
+    virtual bool mechanics();
+
 protected:
 private:
 

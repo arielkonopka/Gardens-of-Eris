@@ -39,7 +39,7 @@ bool teleport::interact(bElem* who)
 bool teleport::createConnectionsWithinSUbtype()
 {
     std::vector<teleport*> candidates;
-    for(unsigned int c=0;c<teleport::allTeleporters.size();c++)
+    for(unsigned int c=0; c<teleport::allTeleporters.size(); c++)
     {
         if(teleport::allTeleporters[c]->getSubtype()==this->getSubtype())
         {
@@ -47,7 +47,7 @@ bool teleport::createConnectionsWithinSUbtype()
             candidates.push_back(teleport::allTeleporters[c]);
         }
     }
-    for(unsigned int c=0;c<candidates.size()-1;c++)
+    for(unsigned int c=0; c<candidates.size()-1; c++)
     {
         candidates[c]->theOtherEnd=candidates[c+1];
     }
@@ -88,18 +88,72 @@ bool teleport::teleportIt(bElem* who)
             return true;
         }
     }
+    this->theOtherEnd->teleportIt(who);
     return false;
 }
 
 
+bool teleport::isSteppable()
+{
+    if(this->getSubtype()>0)
+    {
+        if(this->isTeleporting())
+            return false;
+        if(this->theOtherEnd!=NULL)
+        {
+            if(this->theOtherEnd->getStomper()==NULL)
+            {
+                return true;
+            }
+            else
+            {
+                return false; // somebody is standing on the other side
+            }
+        }
+        else
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
+void teleport::stomp(bElem* who)
+{
+    nonSteppable::stomp(who);
+    this->setWait(_teleportationTime);
+    this->registerLiveElement(this);
+
+
+}
+
+void teleport::unstomp()
+{
+    nonSteppable::unstomp();
+    if(this->isLiveElement())
+        this->deregisterLiveElement(this);
+}
+
+bool teleport::mechanics()
+{
+    if(nonSteppable::mechanics()==false)
+        return false;
+    if(this->isWaiting()) return false;
+    //nonSteppable::mechanics();
+    if(this->getStomper()!=NULL)
+    {
+        this->interact(this->getStomper());
+        this->deregisterLiveElement(this);
+    }
+    return true;
+}
 
 
 
 
 bool teleport::removeFromAllTeleporters()
 {
-    for(unsigned int c=0;c<teleport::allTeleporters.size();c++)
+    for(unsigned int c=0; c<teleport::allTeleporters.size(); c++)
     {
         if(teleport::allTeleporters[c]->getSubtype()==this->getSubtype())
         {

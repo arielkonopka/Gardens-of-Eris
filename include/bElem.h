@@ -49,6 +49,7 @@ public:
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual void setBoard(chamber *board);
     virtual void setCoords(int x, int y);
+    virtual void setCoords(coords point);
 
     virtual void setActive(bool active);
     virtual bool selfAlign();

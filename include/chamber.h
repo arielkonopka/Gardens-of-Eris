@@ -24,7 +24,9 @@ class chamber
         coords player;
         gCollect *garbageBin;
         bElem* getElement(int x, int y);
+        bElem* getElement(coords point);
         void setElement(int x, int y, bElem* elem);
+        void setElement(coords point,bElem* elem);
         boost::multi_array<bElem *,2> chamberArray;
         chamber(int x,int y);
         ~chamber();
