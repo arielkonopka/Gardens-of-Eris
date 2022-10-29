@@ -8,8 +8,18 @@ chamberArea::~chamberArea() // if we remove the node, we remove all its children
 {
     chamberArea* _par=NULL;
     chamberArea* _originalParent=this->parent;
-//    std::cout<<"parent "<<this->parent<<"\n";
-    if(this->parent!=NULL)
+    this->parent=NULL;
+    for(long int cnt=0; cnt<(long int)this->children.size(); cnt++)
+    {
+#ifdef _VerbousMode_
+    std::cout<<"Destroying child"<<cnt<<"\n";
+#endif // _VerbousMode_
+        chamberArea* node=this->children[cnt];
+        node->parent=NULL;
+        delete node;
+    }
+    this->children.clear();
+    if(_originalParent!=NULL)
     {
         /*
         the node has a parent? deal with it,
@@ -20,11 +30,15 @@ chamberArea::~chamberArea() // if we remove the node, we remove all its children
          placing the objects
          */
 
-        for(unsigned int cnt=0; cnt<this->parent->children.size();)  //find and delete me from children list
+        for(long int cnt=0; cnt<(long int)_originalParent->children.size();)  //find and delete me from children list
         {
-            if (this->parent->children[cnt]==this)
+            if (_originalParent->children[cnt]->upLeft==this->upLeft && _originalParent->children[cnt]->downRight==this->downRight)
             {
-                this->parent->children.erase(this->parent->children.begin()+cnt);
+#ifdef _VerbousMode_
+                   std::cout<<"Removed from the children list"<<cnt<<"\n";
+#endif
+                _originalParent->children.erase(_originalParent->children.begin()+cnt);
+
             }
             else
             {
@@ -32,7 +46,7 @@ chamberArea::~chamberArea() // if we remove the node, we remove all its children
             }
 
         }
-        _par=this->parent; //iterate over all parents and readjust the surface
+        _par=_originalParent; //iterate over all parents and readjust the surface
         while(_par!=NULL)
         {
             int _surf=0;
@@ -43,17 +57,9 @@ chamberArea::~chamberArea() // if we remove the node, we remove all its children
             _par->surface=_surf;
             _par=_par->parent;
         }
-        //  this->parent=NULL; // this will not get in a way
-        if (_originalParent->children.size()==0) //this was a last child? Remove parent node, as it is full.
-            delete _originalParent;
+        //    if (_originalParent->children.size()==0) //this was a last child? Remove parent node, as it is full.
+        //        delete _originalParent;
     }
-
-    for(unsigned int cnt=0; cnt<this->children.size(); cnt++)
-    {
-        this->children[cnt]->parent=NULL;
-        delete this->children[cnt];
-    }
-    //this->children.clear();
 }
 chamberArea::chamberArea(int xu, int yu, int xd, int yd)
 {
@@ -69,6 +75,7 @@ chamberArea::chamberArea(int xu, int yu, int xd, int yd)
 bool chamberArea::addChildNode(chamberArea* child)
 {
     this->children.push_back(child);
+    child->parent=this;
     return true;
 }
 
@@ -137,7 +144,7 @@ void chamberArea::findElementsRec(chamber* mychamber)
                 if (mychamber->getElement(x,y)->isSteppable() && this->checkIfElementIsFree(x,y,mychamber))
                 {
                     chamberArea::foundElements.push_back(mychamber->getElement(x,y));
-                    std::cout<<".";
+                    //       std::cout<<".";
                 }
             }
         }
@@ -157,10 +164,10 @@ void chamberArea::findElementsRec(chamber* mychamber)
 
 bool chamberArea::findElementsToStepOn(chamber* myChamber)
 {
-    std::cout<<"FindElementsToStepOn\n[";
+//   std::cout<<"FindElementsToStepOn\n[";
     chamberArea::foundElements.clear();
     this->findElementsRec(myChamber);
-    std::cout<<"]\n-----------------\n";
+    // std::cout<<"]\n-----------------\n";
     return chamberArea::foundElements.size()>0;
 
 }
@@ -169,27 +176,21 @@ bool chamberArea::findElementsToStepOn(chamber* myChamber)
 
 void chamberArea::findChambersCloseToSurface(int s,int tolerance)
 {
-    bool last=this->children.size()==0;
-    //std::cout<<"ch size "<<this->children.size()<<"\n";
-    if (this->surface>s && this->children.size()>0)
-    {
-        last=true;
+    bool last=true;
+    if(this->surface>=s && this->children.size()>0)
         for(unsigned int cnt=0; cnt<this->children.size(); cnt++)
         {
-      //      std::cout<<s<<": Demanded surface "<<"Examining child: "<<cnt<<" size "<<this->children[cnt]->children.size()<<" child surface "<<this->children[cnt]->surface<<" mine:"<<this->surface<<"\n";
-            if (this->children[cnt]->surface>=s)
+            if (this->children[cnt]->surface>s)
             {
-        //        std::cout<<"reach next level child: "<<cnt<<"\n";
                 this->children[cnt]->findChambersCloseToSurface(s,tolerance);
                 last=false;
             }
         }
-    }
+
     if (last==true)
     {
-        if(this->surface<s+tolerance)
+        if(this->surface>=s && (this->surface<=s+((s*tolerance)/100)))
         {
-          //  std::cout<<"Adding area\n";
             chamberArea::foundAreas.push_back(this);
         }
     }
@@ -201,17 +202,22 @@ void chamberArea::findChambersCloseToSurface(int s,int tolerance)
 bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
 {
     sNeighboorhood neigh=mychamber->getElement(x,y)->getSteppableNeighboorhood();
-    int lastStep=neigh.nTypes[7]; //last element
+    if(neigh.nTypes[7]==_door)
+        neigh.steppable[7]=true;
+    bool lastStep=neigh.steppable[7]; //last element
+
     int gap=0;
     for (int c=0; c<8; c++)
     {
-        if(lastStep!=neigh.nTypes[c])
+        if(neigh.nTypes[c%8]==_door)
+            neigh.steppable[c%8]=true;
+        if(lastStep!=neigh.steppable[c%8])
         {
-            if(gap==0 && c>0)
+            if(gap<2)
             {
                 return false;
             }
-            lastStep=neigh.nTypes[c];
+            lastStep=neigh.steppable[c%8];
             gap=0;
         }
         else
@@ -222,4 +228,26 @@ bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
     return true;
 }
 
+// This should be run as a correct after deleting a node from the tree, we do not need nodes without a surface
+void chamberArea::removeEmptyNodes()
+{
+    for(long int c=0; c<(long int)this->children.size(); c++)
+    {
+        this->children[c]->removeEmptyNodes();
+    }
+    for(int c=0; c<(int)this->children.size(); )
+    {
+        chamberArea* node=this->children[c];
+        if(node->surface==0)
+        {
+            this->children.erase(this->children.begin()+c);
+            delete node;
+        } else
+        {
+            c++;
+        }
+    }
+
+
+}
 

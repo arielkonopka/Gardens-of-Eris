@@ -25,6 +25,7 @@ public:
     void findChambersCloseToSurface(int s,int tolerance);
     bool checkIfElementIsFree(int x,int y, chamber *mychamber);
     bool childrenLock;
+    void removeEmptyNodes();
 };
 
 #endif // CHAMBERAREA_H

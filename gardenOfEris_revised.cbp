@@ -139,6 +139,9 @@
 		<Unit filename="src/wall.cpp" />
 		<Unit filename="src/world.cpp" />
 		<Unit filename="unitTests/bElem-test.cpp" />
+		<Unit filename="unitTests/chamberArea-test.cpp">
+			<Option target="Tests" />
+		</Unit>
 		<Unit filename="unitTests/player-test.cpp" />
 		<Unit filename="unitTests/teleport-test.cpp">
 			<Option target="Tests" />

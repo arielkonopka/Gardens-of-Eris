@@ -16,7 +16,7 @@ presenter::presenter(chamber *board)
         std::cout<<"Dupa nie inicjalizacja!\n";
 
     }
-    this->alTimer = al_create_timer(1.0 / 40.0);
+    this->alTimer = al_create_timer(1.0 / 50.0);
 //    this->scrTimer=al_create_timer(1.0/40);
     this->evQueue= al_create_event_queue();
     al_register_event_source(this->evQueue, al_get_keyboard_event_source());

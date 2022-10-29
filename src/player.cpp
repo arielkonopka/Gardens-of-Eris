@@ -124,7 +124,9 @@ bool player::interact(bElem* who)
     //std::cout<<"Interacting...\n";
     if(who->getType()==this->getType() && !this->visited)
     {
+#ifdef _VerbousMode_
         std::cout<<"Adding new avatar\n";
+#endif
         player::visitedPlayers.push_back(this);
         this->visited=true;
     }

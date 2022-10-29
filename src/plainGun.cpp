@@ -44,13 +44,17 @@ bool plainGun::use(bElem* who)
     bElem *myel;
     if (who==NULL)
     {
+#ifdef _VerbousMode_
         std::cout<<"Who is null for plain gun!";
+#endif
         return false;
 
     }
     if(who->getType()==_player)
     {
+#ifdef _VerbousMode_
         std::cout<<"Shoot: "<<this->readyToShoot()<<" s "<<this->shot<<" Energy "<<this->getEnergy()<<"\n";
+#endif
     }
 
     if (this->readyToShoot()==false)

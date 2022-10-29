@@ -46,7 +46,9 @@ bool explosives::explode()
             el=el->getElementInDirection((direction)((cnt+1)%4));
             if(el!=NULL)
                 el->destroy();
+#ifdef _VerbousMode_
             std::cout<<".";
+#endif
         }
     }
 

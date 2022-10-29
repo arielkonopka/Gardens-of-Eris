@@ -19,7 +19,7 @@ int main( int argc, char * argv[] )
    // delay.tv_sec=0;
    // delay.tv_nsec=2;
     randomLevelGenerator *rndl;
-    rndl=new randomLevelGenerator(555,555);
+    rndl=new randomLevelGenerator(150,150);
     chamber* myFirstChamber=rndl->mychamber;
     presenter::presenter *myPresenter=new presenter::presenter(myFirstChamber);
 
@@ -29,7 +29,7 @@ int main( int argc, char * argv[] )
 
     for (int cnt=5;cnt>0;cnt--)
     {
-        rndl=new randomLevelGenerator(200+(rndl->gen()%10)*5,200+(rndl->gen()%10)*5);
+        rndl=new randomLevelGenerator(100+((5-cnt)*50)+(rndl->gen()%10)*5,100+((5-cnt)*50)+(rndl->gen()%10)*5);
         rndl->generateLevel(cnt);
     }
 
