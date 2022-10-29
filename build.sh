@@ -4,8 +4,8 @@ gccbin="gcc-12"
 objPath=./obj/GoE-objects/
 extraflags="-g"
 mkdir -p ${objPath}/{src,unitTests}
-
-opts="-Wall -std=gnu++20 -march=native -g -D_VerbousMode_ -O3 -Og"
+defines="" #"-D_VerbousMode_" 
+opts="-Wall -std=gnu++20 -march=native ${defines} -g -O3 -Og"
 
 
 #
