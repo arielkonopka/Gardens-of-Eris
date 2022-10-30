@@ -12,7 +12,7 @@ chamberArea::~chamberArea() // if we remove the node, we remove all its children
     for(long int cnt=0; cnt<(long int)this->children.size(); cnt++)
     {
 #ifdef _VerbousMode_
-    std::cout<<"Destroying child"<<cnt<<"\n";
+        std::cout<<"Destroying child"<<cnt<<"\n";
 #endif // _VerbousMode_
         chamberArea* node=this->children[cnt];
         node->parent=NULL;
@@ -35,7 +35,7 @@ chamberArea::~chamberArea() // if we remove the node, we remove all its children
             if (_originalParent->children[cnt]->upLeft==this->upLeft && _originalParent->children[cnt]->downRight==this->downRight)
             {
 #ifdef _VerbousMode_
-                   std::cout<<"Removed from the children list"<<cnt<<"\n";
+                std::cout<<"Removed from the children list"<<cnt<<"\n";
 #endif
                 _originalParent->children.erase(_originalParent->children.begin()+cnt);
 
@@ -199,6 +199,7 @@ void chamberArea::findChambersCloseToSurface(int s,int tolerance)
 
 // We are checking the neighboorhood. We are doing it in kind of naive way, we assume,
 //that if there are sequences steppable/not steppable of length 1, then we say, it is impossible to put an object there.
+/*
 bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
 {
     sNeighboorhood neigh=mychamber->getElement(x,y)->getSteppableNeighboorhood();
@@ -227,6 +228,42 @@ bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
     }
     return true;
 }
+*/
+/* Let's try something different, we are not supposed to be between any close wall*/
+bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
+{
+    if(mychamber->getElement(x,y)->isSteppable()==false)
+        return false;
+    sNeighboorhood neigh=mychamber->getElement(x,y)->getSteppableNeighboorhood();
+    for(int c=0; c<8; c++)
+    {
+        if(neigh.nTypes[c]==_door)
+            neigh.steppable[c]=true;
+    }
+    for(int c=0; c<8; c++)
+    {
+
+        if(c%2==0)
+        {
+            if(neigh.steppable[c]==false && neigh.steppable[(c+4)%8]==false)
+                return false;
+            if(neigh.steppable[c]==false && neigh.steppable[(c+2)%8]==true && neigh.steppable[(c+3)%8]==false)
+                return false;
+        }
+        else
+        {
+            if(neigh.steppable[c]==false && neigh.steppable[(c+1)%8]==true && neigh.steppable[(c+2)%8]==false)
+                return false;
+            if(neigh.steppable[c]==false && neigh.steppable[(c+6)%8]==false && neigh.steppable[(c+7)%8]==true)
+                return false;
+            if(neigh.steppable[c]==false && neigh.steppable[(c+1)%8]==true && neigh.steppable[(c+3)%8]==false)
+                return false;
+
+
+        }
+    }
+    return true;
+}
 
 // This should be run as a correct after deleting a node from the tree, we do not need nodes without a surface
 void chamberArea::removeEmptyNodes()
@@ -242,7 +279,8 @@ void chamberArea::removeEmptyNodes()
         {
             this->children.erase(this->children.begin()+c);
             delete node;
-        } else
+        }
+        else
         {
             c++;
         }
