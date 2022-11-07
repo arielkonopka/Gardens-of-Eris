@@ -540,12 +540,12 @@ bool bElem::mechanics()
     if((this->getBoard()==NULL || this->getCoords()==NOCOORDS) && (this->getCollector()==NULL))
         return false;
 
-    if (this->canBeDestroyed() && (long int)this->destroyed>0 && this->getCntr()>=this->destTimeBeg+this->destTimeReq-1 && !this->isWaiting() )
+    if (this->canBeDestroyed() && (long int)this->destroyed>0 && this->getCntr()>this->destTimeBeg+this->destTimeReq-1 && !this->isWaiting() )
     {
         this->disposeElement();
         return false;
     }
-    if((long int)this->killed>0 && this->canBeKilled() && this->getCntr()>=this->killTimeBeg+this->killTimeReq-1 && !this->isWaiting())
+    if((long int)this->killed>0 && this->canBeKilled() && this->getCntr()>this->killTimeBeg+this->killTimeReq-1 && !this->isWaiting())
     {
         this->disposeElement(); //it seems we really died. what a waste
         return false;
@@ -763,7 +763,7 @@ bool bElem::isDestroyed()
     if((long int)this->destroyed+_maxWaitingTtime<(long int)this->getCntr())
         this->destroyed=0;
 
-    return this->destroyed>0 && (long int)this->destroyed>=(long int)this->getCntr();
+    return this->destroyed>0 && (long int)this->destroyed>(long int)this->getCntr();
 }
 
 elemStats* bElem::getStats()
