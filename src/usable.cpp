@@ -19,29 +19,17 @@ bool usable::use(bElem* who, direction dir)
 {
     return true;
 }
-bool usable::isCollectible()
-{
-    return true;
-}
-usable::usable(chamber* board):collectible(board)
+
+usable::usable(chamber* board):bElem(board)
 {
 
 }
 
-usable::usable(chamber* board, int x, int y) : collectible(board)
+usable::usable(chamber* board, int x, int y) : bElem(board,x,y)
 {
 
 }
 
 
-usable::usable(chamber* board, int x, int y, bool registerEl):collectible(board,x,y,registerEl)
-{
-
-}
-
-usable::usable(chamber* board, bool registerEl) :collectible(board,registerEl)
-{
-
-}
 
 

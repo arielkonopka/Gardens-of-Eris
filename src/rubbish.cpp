@@ -4,7 +4,7 @@
 videoElement::videoElementDef* rubbish::vd=NULL;
 
 
-rubbish::rubbish(chamber *board) : stillElem(board)
+rubbish::rubbish(chamber *board) : bElem(board),nonSteppable(board),collectible(board)
 {
    // wall::wall(borad,garbage);
    this->setSubtype(0);
@@ -26,10 +26,5 @@ int rubbish::getType()
 videoElement::videoElementDef* rubbish::getVideoElementDef()
 {
     return rubbish::vd;
-}
-
-bool rubbish::isCollectible()
-{
-    return true;
 }
 

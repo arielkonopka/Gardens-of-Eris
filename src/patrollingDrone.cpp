@@ -2,10 +2,9 @@
 
 videoElement::videoElementDef* patrollingDrone::vd=NULL;
 
-patrollingDrone::patrollingDrone(chamber* board): killableElements(board,false)
+patrollingDrone::patrollingDrone(chamber* board): killableElements(board), nonSteppable(board), mechanical(board), movableElements(board)
 {
     this->setSubtype(0);
-    this->movable=true;
     this->myInventory=new inventory(this);
     this->setActive(false);
     this->steppables=new bool*[(_defaultRecurrenceDepth*2)+1];
@@ -27,10 +26,9 @@ patrollingDrone::~patrollingDrone()
     delete this->steppables;
 }
 
-patrollingDrone::patrollingDrone(chamber* board, int x, int y):killableElements(board,x,y,false)
+patrollingDrone::patrollingDrone(chamber* board, int x, int y):killableElements(board,x,y), nonSteppable(board,x,y), mechanical(board,x,y,false), movableElements(board,x,y)
 {
     this->setSubtype(0);
-    this->movable=true;
     this->myInventory=new inventory(this);
     this->setActive(false);
     this->steppables=new bool*[(_defaultRecurrenceDepth*2)+1];
@@ -175,6 +173,8 @@ bool patrollingDrone::interact(bElem* who)
 {
     bool res=killableElements::interact(who);
     if (!res) return false;
+    if(who->getType()!=_player)
+        return false;
     if(!this->isLiveElement())
         this->registerLiveElement(this);
     this->setActive(true);

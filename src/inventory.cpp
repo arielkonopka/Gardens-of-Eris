@@ -260,22 +260,22 @@ bool inventory::addToInventory(bElem* what)
 
     if (what->isWeapon()==true)
     {
-        this->weapons.push_back(what->removeElement());
+        this->weapons.push_back(what);
         return true;
     }
     if (what->isUsable()==true)
     {
-        this->usables.push_back(what->removeElement());
+        this->usables.push_back(what);
         return true;
     }
     if(what->isMod()==true)
     {
-        this->mods.push_back(what->removeElement());
+        this->mods.push_back(what);
         return true;
     }
     if(what->getType()==_key)
     {
-        this->keys.push_back(what->removeElement());
+        this->keys.push_back(what);
 
 
 
@@ -285,7 +285,7 @@ bool inventory::addToInventory(bElem* what)
     {
         // we do not collect stash items, we already merged its inventory
         if(what->getType()!=_stash)
-            this->tokens.push_back(what->removeElement());
+            this->tokens.push_back(what); // the collect method should remove it from the board properly
         return true;
     }
     if(what->canCollect()==true)

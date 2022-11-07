@@ -121,7 +121,7 @@ bool teleport::isSteppable()
 void teleport::stomp(bElem* who)
 {
     nonSteppable::stomp(who);
-    this->setWait(_teleportationTime);
+    this->setWait(_teleportStandTime);
     this->registerLiveElement(this);
 
 
@@ -136,16 +136,15 @@ void teleport::unstomp()
 
 bool teleport::mechanics()
 {
-    if(nonSteppable::mechanics()==false)
-        return false;
-    if(this->isWaiting()) return false;
-    //nonSteppable::mechanics();
-    if(this->getStomper()!=NULL)
+    if(!this->isWaiting())
     {
-        this->interact(this->getStomper());
-        this->deregisterLiveElement(this);
-    }
-    return true;
+        if(this->getStomper()!=NULL)
+        {
+            this->interact(this->getStomper());
+            this->deregisterLiveElement(this);
+        }
+    };
+    return nonSteppable::mechanics();
 }
 
 

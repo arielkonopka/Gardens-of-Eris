@@ -77,7 +77,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
 {
     chamberArea* mychamberArea=new chamberArea(x1,y1,x2,y2);
 #ifdef _VerbousMode_
-    std::cout<<"create Chamber "<<x1<<","<<y1<<"\n";
+    std::cout<<"create Chamber "<<x1<<","<<y1<<" "<<x2<<","<<y2<<"\n";
 #endif
     std::vector<int> doorPlaces1,doorPlaces2;
     int Hmin_=((y2-y1)/2);
@@ -88,31 +88,37 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
     if(Wmin_<Wmin)
         Wmin_=Wmin;
 
-    int c=-1,dc1=-1,dc2=-1;
-    int d=-1,dd1=-1,dd2=-1;
+    int c=x2,dc1=-1,dc2=-1;
+    int d=y2,dd1=-1,dd2=-1;
     //  bElem *belem;
     int dx,dy;
-    if (depth<0)
+    dx=x2-x1;
+    dc1=dx+1;
+    dy=y2-y1;
+    dd1=dy+1;
+    c=x2;
+    d=y2;
+
+    if (depth<0 || (dx<Wmin_ && dy<Hmin_))
     {
-        std::cout<<"Depth deplated\n";
+#ifdef _VerbousMode_
+        std::cout<<"Depth deplated or size too small: ("<<x1<<","<<y1<<")->("<<x2<<","<<y2<<")\n";
+#endif
         return mychamberArea;
     }
 
-    dx=x2-x1;
-    dy=y2-y1;
-    if (dx>Wmin_ ) // tutaj trzeba zrobić ograniczenie
-        // Im krótsza ścieżka, tym wmin bliższe 1/3 planszy
+    // horizontal lenght is at least as long as half of the vertical
+    if (dx>Wmin_ && dx*2>dy)
     {
 
-        c=(this->gen() % (dx-Wmin_)) +x1+(Wmin_/2); //find vertical divider location
+        c=(this->gen() % (dx-(Wmin_)))+x1+(Wmin_/2); //find vertical divider location
         dc1=c-x1;
         dc2=x2-c+2;
 
     }
-    //else return 0;
-    if (dy>Hmin_ )
+    if (dy>Hmin_ && dy*2>dx)
     {
-        d=(this->gen()%(dy-Hmin_)) +y1+(Hmin_/2);  // horizontal divider
+        d=(this->gen()%(dy-(Hmin_)))+y1+(Hmin_/2);  // horizontal divider
         dd1=d-y1;
         dd2=y2-d+2;
     }
@@ -137,7 +143,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
     }
     doorPlaces1.clear();
     doorPlaces2.clear();
-    if (c>x1 && c<x2 && d>0) // d>0 dvider exists
+    if (c!=x2) // d>0 dvider exists
     {
         //we draw vertical line
         for (int a=y1; a<=y2; a++)
@@ -186,7 +192,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
 
     }
     //we draw horizontal line
-    if (d>y1 && d<y2 && c>=0) // divider exists
+    if (d!=y2) // divider exists
     {
         doorPlaces1.clear();
         doorPlaces2.clear();
@@ -284,7 +290,7 @@ bool randomLevelGenerator::placeElementCollection(chamberArea* chmbrArea,std::ve
 
 bool randomLevelGenerator::generateLevel(int holes)
 {
-    int tolerance=600;
+    int tolerance=100;
     this->headNode=this->lvlGenerate(1,1,this->width-2,this->height-2,_iterations,holes);
 
     //int availableSurface=
@@ -314,22 +320,22 @@ bool randomLevelGenerator::generateLevel(int holes)
     for(int c=1; c<(50/holes); c++)
     {
         // dangerous elements here, the more holes, the less of them in the gamefield
-        elementsToChooseFrom.push_back({_monster,0,1,0,6});
-        elementsToChooseFrom.push_back({_bunker,0,1,0,6});
+        elementsToChooseFrom.push_back({_monster,0,1,0,3});
+        elementsToChooseFrom.push_back({_bunker,0,1,0,3});
 
     }
     for(int c=0; c<holes*15; c++)
     {
 
-        elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,6});
-        elementsToChooseFrom.push_back({_explosivesType,0,1,0,6});
+        elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,3});
+        elementsToChooseFrom.push_back({_simpleBombType,0,1,0,3});
 
 
     }
     for(int cnt=0; cnt<holes*5; cnt++)
     {
-        elementsToChooseFrom.push_back({_key,1,1,0,8});
-        elementsToChooseFrom.push_back({_key,3,1,0,8});
+        elementsToChooseFrom.push_back({_key,1,1,0,3});
+        elementsToChooseFrom.push_back({_key,3,1,0,3});
 
 
 
@@ -337,23 +343,24 @@ bool randomLevelGenerator::generateLevel(int holes)
 
     for(int c=0; c<5; c++)
     {
-        elementsToChooseFrom.push_back({_key,0,1,0,8});
-        elementsToChooseFrom.push_back({_key,2,1,0,8});
-        elementsToChooseFrom.push_back({_key,4,1,0,8});
+        elementsToChooseFrom.push_back({_key,0,1,0,3});
+        elementsToChooseFrom.push_back({_key,2,1,0,3});
+        elementsToChooseFrom.push_back({_key,4,1,0,3});
         elementsToChooseFrom.push_back({_teleporter,this->mychamber->getInstanceId()+1,1,0,3});
 
     }
     //  elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
-    elementsToChooseFrom.push_back({_player,0,1,0,8});
-    elementsToChooseFrom.push_back({_plainGun,0,1,0,8});
+    elementsToChooseFrom.push_back({_player,0,1,0,3});
+    elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
     //
-    elementsToChooseFrom.push_back({_patrollingDrone,1,1,0,8});
+    elementsToChooseFrom.push_back({_patrollingDrone,1,1,0,3});
 
     //first find area for the player and stuff for it
 
     elementCollection.push_back({_player,0,2,0,6});
     elementCollection.push_back({_key,1,2,0,6});
     elementCollection.push_back({_plainGun,0,2,0,6});
+    elementCollection.push_back({_teleporter,0,1,0,5});
 
     /***************************refactor me******************************/
     int demandedSurface=0;
@@ -399,7 +406,7 @@ bool randomLevelGenerator::generateLevel(int holes)
 
 
 
-    while(this->headNode->surface>55)
+    while(this->headNode->surface>75)
     {
 #ifdef _VerbousMode_
         std::cout<<"Surface total: "<<this->headNode->surface<<"\n";
@@ -408,7 +415,7 @@ bool randomLevelGenerator::generateLevel(int holes)
         int demandedSurface=0;
 
         int cnt;
-        int elementsToMake=((this->gen()%2)+1)*5;
+        int elementsToMake=((this->gen()%3)+2)*5;
         elementCollection.clear();
         for(cnt=0; cnt<elementsToMake; cnt++)
         {
@@ -555,8 +562,8 @@ bElem* randomLevelGenerator::createElement(elementToPlace element)
         return new teleport(this->mychamber,element.eSubType);
     case _movableType:
         return new movableElements(this->mychamber);
-    case _explosivesType:
-        return new explosives(this->mychamber);
+    case _simpleBombType:
+        return new simpleBomb(this->mychamber);
     case _patrollingDrone:
         return new patrollingDrone(this->mychamber);
 

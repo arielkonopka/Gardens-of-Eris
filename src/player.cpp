@@ -5,10 +5,9 @@ std::vector<player*> player::allPlayers;
 std::vector<player*> player::visitedPlayers;
 player* player::activePlayer=NULL;
 
-player::player(chamber *board) : killableElements::killableElements(board,true)
+player::player(chamber *board) : killableElements(board), movableElements(board) ,nonSteppable(board),mechanical(board)
 {
     this->used=0;
-    this->movable=true;
     this->interacted=0;
     this->setMoved(0);
     this->animPh=0;
@@ -119,9 +118,7 @@ bool player::interact(bElem* who)
         return false;
     if (killableElements::interact(who)==false)
         return false;
-    // if(this->visited)
-    //     return true;
-    //std::cout<<"Interacting...\n";
+
     if(who->getType()==this->getType() && !this->visited)
     {
 #ifdef _VerbousMode_
@@ -159,7 +156,6 @@ bool player::mechanics()
     }
     else
     {
-        this->animPh=this->getCntr()>>2;
         return true; // Inactive player, not very useful;
     }
     if(!res)
@@ -265,8 +261,8 @@ int player::getType()
 
 int player::getAnimPh()
 {
-    if(this->isTeleporting() || this->isDying() || this->isDestroyed())
-        return killableElements::getAnimPh();
+    if(this->isTeleporting() || this->isDying() || this->isDestroyed() || !this->isActive())
+        return bElem::getAnimPh();
     return this->animPh;
 }
 

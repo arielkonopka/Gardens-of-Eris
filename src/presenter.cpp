@@ -194,9 +194,6 @@ bool presenter::loadCofiguredData()
         case _wallType:
             ::wall::vd=ved;
             break;
-        case _stillElemType:
-            ::stillElem::vd=ved;
-            break;
         case _rubishType:
             ::rubbish::vd=ved;
             break;
@@ -236,8 +233,8 @@ bool presenter::loadCofiguredData()
         case _goldenAppleType:
             ::goldenApple::vd=ved;
             break;
-        case _explosivesType:
-            ::explosives::vd=ved;
+        case _simpleBombType:
+            ::simpleBomb::vd=ved;
             break;
         case _patrollingDrone:
             ::patrollingDrone::vd=ved;
@@ -285,13 +282,13 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
 //empty element? ignore or end the recursion cycle
     if (elem==NULL)
         return;
-/* We check, if the object is standing on anything, to draw it first, we also make sure, we were called the right way */
+    /* We check, if the object is standing on anything, to draw it first, we also make sure, we were called the right way */
     if (elem->getSteppingOnElement()!=NULL && (mode==_mode_all || mode==_mode_onlyFloor))
         this->showObjectTile(x,y,offsetX,offsetY,elem->getSteppingOnElement(),ignoreOffset,_mode_all);
-/*
-    No video object definition? ignore This way we can have "invisible" objects if we want to.
-    mode==_mode_onlyFLoor means, only object that are being stepped on, are drawn
-*/
+    /*
+        No video object definition? ignore This way we can have "invisible" objects if we want to.
+        mode==_mode_onlyFLoor means, only object that are being stepped on, are drawn
+    */
     if (elem->getVideoElementDef()==NULL || (mode==_mode_onlyFloor))
         return;
 
@@ -300,8 +297,9 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
     aphs=elem->getVideoElementDef()->animphases;
     subtyps=elem->getVideoElementDef()->subtypes;
     dirs=elem->getVideoElementDef()->directions;
-    //get the spprite location in the sprite surface
-    if (elem->isDying())
+    // std::cout<<"* D"<<elem->getType()<<","<<elem->getSubtype()<<","<<subtyps<<","<< elem->getAnimPh()<<","<<elem->getDirection()<<"\n";
+
+    if (elem->isDying() || elem->isDestroyed())
     {
         coords=(*elem->getVideoElementDef()->dying)[elem->getAnimPh()%(elem->getVideoElementDef()->dying->size())];
     }
@@ -495,18 +493,18 @@ int presenter::presentEverything()
         }
         if(event.type == ALLEGRO_EVENT_TIMER)
         {
-    //        if(event.timer.source==this->alTimer)
-    //        {
-                this->_cp_attachedBoard->player=NOCOORDS;
-                bElem::runLiveElements();
-                gCollect::getInstance()->purgeGarbage();
-                if((currentPlayer=player::getActivePlayer())==NULL)
-                {
-                    return 2;
-                }
-                if(currentPlayer->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
-                    fin=true;
-                this->_cp_attachedBoard=currentPlayer->getBoard();
+            //        if(event.timer.source==this->alTimer)
+            //        {
+            this->_cp_attachedBoard->player=NOCOORDS;
+            bElem::runLiveElements();
+            gCollect::getInstance()->purgeGarbage();
+            if((currentPlayer=player::getActivePlayer())==NULL)
+            {
+                return 2;
+            }
+            if(currentPlayer->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
+                fin=true;
+            this->_cp_attachedBoard=currentPlayer->getBoard();
 
 //            }
 
@@ -514,9 +512,9 @@ int presenter::presentEverything()
 //            {
 
 
-                this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
-                //  std::cout<<"\033[0G x,y ->"<<this->_cp_attachedBoard->player.x<<","<<this->_cp_attachedBoard->player.y;
-                //  std::cout<<blue<<"\n";
+            this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
+            //  std::cout<<"\033[0G x,y ->"<<this->_cp_attachedBoard->player.x<<","<<this->_cp_attachedBoard->player.y;
+            //  std::cout<<blue<<"\n";
 //            }
         }
         cItem=this->inpMngr->translateEvent(&event); //We always got a status on what to do. remember, everything must have a timer!

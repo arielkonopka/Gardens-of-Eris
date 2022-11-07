@@ -3,7 +3,8 @@
 // the static variable must be initialized
 videoElement::videoElementDef* monster::vd=NULL;
 
-monster::monster(chamber *board): killableElements(board,true)
+
+monster::monster(chamber *board): killableElements(board), nonSteppable(board), mechanical(board), movableElements(board)
 {
     this->animph=0;
     this->internalCnt=0;
@@ -11,7 +12,7 @@ monster::monster(chamber *board): killableElements(board,true)
     this->setSubtype(0);
 }
 
-monster::monster(chamber* board, int newSubtype): killableElements(board,true)
+monster::monster(chamber* board, int newSubtype): killableElements(board), nonSteppable(board), mechanical(board), movableElements(board)
 {
     this->animph=0;
     this->internalCnt=0;
@@ -32,7 +33,6 @@ int monster::getType()
 {
     return _monster;
 }
-
 
 bool monster::mechanics()
 {
@@ -61,11 +61,12 @@ bool monster::mechanics()
 
       }
 
-    if(!this->isSteppableDirection(this->getDirection()) && this->isSteppableDirection((direction)(((int)this->getDirection()+1)%4)) && this->isSteppableDirection((direction)(((int)this->getDirection()+3)%4)))
+/*    if(!this->isSteppableDirection(this->getDirection()) && this->isSteppableDirection((direction)(((int)this->getDirection()+1)%4)) && this->isSteppableDirection((direction)(((int)this->getDirection()+3)%4)))
         {
             this->moveInDirection((direction)(((int)this->getDirection()+1)%2));
             return true;
         }
+ */
     if(this->steppableNeigh())
     {
             this->moveInDirection(this->getDirection());
@@ -91,7 +92,7 @@ bool monster::mechanics()
 bool monster::steppableNeigh()
 {
     sNeighboorhood n=this->getSteppableNeighboorhood();
-    for(int c=0;c<8;c++)
+    for(int c=0; c<8; c++)
     {
         if(n.steppable[c]==false)
             return false;

@@ -17,7 +17,7 @@
 #define _debugRandomGenerator true
 #define Wmin 3
 #define Hmin 3
-#define _iterations 26
+#define _iterations 36
 typedef struct elementToPlace
 {
     int eType;

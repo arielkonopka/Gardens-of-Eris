@@ -120,13 +120,12 @@ BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
     BOOST_CHECK(tel1->isLiveElement()==true);
     BOOST_CHECK(transported->getCoords()==pointA);
     BOOST_CHECK(mc->getElement(pointA)->getInstanceid()==transported->getInstanceid());
-    BOOST_CHECK(transported->isTeleporting()==false);
-    for(int c=0;c<_teleportationTime;c++)
+    for(int c=0;c<_teleportStandTime;c++)
     {
-        bElem::runLiveElements();
         BOOST_CHECK(transported->isTeleporting()==false);
+        bElem::runLiveElements();
     }
-    BOOST_CHECK(transported->isTeleporting()!=true);
+    BOOST_CHECK(transported->isTeleporting()==true);
 
     delete mc;
 }

@@ -15,7 +15,7 @@
 
 typedef boost::mpl::list<bElem,killableElements,player,mechanical,collectible,door,explosives,movableElements> base_test_types;
 
-typedef boost::mpl::list<bElem,bunker,door,explosives,goldenApple,key,killableElements,mechanical,monster,movableElements,nonSteppable,patrollingDrone,plainGun,plainMissile,player,rubbish,stillElem,teleport,usable,wall> all_test_types;
+typedef boost::mpl::list<bElem,bunker,door,explosives,goldenApple,key,killableElements,mechanical,monster,movableElements,nonSteppable,patrollingDrone,plainGun,plainMissile,player,rubbish,teleport,usable,wall> all_test_types;
 
 
 int countTheStack(bElem* in)
@@ -456,10 +456,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
     chamber* mc=new chamber(5,5);
 
     bElem* myObj=new T(mc);
-    int origType=myObj->getType();
+    bool canBeDestroyed=myObj->canBeDestroyed();
+  //  int origType=myObj->getType();
     // std::cout<<"type:"<<myObj->getType()<<" "<<_belemType<<"\n";
     int instance=myObj->getInstanceid();
     bElem::tick();
+    bElem::tick();
+
     myObj->stepOnElement(mc->getElement(3,3));
     myObj->destroy();
     for(int c=0; c<_defaultDestroyTime; c++)
@@ -469,7 +472,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
     }
     myObj=mc->getElement(3,3);
     BOOST_CHECK(mc->getElement(3,3)->isDestroyed()==false);
-    if(origType==_belemType)
+    if(!canBeDestroyed)
     {
         BOOST_CHECK(mc->getElement(3,3)->getInstanceid()==instance);
     }
@@ -630,7 +633,33 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TryToCollectAnObjectAndDisposeIt,T,all_test_types)
 }
 
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(TryToRemoveElementMoreThanNeeded,T,all_test_types)
+{
+    chamber* mc=new chamber(3,3);
+    bElem* myObj=new T(mc);
+    bElem* relic;
+    myObj->stepOnElement(mc->getElement(1,1));
+    myObj=new T(mc);
+    myObj->stepOnElement(mc->getElement(2,2));
 
+    for(int c=0;c<100;c++)
+    {
+#ifdef _VerbousMode_
+   std::cout<<" * [1] removing "<<c<<"\n";
+#endif
+
+        relic=mc->getElement(1,1)->removeElement();
+        BOOST_CHECK(relic!=NULL);
+        delete relic;
+#ifdef _VerbousMode_
+   std::cout<<" * [2] removing "<<c<<"\n";
+#endif
+
+        BOOST_CHECK(mc->getElement(2,2)->disposeElement()==DISPOSED);
+        BOOST_CHECK(gCollect::getInstance()->purgeGarbage()==true);
+    }
+    delete mc;
+}
 
 
 

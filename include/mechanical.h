@@ -5,7 +5,7 @@
 #include "commons.h"
 
 
-class mechanical : public movableElements
+class mechanical : virtual public bElem
 {
     public:
         mechanical(chamber *board);
@@ -13,7 +13,6 @@ class mechanical : public movableElements
         mechanical(chamber *board,bool registerEl);
         mechanical(chamber *board,int x, int y,bool registerEl);
         virtual ~mechanical();
-        virtual bool kill();
 
     protected:
 

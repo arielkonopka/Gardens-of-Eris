@@ -7,7 +7,7 @@
 #include "videoElementDef.h"
 #include "plainGun.h"
 
-class player : public killableElements
+class player : public killableElements,public movableElements,public nonSteppable,public mechanical
 {
 public:
     static unsigned int countVisitedPlayers();

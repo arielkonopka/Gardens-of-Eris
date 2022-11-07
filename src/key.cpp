@@ -12,17 +12,17 @@ int key::getType()
     return _key;
 }
 
-key::key(chamber* board) : collectible::collectible(board)
+key::key(chamber* board) : collectible(board), nonSteppable(board)
 {
 this->setDirection(UP);
 }
-key::key(chamber* board, int subtype):collectible::collectible(board)
+key::key(chamber* board, int subtype): collectible(board), nonSteppable(board)
 {
     this->setSubtype(subtype);
     this->setDirection(UP);
 }
 
-key::key(chamber* board, int x, int y) : collectible::collectible(board,x,y)
+key::key(chamber* board, int x, int y) : collectible(board,x,y), nonSteppable(board,x,y)
 {
 
 }

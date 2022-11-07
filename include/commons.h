@@ -19,10 +19,12 @@
 #define _bunker 250
 #define _teleporter 400
 #define _teleportationTime (_mov_delay*15)
+#define _teleportStandTime 5
+
 #define _goldenAppleType 900
 #define _stash 600
 #define _explosivesType 601
-
+#define _simpleBombType 602
 
 
 #define _maxWaitingTtime 65535

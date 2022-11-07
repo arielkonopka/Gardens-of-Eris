@@ -2,7 +2,7 @@
 
 
 videoElement::videoElementDef* plainMissile::vd=NULL;
-plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber,true)
+plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber), movableElements(mychamber), mechanical(mychamber),nonSteppable(mychamber)
 {
     this->setEnergy(_plainMissileEnergy);
     this->setMoved(0);
@@ -12,7 +12,7 @@ plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber,true
     this->statsOwner=NULL;
     this->setSubtype(0);
 }
-plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber,true)
+plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber),  movableElements(mychamber), mechanical(mychamber),nonSteppable(mychamber)
 {
     this->setEnergy(energy);
     this->setMoved(0);
@@ -57,13 +57,13 @@ bool plainMissile::mechanics()
     if (this->getMoved()==0 && mvd==0)
     {
         bElem *myel=this->getElementInDirection(this->getDirection());
-        if(myel==NULL)
+
+        if(myel==NULL || myel->isDying() || myel->isTeleporting() || myel->isDestroyed())
         {
-            //that is a dirty hack on situations that are bogus (should not happen, but happen sometimes)
-            if (this->moveInDirectionSpeed(this->getDirection(),_plainMissileSpeed)==false) //if it is out of bounds, just vanish
-                this->disposeElement();
+            this->disposeElement();
             return true;
         }
+
         if (myel->isSteppable()==true)
         {
             this->moveInDirectionSpeed(this->getDirection(),_plainMissileSpeed);
@@ -71,7 +71,7 @@ bool plainMissile::mechanics()
         }
         if (myel->canBeKilled()==true)
         {
-            if (myel->getType()==this->getType() && myel->getDirection()==this->getDirection() && myel->getSubtype()==this->getSubtype())
+            if (myel->getType()==this->getType() && myel->getDirection()==this->getDirection() && myel->getSubtype()==this->getSubtype() && !myel->isDestroyed() && !myel->isDying())
             {
                 return true;
             }
@@ -86,7 +86,7 @@ bool plainMissile::mechanics()
             {
                 this->statsOwner->getStats()->countHit(myel);
             }
-            if(!myel->isDying())
+            if(!myel->isDying() && !myel->isDestroyed())
             {
                 this->kill();
             }
@@ -101,7 +101,7 @@ bool plainMissile::mechanics()
             }
             return true;
         }
-        if(myel->isDying()) // if next element in path is already dying, just disappear.
+        if(myel->isDying()|| myel->isDestroyed()) // if next element in path is already dying, just disappear.
             this->disposeElement();
         this->kill();
         return true;

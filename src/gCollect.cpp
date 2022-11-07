@@ -13,8 +13,14 @@ gCollect::~gCollect()
     gCollect::instanceId=NULL;
 
 }
+
+/*
+ * Purge the garbage return false, if no objects were deleted
+ *
+ */
 bool gCollect::purgeGarbage()
 {
+    bool res=false;
     for(unsigned int cnt=0;cnt<this->garbageVector.size();)
     {
         if(this->garbageVector.at(cnt)->isLocked()) //We do not touch the locked elements, these are probably waiting for something, and cannot be purged.
@@ -22,11 +28,12 @@ bool gCollect::purgeGarbage()
             cnt++;
             continue;
         }
+        res=true;
         delete this->garbageVector.at(cnt);
         this->garbageVector.erase(this->garbageVector.begin()+cnt);
 
     }
-   return true;
+   return res;
 }
 
 void gCollect::addToBin(bElem* element)

@@ -5,7 +5,7 @@
 #include <nonSteppable.h>
 
 
-class bunker : public mechanical
+class bunker : public mechanical, public nonSteppable,public movableElements
 {
     public:
         static videoElement::videoElementDef* vd;

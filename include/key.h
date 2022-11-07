@@ -6,7 +6,7 @@
 #include "objectTypes.h"
 #include "videoElementDef.h"
 
-class key : public collectible
+class key : public collectible, public nonSteppable
 {
 public:
     static videoElement::videoElementDef* vd;

@@ -1,10 +1,9 @@
 #ifndef GOLDENAPPLE_H
 #define GOLDENAPPLE_H
-
-#include <collectible.h>
+#include "elements.h"
 #include <vector>
 
-class goldenApple : public collectible
+class goldenApple : public collectible,public nonSteppable,public killableElements,public explosives
 {
 public:
     static videoElement::videoElementDef* vd;
@@ -12,10 +11,10 @@ public:
     virtual videoElement::videoElementDef* getVideoElementDef();
     static  int getAppleNumber();
     virtual int getType();
+    virtual bool kill();
     goldenApple(chamber *board);
     goldenApple(chamber *board,int x, int y);
     virtual ~goldenApple();
-
 protected:
 
 private:

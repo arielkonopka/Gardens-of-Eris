@@ -12,7 +12,7 @@
 
 
 
-class movableElements : public nonSteppable
+class movableElements :  virtual  public bElem
 {
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
@@ -25,10 +25,7 @@ class movableElements : public nonSteppable
         virtual bool moveInDirection(direction dir);
         virtual bool moveInDirectionSpeed(direction dir,int speed);
         virtual int getType();
-
-     //   virtual int getSubtype();
         virtual bool canPush();
-        virtual bool mechanics();
         virtual void setMoved(int time);
         virtual int getMoved();
         virtual bool dragInDirection(direction dragIntoDirection);

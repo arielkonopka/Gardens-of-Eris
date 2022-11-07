@@ -9,7 +9,7 @@
 #include "objectTypes.h"
 
 
-class nonSteppable : public bElem
+class nonSteppable : virtual public bElem
 {
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
@@ -18,11 +18,7 @@ class nonSteppable : public bElem
         nonSteppable(chamber *board,int x, int y);
         virtual ~nonSteppable();
         bool isSteppable();
-        virtual int getType();
-       // virtual void setTeleporting(int time);
-       // virtual bool isTeleporting();
     protected:
-       // int teleporting;
     private:
 
 };

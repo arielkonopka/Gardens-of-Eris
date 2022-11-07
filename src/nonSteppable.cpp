@@ -23,10 +23,7 @@ bool nonSteppable::isSteppable()
 {
     return false;
 }
-int nonSteppable::getType()
-{
-    return _nonSteppableType;
-}
+
 
 
 videoElement::videoElementDef* nonSteppable::getVideoElementDef()

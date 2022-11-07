@@ -120,7 +120,8 @@ public:
     virtual coords getOffset();
     virtual bool isWaiting();
     virtual void setWait(int time);
-
+    virtual int getWait();
+    virtual void stopWaiting();
     static std::mt19937 randomNumberGenerator;
     static bool randomNumberGeneratorInitialized;
     virtual bool mechanics();
@@ -166,7 +167,11 @@ protected:
     int killed;
 private:
     unsigned int telTimeReq;
-
+    unsigned int telReqTime;
+    unsigned int killTimeReq;
+    unsigned int killTimeBeg;
+    unsigned int destTimeReq;
+    unsigned int destTimeBeg;
     virtual int getTypeInDirection(direction di);
     static int instances;
     bool disposed;

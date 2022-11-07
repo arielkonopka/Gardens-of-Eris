@@ -5,13 +5,13 @@ videoElement::videoElementDef* movableElements::vd=NULL;
 
 
 
-movableElements::movableElements(chamber *board) : nonSteppable(board)
+movableElements::movableElements(chamber *board) : bElem(board)
 {
     this->_me_moved=0;
     this->_me_canPush=false;
     this->movable=true;
 }
-movableElements::movableElements(chamber *board,int x, int y) : nonSteppable(board,x,y)
+movableElements::movableElements(chamber *board,int x, int y) : bElem(board,x,y)
 {
     this->_me_moved=0;
     this->_me_canPush=false;
@@ -35,7 +35,7 @@ bool movableElements::moveInDirection(direction dir)
 bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 {
     bElem* stepOn=this->getElementInDirection(dir);
-    if (this->getMoved()>0 || this->isDying()==true || this->isTeleporting() || this->isDestroyed()) return false;
+    if (this->getMoved()>0 || this->isDying() || this->isTeleporting() || this->isDestroyed()) return false;
     this->setDirection(dir);
     if (stepOn==NULL) return false;
     if (stepOn->isSteppable()==true)
@@ -95,14 +95,6 @@ int movableElements::getSubtype()
 bool movableElements::canPush()
 {
     return _me_canPush;
-}
-
-bool movableElements::mechanics()
-{
-    bool res=nonSteppable::mechanics();
-    if(this->getMoved()>0)
-        res=false;
-    return res;
 }
 
 

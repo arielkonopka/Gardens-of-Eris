@@ -1,7 +1,7 @@
 #include "bunker.h"
 
 videoElement::videoElementDef* bunker::vd=NULL;
-bunker::bunker(chamber *board):mechanical(board)
+bunker::bunker(chamber *board):mechanical(board), nonSteppable(board),movableElements(board)
 {
     this->myGun=new plainGun(board,1);
     this->setDirection(UP);
@@ -10,7 +10,7 @@ bunker::bunker(chamber *board):mechanical(board)
     this->help=0;
     this->activatedBy=NULL;
 }
-bunker::bunker(chamber* board, int x, int y):mechanical(board,x,y)
+bunker::bunker(chamber* board, int x, int y):mechanical(board,x,y), nonSteppable(board,x,y),movableElements(board,x,y)
 {
     this->myGun=new plainGun(board,1);
     this->setDirection(UP);
@@ -45,34 +45,33 @@ bool bunker::isMovable()
 
 bool bunker::mechanics()
 {
-    bool res=nonSteppable::mechanics();
-    if(res)
+    bool res=mechanical::mechanics();
+    if(!res)
+        return false;
+    if(this->help>0)
     {
-        if(this->help>0)
+        this->help--;
+        if (this->help==0)
         {
-            this->help--;
-            if (this->help==0)
+            if(this->activatedBy!=NULL)
             {
-                if(this->activatedBy!=NULL)
-                {
-                    this->setStats(this->backUp);
-                    this->activatedBy->unlockThisObject(this);
-                    this->activatedBy=NULL;
-                }
+                this->setStats(this->backUp);
+                this->activatedBy->unlockThisObject(this);
+                this->activatedBy=NULL;
             }
-
         }
 
-        int randomTest=bElem::randomNumberGenerator()%1000+this->help;
+    }
 
-        if(this->myGun->readyToShoot()==false)
-            return res;
-        if(randomTest>990)
-        {
+    int randomTest=bElem::randomNumberGenerator()%1000+this->help;
 
-            this->myGun->use(this);
-         //   this->setMoved(_plainGunCharge);
-        }
+    if(this->myGun->readyToShoot()==false)
+        return res;
+    if(randomTest>990)
+    {
+
+        this->myGun->use(this);
+        //   this->setMoved(_plainGunCharge);
     }
     return res;
 }

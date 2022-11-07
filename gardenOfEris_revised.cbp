@@ -45,6 +45,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-D_UNIT_TEST_BUILD_" />
+					<Add directory="include" />
 				</Compiler>
 				<Environment>
 					<Variable name="_UNIT_TEST_BUILD_" value="true" />
@@ -98,7 +99,7 @@
 		<Unit filename="include/randomLevelGenerator.h" />
 		<Unit filename="include/randomWordGen.h" />
 		<Unit filename="include/rubbish.h" />
-		<Unit filename="include/stillElem.h" />
+		<Unit filename="include/simpleBomb.h" />
 		<Unit filename="include/teleport.h" />
 		<Unit filename="include/usable.h" />
 		<Unit filename="include/videoElementDef.h" />
@@ -132,7 +133,7 @@
 		<Unit filename="src/randomLevelGenerator.cpp" />
 		<Unit filename="src/randomWordGen.cpp" />
 		<Unit filename="src/rubbish.cpp" />
-		<Unit filename="src/stillElem.cpp" />
+		<Unit filename="src/simpleBomb.cpp" />
 		<Unit filename="src/teleport.cpp" />
 		<Unit filename="src/usable.cpp" />
 		<Unit filename="src/videoElementDef.cpp" />

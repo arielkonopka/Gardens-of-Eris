@@ -1,30 +1,13 @@
 #include "collectible.h"
 videoElement::videoElementDef* collectible::vd=NULL;
 
-collectible::collectible(chamber *board):killableElements(board,false)
+collectible::collectible(chamber *board):bElem(board)
 {
    // this->setSubtype(0);
 }
-collectible::collectible(chamber* board, int x, int y): killableElements(board,x,y,false)
+collectible::collectible(chamber* board, int x, int y): bElem(board,x,y)
 {
    // this->setSubtype(0);
-}
-
-collectible::collectible(chamber* board, bool registerEl):killableElements(board,registerEl)
-{
-
-}
-
-collectible::collectible(chamber* board, int x, int y, bool registerEl): killableElements(board,x,y,registerEl)
-{
-
-}
-
-
-
-int collectible::getType()
-{
-    return _collectible;
 }
 
 
@@ -41,7 +24,4 @@ videoElement::videoElementDef* collectible::getVideoElementDef()
 {
     return collectible::vd;
 }
-bool collectible::isSteppable()
-{
-    return false;
-}
+

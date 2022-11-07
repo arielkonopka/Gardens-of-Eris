@@ -6,7 +6,7 @@
 
 
 
-class killableElements : public mechanical
+class killableElements : virtual public bElem
 {
     public:
         killableElements(chamber* board);
@@ -14,10 +14,6 @@ class killableElements : public mechanical
         killableElements(chamber *board,bool registerEl);
         killableElements(chamber *board,int x,int y,bool registerEl);
         virtual ~killableElements();
-        virtual bool canBeKilled();
-        virtual bool canBeDestroyed();
-        virtual bool mechanics();
-        virtual bool kill();
         virtual bool hurt(int points);
     protected:
 

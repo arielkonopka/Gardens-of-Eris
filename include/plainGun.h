@@ -5,7 +5,7 @@
 #include "videoElementDef.h"
 #include "plainMissile.h"
 
-class plainGun : public usable
+class plainGun : public usable, public mechanical, public collectible, public nonSteppable
 {
 public:
     static videoElement::videoElementDef* vd;

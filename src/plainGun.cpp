@@ -7,15 +7,15 @@ videoElement::videoElementDef* plainGun::getVideoElementDef()
 {
     return plainGun::vd;
 }
-
-plainGun::plainGun(chamber *board): usable(board,true)
+//public usable, public mechanical, public collectible, public nonSteppable
+plainGun::plainGun(chamber *board): usable(board), mechanical(board), collectible(board), nonSteppable(board)
 {
     this->maxEnergy=_plainMissileEnergy;
     this->ammo=_plainGunAmmo;
     this->myInventory=new inventory(this);
 }
 
-plainGun::plainGun(chamber* board, int newSubtype): usable(board,true)
+plainGun::plainGun(chamber* board, int newSubtype): usable(board), mechanical(board), collectible(board), nonSteppable(board)
 {
     this->maxEnergy=_plainMissileEnergy;
     this->ammo=_plainGunAmmo;
