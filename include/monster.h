@@ -24,7 +24,9 @@ class monster : public killableElements, public nonSteppable, public mechanical,
     protected:
 
     private:
-
+        bool inited;
+        int rotA;
+        int rotB;
         int animph;
         int internalCnt;
 

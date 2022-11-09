@@ -803,13 +803,10 @@ sNeighboorhood bElem::getSteppableNeighboorhood()
 {
     sNeighboorhood myNeigh;
     coords up,left,down,right;
-    up=this->getAbsCoords(UP);
-    left=this->getAbsCoords(LEFT);
-    down=this->getAbsCoords(DOWN);
-    right=this->getAbsCoords(RIGHT);
+
     for(int c=0; c<8; c+=2)
     {
-        int c1=c>>1;
+        int c1=c/2;
         direction d=(direction)(c1%4);
         direction d1=(direction)((c1+1)%4);
         bElem* e=this->getElementInDirection(d);
@@ -819,7 +816,7 @@ sNeighboorhood bElem::getSteppableNeighboorhood()
             e1=e->getElementInDirection(d1);
             myNeigh.nTypes[c]=e->getType();
             myNeigh.steppable[c]=e->isSteppable();
-            myNeigh.steppableClose[c<<1]=myNeigh.steppable[c];
+            myNeigh.steppableClose[c/2]=myNeigh.steppable[c];
             if(e1!=NULL)
             {
                 myNeigh.nTypes[c+1]=e1->getType();
@@ -839,7 +836,7 @@ sNeighboorhood bElem::getSteppableNeighboorhood()
             myNeigh.steppable[c+1]=false;
             myNeigh.nTypes[c]=-1;
             myNeigh.steppable[c]=false;
-            myNeigh.steppableClose[c<<1]=myNeigh.steppable[c];
+            myNeigh.steppableClose[c/2]=myNeigh.steppable[c];
         }
 
     }
