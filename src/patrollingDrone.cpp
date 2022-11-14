@@ -2,7 +2,7 @@
 
 videoElement::videoElementDef* patrollingDrone::vd=NULL;
 
-patrollingDrone::patrollingDrone(chamber* board): killableElements(board), nonSteppable(board), mechanical(board), movableElements(board)
+patrollingDrone::patrollingDrone(chamber* board): killableElements(board), nonSteppable(board), mechanical(board,false), movableElements(board)
 {
     this->setSubtype(0);
     this->myInventory=new inventory(this);

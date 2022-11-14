@@ -12,9 +12,10 @@ monster::monster(chamber *board): killableElements(board), nonSteppable(board), 
     this->setDirection(UP);
     this->setSubtype(0);
     this->inited=false;
-    if(bElem::randomNumberGenerator()%10==0)
+    if(bElem::randomNumberGenerator()%5==0)
     {
-        plainGun* pg=new plainGun(board,1);
+        plainGun* pg=new plainGun(board,0);
+        pg->setAmmo(55);
         this->collect(pg);
     }
     if(bElem::randomNumberGenerator()%2==0)
@@ -48,9 +49,10 @@ monster::monster(chamber* board, int newSubtype): killableElements(board), nonSt
         this->rotA=3;
         this->rotB=1;
     }
-     if(bElem::randomNumberGenerator()%10==0)
+     if(bElem::randomNumberGenerator()%5==0)
     {
-        plainGun* pg=new plainGun(board,1);
+        plainGun* pg=new plainGun(board,0);
+        pg->setAmmo(55);
         this->collect(pg);
     }
 
@@ -97,7 +99,9 @@ bool monster::checkNeigh()
         {
             while(e!=NULL)
             {
-                if(e->getType()==_player && this->myInventory->getActiveWeapon()!=NULL && e->isActive())
+                if(this->myInventory->getActiveWeapon()!=NULL &&
+                    ((e->getType()==_player &&  e->isActive()) ||
+                     (e->getType()==_patrollingDrone && e->isLiveElement())))
                 {
                     direction td=this->getDirection();
                     this->setDirection(d);
@@ -105,6 +109,14 @@ bool monster::checkNeigh()
                     this->setDirection(td);
                     this->setWait(_mov_delay);
                     break;
+
+                }
+                if(e->getType()==_stash || e->getType()==_rubishType)
+                {
+                    this->setDirection(d);
+                    this->inited=false;
+                    this->setWait(_mov_delay);
+                    return true;
 
                 }
                 if(!e->isSteppable() || e->getElementInDirection(d)==NULL)
