@@ -43,7 +43,7 @@
 
 #define _defaultEnergy 80
 #define _defaultKillTime 25
-#define _defaultDestroyTime 25
+#define _defaultDestroyTime 99
 
 #define _defaultRecurrenceDepth 35
 

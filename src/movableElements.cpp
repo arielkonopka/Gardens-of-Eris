@@ -24,7 +24,7 @@ movableElements::~movableElements()
 }
 bool movableElements::isMovable()
 {
-    return this->movable;
+    return this->movable && !this->isDestroyed() && !this->isDying();
 }
 
 bool movableElements::moveInDirection(direction dir)
@@ -35,9 +35,9 @@ bool movableElements::moveInDirection(direction dir)
 bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 {
     bElem* stepOn=this->getElementInDirection(dir);
-    if (this->getMoved()>0 || this->isDying() || this->isTeleporting() || this->isDestroyed()) return false;
+    if (stepOn==NULL || this->getMoved()>0 || this->isDying() || this->isTeleporting() || this->isDestroyed() )
+        return false;
     this->setDirection(dir);
-    if (stepOn==NULL) return false;
     if (stepOn->isSteppable()==true)
     {
         this->stepOnElement(stepOn);

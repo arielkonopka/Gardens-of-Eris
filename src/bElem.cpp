@@ -212,9 +212,10 @@ void bElem::setDropped()
 */
 bool bElem::stepOnElement(bElem* step)
 {
-    if (step==NULL || step->isSteppable()==false || step->getBoard()==NULL)  return false;
-    if(this->getStomper()!=NULL || this->getSteppingOnElement()!=NULL)
-        this->removeElement();
+    if (step==NULL || step->isSteppable()==false || step->getBoard()==NULL || step->disposed)
+        return false;
+    //if(this->getStomper()!=NULL || this->getSteppingOnElement()!=NULL)
+    this->removeElement();
     this->setCoords(step->getCoords());
     this->setBoard(step->getBoard());
     this->steppingOn=step;
@@ -540,12 +541,12 @@ bool bElem::mechanics()
     if((this->getBoard()==NULL || this->getCoords()==NOCOORDS) && (this->getCollector()==NULL))
         return false;
 
-    if (this->canBeDestroyed() && (long int)this->destroyed>0 && this->getCntr()>this->destTimeBeg+this->destTimeReq-1 && !this->isWaiting() )
+    if (this->canBeDestroyed() && (long int)this->destroyed>0 && this->getCntr()>=this->destTimeBeg+this->destTimeReq-1  )
     {
         this->disposeElement();
         return false;
     }
-    if((long int)this->killed>0 && this->canBeKilled() && this->getCntr()>this->killTimeBeg+this->killTimeReq-1 && !this->isWaiting())
+    if((long int)this->killed>0 && this->canBeKilled() && this->getCntr()>=this->killTimeBeg+this->killTimeReq-1 )
     {
         this->disposeElement(); //it seems we really died. what a waste
         return false;
@@ -631,6 +632,7 @@ bElem* bElem::removeElement()
     if(this->getSteppingOnElement()!=NULL && this->getStomper()!=NULL)
     {
         this->getStomper()->steppingOn=this->steppingOn;
+
         this->getSteppingOnElement()->stomp(this->getStomper());
         this->unstomp();
         this->steppingOn=NULL;
@@ -641,8 +643,9 @@ bElem* bElem::removeElement()
     }
     if (this->getSteppingOnElement()!=NULL)
     {
-        this->getSteppingOnElement()->unstomp();
+
         this->attachedBoard->setElement(this->x,this->y,this->getSteppingOnElement());
+        this->getSteppingOnElement()->unstomp();
         this->steppingOn=NULL;
         this->x=-1;
         this->y=-1;
@@ -763,7 +766,7 @@ bool bElem::isDestroyed()
     if((long int)this->destroyed+_maxWaitingTtime<(long int)this->getCntr())
         this->destroyed=0;
 
-    return this->destroyed>0 && (long int)this->destroyed>(long int)this->getCntr();
+    return this->destroyed>0 && (long int)this->destroyed>=(long int)this->getCntr();
 }
 
 elemStats* bElem::getStats()
