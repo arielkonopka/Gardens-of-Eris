@@ -14,8 +14,7 @@ monster::monster(chamber *board): killableElements(board), nonSteppable(board), 
     this->inited=false;
     if(bElem::randomNumberGenerator()%10==0)
     {
-        plainGun* pg=new plainGun(board);
-        pg->setSubtype(1);
+        plainGun* pg=new plainGun(board,1);
         this->collect(pg);
     }
     if(bElem::randomNumberGenerator()%2==0)
@@ -48,6 +47,11 @@ monster::monster(chamber* board, int newSubtype): killableElements(board), nonSt
     {
         this->rotA=3;
         this->rotB=1;
+    }
+     if(bElem::randomNumberGenerator()%10==0)
+    {
+        plainGun* pg=new plainGun(board,1);
+        this->collect(pg);
     }
 
 }
