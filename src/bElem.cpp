@@ -632,45 +632,28 @@ bElem* bElem::removeElement()
     if(this->getSteppingOnElement()!=NULL && this->getStomper()!=NULL)
     {
         this->getStomper()->steppingOn=this->steppingOn;
-
         this->getSteppingOnElement()->stomp(this->getStomper());
-        this->unstomp();
-        this->steppingOn=NULL;
-        this->x=-1;
-        this->y=-1;
-        this->attachedBoard=NULL;
-        return this;
-    }
-    if (this->getSteppingOnElement()!=NULL)
+    } else if (this->getSteppingOnElement()!=NULL && this->getStomper()==NULL)
     {
-
         this->attachedBoard->setElement(this->x,this->y,this->getSteppingOnElement());
         this->getSteppingOnElement()->unstomp();
-        this->steppingOn=NULL;
-        this->x=-1;
-        this->y=-1;
-        this->attachedBoard=NULL;
-        return this;
-    }
-    else
+    } else if (this->getSteppingOnElement()==NULL && this->getStomper()!=NULL)
     {
-        if(this->getStomper()!=NULL)
-        {
-            this->getStomper()->steppingOn=this->getSteppingOnElement();
-        }
-        else
-        {
-            bElem *newElem=new bElem(this->attachedBoard);
-            newElem->setCoords(this->getCoords());
-            newElem->attachedBoard->setElement(newElem->getCoords(),newElem);
-        }
-        this->x=-1;
-        this->y=-1;
-        this->attachedBoard=NULL;
-        return this;
+        this->getStomper()->steppingOn=NULL;
+    } else if(this->getStomper()==NULL && this->getSteppingOnElement()==NULL)
+    {
+        bElem *newElem=new bElem(this->attachedBoard);
+        newElem->setCoords(this->getCoords());
+        newElem->attachedBoard->setElement(newElem->getCoords(),newElem);
     }
-    return NULL; // Should never happen!
+    this->unstomp();
+    this->steppingOn=NULL;
+    this->x=-1;
+    this->y=-1;
+    this->attachedBoard=NULL;
+    return this;
 }
+
 
 // this object cannot actively interact with outhers
 bool bElem::canInteract()

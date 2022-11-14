@@ -68,39 +68,24 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
 {
     chamber* mc=new chamber(10,10);
     player* p=NULL;
-    bool pDisposed=false;
-    simpleBomb* sb=NULL;
     p=new player(mc);
-    bElem* e=mc->getElement(1,2);
+    bElem* e=NULL;
     for(int cnt=0; cnt<10000; cnt++)
     {
-
-
-     //   sb=new simpleBomb(mc);
-        p->stepOnElement(mc->getElement(1,2));
+        e=mc->getElement(1,2);
+        BOOST_CHECK(e!=NULL);
+        BOOST_CHECK(e!=p);
+        p->stepOnElement(e);
         e->disposeElement();
         gCollect::getInstance()->purgeGarbage();
         p->setActive(true);
-        p->moveInDirection(RIGHT);
+        //p->moveInDirection(RIGHT);
+        BOOST_CHECK(p->removeElement()!=NULL);
+
         BOOST_CHECK(mc->getElement(1,2)!=NULL);
         BOOST_CHECK(mc->getElement(1,2)!=p);
+        p->stepOnElement(mc->getElement(2,2));
 
-
-
-      /*
-
-        sb->stepOnElement(mc->getElement(5,2));
-        sb->explode();
-        for(int c=0; c<300; c++)
-        {
-           // p->setMoved(0);
-            p->moveInDirection(RIGHT);
-           // p->setMoved(0);
-            bElem::runLiveElements();
-            //    std::cout<<"X: "<<p->getCoords().x<<" y: "<<p->getCoords().y<<"\n";
-        }
-        BOOST_CHECK(player::getActivePlayer()!=NULL);
-        */
         int instances=0;
         for(int a=0; a<10; a++)
         {

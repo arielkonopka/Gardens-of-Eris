@@ -5,7 +5,7 @@
 #include "gCollect.h"
 #include "videoElementDef.h"
 #include "killableElements.h"
-
+#include "plainGun.h"
 
 class monster : public killableElements, public nonSteppable, public mechanical, public movableElements
 {
@@ -17,8 +17,7 @@ class monster : public killableElements, public nonSteppable, public mechanical,
         ~monster();
         int getType();
         virtual bool mechanics();
-
-
+        bool checkNeigh();
         bool steppableNeigh();
 
     protected:
