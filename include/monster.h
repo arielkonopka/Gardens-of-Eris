@@ -17,12 +17,13 @@ class monster : public killableElements, public nonSteppable, public mechanical,
         ~monster();
         int getType();
         virtual bool mechanics();
-        bool checkNeigh();
-        bool steppableNeigh();
+        virtual bool checkNeigh();
+        virtual bool steppableNeigh();
 
     protected:
 
     private:
+        plainGun* weapon;
         bool inited;
         int rotA;
         int rotB;

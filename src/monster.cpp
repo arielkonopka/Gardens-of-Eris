@@ -12,11 +12,11 @@ monster::monster(chamber *board): killableElements(board), nonSteppable(board), 
     this->setDirection(UP);
     this->setSubtype(0);
     this->inited=false;
+    this->weapon=NULL;
     if(bElem::randomNumberGenerator()%5==0)
     {
-        plainGun* pg=new plainGun(board,0);
-        pg->setAmmo(55);
-        this->collect(pg);
+        this->weapon=new plainGun(board,1);
+        this->weapon->setAmmo(55555);
     }
     if(bElem::randomNumberGenerator()%2==0)
     {
@@ -39,6 +39,7 @@ monster::monster(chamber* board, int newSubtype): killableElements(board), nonSt
     this->setDirection(UP);
     this->setSubtype(newSubtype);
     this->inited=false;
+    this->weapon=NULL;
     if(bElem::randomNumberGenerator()%2==0)
     {
         this->rotA=1;
@@ -51,9 +52,8 @@ monster::monster(chamber* board, int newSubtype): killableElements(board), nonSt
     }
      if(bElem::randomNumberGenerator()%5==0)
     {
-        plainGun* pg=new plainGun(board,0);
-        pg->setAmmo(55);
-        this->collect(pg);
+        this->weapon=new plainGun(board,1);
+        this->weapon->setAmmo(55555);
     }
 
 }
@@ -71,6 +71,7 @@ int monster::getType()
 {
     return _monster;
 }
+
 
 bool monster::checkNeigh()
 {
@@ -95,21 +96,26 @@ bool monster::checkNeigh()
             continue;
         }
 
-        if(this->myInventory->getActiveWeapon()!=NULL)
+        if(this->weapon!=NULL || this->myInventory->getActiveWeapon()!=NULL)
         {
             while(e!=NULL)
             {
-                if(this->myInventory->getActiveWeapon()!=NULL &&
+                if((this->myInventory->getActiveWeapon()!=NULL || this->weapon!=NULL) &&
                     ((e->getType()==_player &&  e->isActive()) ||
                      (e->getType()==_patrollingDrone && e->isLiveElement())))
                 {
                     direction td=this->getDirection();
                     this->setDirection(d);
-                    this->myInventory->getActiveWeapon()->use(this);
+                    if(this->weapon!=NULL)
+                    {
+                        this->weapon->use(this);
+                    } else
+                    {
+                        this->myInventory->getActiveWeapon()->use(this);
+                    }
                     this->setDirection(td);
                     this->setWait(_mov_delay);
                     break;
-
                 }
                 if(e->getType()==_stash || e->getType()==_rubishType)
                 {
@@ -117,7 +123,6 @@ bool monster::checkNeigh()
                     this->inited=false;
                     this->setWait(_mov_delay);
                     return true;
-
                 }
                 if(!e->isSteppable() || e->getElementInDirection(d)==NULL)
                     break;
