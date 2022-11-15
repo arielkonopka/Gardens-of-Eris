@@ -1,5 +1,5 @@
 
-# Garden of Eris
+# Garden of Eris aka Pieruński Labirynt
 
 Welcome to my pet project. I started it in [Python](https://github.com/arielkonopka/pyLurker), but got to the conclusion, that Python would not deliver sufficient speed with the number of elements I plan to have at the same time.
 
@@ -20,7 +20,7 @@ I thought of a random level generator because of two reasons:
 
 In the meanwhile I got a third reason, I can test it fairly fast, without even loading and saving the level data.
  
-
+[You can chek the fairly recent video of the gameplay.](https://youtu.be/wQ-Lpc4TViM)
 
 
 ## The game story
