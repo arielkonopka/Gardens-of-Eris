@@ -84,7 +84,7 @@ bool plainMissile::mechanics()
                     int randomFactor=bElem::randomNumberGenerator()%((this->getEnergy()>0)?this->getEnergy():1);
 
                     int f2=(randomFactor*this->statsOwner->getStats()->getDexterity())/_dexterityLevels;
-                    energy=this->getEnergy()-f2;
+                    energy=f2+this->getEnergy();
 
                 }
 
