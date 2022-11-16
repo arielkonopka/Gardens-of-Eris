@@ -17,6 +17,7 @@ monster::monster(chamber *board): killableElements(board), nonSteppable(board), 
     {
         this->weapon=new plainGun(board,1);
         this->weapon->setAmmo(55555);
+        this->weapon->setMaxEnergy(5);
     }
     if(bElem::randomNumberGenerator()%2==0)
     {
@@ -54,6 +55,7 @@ monster::monster(chamber* board, int newSubtype): killableElements(board), nonSt
     {
         this->weapon=new plainGun(board,1);
         this->weapon->setAmmo(55555);
+        this->weapon->setMaxEnergy(5);
     }
 
 }
@@ -61,6 +63,8 @@ monster::monster(chamber* board, int newSubtype): killableElements(board), nonSt
 
 monster::~monster()
 {
+    if(this->weapon!=NULL)
+        delete this->weapon;
     //dtor
 }
 videoElement::videoElementDef* monster::getVideoElementDef()
@@ -96,6 +100,7 @@ bool monster::checkNeigh()
             continue;
         }
 
+
         if(this->weapon!=NULL || this->myInventory->getActiveWeapon()!=NULL)
         {
             while(e!=NULL)
@@ -117,12 +122,24 @@ bool monster::checkNeigh()
                     this->setWait(_mov_delay);
                     break;
                 }
-                if(e->getType()==_stash || e->getType()==_rubishType)
+
+                if(e->getType()==_stash || e->getType()==_rubishType || e->isWeapon()) // Take remainings, and guns
                 {
                     this->setDirection(d);
                     this->inited=false;
                     this->setWait(_mov_delay);
                     return true;
+                }
+                //closed door?
+                if(e->getType()==_door && !e->isSteppable())
+                {
+                    if(this->myInventory->countTokens(_door,e->getSubtype())>0) //we got the key? Go for it
+                    {
+                        this->setDirection(d);
+                        this->inited=false;
+                        this->setWait(_mov_delay);
+                        return true;
+                    }
                 }
                 if(!e->isSteppable() || e->getElementInDirection(d)==NULL)
                     break;

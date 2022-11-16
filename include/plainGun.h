@@ -20,6 +20,9 @@ public:
     virtual bool readyToShoot();
     virtual int getAmmo();
     virtual void setAmmo(int ammo);
+    virtual void setMaxEnergy(int me);
+    virtual bElem* createProjectible(bElem* who);
+
 protected:
 
 private:

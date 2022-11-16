@@ -23,6 +23,16 @@ plainGun::plainGun(chamber* board, int newSubtype): usable(board), mechanical(bo
     this->setSubtype(newSubtype);
 }
 
+bElem* plainGun::createProjectible(bElem *who)
+{
+    plainMissile* pm=new plainMissile(who->getBoard());
+    pm->setStatsOwner(who);
+    who->lockThisObject(pm);
+    pm->setDirection(who->getDirection());
+    pm->stepOnElement(who->getElementInDirection(who->getDirection()));
+    pm->setEnergy(this->getEnergy());
+    return pm;
+}
 
 
 
@@ -70,19 +80,12 @@ bool plainGun::use(bElem* who)
         {
             if (myel->isSteppable()==true)
             {
-                plainMissile* missile=new plainMissile(who->getBoard(),this->getEnergy());
-               // if(who->getType()==_player)
-               // {
-                missile->setStatsOwner(who);
-                who->lockThisObject(missile);
-                //}
-                missile->setDirection(who->getDirection());
-                missile->stepOnElement(myel);
+                this->createProjectible(who);
             }
-            else if ( myel->getType()==_plainMissile && myel->getDirection()==who->getDirection())
+           /* else if ( myel->getType()==_plainMissile && myel->getDirection()==who->getDirection())
             {
                 myel->setEnergy(myel->getEnergy()+this->getEnergy()); // if somehow you hit a missile going in the same direction, the show would be boosted;
-            }
+            }*/
             else if (myel->canBeKilled() )
             {
                 who->getStats()->countKill(myel);
@@ -99,6 +102,11 @@ bool plainGun::use(bElem* who)
 
     }
     return true;
+}
+void plainGun::setMaxEnergy(int me)
+{
+    this->maxEnergy=me;
+    this->setEnergy(me);
 }
 
 

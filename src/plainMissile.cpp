@@ -2,7 +2,7 @@
 
 
 videoElement::videoElementDef* plainMissile::vd=NULL;
-plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber), movableElements(mychamber), mechanical(mychamber),nonSteppable(mychamber)
+plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber), movableElements(mychamber), mechanical(mychamber)
 {
     this->setEnergy(_plainMissileEnergy);
     this->setMoved(0);
@@ -12,7 +12,7 @@ plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber), mo
     this->statsOwner=NULL;
     this->setSubtype(0);
 }
-plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber),  movableElements(mychamber), mechanical(mychamber),nonSteppable(mychamber)
+plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber),  movableElements(mychamber), mechanical(mychamber)
 {
     this->setEnergy(energy);
     this->setMoved(0);
@@ -79,7 +79,7 @@ bool plainMissile::mechanics()
             if(this->statsOwner!=NULL)
             {
                 if(this->statsOwner->getStats()->getDexterity()<_dexterityLevels)
-                    energy=this->getEnergy()- (bElem::randomNumberGenerator()% (_dexterityLevels-this->statsOwner->getStats()->getDexterity()));
+                    energy=this->getEnergy()- (bElem::randomNumberGenerator()% (_dexterityLevels-this->statsOwner->getStats()->getDexterity()))/this->getEnergy();
             }
             myel->hurt(energy);
             if(this->statsOwner!=NULL)
