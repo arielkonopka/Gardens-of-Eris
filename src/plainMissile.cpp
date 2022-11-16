@@ -2,25 +2,27 @@
 
 
 videoElement::videoElementDef* plainMissile::vd=NULL;
-plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber), movableElements(mychamber), mechanical(mychamber), nonSteppable(mychamber)
+plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber), movableElements(mychamber), mechanical(mychamber)
 {
+    this->statsOwner=NULL;
+
     this->setEnergy(_plainMissileEnergy);
     this->setMoved(0);
     this->setWait(_plainMissileSpeed);
     this->setDirection(UP);
     this->setMoved(0);
-    this->statsOwner=NULL;
     this->setSubtype(0);
 }
-plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber),  movableElements(mychamber), mechanical(mychamber), nonSteppable(mychamber)
+plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber),  movableElements(mychamber), mechanical(mychamber)
 {
+    this->statsOwner=NULL;
+
     this->setEnergy(energy);
     this->setMoved(0);
     this->setWait(_plainMissileSpeed);
     this->setDirection(UP);
     this->myInventory=new inventory(this ); // This is for a mod, that could be installed on the ammo
     this->setMoved(0);
-    this->statsOwner=NULL;
     this->setSubtype(0);
 }
 
@@ -38,11 +40,33 @@ int plainMissile::getType()
     return _plainMissile;
 }
 
+void plainMissile::stomp(bElem* who)
+{
+    bElem::stomp(who);
+    if(who->getType()!=this->getType())
+    {
+        who->hurt(this->getEnergy());
+        this->disposeElement();
+    }
+    return;
+}
 
 
 videoElement::videoElementDef* plainMissile::getVideoElementDef()
 {
     return plainMissile::vd;
+}
+bool plainMissile::setEnergy(int pints)
+{
+
+    if(this->statsOwner!=NULL)
+    {
+        int randomFactor=bElem::randomNumberGenerator()%((pints>1)?pints:1);
+        int f2=(randomFactor*this->statsOwner->getStats()->getDexterity())/_dexterityLevels;
+        mechanical::setEnergy(f2+pints/2);
+    } else
+        mechanical::setEnergy(pints);
+    return true;
 }
 
 
@@ -57,13 +81,11 @@ bool plainMissile::mechanics()
     if (this->getMoved()==0 && mvd==0)
     {
         bElem *myel=this->getElementInDirection(this->getDirection());
-
         if(myel==NULL || myel->isDying() || myel->isTeleporting() || myel->isDestroyed())
         {
             this->disposeElement();
             return true;
         }
-
         if (myel->isSteppable()==true)
         {
             this->moveInDirectionSpeed(this->getDirection(),_plainMissileSpeed);
@@ -71,26 +93,12 @@ bool plainMissile::mechanics()
         }
         if (myel->canBeKilled()==true)
         {
-            if (myel->getType()==this->getType() && myel->getDirection()==this->getDirection() && myel->getSubtype()==this->getSubtype() && !myel->isDestroyed() && !myel->isDying())
+ /*           if (myel->getType()==this->getType() && myel->getDirection()==this->getDirection() && myel->getSubtype()==this->getSubtype() && !myel->isDestroyed() && !myel->isDying())
             {
                 return true;
             }
-            int energy=this->getEnergy();
-            if(this->statsOwner!=NULL)
-            {
-                if(this->statsOwner->getStats()->getDexterity()<_dexterityLevels)
-                {
-
-                    int randomFactor=bElem::randomNumberGenerator()%((this->getEnergy()>0)?this->getEnergy():1);
-
-                    int f2=(randomFactor*this->statsOwner->getStats()->getDexterity())/_dexterityLevels;
-                    energy=f2+this->getEnergy();
-
-                }
-
-                 //   - this->getEnergy()/(bElem::randomNumberGenerator()% (_dexterityLevels-this->statsOwner->getStats()->getDexterity()));
-            }
-            myel->hurt(energy);
+ */
+            myel->hurt(this->getEnergy());
             if(this->statsOwner!=NULL)
             {
                 this->statsOwner->getStats()->countHit(myel);
@@ -122,7 +130,8 @@ void plainMissile::setStatsOwner(bElem* owner)
     if(owner!=NULL)
     {
         this->statsOwner=owner;
-        // this->owner->lockThisObject(this);
+        this->setEnergy(this->getEnergy());
+
     }
 }
 

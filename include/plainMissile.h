@@ -3,7 +3,7 @@
 #include "killableElements.h"
 #include "videoElementDef.h"
 #include <math.h>
-class plainMissile : public killableElements, public movableElements, public mechanical , public nonSteppable
+class plainMissile : public killableElements, public movableElements, public mechanical
 {
 public:
     static videoElement::videoElementDef* vd;
@@ -14,7 +14,8 @@ public:
     void setStatsOwner(bElem* owner);
     virtual ~plainMissile();
     virtual bool mechanics();
-
+    virtual void stomp(bElem *who);
+    virtual bool setEnergy(int pints);
 protected:
 
 

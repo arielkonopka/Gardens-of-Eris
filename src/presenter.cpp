@@ -49,9 +49,11 @@ presenter::~presenter()
 }
 bool presenter::initializeDisplay()
 {
+    al_set_new_display_flags(ALLEGRO_FULLSCREEN);
     this->display = al_create_display(this->scrWidth, this->scrHeight);
+    al_hide_mouse_cursor(this->display);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
-    al_set_new_bitmap_flags((int)ALLEGRO_VIDEO_BITMAP|(int)ALLEGRO_FULLSCREEN);
+    al_set_new_bitmap_flags(ALLEGRO_FULLSCREEN);
     this->internalBitmap=al_create_bitmap(this->scrWidth,this->scrHeight);
     return true;
 
