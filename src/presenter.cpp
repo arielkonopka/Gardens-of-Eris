@@ -24,8 +24,9 @@ presenter::presenter(chamber *board)
 //    al_register_event_source(this->evQueue, al_get_timer_event_source(this->scrTimer));
     this->_cp_attachedBoard=board;
     al_get_monitor_info(0, &info);
-    this->scrWidth = info.x2 - info.x1; /* Assume this is 1366 */
-    this->scrHeight= info.y2 - info.y1; /* Assume this is 768 */
+    this->scrWidth = info.x2;// - info.x1; /* Assume this is 1366 */
+    this->scrHeight= info.y2;// - info.y1; /* Assume this is 768 */
+    //  std::cout<<"SCR: "<<this->scrWidth<<","<<this->scrHeight<<"\n";
     this->sWidth=0;
     this->sHeight=0;
     this->spacing=0;
@@ -50,14 +51,19 @@ presenter::~presenter()
 bool presenter::initializeDisplay()
 {
     al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+ //   al_set_new_display_refresh_rate( 50 );
     this->display = al_create_display(this->scrWidth, this->scrHeight);
     al_hide_mouse_cursor(this->display);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
     al_set_new_bitmap_flags(ALLEGRO_FULLSCREEN);
-    this->internalBitmap=al_create_bitmap(this->scrWidth,this->scrHeight);
+    this->internalBitmap=al_create_bitmap(this->scrWidth+64,this->scrHeight+64);
+    this->statsStripe=al_create_bitmap(this->scrWidth,this->scrHeight/3);
     return true;
 
 }
+
+
+
 
 bool presenter::presentAChamber(presenterMode mod)
 {
@@ -131,7 +137,7 @@ bool presenter::loadCofiguredData()
     this->sHeight=this->skinDefJson["height"].GetInt();
     this->spacing=this->skinDefJson["spacing"].GetInt();
     this->scrTilesX=(this->scrWidth-(2*_offsetX))/this->sWidth;
-    this->scrTilesY=((this->scrHeight-(2*_offsetY))/this->sHeight)-2;
+    this->scrTilesY=((this->scrHeight-(2*_offsetY))/this->sHeight)-1;
     rapidjson::Value& dying=this->skinDefJson["Dying"];
     rapidjson::Value& teleporting=this->skinDefJson["Teleporting"];
     rapidjson::Value& sprlist=this->skinDefJson["SpriteData"];
@@ -333,6 +339,44 @@ void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  tex
 }
 
 
+void presenter::prepareStatsThing()
+{
+    player* aPlayer=player::getActivePlayer();
+    al_set_target_bitmap(this->statsStripe);
+    al_clear_to_color(al_map_rgba(0,0,0,255));
+    this->showText(1,1,0,5,"Garden: "+aPlayer->getBoard()->getName());
+    this->showObjectTile(1,0,0,0,aPlayer,true,_mode_onlyTop);
+    this->showText(2,0,0,0,std::to_string(aPlayer->countVisitedPlayers()));
+    this->showText(2,0,0,32,std::to_string(aPlayer->getEnergy()));
+    this->showObjectTile(4,0,0,0,aPlayer->getInventory()->getActiveWeapon(),true,_mode_onlyTop);
+    if( aPlayer->getInventory()->getActiveWeapon()!=NULL)
+    {
+        this->showText(5,0,0,32,std::to_string(aPlayer->getInventory()->getActiveWeapon()->getEnergy()));
+        this->showText(5,0,0,0,std::to_string(aPlayer->getInventory()->getActiveWeapon()->getAmmo()));
+    }
+    for (int cnt=0; cnt<5; cnt++)
+    {
+        int tokens;
+        bElem *key=aPlayer->getInventory()->getKey(_key,cnt,false);
+        if(key!=NULL)
+        {
+            tokens=aPlayer->getInventory()->countTokens(key->getType(),key->getSubtype());
+            this->showObjectTile(7+(cnt*2),0,0,0,key,true,_mode_onlyTop);
+            this->showText(8+(cnt*2),0,0,16,std::to_string(tokens));
+        }
+    }
+    this->showObjectTile(18,0,0,0,goldenApple::getApple(1),true,_mode_onlyTop);
+    this->showText(19,0,0,0,std::to_string(goldenApple::getAppleNumber()));
+    this->showText(19,0,0,32,std::to_string(aPlayer->getInventory()->countTokens(_goldenAppleType,0)));
+    this->showText(21,0,6,0,"Stats");
+    this->showText(21,0,5,32,"P:");
+    this->showText(21,1,5,0,"Dex:");
+    this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getGlobalPoints()));
+    this->showText(22,1,5,0,std::to_string(aPlayer->getStats()->getDexterity()));
+}
+
+
+
 // This method shows the gameField. now it uses only one chamber, no chamber selection or other fancy stuff - will probably move that to other class
 void presenter::showGameField(int relX,int relY)
 {
@@ -351,33 +395,22 @@ void presenter::showGameField(int relX,int relY)
         by=0;
     if (bx>this->_cp_attachedBoard->width-(this->scrTilesX))
         bx=this->_cp_attachedBoard->width-(this->scrTilesX);
-
     if (by>(this->_cp_attachedBoard->height-(this->scrTilesY)))
         by=this->_cp_attachedBoard->height-(this->scrTilesY);
     dx=(bx-this->previousPosition.x);
     dy=(by-this->previousPosition.y);
     if (dx==0 && this->positionOnScreen.x % this->sWidth>0) dx=-1;
     if (dy==0 && this->positionOnScreen.y % this->sHeight>0) dy=-1;
-
-
     this->positionOnScreen.x+=4*dx;
     this->positionOnScreen.y+=4*dy;
     this->previousPosition.x=this->positionOnScreen.x/this->sWidth;
     this->previousPosition.y=this->positionOnScreen.y/this->sHeight;
 
-
     offX=(this->positionOnScreen.x % this->sWidth);
     offY=(this->positionOnScreen.y % this->sHeight);
 
 
-    ALLEGRO_BITMAP* screen=al_get_target_bitmap();
-    // chamber *myChamber=this->_cp_attachedBoard;
-//std::cout<<bx<<" "<<by<<" "<<this->positionOnScreen.x<<" "<<this->positionOnScreen.y<<"\n";
-    // check if there is a need for top left corner to be recalculated
-    if (this->internalBitmap==NULL)
-    {
-        //  std::cout<<"******************* Dupa!!!\n";
-    }
+   // ALLEGRO_BITMAP* screen=al_get_target_bitmap();
 
     al_set_target_bitmap(this->internalBitmap);
     colour c=this->_cp_attachedBoard->getChColour();
@@ -401,74 +434,19 @@ void presenter::showGameField(int relX,int relY)
         this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false,_mode_onlyTop);
 
     }
-    al_set_target_bitmap(screen);
-    al_clear_to_color(al_map_rgba(15,15,25,255));
+
+    al_set_target_bitmap(al_get_backbuffer(display));
+    al_clear_to_color(al_map_rgba(15,25,45,255));
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY,0);
     if(player!=NULL)
     {
-        this->showText(1,this->scrTilesY+3,0,5,"Garden: "+player->getBoard()->getName());
-
-        this->showObjectTile(1,this->scrTilesY+2,0,0,player,true,_mode_onlyTop);
-        this->showText(2,this->scrTilesY+2,0,0,std::to_string(player->countVisitedPlayers()));
-        this->showText(2,this->scrTilesY+2,0,32,std::to_string(player->getEnergy()));
-        this->showObjectTile(4,this->scrTilesY+2,0,0,player->getInventory()->getActiveWeapon(),true,_mode_onlyTop);
-        if( player->getInventory()->getActiveWeapon()!=NULL)
-        {
-            this->showText(5,this->scrTilesY+2,0,32,std::to_string(player->getInventory()->getActiveWeapon()->getEnergy()));
-            this->showText(5,this->scrTilesY+2,0,0,std::to_string(player->getInventory()->getActiveWeapon()->getAmmo()));
-
-
-        }
-        for (int cnt=0; cnt<5; cnt++)
-        {
-            int tokens;
-            bElem *key=player->getInventory()->getKey(_key,cnt,false);
-            if(key!=NULL)
-            {
-                tokens=player->getInventory()->countTokens(key->getType(),key->getSubtype());
-                this->showObjectTile(7+(cnt*2),this->scrTilesY+2,0,0,key,true,_mode_onlyTop);
-                this->showText(8+(cnt*2),this->scrTilesY+2,0,16,std::to_string(tokens));
-
-
-            }
-        }
-        this->showObjectTile(18,this->scrTilesY+2,0,0,goldenApple::getApple(1),true,_mode_onlyTop);
-        this->showText(19,this->scrTilesY+2,0,0,std::to_string(goldenApple::getAppleNumber()));
-        this->showText(19,this->scrTilesY+2,0,32,std::to_string(player->getInventory()->countTokens(_goldenAppleType,0)));
-        // this->showText(21,this->scrTilesY+1,0,0,"Player");
-        this->showText(21,this->scrTilesY+1,6,32,"Stats");
-        this->showText(21,this->scrTilesY+2,5,0,"P:");
-        this->showText(21,this->scrTilesY+2,5,32,"Dex:");
-
-        this->showText(22,this->scrTilesY+2,5,0,std::to_string(player->getStats()->getGlobalPoints()));
-        this->showText(22,this->scrTilesY+2,5,32,std::to_string(player->getStats()->getDexterity()));
+        this->prepareStatsThing();
+        al_set_target_bitmap(al_get_backbuffer(display));
+        al_draw_bitmap_region(this->statsStripe,0,0,this->scrWidth,196,_offsetX,this->bsHeight+(_offsetY*2),0);
 
     }
-    al_wait_for_vsync();
-
     al_flip_display();
 }
-
-void presenter::showGameFieldLoop()
-{
-    ALLEGRO_TIMER* alTimer = al_create_timer(1000.0 );
-    ALLEGRO_EVENT event;
-    ALLEGRO_EVENT_QUEUE* evQueue= al_create_event_queue();
-    bool fin=false;
-    al_register_event_source(evQueue,al_get_timer_event_source(alTimer));
-//al_start_timer(alTimer);
-    while(!fin)
-    {
-        al_wait_for_event(evQueue, &event);
-        if(event.type == ALLEGRO_EVENT_TIMER)
-        {
-            this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
-            //std::cout<<"zZz";
-        }
-
-    }
-}
-
 
 
 int presenter::presentEverything()

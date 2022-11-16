@@ -73,7 +73,8 @@ public:
     //relX and relY are coordinates on a board, that indicate where the player is
     void showGameField(int relX, int relY);
     ALLEGRO_EVENT_QUEUE* evQueue;
-    void showGameFieldLoop();
+    //void showGameFieldLoop();
+    void prepareStatsThing();
 
 protected:
     bool attachGraphicsToSPrites;
@@ -93,6 +94,7 @@ private:
     coords positionOnScreen;
 
     ALLEGRO_BITMAP* internalBitmap;
+    ALLEGRO_BITMAP* statsStripe;
     int bsHeight,bsWidth;
     rapidjson::Document skinDefJson;
     _cp_gameReasonOut presentGamePlay();
