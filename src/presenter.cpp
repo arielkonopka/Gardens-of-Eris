@@ -437,12 +437,12 @@ void presenter::showGameField(int relX,int relY)
 
     al_set_target_bitmap(al_get_backbuffer(display));
     al_clear_to_color(al_map_rgba(15,25,45,255));
-    al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY,0);
+    al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
     if(player!=NULL)
     {
         this->prepareStatsThing();
         al_set_target_bitmap(al_get_backbuffer(display));
-        al_draw_bitmap_region(this->statsStripe,0,0,this->scrWidth,196,_offsetX,this->bsHeight+(_offsetY*2),0);
+        al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
 
     }
     al_flip_display();
