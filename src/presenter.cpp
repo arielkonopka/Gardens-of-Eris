@@ -51,7 +51,7 @@ presenter::~presenter()
 bool presenter::initializeDisplay()
 {
     al_set_new_display_flags(ALLEGRO_FULLSCREEN);
- //   al_set_new_display_refresh_rate( 50 );
+//   al_set_new_display_refresh_rate( 50 );
     this->display = al_create_display(this->scrWidth, this->scrHeight);
     al_hide_mouse_cursor(this->display);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
@@ -274,6 +274,8 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
     coords coords,offset= {0,0};
     int sx,sy;
     int aphs,subtyps,dirs;
+    videoElement::aphases *phs; //Video element, that defines the animation of an object
+    if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem==NULL) return;
     if(!ignoreOffset)
     {
         if(elem!=NULL)
@@ -281,15 +283,6 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
         offsetX=offset.x;
         offsetY=offset.y;
     }
-    videoElement::aphases *phs; //Video element, that defines the animation of an object
-//the tile would not fit in the screen? ignore
-    // if(elem!=NULL)
-    //     std::cout<<elem->getType()<<".";
-
-    if (x>this->scrTilesX+20 || y>this->scrTilesY+20) return;
-//empty element? ignore or end the recursion cycle
-    if (elem==NULL)
-        return;
     /* We check, if the object is standing on anything, to draw it first, we also make sure, we were called the right way */
     if (elem->getSteppingOnElement()!=NULL && (mode==_mode_all || mode==_mode_onlyFloor))
         this->showObjectTile(x,y,offsetX,offsetY,elem->getSteppingOnElement(),ignoreOffset,_mode_all);
@@ -376,49 +369,39 @@ void presenter::prepareStatsThing()
 }
 
 
-
-// This method shows the gameField. now it uses only one chamber, no chamber selection or other fancy stuff - will probably move that to other class
-void presenter::showGameField(int relX,int relY)
+/* We kinda move a window in a big screen, that is whole board.We track the upper left point, which is placed in previousPosition
+ */
+void presenter::showGameField()
 {
-    player* player=player::getActivePlayer();;
+    player* player=player::getActivePlayer();
+    coords b=player->getCoords()-(coords){(this->scrTilesX)/2,(this->scrTilesY)/2};
     std::vector<movingSprite> mSprites;
     mSprites.clear();
     int x,y;
-    int bx=(relX)-((this->scrTilesX)/2);
-    int by=(relY)-((this->scrTilesY)/2);
-    int dx;
-    int dy;
+    int bx,by;
+    int dx,dy;
     int offX=0,offY=0;
-    if (bx<0)
-        bx=0;
-    if (by<0)
-        by=0;
-    if (bx>this->_cp_attachedBoard->width-(this->scrTilesX))
-        bx=this->_cp_attachedBoard->width-(this->scrTilesX);
-    if (by>(this->_cp_attachedBoard->height-(this->scrTilesY)))
-        by=this->_cp_attachedBoard->height-(this->scrTilesY);
+    bx=(b.x>0)?((b.x>player->getBoard()->width-(this->scrTilesX))?player->getBoard()->width-(this->scrTilesX):b.x):0;
+    by=(b.y>0)?((b.y>(player->getBoard()->height-(this->scrTilesY)))?player->getBoard()->height-(this->scrTilesY):b.y):0;
     dx=(bx-this->previousPosition.x);
     dy=(by-this->previousPosition.y);
     if (dx==0 && this->positionOnScreen.x % this->sWidth>0) dx=-1;
     if (dy==0 && this->positionOnScreen.y % this->sHeight>0) dy=-1;
-    this->positionOnScreen.x+=4*dx;
-    this->positionOnScreen.y+=4*dy;
+    this->positionOnScreen.x+=2*dx;
+    this->positionOnScreen.y+=2*dy;
     this->previousPosition.x=this->positionOnScreen.x/this->sWidth;
     this->previousPosition.y=this->positionOnScreen.y/this->sHeight;
-
     offX=(this->positionOnScreen.x % this->sWidth);
     offY=(this->positionOnScreen.y % this->sHeight);
 
-
-   // ALLEGRO_BITMAP* screen=al_get_target_bitmap();
-
+    this->prepareStatsThing();
     al_set_target_bitmap(this->internalBitmap);
     colour c=this->_cp_attachedBoard->getChColour();
     al_clear_to_color(al_map_rgba(c.r,c.g,c.b,c.a));
     for(x=0; x<this->scrTilesX+1; x++)
         for(y=0; y<this->scrTilesY+1; y++)
         {
-            bElem* elemToDisplay=this->_cp_attachedBoard->getElement(x+(this->positionOnScreen.x/this->sWidth),y+(this->positionOnScreen.y/this->sHeight));
+            bElem* elemToDisplay=player->getBoard()->getElement(x+(this->previousPosition.x),y+(this->previousPosition.y));
             if(elemToDisplay!=NULL && elemToDisplay->getMoved()>0)
             {
                 mSprites.push_back({x,y,elemToDisplay});
@@ -438,13 +421,8 @@ void presenter::showGameField(int relX,int relY)
     al_set_target_bitmap(al_get_backbuffer(display));
     al_clear_to_color(al_map_rgba(15,25,45,255));
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
-    if(player!=NULL)
-    {
-        this->prepareStatsThing();
-        al_set_target_bitmap(al_get_backbuffer(display));
-        al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
+    al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
 
-    }
     al_flip_display();
 }
 
@@ -492,7 +470,7 @@ int presenter::presentEverything()
 //            {
 
 
-            this->showGameField(this->_cp_attachedBoard->player.x,this->_cp_attachedBoard->player.y);
+            this->showGameField();
             //  std::cout<<"\033[0G x,y ->"<<this->_cp_attachedBoard->player.x<<","<<this->_cp_attachedBoard->player.y;
             //  std::cout<<blue<<"\n";
 //            }

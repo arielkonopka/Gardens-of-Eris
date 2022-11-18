@@ -67,6 +67,23 @@ typedef struct coords
             return true;
         return false;
     }
+    inline coords operator+(coords a)
+    {
+        return (coords){x+a.x,y+a.y};
+    }
+    inline coords operator-(coords a)
+    {
+        return (coords){x-a.x , y-a.y};
+    }
+    inline coords operator%(coords a)
+    {
+        return (coords){x%a.x,y%a.y};
+    }
+    inline coords operator*(int a)
+    {
+        return (coords){x*a,y*a};
+    }
+
 
 } coords;
 

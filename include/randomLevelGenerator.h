@@ -15,8 +15,8 @@
 #include <vector>
 
 #define _debugRandomGenerator true
-#define Wmin 3
-#define Hmin 3
+#define Wmin 5
+#define Hmin 5
 #define _iterations 36
 typedef struct elementToPlace
 {

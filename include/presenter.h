@@ -71,7 +71,7 @@ public:
     void showObjectTile(int x,int y,int offsetX,int offsetY,bElem *elem,bool ignoreOffset,int mode);
     void showText(int x,int y,int offsetX,int offsetY,std::string text);
     //relX and relY are coordinates on a board, that indicate where the player is
-    void showGameField(int relX, int relY);
+    void showGameField();
     ALLEGRO_EVENT_QUEUE* evQueue;
     //void showGameFieldLoop();
     void prepareStatsThing();

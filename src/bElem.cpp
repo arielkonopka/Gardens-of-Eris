@@ -581,9 +581,9 @@ bool bElem::isSteppableDirection(direction di)
     tmpcoords=this->getAbsCoords(di);
     if(!(tmpcoords==NOCOORDS))
     {
-        if(this->attachedBoard->getElement(tmpcoords.x,tmpcoords.y)!=NULL)
+        if(this->attachedBoard->getElement(tmpcoords)!=NULL)
         {
-            return this->attachedBoard->getElement(tmpcoords.x,tmpcoords.y)->isSteppable();
+            return this->attachedBoard->getElement(tmpcoords)->isSteppable();
         }
     }
     return false;
