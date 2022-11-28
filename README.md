@@ -12,7 +12,7 @@ From the beginning, this project is not *product oriented*, but rather it is a w
 
 I thought of writting similar kind of a game, since I was a kid. Few years back, I added some code to [GNU Robbo project](http://gnurobbo.sourceforge.net/), and it was fun, but that was pure C and SDL1.2. 
 
-So as soon as I decided to do some coding, I thought of a game to make. I thought of the game's story, and now I'm coding it. In the repo you can find a [Dia](https://en.wikipedia.org/wiki/Dia_(software)) [file](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/Diagram1.dia?raw=true), with the idea, how the classes in the game should look like. This diagram is far from being finished as well.
+So as soon as I decided to do some coding, I thought of a game to make. I thought of the game's story, and now I'm coding it. In the repo you can find an ubrello5 file with the idea, how the classes in the game should look like. This diagram is far from being finished as well.
 I thought of a random level generator because of two reasons:
 
 - I would not have to write level editor
