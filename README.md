@@ -1,9 +1,9 @@
 
-# Garden of Eris aka Pieruński Labirynt
+# Garden of Eris or Obnoxious labirynth.
 
 Welcome to my pet project. I started it in [Python](https://github.com/arielkonopka/pyLurker), but got to the conclusion, that Python would not deliver sufficient speed with the number of elements I plan to have at the same time.
 
-From the beginning, this project is not *product oriented*, but rather it is a training. I stopped writting code many years ago, and I simply wanted to feel the joy of coding again. Since my life is rather not that *computer centric*, I spend fairly little time one the project, and therefore it advances slowly.
+From the beginning, this project is not *product oriented*, but rather it is a way to spend little time on building somthing. I stopped writting code many years ago, and I simply wanted to feel the joy of coding again. Since my life is rather not that *computer centric*, I spend fairly little time one the project, and therefore it advances slowly.
 
 **This is work in progress. It usually works, but be warned.**
 
