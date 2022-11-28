@@ -56,16 +56,16 @@ videoElement::videoElementDef* plainMissile::getVideoElementDef()
 {
     return plainMissile::vd;
 }
-bool plainMissile::setEnergy(int pints)
+bool plainMissile::setEnergy(int points)
 {
-
     if(this->statsOwner!=NULL)
     {
-        int randomFactor=bElem::randomNumberGenerator()%((pints>1)?pints:1);
-        int f2=(randomFactor*this->statsOwner->getStats()->getDexterity())/_dexterityLevels;
-        mechanical::setEnergy(f2+pints/2);
+        int ep=(points*4)/(_dexterityLevels+1-this->statsOwner->getStats()->getDexterity());
+        int dp=points-ep;
+        int r=this->randomNumberGenerator()%(points+1);
+        mechanical::setEnergy(((r<=dp)?ep/2:ep)+1);
     } else
-        mechanical::setEnergy(pints);
+        mechanical::setEnergy(points);
     return true;
 }
 

@@ -300,23 +300,34 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
     dirs=elem->getVideoElementDef()->directions;
     // std::cout<<"* D"<<elem->getType()<<","<<elem->getSubtype()<<","<<subtyps<<","<< elem->getAnimPh()<<","<<elem->getDirection()<<"\n";
 
+    if( elem->getType()==_belemType || elem->isSteppable()==true || elem->canBeDestroyed()==false || (!elem->isDying() && !elem->isDestroyed() && !elem->isTeleporting()) )
+    {
+        coords=(*phs)[elem->getSubtype()%subtyps][elem->getDirection()%dirs][elem->getAnimPh()%aphs];
+        //now calculate the position on the sprites surface
+        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
+        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
+        //finally draw that
+        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
+    }
+
+
+
     if (elem->isDying() || elem->isDestroyed())
     {
         coords=(*elem->getVideoElementDef()->dying)[elem->getAnimPh()%(elem->getVideoElementDef()->dying->size())];
+        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
+        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
+        //finally draw that
+        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
     }
-    else if (elem->isTeleporting())
+    if (elem->isTeleporting())
     {
         coords=(*elem->getVideoElementDef()->teleporting)[elem->getAnimPh()%(elem->getVideoElementDef()->teleporting->size())];
+        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
+        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
+        //finally draw that
+        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
     }
-    else
-    {
-        coords=(*phs)[elem->getSubtype()%subtyps][elem->getDirection()%dirs][elem->getAnimPh()%aphs];
-    }
-    //now calculate the position on the sprites surface
-    sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
-    sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
-    //finally draw that
-    al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
 }
 
 
@@ -387,8 +398,8 @@ void presenter::showGameField()
     dy=(by-this->previousPosition.y);
     if (dx==0 && this->positionOnScreen.x % this->sWidth>0) dx=-1;
     if (dy==0 && this->positionOnScreen.y % this->sHeight>0) dy=-1;
-    this->positionOnScreen.x+=2*dx;
-    this->positionOnScreen.y+=2*dy;
+    this->positionOnScreen.x+=dx*2;
+    this->positionOnScreen.y+=dy*2;
     this->previousPosition.x=this->positionOnScreen.x/this->sWidth;
     this->previousPosition.y=this->positionOnScreen.y/this->sHeight;
     offX=(this->positionOnScreen.x % this->sWidth);

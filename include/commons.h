@@ -1,6 +1,7 @@
 #ifndef COMMONS_H
 #define COMMONS_H
-
+#include <stddef.h>
+#include "configManager.h"
 #define _belemType 0
 #define _stillElemType 1
 #define _rubishType 2

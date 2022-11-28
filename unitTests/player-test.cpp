@@ -106,6 +106,40 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
     }
     delete mc;
 }
+BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestroyedWithBomb)
+{
+    chamber* mc=new chamber(10,10);
+    goldenApple* gc=new goldenApple(mc);
+    player* p=new player(mc);
+    simpleBomb* sb=new simpleBomb(mc);
+    p->stepOnElement(mc->getElement(2,1));
+    sb->stepOnElement(mc->getElement(2,2));
+    gc->stepOnElement(mc->getElement(1,1));
+    gc=new goldenApple(mc);
+    gc->stepOnElement(mc->getElement(1,2));
+    p->collect(mc->getElement(1,1));
+    p->collect(mc->getElement(1,2));
+    BOOST_CHECK(goldenApple::getAppleNumber()>=2);
+    sb->kill();
+    // We take time for the exploded bomb to finish
+    for(int c=0;c<100;c++)
+        bElem::runLiveElements();
+    BOOST_CHECK(goldenApple::getAppleNumber()>=2);
+
+    gCollect::getInstance()->purgeGarbage();
+    sb=new simpleBomb(mc);
+    sb->stepOnElement(mc->getElement(2,2));
+    sb->kill();
+    // We take time for the exploded bomb to finish
+    for(int c=0;c<100;c++)
+        bElem::runLiveElements();
+    gCollect::getInstance()->purgeGarbage();
+    BOOST_CHECK(goldenApple::getAppleNumber()==0);
+
+    delete mc;
+
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

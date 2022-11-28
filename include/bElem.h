@@ -1,9 +1,9 @@
 #ifndef BELEM_H
 #define BELEM_H
-#include <stddef.h>
+#include "commons.h"
 #include "objectTypes.h"
 
-#include "commons.h"
+
 #include "inventory.h"
 //#include "rubbish.h"
 #include "chamber.h"
@@ -39,7 +39,7 @@ public:
 
     virtual int getInstanceid();
     static void resetInstances();
-
+    virtual ALLEGRO_MUTEX* getMyMutex();
     void registerLiveElement(bElem* who);
     void deregisterLiveElement(bElem* who);
     static void runLiveElements();
@@ -166,6 +166,7 @@ protected:
     bool amIUsable;
     int killed;
 private:
+    ALLEGRO_MUTEX* elementMutex;
     unsigned int telTimeReq;
     unsigned int telReqTime;
     unsigned int killTimeReq;
