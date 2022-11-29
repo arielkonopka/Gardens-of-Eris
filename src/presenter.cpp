@@ -50,7 +50,7 @@ presenter::~presenter()
 }
 bool presenter::initializeDisplay()
 {
-    al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+    al_set_new_display_flags(ALLEGRO_WINDOWED);//ALLEGRO_FULLSCREEN
 //   al_set_new_display_refresh_rate( 50 );
     this->display = al_create_display(this->scrWidth, this->scrHeight);
     al_hide_mouse_cursor(this->display);
@@ -101,46 +101,28 @@ void presenter::showSplash()
 }
 bool presenter::loadCofiguredData()
 {
-    /*
-        read the configuration file
-    */
-    FILE* fp = fopen("data/skins.json", "rb"); // non-Windows use "r"
-    char readBuffer[65536];
-    rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
-    this->skinDefJson.ParseStream(is);
-    fclose(fp);
-    al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
+    configManager* cfgM=configManager::getInstance();
+    videoElement::videoElementDef::initializeDriver();
+    gameConfig* gcfg=cfgM->getConfig();
+
 // ok the sprite filename should be available now, let's load it
     al_init_font_addon();
     al_init_ttf_addon();
 //    std::cout<<this->skinDefJson["FontFile"].GetString()<<"\n";
-    this->myfont=al_load_ttf_font(this->skinDefJson["FontFile"].GetString(),32,0);
+    this->myfont=al_load_ttf_font(gcfg->FontFile.c_str(),32,0);
     if(this->myfont==NULL)
     {
         std::cout<<"Fonty się nie załadowały\n";
         return false;
     }
 
-    this->sprites=al_load_bitmap(this->skinDefJson["SpriteFile"].GetString());
-
-    if (this->sprites==NULL)
-    {
-        std::cout<<"Sprity się nie załadowały!\n";
-        return false;
-    }
-//    std::cout<<"Sprites!"<<this->sprites<<" "<<this->skinDefJson["SpriteFile"].GetString()<<"\n";
-
-
     //load all the necessary constants about the graphics in the game
-    this->splashFname=this->skinDefJson["splash screen"].GetString();
-    this->sWidth=this->skinDefJson["width"].GetInt();
-    this->sHeight=this->skinDefJson["height"].GetInt();
-    this->spacing=this->skinDefJson["spacing"].GetInt();
+    this->splashFname=gcfg->splashScr;
+    this->sWidth=gcfg->tileWidth;
+    this->sHeight=gcfg->tileHeight;
+    this->spacing=gcfg->spacing;
     this->scrTilesX=(this->scrWidth-(2*_offsetX))/this->sWidth;
     this->scrTilesY=((this->scrHeight-(2*_offsetY))/this->sHeight)-1;
-    rapidjson::Value& dying=this->skinDefJson["Dying"];
-    rapidjson::Value& teleporting=this->skinDefJson["Teleporting"];
-    rapidjson::Value& sprlist=this->skinDefJson["SpriteData"];
     this->bsWidth=this->scrTilesX*this->sWidth;
     this->bsHeight=this->scrTilesY*this->sHeight;
 
@@ -148,110 +130,7 @@ bool presenter::loadCofiguredData()
 
 
 //ok, now time for reading sprite data for individual sprites and kill/teleport patterns (TODO:we could make them individual for each object)
-    for(unsigned int c=0; c<sprlist.Size(); c++)
-    {
-        //OK, time to create VideoElementDefinitions
-        //read the animation phases array sizes - warning unlike the python counterpart, we will not implement
-        // variable length of different anim phases in the same object - that should not be a problem, really
-        rapidjson::Value& spr=sprlist[c];
-        auto subtypes=sprlist[c]["AnimDef"].Size();
-        auto directions=sprlist[c]["AnimDef"][0].Size();
-        auto animphases=sprlist[c]["AnimDef"][0][0].Size();
-        //     std::cout<<subtypes<<" "<<directions<<" "<<animphases<<"\n";
-        videoElement::videoElementDef* ved=new videoElement::videoElementDef(subtypes,directions,animphases);
 
-        for(unsigned int c0=0; c0<dying.Size(); c0++)
-        {
-            int x=dying[c0][0].GetInt();
-            int y=dying[c0][1].GetInt();
-            ved->addKill(x,y);
-            //std::cout<<x<<" "<<y<<" kill\n";
-        }
-        for(unsigned int c0=0; c0<teleporting.Size(); c0++)
-        {
-            int x=teleporting[c0][0].GetInt();
-            int y=teleporting[c0][1].GetInt();
-            ved->addTeleporting(x,y);
-            //std::cout<<x<<" "<<y<<" telep\n";
-        }
-
-        //load the animation sprites into videoElementDefinition
-        for(unsigned int c1=0; c1<subtypes; c1++)
-        {
-            for(unsigned int c2=0; c2<directions; c2++)
-            {
-                for(unsigned int c3=0; c3<animphases; c3++)
-                {
-                    int x=sprlist[c]["AnimDef"][c1][c2][c3][0].GetInt();
-                    int y=sprlist[c]["AnimDef"][c1][c2][c3][1].GetInt();
-                    //      std::cout<<c1<<" "<<c2<<" "<<c3<<" "<<x<<" "<<y<<"\n";
-                    ved->setValuesFor(this->sprites,c1,c2,c3,x,y); //We set the sprite frame for that particlular anim phase
-
-
-                }
-            }
-        }
-
-        //attatch video definition thinggy to the object class
-        // Add here all objects that are created
-        switch(spr["Type"].GetInt())
-        {
-        case _belemType:
-            ::bElem::vd=ved;
-            break;
-        case _wallType:
-            ::wall::vd=ved;
-            break;
-        case _rubishType:
-            ::rubbish::vd=ved;
-            break;
-        case _nonSteppableType:
-            ::nonSteppable::vd=ved;
-            break;
-        case _movableType:
-            ::movableElements::vd=ved;
-            break;
-        case _monster:
-            ::monster::vd=ved;
-            break;
-        case _player:
-            ::player::vd=ved;
-            break;
-        case _collectible:
-            ::collectible::vd=ved;
-            break;
-        case _door:
-            ::door::vd=ved;
-            break;
-        case _key:
-            ::key::vd=ved;
-            break;
-        case _plainGun:
-            ::plainGun::vd=ved;
-            break;
-        case _plainMissile:
-            ::plainMissile::vd=ved;
-            break;
-        case _bunker:
-            ::bunker::vd=ved;
-            break;
-        case _teleporter:
-            ::teleport::vd=ved;
-            break;
-        case _goldenAppleType:
-            ::goldenApple::vd=ved;
-            break;
-        case _simpleBombType:
-            ::simpleBomb::vd=ved;
-            break;
-        case _patrollingDrone:
-            ::patrollingDrone::vd=ved;
-            break;
-
-
-        }
-    }
-    //Here we should have the videoElementDefinitionsTable filled
 
 
 
@@ -273,8 +152,7 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
 {
     coords coords,offset= {0,0};
     int sx,sy;
-    int aphs,subtyps,dirs;
-    videoElement::aphases *phs; //Video element, that defines the animation of an object
+   // videoElement::aphases *phs; //Video element, that defines the animation of an object
     if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem==NULL) return;
     if(!ignoreOffset)
     {
@@ -293,16 +171,16 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
     if (elem->getVideoElementDef()==NULL || (mode==_mode_onlyFloor))
         return;
 
-    phs=elem->getVideoElementDef()->defArray;
-    //get maximum values of subtypes, animphases and directions that are present in the video element definition
-    aphs=elem->getVideoElementDef()->animphases;
-    subtyps=elem->getVideoElementDef()->subtypes;
-    dirs=elem->getVideoElementDef()->directions;
-    // std::cout<<"* D"<<elem->getType()<<","<<elem->getSubtype()<<","<<subtyps<<","<< elem->getAnimPh()<<","<<elem->getDirection()<<"\n";
+
+
+    int sType=elem->getSubtype()%elem->getVideoElementDef()->defArray.size();
+    int sDir=((int)elem->getDirection())%elem->getVideoElementDef()->defArray[sType].size();
+    int sPh=elem->getAnimPh()%elem->getVideoElementDef()->defArray[sType][sDir].size();
+
 
     if( elem->getType()==_belemType || elem->isSteppable()==true || elem->canBeDestroyed()==false || (!elem->isDying() && !elem->isDestroyed() && !elem->isTeleporting()) )
     {
-        coords=(*phs)[elem->getSubtype()%subtyps][elem->getDirection()%dirs][elem->getAnimPh()%aphs];
+        coords=elem->getVideoElementDef()->defArray[sType][sDir][sPh];
         //now calculate the position on the sprites surface
         sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
         sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
@@ -312,17 +190,37 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
 
 
 
-    if (elem->isDying() || elem->isDestroyed())
+    if (elem->isDying())
     {
-        coords=(*elem->getVideoElementDef()->dying)[elem->getAnimPh()%(elem->getVideoElementDef()->dying->size())];
+        coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->dying.size())];
         sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
         sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
         //finally draw that
         al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
     }
+    if (elem->isDestroyed())
+    {
+        coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->destroying.size())];
+        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
+        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
+        //finally draw that
+        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
+    }
+
+    if(elem->isFading())
+    {
+        coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->fadingOut.size())];
+        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
+        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
+        //finally draw that
+        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
+
+    }
+
+
     if (elem->isTeleporting())
     {
-        coords=(*elem->getVideoElementDef()->teleporting)[elem->getAnimPh()%(elem->getVideoElementDef()->teleporting->size())];
+        coords=elem->getVideoElementDef()->teleporting[elem->getAnimPh()%(elem->getVideoElementDef()->teleporting.size())];
         sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
         sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
         //finally draw that

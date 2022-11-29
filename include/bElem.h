@@ -17,8 +17,12 @@
 #include "gCollect.h"
 
 #include "elemStats.h"
+namespace videoElement
+{
 
 
+    class videoElementDef;
+}
 //class gCollect;
 class chamber;
 
@@ -130,7 +134,7 @@ public:
     static void tick();
     virtual unsigned int getCntr();
     virtual chamber* getBoard();
-
+    virtual constexpr bool isFading() { return false; };
     virtual bool isLocked();
     virtual bool lockThisObject(bElem* who);
     virtual bool unlockThisObject(bElem* who);

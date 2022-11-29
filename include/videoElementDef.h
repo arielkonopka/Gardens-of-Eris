@@ -6,6 +6,8 @@
 //#include <allegro5/allegro_font.h>
 //#import "presenter.h"
 #include "commons.h"
+#include "configManager.h"
+
 /*
     Pointer to an object of this class, will be attached to every element in the game. This way, we can either share some animation definitions among
     elements in the game, but we also will be able to give different animation definitions to the same type of objects.
@@ -22,28 +24,24 @@ by zmieścić wszystkie możliwe typy ikonek dla obietków zdefiniujemy następu
   zrealizujemy multiarray
 
 */
-typedef boost::multi_array<::coords, 3> aphases;
+typedef std::vector< std::vector<std::vector<::coords>>>  aphases;
 typedef std::vector<::coords> coordVector;
 
 class videoElementDef
 {
     public:
-        int subtypes;
-        int directions;
-        int animphases;
-        void setValuesFor(ALLEGRO_BITMAP *sprites,int s,int d,int a,int x,int y);
-        void addKill(int x, int y);
-        void addTeleporting(int x, int y);
-        aphases  *defArray;
-        coordVector *teleporting;
-        coordVector *dying;
-        videoElementDef(int sts,int dirs,int anims);
+        aphases  defArray;
+        coordVector teleporting;
+        coordVector dying;
+        coordVector destroying;
+        coordVector fadingOut;
+        videoElementDef(ALLEGRO_BITMAP *sprites_);
         ~videoElementDef();
         videoElementDef(const videoElementDef& other);
         ALLEGRO_BITMAP *sprites;
-
+        static void initializeDriver();
     protected:
-
+        static bool initialized;
     private:
 
 };

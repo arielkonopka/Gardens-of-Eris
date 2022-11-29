@@ -9,6 +9,12 @@ opts="-Wall -std=gnu++20 -march=native ${defines} -g -O3 -Og"
 
 
 #
+if [ "${1}" = "-m" ] ; then
+    module="src/${2}"
+    echo ${gccbin} ${extraflags} ${opts} -c ${module}.cpp -I./include  -o ${objPath}${module}.o
+ ${gccbin} ${extraflags} ${opts} -c ${module}.cpp -I./include  -o ${objPath}${module}.o
+
+fi
 if [ "${1}" = "-a" ] || [ "${1}" = "-g" ] ; then
 
 echo -n "Building the game ["

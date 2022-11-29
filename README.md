@@ -93,6 +93,9 @@ When it is odd:
     We find the first teleport of the same type but on different chamber. Then we establish connection, where the counterpart will direct to the first teleport.
 
 
+
+
+
 # Shooting guns
 A plain gun shoots plain missiles. It is used by an element that can collect it (or create it like bunker) and can use it. A gun takes the operators dexterity, then finds a random value that will be used to decrease missile energy. 
 Then after the shot, the guns energy is halved. It restores with mechanics() calls. So the faster you shoot, the weaker shots you produce.
@@ -111,3 +114,9 @@ When running build.sh, the unit tests would be built as well. You can then run t
     a player shoots a shot and dies just right after.
     the bullet goes for a while and hits something. (flies longer than the player lives), we would not want the garbage collector to destroy the player, until the bullet finishes its existance.
     The player would be removed from the board, just the garbage collector would not clean it out.
+
+
+
+## ChangeLog
+Now every object can have its own animations of death, teleport, destruction and fadingOut, the last one is not supported yet
+
