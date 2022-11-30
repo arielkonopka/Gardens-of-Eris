@@ -1,9 +1,9 @@
 
-# Garden of Eris aka Pieruński Labirynt
+# Garden of Eris or Obnoxious labirynth.
 
 Welcome to my pet project. I started it in [Python](https://github.com/arielkonopka/pyLurker), but got to the conclusion, that Python would not deliver sufficient speed with the number of elements I plan to have at the same time.
 
-From the beginning, this project is not *product oriented*, but rather it is a training. I stopped writting code many years ago, and I simply wanted to feel the joy of coding again. Since my life is rather not that *computer centric*, I spend fairly little time one the project, and therefore it advances slowly.
+From the beginning, this project is not *product oriented*, but rather it is a way to spend little time on building somthing. I stopped writting code many years ago, and I simply wanted to feel the joy of coding again. Since my life is rather not that *computer centric*, I spend fairly little time one the project, and therefore it advances slowly.
 
 **This is work in progress. It usually works, but be warned.**
 
@@ -12,7 +12,7 @@ From the beginning, this project is not *product oriented*, but rather it is a t
 
 I thought of writting similar kind of a game, since I was a kid. Few years back, I added some code to [GNU Robbo project](http://gnurobbo.sourceforge.net/), and it was fun, but that was pure C and SDL1.2. 
 
-So as soon as I decided to do some coding, I thought of a game to make. I thought of the game's story, and now I'm coding it. In the repo you can find a [Dia](https://en.wikipedia.org/wiki/Dia_(software)) [file](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/Diagram1.dia?raw=true), with the idea, how the classes in the game should look like. This diagram is far from being finished as well.
+So as soon as I decided to do some coding, I thought of a game to make. I thought of the game's story, and now I'm coding it. In the repo you can find an ubrello5 file with the idea, how the classes in the game should look like. This diagram is far from being finished as well.
 I thought of a random level generator because of two reasons:
 
 - I would not have to write level editor
@@ -93,6 +93,9 @@ When it is odd:
     We find the first teleport of the same type but on different chamber. Then we establish connection, where the counterpart will direct to the first teleport.
 
 
+
+
+
 # Shooting guns
 A plain gun shoots plain missiles. It is used by an element that can collect it (or create it like bunker) and can use it. A gun takes the operators dexterity, then finds a random value that will be used to decrease missile energy. 
 Then after the shot, the guns energy is halved. It restores with mechanics() calls. So the faster you shoot, the weaker shots you produce.
@@ -111,3 +114,9 @@ When running build.sh, the unit tests would be built as well. You can then run t
     a player shoots a shot and dies just right after.
     the bullet goes for a while and hits something. (flies longer than the player lives), we would not want the garbage collector to destroy the player, until the bullet finishes its existance.
     The player would be removed from the board, just the garbage collector would not clean it out.
+
+
+
+## ChangeLog
+Now every object can have its own animations of death, teleport, destruction and fadingOut, the last one is not supported yet
+

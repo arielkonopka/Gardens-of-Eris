@@ -15,7 +15,7 @@ public:
     virtual ~plainMissile();
     virtual bool mechanics();
     virtual void stomp(bElem *who);
-    virtual bool setEnergy(int pints);
+    virtual bool setEnergy(int points);
 protected:
 
 

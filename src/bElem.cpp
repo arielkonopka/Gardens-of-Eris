@@ -91,6 +91,7 @@ int bElem::getWait()
 }
 void bElem::init()
 {
+    this->elementMutex=al_create_mutex();
     this->telReqTime=0;
     this->killTimeReq=0;
     this->destTimeReq=0;
@@ -408,6 +409,7 @@ bElem* bElem::getElementInDirection(direction di)
 bElem::~bElem()
 {
     delete this->myStats;
+    al_destroy_mutex(this->elementMutex);
     if(this->isLiveElement())
         this->deregisterLiveElement(this);
     if(this->myInventory!=NULL)
@@ -416,6 +418,13 @@ bElem::~bElem()
 
     }
 }
+
+
+ALLEGRO_MUTEX* bElem::getMyMutex()
+{
+    return this->elementMutex;
+}
+
 
 int bElem::getType()
 {
@@ -482,10 +491,17 @@ bool bElem::destroy()
         this->destroyed=_defaultDestroyTime+this->getCntr();
         this->destTimeBeg=this->getCntr();
         this->destTimeReq=_defaultDestroyTime;
-        if(this->getSteppingOnElement()!=NULL)
-            this->getSteppingOnElement()->destroy();
+        //if(this->getSteppingOnElement()!=NULL)
+//            this->getSteppingOnElement()->destroy();
 
         //  this->killed=_defaultDestroyTime+this->getCntr();
+        return true;
+    }
+    if (this->isSteppable())
+    {
+        this->destroyed=_defaultDestroyTime+this->getCntr();
+        this->destTimeBeg=this->getCntr();
+        this->destTimeReq=_defaultDestroyTime;
         return true;
     }
     return false;
@@ -541,7 +557,7 @@ bool bElem::mechanics()
     if((this->getBoard()==NULL || this->getCoords()==NOCOORDS) && (this->getCollector()==NULL))
         return false;
 
-    if (this->canBeDestroyed() && (long int)this->destroyed>0 && this->getCntr()>=this->destTimeBeg+this->destTimeReq-1  )
+    if (this->canBeDestroyed() && (long int)this->destroyed>0 && this->getCntr()>=this->destTimeBeg+this->destTimeReq-1 && this->getType()!=_belemType )
     {
         this->disposeElement();
         return false;
@@ -708,7 +724,9 @@ bool bElem::selfAlign()
 
 bool bElem::setSubtype(int st)
 {
+    al_lock_mutex(this->elementMutex);
     this->subtype=st;
+    al_unlock_mutex(this->elementMutex);
     return true;
 }
 
@@ -726,7 +744,9 @@ int bElem::getEnergy()
 
 bool bElem::setEnergy(int points)
 {
+    al_lock_mutex(this->elementMutex);
     this->myStats->setEnergy(points);
+    al_unlock_mutex(this->elementMutex);
     return true;
 }
 

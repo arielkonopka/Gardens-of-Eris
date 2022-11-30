@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(AsimmetricChamberAreasSearch)
         chamberArea::foundAreas.clear();
         root->findChambersCloseToSurface(1,19000);
         if(chamberArea::foundAreas.size()==0) break;
-        for(int c2=0; c2<chamberArea::foundAreas.size(); c2++)
+        for(unsigned int c2=0; c2<chamberArea::foundAreas.size(); c2++)
         {
             chamberArea* chmA=chamberArea::foundAreas[c2];
             delete chmA;

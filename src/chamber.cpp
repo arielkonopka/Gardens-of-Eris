@@ -17,6 +17,10 @@ chamber::chamber(int x,int y)
         {
             bElem* neEl=new bElem(this); // With chambers it is different. The stepOnElement cannot work on Nulls.
             this->setElement(cX,cY,neEl);
+            if(bElem::randomNumberGenerator()%10==0)
+                neEl->setSubtype(1);
+            if(bElem::randomNumberGenerator()%100==0)
+                neEl->setSubtype(2);
             neEl->setCoords(cX,cY);
 
         }

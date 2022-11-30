@@ -1,6 +1,6 @@
 #ifndef COMMONS_H
 #define COMMONS_H
-
+#include <stddef.h>
 #define _belemType 0
 #define _stillElemType 1
 #define _rubishType 2
@@ -51,6 +51,7 @@
 #define _interactedTime 10
 #define NOCOORDS   ((coords){-1,-1})
 #define NOSTATS ((stats){-1,-1,-1,-1})
+
 typedef struct coords
 {
     int x=-1,y=-1;

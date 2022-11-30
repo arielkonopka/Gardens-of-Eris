@@ -1,9 +1,9 @@
 #ifndef BELEM_H
 #define BELEM_H
-#include <stddef.h>
+#include "commons.h"
 #include "objectTypes.h"
 
-#include "commons.h"
+
 #include "inventory.h"
 //#include "rubbish.h"
 #include "chamber.h"
@@ -17,8 +17,12 @@
 #include "gCollect.h"
 
 #include "elemStats.h"
+namespace videoElement
+{
 
 
+    class videoElementDef;
+}
 //class gCollect;
 class chamber;
 
@@ -39,7 +43,7 @@ public:
 
     virtual int getInstanceid();
     static void resetInstances();
-
+    virtual ALLEGRO_MUTEX* getMyMutex();
     void registerLiveElement(bElem* who);
     void deregisterLiveElement(bElem* who);
     static void runLiveElements();
@@ -130,7 +134,7 @@ public:
     static void tick();
     virtual unsigned int getCntr();
     virtual chamber* getBoard();
-
+    virtual constexpr bool isFading() { return false; };
     virtual bool isLocked();
     virtual bool lockThisObject(bElem* who);
     virtual bool unlockThisObject(bElem* who);
@@ -166,6 +170,7 @@ protected:
     bool amIUsable;
     int killed;
 private:
+    ALLEGRO_MUTEX* elementMutex;
     unsigned int telTimeReq;
     unsigned int telReqTime;
     unsigned int killTimeReq;

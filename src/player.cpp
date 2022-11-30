@@ -160,6 +160,11 @@ bool player::mechanics()
     }
     if(!res)
         return false;
+    if(this->getMoved()>0)
+    {
+        if(bElem::getCntr()%4==0) this->animPh++;
+        return true;
+    }
     switch(this->getBoard()->cntrlItm.type)
     {
     case 0:

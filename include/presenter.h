@@ -7,10 +7,6 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 #include "allegro5/allegro_native_dialog.h"
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/filereadstream.h>
-#include <rapidjson/stringbuffer.h>
 #include <vector>
 #include <string>
 #include "chamber.h"
@@ -18,6 +14,7 @@
 #include "elements.h"
 #include "inputManager.h"
 #include "objectTypes.h"
+#include "configManager.h"
 /*
  This class is responsible for menu, settings, designer and game presenter.
 
@@ -96,7 +93,6 @@ private:
     ALLEGRO_BITMAP* internalBitmap;
     ALLEGRO_BITMAP* statsStripe;
     int bsHeight,bsWidth;
-    rapidjson::Document skinDefJson;
     _cp_gameReasonOut presentGamePlay();
     chamber *_cp_attachedBoard;
     ALLEGRO_TIMER* alTimer;

@@ -75,6 +75,7 @@
 		<Unit filename="include/chamberArea.h" />
 		<Unit filename="include/collectible.h" />
 		<Unit filename="include/commons.h" />
+		<Unit filename="include/configManager.h" />
 		<Unit filename="include/door.h" />
 		<Unit filename="include/elemStats.h" />
 		<Unit filename="include/elements.h" />
@@ -100,6 +101,7 @@
 		<Unit filename="include/randomWordGen.h" />
 		<Unit filename="include/rubbish.h" />
 		<Unit filename="include/simpleBomb.h" />
+		<Unit filename="include/soundManager.h" />
 		<Unit filename="include/teleport.h" />
 		<Unit filename="include/usable.h" />
 		<Unit filename="include/videoElementDef.h" />
@@ -111,6 +113,7 @@
 		<Unit filename="src/chamber.cpp" />
 		<Unit filename="src/chamberArea.cpp" />
 		<Unit filename="src/collectible.cpp" />
+		<Unit filename="src/configManager.cpp" />
 		<Unit filename="src/door.cpp" />
 		<Unit filename="src/elemStats.cpp" />
 		<Unit filename="src/explosives.cpp" />
@@ -134,6 +137,7 @@
 		<Unit filename="src/randomWordGen.cpp" />
 		<Unit filename="src/rubbish.cpp" />
 		<Unit filename="src/simpleBomb.cpp" />
+		<Unit filename="src/soundManager.cpp" />
 		<Unit filename="src/teleport.cpp" />
 		<Unit filename="src/usable.cpp" />
 		<Unit filename="src/videoElementDef.cpp" />
