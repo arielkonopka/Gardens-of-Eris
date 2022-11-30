@@ -1,4 +1,4 @@
-- name: Setup Cpp (C++ / C)
+name: Setup Cpp (C++ / C)
   # You may pin to the exact commit or the version.
   # uses: aminya/setup-cpp@43c67b8a9c5b5a98b07816e3ccfdb4758dba5f7d
   uses: aminya/setup-cpp@v0.23.0
