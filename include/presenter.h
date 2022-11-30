@@ -7,10 +7,6 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 #include "allegro5/allegro_native_dialog.h"
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/filereadstream.h>
-#include <rapidjson/stringbuffer.h>
 #include <vector>
 #include <string>
 #include "chamber.h"
@@ -97,7 +93,6 @@ private:
     ALLEGRO_BITMAP* internalBitmap;
     ALLEGRO_BITMAP* statsStripe;
     int bsHeight,bsWidth;
-    rapidjson::Document skinDefJson;
     _cp_gameReasonOut presentGamePlay();
     chamber *_cp_attachedBoard;
     ALLEGRO_TIMER* alTimer;

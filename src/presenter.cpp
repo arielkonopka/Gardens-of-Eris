@@ -16,7 +16,7 @@ presenter::presenter(chamber *board)
         std::cout<<"Dupa nie inicjalizacja!\n";
 
     }
-    this->alTimer = al_create_timer(1.0 / 50.0);
+    this->alTimer = al_create_timer(1.0 / 60);
 //    this->scrTimer=al_create_timer(1.0/40);
     this->evQueue= al_create_event_queue();
     al_register_event_source(this->evQueue, al_get_keyboard_event_source());
@@ -50,12 +50,13 @@ presenter::~presenter()
 }
 bool presenter::initializeDisplay()
 {
-    al_set_new_display_flags(ALLEGRO_WINDOWED);//ALLEGRO_FULLSCREEN
+    al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+    al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
 //   al_set_new_display_refresh_rate( 50 );
     this->display = al_create_display(this->scrWidth, this->scrHeight);
     al_hide_mouse_cursor(this->display);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
-    al_set_new_bitmap_flags(ALLEGRO_FULLSCREEN);
+  //  al_set_new_bitmap_flags(ALLEGRO_FULLSCREEN);
     this->internalBitmap=al_create_bitmap(this->scrWidth+64,this->scrHeight+64);
     this->statsStripe=al_create_bitmap(this->scrWidth,this->scrHeight/3);
     return true;
@@ -101,22 +102,16 @@ void presenter::showSplash()
 }
 bool presenter::loadCofiguredData()
 {
-    configManager* cfgM=configManager::getInstance();
     videoElement::videoElementDef::initializeDriver();
-    gameConfig* gcfg=cfgM->getConfig();
-
-// ok the sprite filename should be available now, let's load it
+    gameConfig* gcfg=configManager::getInstance()->getConfig();
     al_init_font_addon();
     al_init_ttf_addon();
-//    std::cout<<this->skinDefJson["FontFile"].GetString()<<"\n";
     this->myfont=al_load_ttf_font(gcfg->FontFile.c_str(),32,0);
     if(this->myfont==NULL)
     {
         std::cout<<"Fonty się nie załadowały\n";
         return false;
     }
-
-    //load all the necessary constants about the graphics in the game
     this->splashFname=gcfg->splashScr;
     this->sWidth=gcfg->tileWidth;
     this->sHeight=gcfg->tileHeight;
@@ -125,15 +120,6 @@ bool presenter::loadCofiguredData()
     this->scrTilesY=((this->scrHeight-(2*_offsetY))/this->sHeight)-1;
     this->bsWidth=this->scrTilesX*this->sWidth;
     this->bsHeight=this->scrTilesY*this->sHeight;
-
-
-
-
-//ok, now time for reading sprite data for individual sprites and kill/teleport patterns (TODO:we could make them individual for each object)
-
-
-
-
     return true;
 }
 
@@ -331,7 +317,7 @@ void presenter::showGameField()
     al_clear_to_color(al_map_rgba(15,25,45,255));
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
     al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
-
+    al_wait_for_vsync();
     al_flip_display();
 }
 
