@@ -1,5 +1,5 @@
 name: Setup Cpp (C++ / C)
-  uses: aminya/setup-cpp@v0.23.0
+  - uses: aminya/setup-cpp@v0.23.0
   with:
     # The compiler to use and its optional version separated by - e.g. llvm-13.0.0
     compiler: # optional
