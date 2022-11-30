@@ -1,0 +1,57 @@
+- name: Setup Cpp (C++ / C)
+  # You may pin to the exact commit or the version.
+  # uses: aminya/setup-cpp@43c67b8a9c5b5a98b07816e3ccfdb4758dba5f7d
+  uses: aminya/setup-cpp@v0.23.0
+  with:
+    # The compiler to use and its optional version separated by - e.g. llvm-13.0.0
+    compiler: # optional
+    # The CPU architecture
+    architecture: # optional
+    # The llvm version to install
+    llvm: # optional
+    # The gcc version to install
+    gcc: # optional
+    # The msvc version to install
+    msvc: # optional
+    # If should run vcvarsall?
+    vcvarsall: # optional
+    # The cmake version to install.
+    cmake: # optional
+    # The ninja version to install.
+    ninja: # optional
+    # The conan version to install.
+    conan: # optional
+    # The make version to install.
+    make: # optional
+    # The task version to install.
+    task: # optional
+    # The vcpkg version to install.
+    vcpkg: # optional
+    # The meson version to install.
+    meson: # optional
+    # The gcovr version to install.
+    gcovr: # optional
+    # The python version to install.
+    python: # optional
+    # The ccache version to install.
+    ccache: # optional
+    # The sccache version to install.
+    sccache: # optional
+    # The doxygen version to install.
+    doxygen: # optional
+    # The graphviz version to install.
+    graphviz: # optional
+    # The cppcheck version to install.
+    cppcheck: # optional
+    # The clang-tidy version to install.
+    clangtidy: # optional
+    # The clang-format version to install.
+    clangformat: # optional
+    # The opencppcoverage version to install.
+    opencppcoverage: # optional
+    # The kcov version to install.
+    kcov: # optional
+    # The 7z version to install.
+    sevenzip: # optional
+    # The nala version to install ("" or "legacy").
+    nala: # optional
