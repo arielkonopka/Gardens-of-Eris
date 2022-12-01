@@ -22,7 +22,7 @@ jobs:
  #   - name: refresh repo information
  #     run: sudo apt update
     - name: Install allegro
-      run: sudo apt install liballegro5-dev liballegro5.2 build-essential gcc-12
+      run: sudo apt install liballegro5-dev liballegro5.2 build-essential gcc12
     - name: Install boost
       run: sudo apt install libboost-all-dev 
     - name: Install rapidjson
