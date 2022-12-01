@@ -50,5 +50,5 @@ fi
 
 echo "Now linking the game..."
 
-${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./GoE -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm  3>&1   2>&1 >>compile.log
+${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./GoEoOL/GoEoOL -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm  3>&1   2>&1 >>compile.log
 
