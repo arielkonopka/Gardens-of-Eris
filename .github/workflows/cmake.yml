@@ -36,8 +36,9 @@ jobs:
        
       # Build your program with the given configuration
       run: |
-        set(ENV{CC} gcc-10)
-        set(ENV{CXX} g++10)
+        export CC=gcc-10
+        export CXX=g++10
+        export CXX_STANDARD=20
         cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
   #  - name: Test
