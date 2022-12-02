@@ -39,7 +39,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
+    - name: Install stuff
+        - run: sudo apt install -y liballegro5-dev liballegro5.2 libboost-all-dev  rapidjson-dev
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
@@ -67,7 +68,7 @@ jobs:
     # - run: |
     #   echo "Run, Build Application using script"
     #   ./location_of_script_within_repo/buildscript.sh
-      -run: |
+      - run: |
           ./build.sh -a
           
     - name: Perform CodeQL Analysis
