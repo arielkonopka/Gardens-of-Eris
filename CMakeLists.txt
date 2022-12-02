@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25.0)
-project(GoEoOL VERSION 0.0.1)
+project(GoEoOL CXX)
 find_package(PkgConfig REQUIRED)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED 20)
