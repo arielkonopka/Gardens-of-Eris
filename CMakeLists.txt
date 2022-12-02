@@ -17,5 +17,5 @@ link_directories(${Boost_LIBRARY_DIR} ${ALLEGRO5_LIBRARY_DIR} )
 include_directories(${ALLEGRO5_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 #[[ copy the data files when creating a package ]]
 file(COPY ${DataDir} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-add_dependencies(GoEoOL Boost ALLEGRO5)
+#add_dependencies(GoEoOL Boost ALLEGRO5)
 
