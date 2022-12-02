@@ -5,7 +5,7 @@ objPath=./obj/GoE-objects/
 extraflags="-g"
 mkdir -p ${objPath}/{src,unitTests}
 defines="" #-D_VerbousMode_" 
-opts="-Wall -std=gnu++20 -march=native ${defines} -g -O3 -Og"
+opts="-Wall -std=gnu++20  ${defines} -g -O3 -Og"
 
 
 #
