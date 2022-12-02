@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gccbin="gcc-12"
+gccbin="gcc-10"
 objPath=./obj/GoE-objects/
 extraflags="-g"
 mkdir -p ${objPath}/{src,unitTests}
