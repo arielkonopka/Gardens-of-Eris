@@ -33,13 +33,12 @@ jobs:
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
-      
-      CC: gcc-10
-      CXX_STANDARD: 20
-      CXX: g++10
-    
+       
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: |
+        set(ENV{CC} gcc-10)
+        set(ENV{CXX} g++10)
+        cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
   #  - name: Test
   #    working-directory: ${{github.workspace}}/build
