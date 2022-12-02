@@ -6,7 +6,8 @@ Welcome to my pet project. I started it in [Python](https://github.com/arielkono
 From the beginning, this project is not *product oriented*, but rather it is a way to spend little time on building somthing. I stopped writting code many years ago, and I simply wanted to feel the joy of coding again. Since my life is rather not that *computer centric*, I spend fairly little time one the project, and therefore it advances slowly.
 
 **This is work in progress. It usually works, but be warned.**
-
+# Recent build status:
+[![GoEoOL](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/cmake.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/cmake.yml)
 
 ## Why the idea
 
