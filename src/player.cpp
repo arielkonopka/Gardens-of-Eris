@@ -169,12 +169,16 @@ bool player::mechanics()
         return true;
     }
     case 1:
+    {
         this->setDirection(this->getBoard()->cntrlItm.dir);
         bool res=this->shootGun();
         if (res)
             this->animPh+=(this->taterCounter%2);
         break;
+    }
     case 2:
+    {
+
 
         bElem* obj=this->getElementInDirection(this->getBoard()->cntrlItm.dir);
         bool res;
@@ -185,10 +189,13 @@ bool player::mechanics()
         if (res)
             this->animPh++;
         break;
+    }
     case 3:
+    {
         this->myInventory->nextUsable();
         this->setWait(_mov_delay);
         break;
+    }
     case 4:
         if (this->myInventory->getUsable()!=nullptr)
         {
