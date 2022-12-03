@@ -5,15 +5,10 @@ std::vector<player*> player::allPlayers;
 std::vector<player*> player::visitedPlayers;
 player* player::activePlayer=nullptr;
 
-player::player(chamber *board) : killableElements(board), movableElements(board) ,nonSteppable(board),mechanical(board)
+player::player(chamber *board) : killableElements(board), movableElements(board),nonSteppable(board),mechanical(board)
 {
-    this->used=0;
-    this->interacted=0;
     this->setMoved(0);
-    this->animPh=0;
-
     this->myInventory=new inventory(this);
-    this->visited=false;
     if(player::allPlayers.size()>0)
     {
         this->activated=false;
@@ -174,29 +169,22 @@ bool player::mechanics()
         return true;
     }
     case 1:
-    {
         this->setDirection(this->getBoard()->cntrlItm.dir);
         bool res=this->shootGun();
         if (res)
             this->animPh+=(this->taterCounter%2);
-        //  this->setMoved(_mov_delay_push);
-        return true;
-    }
+        break;
     case 2:
-    {
+
         bElem* obj=this->getElementInDirection(this->getBoard()->cntrlItm.dir);
         bool res;
-        //  this->setMoved(_mov_delay_push);
         this->setDirection(this->getBoard()->cntrlItm.dir);
         if (obj==nullptr)
             return false;
-        //std::cout<<"Interact\n";
         res=obj->interact(this);
         if (res)
             this->animPh++;
-        return true;
-    }
-    break;
+        break;
     case 3:
         this->myInventory->nextUsable();
         this->setWait(_mov_delay);
@@ -215,9 +203,7 @@ bool player::mechanics()
         this->kill();
         break;
     }
-
     return true;
-
 }
 
 //shoots any suitable gun

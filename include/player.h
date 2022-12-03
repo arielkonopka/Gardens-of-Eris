@@ -35,12 +35,12 @@ private:
     static std::vector<player*> allPlayers;
     static std::vector<player*> visitedPlayers;
     bool visited=false;
-    int animPh;
-    int moved;
-    int shot;
-    bool activated;
-    int used;
-    int interacted;
+    int animPh=0;
+    int moved=0;
+    int shot=0;
+    bool activated=false;
+    int used=0;
+    int interacted=0;
 };
 
 #endif // PLAYER_H

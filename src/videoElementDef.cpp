@@ -158,8 +158,9 @@ void videoElementDef::initializeDriver()
         case _patrollingDrone:
             ::patrollingDrone::vd=ved;
             break;
-
-
+        default: // This can happen with invalid json configuration, let's dispose the driver instance
+            delete ved;
+            break;
         }
     }
 }

@@ -535,29 +535,20 @@ bElem* randomLevelGenerator::createElement(elementToPlace element)
     {
     case _collectible:
         return new collectible(this->mychamber);
-        break;
     case _goldenAppleType:
         return new goldenApple(this->mychamber);
-        break;
-
     case _player:
         return new player(this->mychamber);
-        break;
     case _door:
         return new door(this->mychamber,element.eSubType);
-        break;
     case _key:
         return new key(this->mychamber,element.eSubType);
-        break;
     case _monster:
         return new monster(this->mychamber,element.eSubType);
-        break;
     case _plainGun:
         return new plainGun(this->mychamber,element.eSubType);
-        break;
     case _bunker:
         return new bunker(this->mychamber);
-        break;
     case _teleporter:
         return new teleport(this->mychamber,element.eSubType);
     case _movableType:
@@ -566,7 +557,6 @@ bElem* randomLevelGenerator::createElement(elementToPlace element)
         return new simpleBomb(this->mychamber);
     case _patrollingDrone:
         return new patrollingDrone(this->mychamber);
-
     }
     return nullptr;
 }
