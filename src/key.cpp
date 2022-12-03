@@ -1,6 +1,6 @@
 #include "key.h"
 
-videoElement::videoElementDef* key::vd=NULL;
+videoElement::videoElementDef* key::vd=nullptr;
 
 videoElement::videoElementDef* key::getVideoElementDef()
 {

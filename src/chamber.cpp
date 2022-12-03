@@ -15,7 +15,7 @@ chamber::chamber(int x,int y)
     {
         for (int cY=0; cY<y; cY++)
         {
-            bElem* neEl=new bElem(this); // With chambers it is different. The stepOnElement cannot work on Nulls.
+            bElem* neEl=new bElem(this); // With chambers it is different. The stepOnElement cannot work on nullptrs.
             this->setElement(cX,cY,neEl);
             if(bElem::randomNumberGenerator()%10==0)
                 neEl->setSubtype(1);
@@ -71,7 +71,7 @@ bElem* chamber::getElement(coords point)
 bElem* chamber::getElement(int x, int y)
 {
     if (x<0 || x>this->width-1 || y<0 || y>this->height-1)
-        return NULL;
+        return nullptr;
     return this->chamberArray[x][y];
 }
 

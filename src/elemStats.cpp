@@ -46,7 +46,7 @@ void elemStats::updateDexterity()
 
 void elemStats::countHit(bElem* what)
 {
-    if(what==NULL) return;
+    if(what==nullptr) return;
 
     if(what->canBeKilled())
     {

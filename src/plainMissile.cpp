@@ -1,10 +1,10 @@
 #include "plainMissile.h"
 
 
-videoElement::videoElementDef* plainMissile::vd=NULL;
+videoElement::videoElementDef* plainMissile::vd=nullptr;
 plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber), movableElements(mychamber), mechanical(mychamber)
 {
-    this->statsOwner=NULL;
+    this->statsOwner=nullptr;
 
     this->setEnergy(_plainMissileEnergy);
     this->setMoved(0);
@@ -15,7 +15,7 @@ plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber), mo
 }
 plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber),  movableElements(mychamber), mechanical(mychamber)
 {
-    this->statsOwner=NULL;
+    this->statsOwner=nullptr;
 
     this->setEnergy(energy);
     this->setMoved(0);
@@ -28,10 +28,10 @@ plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(my
 
 plainMissile::~plainMissile()
 {
-    if(this->statsOwner!=NULL)
+    if(this->statsOwner!=nullptr)
     {
         this->statsOwner->unlockThisObject(this);
-        this->statsOwner=NULL;
+        this->statsOwner=nullptr;
     }
     //dtor
 }
@@ -58,7 +58,7 @@ videoElement::videoElementDef* plainMissile::getVideoElementDef()
 }
 bool plainMissile::setEnergy(int points)
 {
-    if(this->statsOwner!=NULL)
+    if(this->statsOwner!=nullptr)
     {
         int ep=(points*4)/(_dexterityLevels+1-this->statsOwner->getStats()->getDexterity());
         int dp=points-ep;
@@ -81,7 +81,7 @@ bool plainMissile::mechanics()
     if (this->getMoved()==0 && mvd==0)
     {
         bElem *myel=this->getElementInDirection(this->getDirection());
-        if(myel==NULL || myel->isDying() || myel->isTeleporting() || myel->isDestroyed())
+        if(myel==nullptr || myel->isDying() || myel->isTeleporting() || myel->isDestroyed())
         {
             this->disposeElement();
             return true;
@@ -99,7 +99,7 @@ bool plainMissile::mechanics()
             }
  */
             myel->hurt(this->getEnergy());
-            if(this->statsOwner!=NULL)
+            if(this->statsOwner!=nullptr)
             {
                 this->statsOwner->getStats()->countHit(myel);
             }
@@ -109,7 +109,7 @@ bool plainMissile::mechanics()
             }
             else
             {
-                if(this->statsOwner!=NULL)
+                if(this->statsOwner!=nullptr)
                 {
                     this->statsOwner->getStats()->countKill(myel);
                 }
@@ -127,7 +127,7 @@ bool plainMissile::mechanics()
 }
 void plainMissile::setStatsOwner(bElem* owner)
 {
-    if(owner!=NULL)
+    if(owner!=nullptr)
     {
         this->statsOwner=owner;
         this->setEnergy(this->getEnergy());

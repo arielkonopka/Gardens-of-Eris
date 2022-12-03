@@ -1,6 +1,6 @@
 #include "door.h"
 
-videoElement::videoElementDef* door::vd=NULL;
+videoElement::videoElementDef* door::vd=nullptr;
 
 videoElement::videoElementDef* door::getVideoElementDef()
 {
@@ -49,13 +49,13 @@ bool door::isOpen()
 }
 void door::stomp(bElem* who)
 {
-    bElem* key=NULL;
+    bElem* key=nullptr;
     if(this->getSubtype()%2==1)
     {
-        if(who->getInventory()!=NULL)
+        if(who->getInventory()!=nullptr)
         {
             key=who->getInventory()->getKey(_key,this->getSubtype(),true); // take the key on your way out. you don't have a key? Kill, could be used as tricky traps for monsters
-            if(key==NULL)
+            if(key==nullptr)
             {
                 who->kill();
             }
@@ -82,7 +82,7 @@ void door::unstomp()
 bool door::interact(bElem* who)
 {
     bool bres=bElem::interact(who);
-    bElem* key=NULL;
+    bElem* key=nullptr;
     if (!bres)
         return false;
     //std::cout<<"can interact\n";
@@ -107,7 +107,7 @@ bool door::interact(bElem* who)
     {
         key=who->getInventory()->getKey(_key,this->getSubtype(),false);
     }
-    if(key!=NULL)
+    if(key!=nullptr)
     {
         this->open=true;
         this->locked=false;

@@ -1,9 +1,9 @@
 #include "player.h"
 
-videoElement::videoElementDef* player::vd=NULL;
+videoElement::videoElementDef* player::vd=nullptr;
 std::vector<player*> player::allPlayers;
 std::vector<player*> player::visitedPlayers;
-player* player::activePlayer=NULL;
+player* player::activePlayer=nullptr;
 
 player::player(chamber *board) : killableElements(board), movableElements(board) ,nonSteppable(board),mechanical(board)
 {
@@ -27,9 +27,9 @@ player::player(chamber *board) : killableElements(board), movableElements(board)
 }
 player* player::getActivePlayer()
 {
-    if (player::activePlayer==NULL)
+    if (player::activePlayer==nullptr)
     {
-        /* find active player, because it is null */
+        /* find active player, because it is nullptr */
         for(player* p:player::allPlayers)
         {
             if (p->isActive())
@@ -38,7 +38,7 @@ player* player::getActivePlayer()
             }
         }
     }
-    /* return value can be null, then no active player found*/
+    /* return value can be nullptr, then no active player found*/
     return player::activePlayer;
 }
 
@@ -80,7 +80,7 @@ oState player::disposeElement()
     if(this->isActive())
     {
         this->setActive(false);
-        player::activePlayer=NULL;
+        player::activePlayer=nullptr;
         this->getBoard()->player=NOCOORDS;
         if(player::visitedPlayers.size()>0)
         {
@@ -112,7 +112,7 @@ oState player::disposeElement()
 
 bool player::interact(bElem* who)
 {
-    if (who==NULL)
+    if (who==nullptr)
         return false;
     if(this->isActive())
         return false;
@@ -188,7 +188,7 @@ bool player::mechanics()
         bool res;
         //  this->setMoved(_mov_delay_push);
         this->setDirection(this->getBoard()->cntrlItm.dir);
-        if (obj==NULL)
+        if (obj==nullptr)
             return false;
         //std::cout<<"Interact\n";
         res=obj->interact(this);
@@ -202,7 +202,7 @@ bool player::mechanics()
         this->setWait(_mov_delay);
         break;
     case 4:
-        if (this->myInventory->getUsable()!=NULL)
+        if (this->myInventory->getUsable()!=nullptr)
         {
             this->myInventory->getUsable()->use(this->getElementInDirection(this->getBoard()->cntrlItm.dir));
         };
@@ -225,7 +225,7 @@ bool player::shootGun()
 {
     // bool res=false;
     bElem* gun=this->myInventory->getActiveWeapon();
-    if(gun!=NULL)
+    if(gun!=nullptr)
     {
         gun->use(this);
         return true;

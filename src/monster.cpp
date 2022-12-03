@@ -1,7 +1,7 @@
 #include "monster.h"
 
 // the static variable must be initialized
-videoElement::videoElementDef* monster::vd=NULL;
+videoElement::videoElementDef* monster::vd=nullptr;
 
 
 monster::monster(chamber *board): killableElements(board), nonSteppable(board), mechanical(board), movableElements(board)
@@ -12,7 +12,7 @@ monster::monster(chamber *board): killableElements(board), nonSteppable(board), 
     this->setDirection(UP);
     this->setSubtype(0);
     this->inited=false;
-    this->weapon=NULL;
+    this->weapon=nullptr;
     if(bElem::randomNumberGenerator()%5==0)
     {
         this->weapon=new plainGun(board,1);
@@ -40,7 +40,7 @@ monster::monster(chamber* board, int newSubtype): killableElements(board), nonSt
     this->setDirection(UP);
     this->setSubtype(newSubtype);
     this->inited=false;
-    this->weapon=NULL;
+    this->weapon=nullptr;
     if(bElem::randomNumberGenerator()%2==0)
     {
         this->rotA=1;
@@ -63,7 +63,7 @@ monster::monster(chamber* board, int newSubtype): killableElements(board), nonSt
 
 monster::~monster()
 {
-    if(this->weapon!=NULL)
+    if(this->weapon!=nullptr)
         delete this->weapon;
     //dtor
 }
@@ -84,7 +84,7 @@ bool monster::checkNeigh()
     {
         direction d=(direction)c;
         bElem* e=this->getElementInDirection(d);;
-        if(e==NULL)
+        if(e==nullptr)
             continue;
         if(e->isCollectible())
         {
@@ -101,17 +101,17 @@ bool monster::checkNeigh()
         }
 
 
-        if(this->weapon!=NULL || this->myInventory->getActiveWeapon()!=NULL)
+        if(this->weapon!=nullptr || this->myInventory->getActiveWeapon()!=nullptr)
         {
-            while(e!=NULL)
+            while(e!=nullptr)
             {
-                if((this->myInventory->getActiveWeapon()!=NULL || this->weapon!=NULL) &&
+                if((this->myInventory->getActiveWeapon()!=nullptr || this->weapon!=nullptr) &&
                     ((e->getType()==_player &&  e->isActive()) ||
                      (e->getType()==_patrollingDrone && e->isLiveElement())))
                 {
                     direction td=this->getDirection();
                     this->setDirection(d);
-                    if(this->weapon!=NULL)
+                    if(this->weapon!=nullptr)
                     {
                         this->weapon->use(this);
                     } else
@@ -141,7 +141,7 @@ bool monster::checkNeigh()
                         return true;
                     }
                 }
-                if(!e->isSteppable() || e->getElementInDirection(d)==NULL)
+                if(!e->isSteppable() || e->getElementInDirection(d)==nullptr)
                     break;
                 e=e->getElementInDirection(d);
             }

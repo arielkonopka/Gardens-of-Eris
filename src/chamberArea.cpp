@@ -6,20 +6,20 @@ std::vector<bElem*> chamberArea::foundElements;
 
 chamberArea::~chamberArea() // if we remove the node, we remove all its children
 {
-    chamberArea* _par=NULL;
+    chamberArea* _par=nullptr;
     chamberArea* _originalParent=this->parent;
-    this->parent=NULL;
+    this->parent=nullptr;
     for(long int cnt=0; cnt<(long int)this->children.size(); cnt++)
     {
 #ifdef _VerbousMode_
         std::cout<<"Destroying child"<<cnt<<"\n";
 #endif // _VerbousMode_
         chamberArea* node=this->children[cnt];
-        node->parent=NULL;
+        node->parent=nullptr;
         delete node;
     }
     this->children.clear();
-    if(_originalParent!=NULL)
+    if(_originalParent!=nullptr)
     {
         /*
         the node has a parent? deal with it,
@@ -47,7 +47,7 @@ chamberArea::~chamberArea() // if we remove the node, we remove all its children
 
         }
         _par=_originalParent; //iterate over all parents and readjust the surface
-        while(_par!=NULL)
+        while(_par!=nullptr)
         {
             int _surf=0;
             for(unsigned int c=0; c<_par->children.size(); c++)
@@ -67,7 +67,7 @@ chamberArea::chamberArea(int xu, int yu, int xd, int yd)
     this->upLeft.y=yu;
     this->downRight.x=xd;
     this->downRight.y=yd;
-    this->parent=NULL;
+    this->parent=nullptr;
     this->childrenLock=false;
 
 }

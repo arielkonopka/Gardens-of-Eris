@@ -1,7 +1,7 @@
 #include "plainGun.h"
 
 
-videoElement::videoElementDef* plainGun::vd=NULL;
+videoElement::videoElementDef* plainGun::vd=nullptr;
 
 videoElement::videoElementDef* plainGun::getVideoElementDef()
 {
@@ -52,10 +52,10 @@ bool plainGun::isWeapon()
 bool plainGun::use(bElem* who)
 {
     bElem *myel;
-    if (who==NULL)
+    if (who==nullptr)
     {
 #ifdef _VerbousMode_
-        std::cout<<"Who is null for plain gun!";
+        std::cout<<"Who is nullptr for plain gun!";
 #endif
         return false;
 
@@ -74,7 +74,7 @@ bool plainGun::use(bElem* who)
         if (this->getSubtype()%2)
             return false;
     myel=who->getElementInDirection(who->getDirection());
-    if(myel!=NULL)
+    if(myel!=nullptr)
     {
         if (this->ammo>0 || this->getSubtype()%2==1)
         {

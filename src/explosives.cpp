@@ -23,11 +23,11 @@ bool explosives::explode()
     for (int cnt=0 ; cnt<4; cnt++)
     {
         el=this->getElementInDirection((direction)(cnt));
-        if (el!=NULL)
+        if (el!=nullptr)
         {
             el->destroy();
             el=el->getElementInDirection((direction)((cnt+1)%4));
-            if(el!=NULL)
+            if(el!=nullptr)
                 el->destroy();
         }
     }

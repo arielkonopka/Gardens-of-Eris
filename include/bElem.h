@@ -29,7 +29,7 @@ class chamber;
 //class inventory
 class nonSteppable;
 
-typedef enum { DISPOSED=0,NULLREACHED=1,ERROR=2} oState;
+typedef enum { DISPOSED=0,nullptrREACHED=1,ERROR=2} oState;
 
 
 class bElem
@@ -154,7 +154,7 @@ public:
 
 protected:
     unsigned int interacted;
-    bElem *steppingOn=NULL;
+    bElem *steppingOn=nullptr;
     int subtype;
     inventory *myInventory;
     std::vector<bElem*> lockers;

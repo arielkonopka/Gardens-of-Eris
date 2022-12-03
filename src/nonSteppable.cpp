@@ -1,7 +1,7 @@
 #include "nonSteppable.h"
 
 
-videoElement::videoElementDef* nonSteppable::vd=NULL;
+videoElement::videoElementDef* nonSteppable::vd=nullptr;
 
 
 nonSteppable::nonSteppable(chamber *board):bElem(board)

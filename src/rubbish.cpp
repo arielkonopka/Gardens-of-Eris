@@ -1,7 +1,7 @@
 #include "rubbish.h"
 
 
-videoElement::videoElementDef* rubbish::vd=NULL;
+videoElement::videoElementDef* rubbish::vd=nullptr;
 
 
 rubbish::rubbish(chamber *board) : bElem(board),nonSteppable(board),collectible(board)

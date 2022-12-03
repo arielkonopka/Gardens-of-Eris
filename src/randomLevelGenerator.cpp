@@ -377,7 +377,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     selectedChamberNo=(this->gen()%chamberArea::foundAreas.size());
     this->placeElementCollection(chamberArea::foundAreas[selectedChamberNo],&elementCollection);
     this->placeDoors({_door,1,1,0,9},chamberArea::foundAreas[selectedChamberNo]);
-    if (chamberArea::foundAreas[selectedChamberNo]->parent!=NULL)
+    if (chamberArea::foundAreas[selectedChamberNo]->parent!=nullptr)
     {
         chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock=true;
     }
@@ -392,7 +392,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     selectedChamberNo=(this->gen()%chamberArea::foundAreas.size());
     this->placeElementCollection(chamberArea::foundAreas[selectedChamberNo],&elementCollection);
     this->placeDoors({_door,0,1,0,9},chamberArea::foundAreas[selectedChamberNo]);
-    if (chamberArea::foundAreas[selectedChamberNo]->parent!=NULL)
+    if (chamberArea::foundAreas[selectedChamberNo]->parent!=nullptr)
     {
         chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock=true;
     }
@@ -432,7 +432,7 @@ bool randomLevelGenerator::generateLevel(int holes)
             this->placeElementCollection(chamberArea::foundAreas[selectedChamberNo],&elementCollection);
             elementCollection.clear();
 
-            if(chamberArea::foundAreas[selectedChamberNo]->parent!=NULL)
+            if(chamberArea::foundAreas[selectedChamberNo]->parent!=nullptr)
             {
                 if(chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock==false)
                 {
@@ -568,7 +568,7 @@ bElem* randomLevelGenerator::createElement(elementToPlace element)
         return new patrollingDrone(this->mychamber);
 
     }
-    return NULL;
+    return nullptr;
 }
 
 

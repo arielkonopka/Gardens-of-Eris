@@ -1,19 +1,19 @@
 #include "teleport.h"
 
-videoElement::videoElementDef* teleport::vd=NULL;
+videoElement::videoElementDef* teleport::vd=nullptr;
 std::vector<teleport*> teleport::allTeleporters;
 
 teleport::teleport(chamber* board):nonSteppable(board)
 {
     this->connectionsMade=false;
     teleport::allTeleporters.push_back(this);
-    this->theOtherEnd=NULL; // we do not have the other end configured yet. We will configure it on interact method;
+    this->theOtherEnd=nullptr; // we do not have the other end configured yet. We will configure it on interact method;
 }
 teleport::teleport(chamber* board,int newSubtype):nonSteppable(board)
 {
     this->connectionsMade=false;
     teleport::allTeleporters.push_back(this);
-    this->theOtherEnd=NULL; // we do not have the other end configured yet. We will configure it on interact method;
+    this->theOtherEnd=nullptr; // we do not have the other end configured yet. We will configure it on interact method;
     this->setSubtype(newSubtype);
 }
 
@@ -77,7 +77,7 @@ bool teleport::teleportIt(bElem* who)
 {
     int dir=(int)who->getDirection();
     who->setTeleporting(_teleportationTime);
-    if(who->getSteppingOnElement()!=NULL)
+    if(who->getSteppingOnElement()!=nullptr)
         who->getSteppingOnElement()->setTeleporting(_teleportationTime);
     for(int c=0; c<4; c++)
     {
@@ -99,9 +99,9 @@ bool teleport::isSteppable()
     {
         if(this->isTeleporting())
             return false;
-        if(this->theOtherEnd!=NULL)
+        if(this->theOtherEnd!=nullptr)
         {
-            if(this->theOtherEnd->getStomper()==NULL)
+            if(this->theOtherEnd->getStomper()==nullptr)
             {
                 return true;
             }
@@ -138,7 +138,7 @@ bool teleport::mechanics()
 {
     if(!this->isWaiting())
     {
-        if(this->getStomper()!=NULL)
+        if(this->getStomper()!=nullptr)
         {
             this->interact(this->getStomper());
             this->deregisterLiveElement(this);

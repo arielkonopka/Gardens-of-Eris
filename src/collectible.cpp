@@ -1,5 +1,5 @@
 #include "collectible.h"
-videoElement::videoElementDef* collectible::vd=NULL;
+videoElement::videoElementDef* collectible::vd=nullptr;
 
 collectible::collectible(chamber *board):bElem(board)
 {

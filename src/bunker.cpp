@@ -1,6 +1,6 @@
 #include "bunker.h"
 
-videoElement::videoElementDef* bunker::vd=NULL;
+videoElement::videoElementDef* bunker::vd=nullptr;
 bunker::bunker(chamber *board):mechanical(board), nonSteppable(board),movableElements(board)
 {
     this->myGun=new plainGun(board,1);
@@ -8,7 +8,7 @@ bunker::bunker(chamber *board):mechanical(board), nonSteppable(board),movableEle
     this->rotated=0;
     this->interacted=-1;
     this->help=0;
-    this->activatedBy=NULL;
+    this->activatedBy=nullptr;
 }
 bunker::bunker(chamber* board, int x, int y):mechanical(board,x,y), nonSteppable(board,x,y),movableElements(board,x,y)
 {
@@ -17,7 +17,7 @@ bunker::bunker(chamber* board, int x, int y):mechanical(board,x,y), nonSteppable
     this->rotated=0;
     this->interacted=-1;
     this->help=0;
-    this->activatedBy=NULL;
+    this->activatedBy=nullptr;
 }
 
 
@@ -28,11 +28,11 @@ videoElement::videoElementDef* bunker::getVideoElementDef()
 
 bunker::~bunker()
 {
-    if(this->activatedBy!=NULL)
+    if(this->activatedBy!=nullptr)
     {
         this->setStats(this->backUp);
         this->activatedBy->unlockThisObject(this);
-        this->activatedBy=NULL;
+        this->activatedBy=nullptr;
     }
     delete this->myGun;
 }
@@ -53,11 +53,11 @@ bool bunker::mechanics()
         this->help--;
         if (this->help==0)
         {
-            if(this->activatedBy!=NULL)
+            if(this->activatedBy!=nullptr)
             {
                 this->setStats(this->backUp);
                 this->activatedBy->unlockThisObject(this);
-                this->activatedBy=NULL;
+                this->activatedBy=nullptr;
             }
         }
 
@@ -81,7 +81,7 @@ bool bunker::interact(bElem* Who)
     if(mechanical::interact(Who)==false)
         return false;
     this->help=5555;
-    if(Who->getStats()!=NULL && this->activatedBy==NULL)
+    if(Who->getStats()!=nullptr && this->activatedBy==nullptr)
     {
         this->activatedBy=Who;
         this->backUp=this->getStats();
@@ -103,15 +103,15 @@ direction bunker::findLongestShot()
     for(dir=0; dir<4; dir++)
     {
         element=this->getElementInDirection((direction)(dir));
-        if(element==NULL) continue;
+        if(element==nullptr) continue;
         while(element->isSteppable()==true)
         {
             routes[dir]++;
             element=element->getElementInDirection((direction)(dir));
-            if (element==NULL)
+            if (element==nullptr)
                 break;
         }
-        if (element!=NULL)
+        if (element!=nullptr)
         {
             if (element->canBeKilled()==true)
             {

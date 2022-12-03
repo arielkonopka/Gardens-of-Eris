@@ -1,6 +1,6 @@
 #include "goldenApple.h"
 
-videoElement::videoElementDef* goldenApple::vd=NULL;
+videoElement::videoElementDef* goldenApple::vd=nullptr;
 
 unsigned int goldenApple::appleNumber=0;
 std::vector<goldenApple*>  goldenApple::apples;

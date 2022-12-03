@@ -1,7 +1,7 @@
 #include "wall.h"
 
 
-videoElement::videoElementDef* wall::vd=NULL;
+videoElement::videoElementDef* wall::vd=nullptr;
 
 
 wall::wall(chamber* board) : nonSteppable(board)

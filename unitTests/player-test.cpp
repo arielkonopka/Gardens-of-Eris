@@ -20,13 +20,13 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
     pGun->stepOnElement(mc->getElement(3,2));
     plr->setActive(true);
     plr->collect(pGun);
-    BOOST_CHECK(plr->getInventory()->getActiveWeapon()!=NULL);
+    BOOST_CHECK(plr->getInventory()->getActiveWeapon()!=nullptr);
     BOOST_CHECK(plr->getInventory()->getActiveWeapon()->getInstanceid()==pGun->getInstanceid());
     plr->setDirection(UP);
     for(int c=0; c<50; c++)
     {
         bElem* wep=plr->getInventory()->getActiveWeapon();
-        if(wep!=NULL)
+        if(wep!=nullptr)
         {
             plr->shootGun();
         }
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
             bElem::tick();
 
     }
-    BOOST_CHECK(plr->getInventory()->getActiveWeapon()==NULL);
+    BOOST_CHECK(plr->getInventory()->getActiveWeapon()==nullptr);
     for(unsigned int c=0; c<gCollect::getInstance()->garbageVector.size(); c++)
     {
         if(gCollect::getInstance()->garbageVector[c]->getInstanceid()==pGun->getInstanceid())
@@ -67,22 +67,22 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
 BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
 {
     chamber* mc=new chamber(10,10);
-    player* p=NULL;
+    player* p=nullptr;
     p=new player(mc);
-    bElem* e=NULL;
+    bElem* e=nullptr;
     for(int cnt=0; cnt<10000; cnt++)
     {
         e=mc->getElement(1,2);
-        BOOST_CHECK(e!=NULL);
+        BOOST_CHECK(e!=nullptr);
         BOOST_CHECK(e!=p);
         p->stepOnElement(e);
         e->disposeElement();
         gCollect::getInstance()->purgeGarbage();
         p->setActive(true);
         //p->moveInDirection(RIGHT);
-        BOOST_CHECK(p->removeElement()!=NULL);
+        BOOST_CHECK(p->removeElement()!=nullptr);
 
-        BOOST_CHECK(mc->getElement(1,2)!=NULL);
+        BOOST_CHECK(mc->getElement(1,2)!=nullptr);
         BOOST_CHECK(mc->getElement(1,2)!=p);
         p->stepOnElement(mc->getElement(2,2));
 
@@ -92,8 +92,8 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
             for(int b=0; b<10; b++)
             {
                 bElem* e=mc->getElement(a,b);
-                BOOST_ASSERT(e!=NULL);
-                while(e!=NULL)
+                BOOST_ASSERT(e!=nullptr);
+                while(e!=nullptr)
                 {
                     if(e->getInstanceid()==p->getInstanceid())
                         instances++;

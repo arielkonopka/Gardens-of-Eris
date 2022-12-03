@@ -1,6 +1,6 @@
 #include "configManager.h"
 
-configManager* configManager::instance=NULL;
+configManager* configManager::instance=nullptr;
 configManager::configManager()
 {
     this->gConfObj=new gameConfig();
@@ -13,7 +13,7 @@ configManager::~configManager()
 }
 configManager* configManager::getInstance()
 {
-    if(configManager::instance==NULL)
+    if(configManager::instance==nullptr)
     {
         configManager::instance=new configManager();
     }

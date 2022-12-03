@@ -107,7 +107,7 @@ bool presenter::loadCofiguredData()
     al_init_font_addon();
     al_init_ttf_addon();
     this->myfont=al_load_ttf_font(gcfg->FontFile.c_str(),32,0);
-    if(this->myfont==NULL)
+    if(this->myfont==nullptr)
     {
         std::cout<<"Fonty się nie załadowały\n";
         return false;
@@ -139,22 +139,22 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
     coords coords,offset= {0,0};
     int sx,sy;
    // videoElement::aphases *phs; //Video element, that defines the animation of an object
-    if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem==NULL) return;
+    if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem==nullptr) return;
     if(!ignoreOffset)
     {
-        if(elem!=NULL)
+        if(elem!=nullptr)
             offset=elem->getOffset();
         offsetX=offset.x;
         offsetY=offset.y;
     }
     /* We check, if the object is standing on anything, to draw it first, we also make sure, we were called the right way */
-    if (elem->getSteppingOnElement()!=NULL && (mode==_mode_all || mode==_mode_onlyFloor))
+    if (elem->getSteppingOnElement()!=nullptr && (mode==_mode_all || mode==_mode_onlyFloor))
         this->showObjectTile(x,y,offsetX,offsetY,elem->getSteppingOnElement(),ignoreOffset,_mode_all);
     /*
         No video object definition? ignore This way we can have "invisible" objects if we want to.
         mode==_mode_onlyFLoor means, only object that are being stepped on, are drawn
     */
-    if (elem->getVideoElementDef()==NULL || (mode==_mode_onlyFloor))
+    if (elem->getVideoElementDef()==nullptr || (mode==_mode_onlyFloor))
         return;
 
 
@@ -219,7 +219,7 @@ void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  tex
 {
     ALLEGRO_COLOR c=al_map_rgb(255,255,200);
     int scrx=offsetX+(x*this->sWidth),scry=offsetY+(y*this->sHeight);
-    if(this->myfont!=NULL)
+    if(this->myfont!=nullptr)
     {
         al_draw_text(this->myfont,c,(float)scrx,(float)scry,0,text.c_str());
         // std::cout<<"drawing text\n";
@@ -237,7 +237,7 @@ void presenter::prepareStatsThing()
     this->showText(2,0,0,0,std::to_string(aPlayer->countVisitedPlayers()));
     this->showText(2,0,0,32,std::to_string(aPlayer->getEnergy()));
     this->showObjectTile(4,0,0,0,aPlayer->getInventory()->getActiveWeapon(),true,_mode_onlyTop);
-    if( aPlayer->getInventory()->getActiveWeapon()!=NULL)
+    if( aPlayer->getInventory()->getActiveWeapon()!=nullptr)
     {
         this->showText(5,0,0,32,std::to_string(aPlayer->getInventory()->getActiveWeapon()->getEnergy()));
         this->showText(5,0,0,0,std::to_string(aPlayer->getInventory()->getActiveWeapon()->getAmmo()));
@@ -246,7 +246,7 @@ void presenter::prepareStatsThing()
     {
         int tokens;
         bElem *key=aPlayer->getInventory()->getKey(_key,cnt,false);
-        if(key!=NULL)
+        if(key!=nullptr)
         {
             tokens=aPlayer->getInventory()->countTokens(key->getType(),key->getSubtype());
             this->showObjectTile(7+(cnt*2),0,0,0,key,true,_mode_onlyTop);
@@ -297,7 +297,7 @@ void presenter::showGameField()
         for(y=0; y<this->scrTilesY+1; y++)
         {
             bElem* elemToDisplay=player->getBoard()->getElement(x+(this->previousPosition.x),y+(this->previousPosition.y));
-            if(elemToDisplay!=NULL && elemToDisplay->getMoved()>0)
+            if(elemToDisplay!=nullptr && elemToDisplay->getMoved()>0)
             {
                 mSprites.push_back({x,y,elemToDisplay});
                 this->showObjectTile(x,y,0,0,elemToDisplay,false,_mode_onlyFloor);
@@ -324,7 +324,7 @@ void presenter::showGameField()
 
 int presenter::presentEverything()
 {
-    player* currentPlayer=NULL;
+    player* currentPlayer=nullptr;
     ALLEGRO_EVENT event;
 //   presenter* instance=this;
     controlItem cItem;
@@ -351,7 +351,7 @@ int presenter::presentEverything()
             this->_cp_attachedBoard->player=NOCOORDS;
             bElem::runLiveElements();
             gCollect::getInstance()->purgeGarbage();
-            if((currentPlayer=player::getActivePlayer())==NULL)
+            if((currentPlayer=player::getActivePlayer())==nullptr)
             {
                 return 2;
             }

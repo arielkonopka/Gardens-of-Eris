@@ -1,7 +1,7 @@
 #include "gCollect.h"
 
 
-gCollect* gCollect::instanceId=NULL;
+gCollect* gCollect::instanceId=nullptr;
 
 gCollect::gCollect()
 {
@@ -10,7 +10,7 @@ gCollect::gCollect()
 gCollect::~gCollect()
 {
     this->purgeGarbage();
-    gCollect::instanceId=NULL;
+    gCollect::instanceId=nullptr;
 
 }
 
@@ -47,7 +47,7 @@ int gCollect::garbageQsize()
 
 gCollect* gCollect::getInstance()
 {
-    if(gCollect::instanceId==NULL)
+    if(gCollect::instanceId==nullptr)
         gCollect::instanceId=new gCollect();
     return gCollect::instanceId;
 }

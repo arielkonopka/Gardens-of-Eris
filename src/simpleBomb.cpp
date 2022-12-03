@@ -1,6 +1,6 @@
 #include "simpleBomb.h"
 
-videoElement::videoElementDef* simpleBomb::vd=NULL;
+videoElement::videoElementDef* simpleBomb::vd=nullptr;
 
 
 simpleBomb::simpleBomb(chamber* board):explosives(board),nonSteppable(board),killableElements(board), movableElements(board)

@@ -1,6 +1,6 @@
 #include "soundManager.h"
 
-soundManager* soundManager::instance=NULL;
+soundManager* soundManager::instance=nullptr;
 soundManager::soundManager()
 {
     //ctor
@@ -12,7 +12,7 @@ soundManager::~soundManager()
 }
 soundManager* soundManager::getInstance()
 {
-    if (soundManager::instance==NULL)
+    if (soundManager::instance==nullptr)
         soundManager::instance=new soundManager();
     return soundManager::instance;
 }

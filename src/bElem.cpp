@@ -1,6 +1,6 @@
 #include "../include/bElem.h"
 #include "elements.h"
-videoElement::videoElementDef* bElem::vd=NULL;
+videoElement::videoElementDef* bElem::vd=nullptr;
 std::vector<bElem*> bElem::liveElems;
 unsigned int bElem::sTaterCounter=0;
 int bElem::instances=0;
@@ -53,7 +53,7 @@ bElem::bElem(chamber* board, int x, int y)
     this->x=x;
     this->y=y;
     // If we fail to place the object on a board, we will let it hanging, check, if x or y are ==-1
-    if (this->attachedBoard->chamberArray[x][y]!=NULL)
+    if (this->attachedBoard->chamberArray[x][y]!=nullptr)
     {
         if (this->stepOnElement(this->attachedBoard->chamberArray[x][y])==false)
         {
@@ -103,19 +103,19 @@ void bElem::init()
     this->waiting=0;
     this->disposed=false;
     this->hasActivatedMechanics=false;
-    this->stomping=NULL;
-    this->collector=NULL;
-    this->attachedBoard=NULL;
+    this->stomping=nullptr;
+    this->collector=nullptr;
+    this->attachedBoard=nullptr;
 
     this->animPhase=0;
     this->myStats=new elemStats(_defaultEnergy);
     this->killed=0;
-    this->steppingOn=NULL;
+    this->steppingOn=nullptr;
     this->interacted=0;
     this->destroyed=0;
     this->instance=bElem::instances++;
 
-    this->myInventory=NULL;
+    this->myInventory=nullptr;
     if(!bElem::randomNumberGeneratorInitialized)
     {
         std::random_device rd;
@@ -154,7 +154,7 @@ chamber* bElem::getBoard()
 void bElem::setBoard(chamber* board)
 {
     this->attachedBoard=board;
-    if (this->myInventory!=NULL)
+    if (this->myInventory!=nullptr)
     {
         this->myInventory->updateBoard();
     }
@@ -191,7 +191,7 @@ void bElem::stomp(bElem* who)
 
 void bElem::unstomp()
 {
-    this->stomping=NULL;
+    this->stomping=nullptr;
 }
 
 void bElem::setCollected(bElem* who)
@@ -201,7 +201,7 @@ void bElem::setCollected(bElem* who)
 
 void bElem::setDropped()
 {
-    this->collector=NULL;
+    this->collector=nullptr;
 }
 
 /*
@@ -213,14 +213,14 @@ void bElem::setDropped()
 */
 bool bElem::stepOnElement(bElem* step)
 {
-    if (step==NULL || step->isSteppable()==false || step->getBoard()==NULL || step->disposed)
+    if (step==nullptr || step->isSteppable()==false || step->getBoard()==nullptr || step->disposed)
         return false;
-    //if(this->getStomper()!=NULL || this->getSteppingOnElement()!=NULL)
+    //if(this->getStomper()!=nullptr || this->getSteppingOnElement()!=nullptr)
     this->removeElement();
     this->setCoords(step->getCoords());
     this->setBoard(step->getBoard());
     this->steppingOn=step;
-    if(step->getStomper()!=NULL)
+    if(step->getStomper()!=nullptr)
     {
         bElem* stmpr=step->getStomper();
         step->unstomp();
@@ -254,24 +254,24 @@ oState bElem::disposeElementUnsafe()
     if(this->disposed==true)
         return ERROR;
     this->disposed=true;
-    if(mycoords.x>=0 && mycoords.y>=0 && this->getBoard()!=NULL) //object on a board? need extra steps
+    if(mycoords.x>=0 && mycoords.y>=0 && this->getBoard()!=nullptr) //object on a board? need extra steps
     {
-        if(this->getSteppingOnElement()!=NULL || this->getStomper()!=NULL)
+        if(this->getSteppingOnElement()!=nullptr || this->getStomper()!=nullptr)
         {
             this->removeElement();
             res=DISPOSED;
         }
         else
         {
-            this->getBoard()->setElement(this->x,this->y,NULL);
-            res=NULLREACHED;
+            this->getBoard()->setElement(this->x,this->y,nullptr);
+            res=nullptrREACHED;
         }
-        if(this->getType()!=_stash && this->myInventory!=NULL && this->myInventory->isEmpty()==false && this->getType()!=_rubishType && this->getType()!=_plainMissile && this->getType()!=_plainGun )
+        if(this->getType()!=_stash && this->myInventory!=nullptr && this->myInventory->isEmpty()==false && this->getType()!=_rubishType && this->getType()!=_plainMissile && this->getType()!=_plainGun )
         {
             bElem* stash=new rubbish(myBoard);
             stash->myInventory=this->myInventory;
             stash->myInventory->changeOwner(stash);
-            this->myInventory=NULL;
+            this->myInventory=nullptr;
             if(myBoard->getElement(mycoords.x,mycoords.y)->isSteppable())
             {
                 stash->stepOnElement(myBoard->getElement(mycoords.x,mycoords.y));
@@ -301,13 +301,13 @@ oState bElem::disposeElementUnsafe()
     this->disposed=true;
     this->x=-1; //we set the state of the object to be unprovisioned - out of the game.
     this->y=-1;
-    this->attachedBoard=NULL;
+    this->attachedBoard=nullptr;
     return res; // false means that there is no more elements to go.
 }
 
 oState bElem::disposeElement()
 {
-    rubbish* stash=NULL;
+    rubbish* stash=nullptr;
     coords oCoords=this->getCoords();
     chamber* board=this->getBoard();
     if(this->disposed==true)
@@ -320,38 +320,38 @@ oState bElem::disposeElement()
     {
         this->deregisterLiveElement(this);
     }
-    if(this->getCollector()!=NULL)
+    if(this->getCollector()!=nullptr)
     {
         //  std::cout<<"Removing collected item from"<<this->getCollector()->myInventory<<"\n";
 
         inventory* cInv=this->getCollector()->myInventory;
-        if(cInv!=NULL)
+        if(cInv!=nullptr)
             cInv->removeCollectibleFromInventory(this->getInstanceid());
         this->setDropped();
         this->disposed=true;
-        this->attachedBoard=NULL;
+        this->attachedBoard=nullptr;
         this->x=-1;
         this->y=-1;
         gCollect::getInstance()->addToBin(this);
         return DISPOSED;
     }
-    if(this->getInventory()!=NULL && oCoords!=NOCOORDS)
+    if(this->getInventory()!=nullptr && oCoords!=NOCOORDS)
     {
         if(this->getInventory()->isEmpty()==false)
         {
             stash=new rubbish(this->getBoard());
             stash->setInventory(this->getInventory());
-            this->setInventory(NULL);
+            this->setInventory(nullptr);
 
         }
     }
     this->removeElement();
-    if(stash!=NULL)
+    if(stash!=nullptr)
     {
         stash->stepOnElement(board->getElement(oCoords));
     }
     this->disposed=true;
-    this->attachedBoard=NULL;
+    this->attachedBoard=nullptr;
     this->x=-1;
     this->y=-1;
     gCollect::getInstance()->addToBin(this);
@@ -386,7 +386,7 @@ coords bElem::getAbsCoords(direction dir)
     case NODIRECTION:
         break;
     }
-    if (this->attachedBoard==NULL)
+    if (this->attachedBoard==nullptr)
         return NOCOORDS;
 //    std::cout<<"resxy "<<res.y<<" "<<(this->attachedBoard->width)<<"\n";
     if (res.y>=this->attachedBoard->height || res.y<0 || res.x>=this->attachedBoard->width || res.x<0)
@@ -400,7 +400,7 @@ bElem* bElem::getElementInDirection(direction di)
 {
     coords mycoords=this->getAbsCoords(di);
     if (mycoords==NOCOORDS)
-        return NULL;
+        return nullptr;
     return this->attachedBoard->getElement(mycoords.x,mycoords.y);
 }
 
@@ -412,7 +412,7 @@ bElem::~bElem()
     al_destroy_mutex(this->elementMutex);
     if(this->isLiveElement())
         this->deregisterLiveElement(this);
-    if(this->myInventory!=NULL)
+    if(this->myInventory!=nullptr)
     {
         delete this->myInventory;
 
@@ -449,7 +449,7 @@ void bElem::setAmmo()
 
 bool bElem::isProvisioned()
 {
-    if (this->attachedBoard!=NULL && this->x!=-1 && this->y!=-1 )
+    if (this->attachedBoard!=nullptr && this->x!=-1 && this->y!=-1 )
         return true;
     return false;
 }
@@ -491,7 +491,7 @@ bool bElem::destroy()
         this->destroyed=_defaultDestroyTime+this->getCntr();
         this->destTimeBeg=this->getCntr();
         this->destTimeReq=_defaultDestroyTime;
-        //if(this->getSteppingOnElement()!=NULL)
+        //if(this->getSteppingOnElement()!=nullptr)
 //            this->getSteppingOnElement()->destroy();
 
         //  this->killed=_defaultDestroyTime+this->getCntr();
@@ -554,7 +554,7 @@ bool bElem::isSwitchOn()
 bool bElem::mechanics()
 {
     this->taterCounter++; //this is our own source of sequential numbers
-    if((this->getBoard()==NULL || this->getCoords()==NOCOORDS) && (this->getCollector()==NULL))
+    if((this->getBoard()==nullptr || this->getCoords()==NOCOORDS) && (this->getCollector()==nullptr))
         return false;
 
     if (this->canBeDestroyed() && (long int)this->destroyed>0 && this->getCntr()>=this->destTimeBeg+this->destTimeReq-1 && this->getType()!=_belemType )
@@ -597,7 +597,7 @@ bool bElem::isSteppableDirection(direction di)
     tmpcoords=this->getAbsCoords(di);
     if(!(tmpcoords==NOCOORDS))
     {
-        if(this->attachedBoard->getElement(tmpcoords)!=NULL)
+        if(this->attachedBoard->getElement(tmpcoords)!=nullptr)
         {
             return this->attachedBoard->getElement(tmpcoords)->isSteppable();
         }
@@ -636,37 +636,37 @@ bool bElem::isCollectible()
 
 bool bElem::canCollect()
 {
-    return myInventory!=NULL;
+    return myInventory!=nullptr;
 }
 // remove element from the board, and return it for further processing(if not needed, run .dispose() on it)
 bElem* bElem::removeElement()
 {
-    if (this->x<0 || this->y<0 || this->getBoard()==NULL)
+    if (this->x<0 || this->y<0 || this->getBoard()==nullptr)
     {
-        return (this->disposed)?NULL:this;
+        return (this->disposed)?nullptr:this;
     }
-    if(this->getSteppingOnElement()!=NULL && this->getStomper()!=NULL)
+    if(this->getSteppingOnElement()!=nullptr && this->getStomper()!=nullptr)
     {
         this->getStomper()->steppingOn=this->steppingOn;
         this->getSteppingOnElement()->stomp(this->getStomper());
-    } else if (this->getSteppingOnElement()!=NULL && this->getStomper()==NULL)
+    } else if (this->getSteppingOnElement()!=nullptr && this->getStomper()==nullptr)
     {
         this->attachedBoard->setElement(this->x,this->y,this->getSteppingOnElement());
         this->getSteppingOnElement()->unstomp();
-    } else if (this->getSteppingOnElement()==NULL && this->getStomper()!=NULL)
+    } else if (this->getSteppingOnElement()==nullptr && this->getStomper()!=nullptr)
     {
-        this->getStomper()->steppingOn=NULL;
-    } else if(this->getStomper()==NULL && this->getSteppingOnElement()==NULL)
+        this->getStomper()->steppingOn=nullptr;
+    } else if(this->getStomper()==nullptr && this->getSteppingOnElement()==nullptr)
     {
         bElem *newElem=new bElem(this->attachedBoard);
         newElem->setCoords(this->getCoords());
         newElem->attachedBoard->setElement(newElem->getCoords(),newElem);
     }
     this->unstomp();
-    this->steppingOn=NULL;
+    this->steppingOn=nullptr;
     this->x=-1;
     this->y=-1;
-    this->attachedBoard=NULL;
+    this->attachedBoard=nullptr;
     return this;
 }
 
@@ -687,13 +687,13 @@ bool bElem::canInteract()
 bool bElem::collect(bElem *collectible)
 {
     bElem *collected;
-    if (collectible==NULL || collectible->isCollectible()==false ||this->canCollect()==false || collectible->isDying() || collectible->isTeleporting() || collectible->isDestroyed())
+    if (collectible==nullptr || collectible->isCollectible()==false ||this->canCollect()==false || collectible->isDying() || collectible->isTeleporting() || collectible->isDestroyed())
     {
         return false;
     }
 
     collected=collectible->removeElement();
-    if (collected==NULL) //this should never happen!
+    if (collected==nullptr) //this should never happen!
     {
 #ifdef _VerbousMode_
         std::cout<<"Collecting failed!\n";
@@ -796,7 +796,7 @@ modType bElem::getModType()
 int bElem::getTypeInDirection(direction di)
 {
     bElem *e=this->getElementInDirection(di);
-    if(e!=NULL)
+    if(e!=nullptr)
         return e->getType();
     return -1;
 }
@@ -816,14 +816,14 @@ sNeighboorhood bElem::getSteppableNeighboorhood()
         direction d=(direction)(c1%4);
         direction d1=(direction)((c1+1)%4);
         bElem* e=this->getElementInDirection(d);
-        bElem* e1=NULL;
-        if(e!=NULL)
+        bElem* e1=nullptr;
+        if(e!=nullptr)
         {
             e1=e->getElementInDirection(d1);
             myNeigh.nTypes[c]=e->getType();
             myNeigh.steppable[c]=e->isSteppable();
             myNeigh.steppableClose[c/2]=myNeigh.steppable[c];
-            if(e1!=NULL)
+            if(e1!=nullptr)
             {
                 myNeigh.nTypes[c+1]=e1->getType();
                 myNeigh.steppable[c+1]=e1->isSteppable();
@@ -922,7 +922,7 @@ void bElem::runLiveElements()
         {
             bElem::liveElems[p]->mechanics();
         }
-        else if(bElem::liveElems[p]->getStomper()!=NULL || bElem::liveElems[p]->getCollector()!=NULL)
+        else if(bElem::liveElems[p]->getStomper()!=nullptr || bElem::liveElems[p]->getCollector()!=nullptr)
         {
             bElem::liveElems[p]->mechanics();
         }

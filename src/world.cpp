@@ -1,6 +1,6 @@
 #include "world.h"
 
-world* world::theInstance=NULL;
+world* world::theInstance=nullptr;
 
 world::world()
 {
@@ -10,9 +10,9 @@ world::world()
 
 world::~world()
 {
-    world::theInstance=NULL;
+    world::theInstance=nullptr;
     this->chambers=-1;
-    this->activeChamber=NULL;
+    this->activeChamber=nullptr;
     for(auto rls:this->rGens)
     {
         delete rls;
@@ -24,7 +24,7 @@ world::~world()
 }
 world* world::getInstanceId()
 {
-    if (world::theInstance==NULL)
+    if (world::theInstance==nullptr)
     {
         world::theInstance=new world();
     }
@@ -41,7 +41,7 @@ chamber* world::getActiveChamber()
     {
         return this->findActiveChamber();
     }
-    return NULL;
+    return nullptr;
 
 }
 
@@ -59,7 +59,7 @@ chamber* world::findActiveChamber()
 
     //None was voted, we should look for a spare player, before we announce that we did not found it
     //TBC
-    return NULL;
+    return nullptr;
 }
 
 

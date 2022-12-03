@@ -22,7 +22,7 @@ int countTheStack(bElem* in)
 {
     bElem* f=in->getBoard()->getElement(in->getCoords());
     int cnt=0;
-    while(f!=NULL)
+    while(f!=nullptr)
     {
         cnt++;
         f=f->getSteppingOnElement();
@@ -33,7 +33,7 @@ int findHowManyTimesObjectIsInStack(bElem* in,int instanceId)
 {
     bElem* f=in->getBoard()->getElement(in->getCoords());
     int cnt=0;
-    while(f!=NULL)
+    while(f!=nullptr)
     {
         if(f->getInstanceid()==instanceId)
             cnt++;
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE( bElemCreateDestroy )
 {
     // the simpliest possible test case
     bElem* be=new bElem();
-    BOOST_ASSERT( be!=NULL);
+    BOOST_ASSERT( be!=nullptr);
     delete be;
 
 }
@@ -58,37 +58,37 @@ BOOST_AUTO_TEST_CASE( bElemCreateDestroy )
 BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
 {
     chamber* chmbr=new chamber(10,10); // we need only a small chamber
-    BOOST_ASSERT( chmbr!=NULL );
+    BOOST_ASSERT( chmbr!=nullptr );
 
-    for(int c=0; c<chmbr->width; c++) // check that all elements are not null
+    for(int c=0; c<chmbr->width; c++) // check that all elements are not nullptr
         for(int d=0; d<chmbr->height; d++)
         {
             bElem* beOrig=chmbr->getElement(c,d);
             coords mcoords= {c,d};
-            BOOST_ASSERT(beOrig!=NULL);
+            BOOST_ASSERT(beOrig!=nullptr);
             BOOST_CHECK( beOrig->getType()==_belemType);
             BOOST_CHECK(beOrig->getCoords()==mcoords); // just check if the allocation is correct
-            BOOST_CHECK(beOrig->getStomper()==NULL);
-            BOOST_ASSERT(beOrig->getSteppingOnElement()==NULL);
+            BOOST_CHECK(beOrig->getStomper()==nullptr);
+            BOOST_ASSERT(beOrig->getSteppingOnElement()==nullptr);
         }
 
     bElem* beOrig=chmbr->getElement(0,0); // ok, now let's step on something
     bElem* be=new T(chmbr);
-    BOOST_ASSERT( be!=NULL );
+    BOOST_ASSERT( be!=nullptr );
     be->stepOnElement(chmbr->getElement(0,0));
     BOOST_CHECK(be->getBoard()==chmbr);
     bElem* be2=chmbr->getElement(0,0); // check if the element is placed
     BOOST_CHECK(be->getInstanceid()==be2->getInstanceid());
-    BOOST_ASSERT(be->getSteppingOnElement()!=NULL); // something is under the new object
+    BOOST_ASSERT(be->getSteppingOnElement()!=nullptr); // something is under the new object
     BOOST_CHECK(be->getSteppingOnElement()->getInstanceid()==beOrig->getInstanceid()); // check it is original background
-    BOOST_CHECK(beOrig->getStomper()!=NULL); // check, that the object below, "knows" it is below.
+    BOOST_CHECK(beOrig->getStomper()!=nullptr); // check, that the object below, "knows" it is below.
     BOOST_CHECK(beOrig->getStomper()->getInstanceid()==be->getInstanceid());
     be->removeElement(); // remove the object from the board
-    BOOST_CHECK(beOrig->getStomper()==NULL); //check if the original object is being stepped on
+    BOOST_CHECK(beOrig->getStomper()==nullptr); //check if the original object is being stepped on
     be2=chmbr->getElement(0,0); // fetch the element from the board, and compare it with the original object, there should be a match
     BOOST_CHECK(beOrig->getInstanceid()==be2->getInstanceid());
     BOOST_CHECK(beOrig->getBoard()==chmbr);
-    BOOST_CHECK(be->getBoard()==NULL);
+    BOOST_CHECK(be->getBoard()==nullptr);
     BOOST_CHECK(be->getCoords()==NOCOORDS);
     delete be;
     delete chmbr;
@@ -106,25 +106,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateThenDispose,T,all_test_types)
 {
     coords point= {3,3};
     chamber* chmbr=new chamber(10,10); // we need only a small chamber
-    BOOST_ASSERT( chmbr!=NULL );
+    BOOST_ASSERT( chmbr!=nullptr );
     bElem* beOrig=chmbr->getElement(point); // ok, now let's step on something
     bElem* be=new T(chmbr);
-    BOOST_ASSERT( be!=NULL );
+    BOOST_ASSERT( be!=nullptr );
     be->stepOnElement(chmbr->getElement(point));
     BOOST_CHECK(be->getBoard()==chmbr);
     BOOST_CHECK(be->getCoords()==point); // we check, that the coordinates are set properly
     bElem* be2=chmbr->getElement(point); // check if the element is placed
     BOOST_CHECK(be->getInstanceid()==be2->getInstanceid());
-    BOOST_ASSERT(be->getSteppingOnElement()!=NULL); // something is under the new object
+    BOOST_ASSERT(be->getSteppingOnElement()!=nullptr); // something is under the new object
     BOOST_CHECK(be->getSteppingOnElement()->getInstanceid()==beOrig->getInstanceid()); // check it is original background
-    BOOST_CHECK(beOrig->getStomper()!=NULL); // check, that the object below, "knows" it is below.
+    BOOST_CHECK(beOrig->getStomper()!=nullptr); // check, that the object below, "knows" it is below.
     BOOST_CHECK(beOrig->getStomper()->getInstanceid()==be->getInstanceid());
     be->disposeElement(); // remove the object from the board
-    BOOST_CHECK(beOrig->getStomper()==NULL); //check if the original object is being stepped on
+    BOOST_CHECK(beOrig->getStomper()==nullptr); //check if the original object is being stepped on
     be2=chmbr->getElement(point); // fetch the element from the board, and compare it with the original object, there should be a match
     BOOST_CHECK(beOrig->getInstanceid()==be2->getInstanceid());
     BOOST_CHECK(beOrig->getBoard()==chmbr);
-    BOOST_CHECK(be->getBoard()==NULL);
+    BOOST_CHECK(be->getBoard()==nullptr);
     BOOST_CHECK(be->getCoords()==NOCOORDS);
     gCollect::getInstance()->purgeGarbage();
     delete chmbr;
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateThenDispose,T,all_test_types)
 
 bool searchForIdInSteppers(bElem* el,int id)
 {
-    while(el!=NULL)
+    while(el!=nullptr)
     {
         if(id==el->getInstanceid())
             return true;
@@ -157,7 +157,7 @@ bool searchForIdInSteppers(bElem* el,int id)
 int findDepth(bElem* b)
 {
     int d=0;
-    while(b!=NULL)
+    while(b!=nullptr)
     {
         d++;
         if(b->getSteppingOnElement())
@@ -178,7 +178,7 @@ int findDepth(bElem* b)
 bElem* findLastStep(bElem* first)
 {
     bElem* last=first;
-    while(first!=NULL)
+    while(first!=nullptr)
     {
         last=first;
         first=first->getSteppingOnElement();
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndRemovingTest,T,all_test_types)
     {
         bElem* be=new bElem(mc,3,3);
         BOOST_ASSERT(mc->getElement(3,3)->getInstanceid()==be->getInstanceid());
-        BOOST_ASSERT(mc->getElement(3,3)->getSteppingOnElement()!=NULL);
+        BOOST_ASSERT(mc->getElement(3,3)->getSteppingOnElement()!=nullptr);
     }
     bElem* last=new T(mc);
     last->stepOnElement(mc->getElement(3,3));
@@ -205,18 +205,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndRemovingTest,T,all_test_types)
     //we at first take the last element, at the bottom, because it usually causes issues
     te=findLastStep(mc->getElement(3,3));
     te2=te->removeElement();
-    if(mc->getElement(3,3)!=NULL) //check if element is really removed
+    if(mc->getElement(3,3)!=nullptr) //check if element is really removed
         BOOST_CHECK(searchForIdInSteppers(mc->getElement(3,3),te2->getInstanceid())==false);
     delete te2;
     te=mc->getElement(3,3);
     while(findDepth(mc->getElement(3,3))>2)
     {
-        if(te==NULL)
+        if(te==nullptr)
         {
             te=mc->getElement(3,3);
             ccc=0;
         }
-        //     std::cout<<"depth="<<ccc<<" "<<findDepth(mc->getElement(3,3))<<" "<<(std::string)((te->getSteppingOnElement()!=NULL)?"Middle ":"Edge ")<<te->getInstanceid()<<"\n";
+        //     std::cout<<"depth="<<ccc<<" "<<findDepth(mc->getElement(3,3))<<" "<<(std::string)((te->getSteppingOnElement()!=nullptr)?"Middle ":"Edge ")<<te->getInstanceid()<<"\n";
         if(bElem::randomNumberGenerator()%2==0)
         {
 
@@ -224,8 +224,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndRemovingTest,T,all_test_types)
             bElem* te3=te->getSteppingOnElement();
             te2=te->removeElement();
             te=te3;
-            BOOST_ASSERT(te2!=NULL);
-            if(mc->getElement(3,3)!=NULL)
+            BOOST_ASSERT(te2!=nullptr);
+            if(mc->getElement(3,3)!=nullptr)
                 BOOST_CHECK(searchForIdInSteppers(mc->getElement(3,3),te2->getInstanceid())==false);
             delete te2;
         }
@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDisposingTest,T,all_test_types)
     {
         bElem* be=new bElem(mc,3,3);
         BOOST_ASSERT(mc->getElement(3,3)->getInstanceid()==be->getInstanceid());
-        BOOST_ASSERT(mc->getElement(3,3)->getSteppingOnElement()!=NULL);
+        BOOST_ASSERT(mc->getElement(3,3)->getSteppingOnElement()!=nullptr);
     }
     bElem* last=new T(mc);
     last->stepOnElement(mc->getElement(3,3));
@@ -270,11 +270,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDisposingTest,T,all_test_types)
     BOOST_CHECK(te->getInstanceid()!=mc->getElement(3,3)->getInstanceid());
     myId=te->getInstanceid();
     te->disposeElement();
-    if(mc->getElement(3,3)!=NULL)
+    if(mc->getElement(3,3)!=nullptr)
         BOOST_CHECK(searchForIdInSteppers(mc->getElement(3,3),myId)==false);
 
     te=mc->getElement(3,3);
-    while(mc->getElement(3,3)!=NULL && mc->getElement(3,3)->getSteppingOnElement()!=NULL)
+    while(mc->getElement(3,3)!=nullptr && mc->getElement(3,3)->getSteppingOnElement()!=nullptr)
     {
         if(bElem::randomNumberGenerator()%2==0)
         {
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDisposingTest,T,all_test_types)
             myId=te->getInstanceid();
             te->disposeElement();
             te=te3;
-            if(mc->getElement(3,3)!=NULL)
+            if(mc->getElement(3,3)!=nullptr)
                 BOOST_CHECK(searchForIdInSteppers(mc->getElement(3,3),myId)==false);
             BOOST_CHECK(findInstanceInGarbage(myId)==true);
 
@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDisposingTest,T,all_test_types)
         {
             te=te->getSteppingOnElement();
         }
-        if(te==NULL)
+        if(te==nullptr)
             te=mc->getElement(3,3);
     }
     delete mc;
@@ -302,9 +302,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDisposingTest,T,all_test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDestroyingTheWholeChamber,T,all_test_types)
 {
     chamber* mc=new chamber(11,11);
-    bElem* be=NULL;
+    bElem* be=nullptr;
     bElem* be1=new bElem(mc);
-    BOOST_CHECK(be1!=NULL);
+    BOOST_CHECK(be1!=nullptr);
     BOOST_CHECK(be1->stepOnElement(mc->getElement(10,10))==true);
     for(int x=0; x<10; x++)
     {
@@ -348,7 +348,7 @@ BOOST_AUTO_TEST_CASE( StepOverElementTests)
 
     chamber* mc=new chamber(10,10);
     int stackSize=countTheStack(mc->getElement(point));
-    bElem* nElement=NULL;
+    bElem* nElement=nullptr;
     for(int c=0; c<100; c++)
     {
         nElement=new bElem(mc);
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE( StepOverElementTests)
     }
     nElement=mc->getElement(point);
     int elementCnt=0;
-    while(nElement!=NULL)
+    while(nElement!=nullptr)
     {
         int origId=0;
         int nEInstanceId=nElement->getInstanceid();
@@ -375,13 +375,13 @@ BOOST_AUTO_TEST_CASE( StepOverElementTests)
         BOOST_CHECK(nElement->getStomper()->getInstanceid()==nE2->getInstanceid());
         BOOST_CHECK(nE2->getSteppingOnElement()->getInstanceid()==nElement->getInstanceid());
         BOOST_CHECK(mc->getElement(point)->getInstanceid()!=nElement->getInstanceid());
-        if(steppOn!=NULL)
+        if(steppOn!=nullptr)
         {
             BOOST_CHECK(steppOn->getInstanceid()==nElement->getSteppingOnElement()->getInstanceid());
             BOOST_CHECK(steppOn->getStomper()->getInstanceid()==nElement->getInstanceid());
 
         }
-        if(stmp!=NULL)
+        if(stmp!=nullptr)
         {
             BOOST_CHECK(origId==mc->getElement(point)->getInstanceid());
             BOOST_CHECK(stmp->getInstanceid()==nE2->getStomper()->getInstanceid());
@@ -597,7 +597,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TryToCollectAnObjectAndDisposeIt,T,all_test_types)
             }
             bElem* el=mc->getElement(a,b)->getSteppingOnElement();
 
-            while(el!=NULL)
+            while(el!=nullptr)
             {
                 BOOST_CHECK(el->getInstanceid()!=mC->getInstanceid());
                 if(el->canCollect()==true)
@@ -649,7 +649,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TryToRemoveElementMoreThanNeeded,T,all_test_types)
 #endif
 
         relic=mc->getElement(1,1)->removeElement();
-        BOOST_CHECK(relic!=NULL);
+        BOOST_CHECK(relic!=nullptr);
         delete relic;
 #ifdef _VerbousMode_
    std::cout<<" * [2] removing "<<c<<"\n";

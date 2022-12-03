@@ -54,7 +54,7 @@ chamberArea* generateTreeAsimmetric(chamberArea* _root,coords leftUp,coords down
 
 BOOST_AUTO_TEST_CASE( TreeCreateAndDestroy)
 {
-    chamberArea* root=generateTree(NULL, {0,0}, {100,100},4);
+    chamberArea* root=generateTree(nullptr, {0,0}, {100,100},4);
 
     delete root;
 
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE( TreeCreateAndDestroy)
 BOOST_AUTO_TEST_CASE( SearchForSurfacesThatFit )
 {
     std::vector<unsigned long int> surfaces1,surfaces2;
-    chamberArea* root=generateTree(NULL, {0,0}, {250,250},5);
+    chamberArea* root=generateTree(nullptr, {0,0}, {250,250},5);
     root->calculateInitialSurface();
     for(int cnt=2; cnt<45; cnt++)
     {
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE( SearchForSurfacesThatFit )
         root->removeEmptyNodes();
     }
     delete root;
-    root=generateTree(NULL, {0,0}, {250,250},5);
+    root=generateTree(nullptr, {0,0}, {250,250},5);
 
     for(int cnt=2; cnt<45; cnt++)
     {
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( SearchForSurfacesThatFit )
 
 BOOST_AUTO_TEST_CASE(AsimmetricChamberAreasSearch)
 {
-    chamberArea* root=generateTreeAsimmetric(NULL, {0,0}, {250,250},5);
+    chamberArea* root=generateTreeAsimmetric(nullptr, {0,0}, {250,250},5);
     root->calculateInitialSurface();
     for(int cnt=2; cnt<45; cnt++)
     {

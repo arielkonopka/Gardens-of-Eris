@@ -161,7 +161,7 @@ bool inventory::removeCollectibleFromInventory(int instance)
 
 bElem* inventory::getKey(int type, int subtype,bool removeIt)
 {
-    /* finds a key in the inventory and returns it, when nothing found, NULL is returned*/
+    /* finds a key in the inventory and returns it, when nothing found, nullptr is returned*/
     bElem* res;
     for(size_t c=0; c<this->keys.size(); c++)
     {
@@ -176,7 +176,7 @@ bElem* inventory::getKey(int type, int subtype,bool removeIt)
             return res;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 int inventory::countTokens(int type, int subtype)
@@ -198,7 +198,7 @@ int inventory::countTokens(int type, int subtype)
 bElem* inventory::getUsable()
 {
     if(this->usables.size()<=0)
-        return NULL;
+        return nullptr;
     return this->usables[this->uPos];
 }
 
@@ -228,13 +228,13 @@ bool inventory::removeActiveWeapon()
 bElem* inventory::getActiveWeapon()
 {
     if (this->weapons.size()<=0)
-        return NULL;
+        return nullptr;
 
     this->wPos=this->wPos%this->weapons.size();
     if (this->weapons[this->wPos]->getAmmo()<=0)
     {
         this->removeActiveWeapon();
-        return NULL; // We will remove empty Weapons recursively, if it is necessary
+        return nullptr; // We will remove empty Weapons recursively, if it is necessary
     }
     return this->weapons[this->wPos];
 }
@@ -250,7 +250,7 @@ bool inventory::nextGun()
 bool inventory::addToInventory(bElem* what)
 {
     bool res=false;
-    if(what==NULL)
+    if(what==nullptr)
         return false;
    // if(what->isDying() || what->isTeleporting() || what->isDestroyed())
    //     return false;
@@ -293,7 +293,7 @@ bool inventory::addToInventory(bElem* what)
         /* this is probably a stash, or something like that. that is why, when we create an object, that shoots infinite ammo, it is better to have gun in non standard places, it would not be picked up that way*/
         this->mergeInventory(what->getInventory());
         delete what->getInventory();
-        what->setInventory(NULL);
+        what->setInventory(nullptr);
         what->disposeElement();
         res=true;
     }
@@ -360,7 +360,7 @@ void inventory::decrementTokenNumber(tType token)
 
 bool inventory::mergeInventory(inventory* theOtherInventory)
 {
-    if(theOtherInventory==NULL)
+    if(theOtherInventory==nullptr)
         return false;
     for(auto w:theOtherInventory->weapons)
     {

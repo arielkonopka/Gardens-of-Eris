@@ -1,6 +1,6 @@
 #include "patrollingDrone.h"
 
-videoElement::videoElementDef* patrollingDrone::vd=NULL;
+videoElement::videoElementDef* patrollingDrone::vd=nullptr;
 
 patrollingDrone::patrollingDrone(chamber* board): killableElements(board), nonSteppable(board), mechanical(board,false), movableElements(board)
 {
@@ -81,7 +81,7 @@ int patrollingDrone::findSomething(bElem* elem,int n,int denyDir)
     for(int d=0; d<4; d++)
     {
         bElem* el=elem->getElementInDirection((direction)d);
-        if(el!=NULL)
+        if(el!=nullptr)
         {
             if(el->getType()==_goldenAppleType || el->getType()==_key || el->getType()==_plainGun)
                 return 0;
@@ -92,7 +92,7 @@ int patrollingDrone::findSomething(bElem* elem,int n,int denyDir)
     {
         bElem* el=elem->getElementInDirection((direction)((d+denyDir)%4));
 
-        if(el!=NULL && el->isSteppable())
+        if(el!=nullptr && el->isSteppable())
         {
             coords crds=el->getCoords();
             if(this->wasVisited(crds.x,crds.y))
@@ -125,7 +125,7 @@ bool patrollingDrone::mechanics()
         int l;
         direction d=(direction)cnt;
         bElem* el=this->getElementInDirection(d);
-        if(el==NULL) continue;
+        if(el==nullptr) continue;
         if(el->getType()==_key || el->getType()==_goldenAppleType || el->getType()==_plainGun)
         {
             this->collect(el);
@@ -133,7 +133,7 @@ bool patrollingDrone::mechanics()
         }
 
 
-        if(el!=NULL && el->isSteppable())
+        if(el!=nullptr && el->isSteppable())
         {
             this->clearVisited();
             this->setVisited(c.x,c.y);

@@ -1,7 +1,7 @@
 #include "movableElements.h"
 
 
-videoElement::videoElementDef* movableElements::vd=NULL;
+videoElement::videoElementDef* movableElements::vd=nullptr;
 
 
 
@@ -35,7 +35,7 @@ bool movableElements::moveInDirection(direction dir)
 bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 {
     bElem* stepOn=this->getElementInDirection(dir);
-    if (stepOn==NULL || this->getMoved()>0 || this->isDying() || this->isTeleporting() || this->isDestroyed() )
+    if (stepOn==nullptr || this->getMoved()>0 || this->isDying() || this->isTeleporting() || this->isDestroyed() )
         return false;
     this->setDirection(dir);
     if (stepOn->isSteppable()==true)
@@ -47,7 +47,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
     else if (this->canPush()==true && stepOn->isMovable()==true)
     {
         bElem* stepOn2=stepOn->getElementInDirection(dir);
-        if(stepOn2==NULL)
+        if(stepOn2==nullptr)
             return false;
         if (stepOn2->isSteppable())
         {
@@ -59,7 +59,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
             return true;
         }
     }
-    if (this->canCollect()==true && this->myInventory!=NULL && stepOn->isCollectible()==true)
+    if (this->canCollect()==true && this->myInventory!=nullptr && stepOn->isCollectible()==true)
     {
         if (this->collect(stepOn)==true)
             //if (this->collect(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)

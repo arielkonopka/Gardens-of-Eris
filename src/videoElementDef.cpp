@@ -25,14 +25,14 @@ void videoElementDef::initializeDriver()
         return;
     videoElementDef::initialized=true;
     gameConfig* gameConfig=configManager::getInstance()->getConfig();
-    if(gameConfig==NULL || gameConfig->FontFile.size()==0 || gameConfig->spriteFile.size()==0)
+    if(gameConfig==nullptr || gameConfig->FontFile.size()==0 || gameConfig->spriteFile.size()==0)
     {
         std::cout<<"Graphical assets are not defined in the config file\n";
         exit(0);
     }
     al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
     ALLEGRO_BITMAP *spriteTs=al_load_bitmap(gameConfig->spriteFile.c_str());
-    if (spriteTs==NULL)
+    if (spriteTs==nullptr)
     {
         std::cout<<"Could not load sprites tile-set, please check your configuration.\n";
 
