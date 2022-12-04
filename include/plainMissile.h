@@ -19,7 +19,6 @@ public:
 
 private:
     bElem* statsOwner;
-    bool killing;
 
 };
 

@@ -117,9 +117,6 @@ bool monster::checkNeigh()
     }
     return r;
 }
-
-
-
 bool monster::mechanics()
 {
 

@@ -26,8 +26,6 @@ class monster : public killableElements, public nonSteppable, public mechanical,
         bool inited=false;
         int rotA=3;
         int rotB=1;
-        int animph=0;
-        int internalCnt=0;
 
 };
 

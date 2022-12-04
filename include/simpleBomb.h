@@ -17,7 +17,6 @@ public:
     virtual int getType();
     virtual bool mechanics();
 private:
-    bool exploded=false;
     bool triggered=false;
 };
 

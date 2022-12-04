@@ -661,10 +661,7 @@ bool bElem::isDestroyed()
     return this->state.destroyed>0 && (long int)this->state.destroyed>=(long int)this->getCntr();
 }
 
-elemStats* bElem::getStats()
-{
-    return this->eConfig.myStats;
-}
+
 void bElem::setStats(elemStats* stat)
 {
     this->eConfig.myStats=stat; // we do not do anything with the stats, please use it wisely
@@ -866,4 +863,8 @@ void bElem::setInventory(inventory* inv)
     this->eConfig.myInventory=inv;
 }
 
+int bElem::getEnergy()
+{
+    return (this->getStats()!=nullptr)?this->getStats()->getEnergy():555;
+};
 

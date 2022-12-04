@@ -131,10 +131,8 @@ public:
     virtual int getSubtype();
     virtual int getAnimPh();
     virtual int getSwitchId();
-    virtual constexpr int getEnergy()
-    {
-        return (this->getStats()!=nullptr)?this->getStats()->getEnergy():555;
-    };
+    virtual int getEnergy();
+
     virtual bool setEnergy(int points);
     virtual bool isDying();
     virtual bool isDestroyed();
@@ -159,8 +157,8 @@ public:
     virtual bool isActive();
     virtual bool isOpen();
     virtual bool isSwitchOn();
-    virtual elemStats* getStats();
-    virtual void setStats(elemStats* stat); // warning, unsafe method
+    constexpr elemStats* getStats() { return this->eConfig.myStats; };
+    void setStats(elemStats* stat); // warning, unsafe method
     virtual bool isMod(); // is the element a mod of another element? - mod is an object that changes other object's behavior
     virtual modType getModType();
     virtual bElem* removeElement(); // removes element from the board, and returns it for further processing, usefull for eg. for collecting stuff

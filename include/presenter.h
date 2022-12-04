@@ -65,7 +65,6 @@ public:
 
 
 private:
-    bool attachGraphicsToSPrites;
 
     ALLEGRO_FONT* myfont;
     std::string splashFname;
