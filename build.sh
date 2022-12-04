@@ -19,7 +19,7 @@ if [ "${1}" = "-sq" ] ; then
     shift
 fi
 
-sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev 
+sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr
 #
 if [ "${1}" = "-m" ] ; then
     module="src/${2}"
@@ -66,10 +66,10 @@ fi
 if [ "${sonarQ}" = "true" ] ; then
     #generate coverage report
     p="${PWD}"
-    cd "${reportPath}"
-    for it in "${p}"/obj/GoE-objects/src/*.o "${p}"/obj/GoE-objects/unitTests/*.o ; do
-	gcov --preserve-paths "${it}"
-    done
+#    cd "${reportPath}"
+#    for it in "${p}"/obj/GoE-objects/src/*.o "${p}"/obj/GoE-objects/unitTests/*.o ; do
+    gcovr obj/GoE-objects/src/ obj/GoE-objects/unitTests/ --sonarqube -o "${PWD}/CoverageReports/coverageReport.XML"
+#    done
 
 
 fi
