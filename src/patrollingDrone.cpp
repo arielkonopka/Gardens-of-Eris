@@ -26,20 +26,7 @@ patrollingDrone::~patrollingDrone()
     delete this->steppables;
 }
 
-patrollingDrone::patrollingDrone(chamber* board, int x, int y):killableElements(board,x,y), nonSteppable(board,x,y), mechanical(board,x,y,false), movableElements(board,x,y)
-{
-    this->setSubtype(0);
-    this->setInventory(new inventory(this));
-    this->setActive(false);
-    this->steppables=new bool*[(_defaultRecurrenceDepth*2)+1];
-    for(int c=0; c<(_defaultRecurrenceDepth*2)+1; c++)
-    {
-        this->steppables[c]=new bool[(_defaultRecurrenceDepth*2)+1];
-    }
-    this->boardSize.x=board->width;
-    this->boardSize.y=board->height;
 
-}
 void patrollingDrone::setVisited(int x, int y)
 {
         coords mycrds=this->getCoords();

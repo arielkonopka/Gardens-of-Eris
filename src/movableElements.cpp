@@ -9,10 +9,7 @@ movableElements::movableElements(chamber *board) : bElem(board)
 {
 
 }
-movableElements::movableElements(chamber *board,int x, int y) : bElem(board,x,y)
-{
 
-}
 
 movableElements::~movableElements()
 {
@@ -20,7 +17,7 @@ movableElements::~movableElements()
 }
 bool movableElements::isMovable()
 {
-    return this->movable && !this->isDestroyed() && !this->isDying();
+    return this->movable && !this->isDestroyed() && !this->isDying() && !this->isTeleporting();
 }
 
 bool movableElements::moveInDirection(direction dir)
@@ -65,7 +62,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
             return true;
         }
     }
-    if (this->canInteract()==true && stepOn->isInteractive()==true)
+    if (this->canInteract()==true)
     {
         if(stepOn->interact(this)==true)
         {
@@ -120,11 +117,22 @@ int movableElements::getMoved()
 
 bool movableElements::dragInDirection(direction dragIntoDirection)
 {
-    direction objFromDir=(direction)(((int)dragIntoDirection)+2);
+    direction objFromDir=(direction)((((int)dragIntoDirection)+2)%4);
+    direction d2=dragIntoDirection;
     bElem *draggedObj=this->getElementInDirection(objFromDir);
-    if(!draggedObj->isSteppable())
+    if(draggedObj==nullptr)
         return false;
-    return draggedObj->moveInDirection(dragIntoDirection);
+    if(!draggedObj->isMovable())
+    {
+        d2=(direction)((((int)this->getDirection())+2)%4);
+        draggedObj=this->getElementInDirection(d2);
+        d2=this->getDirection();
+        if(draggedObj==nullptr || !draggedObj->isMovable())
+            return false;
+    }
+
+    this->moveInDirection(dragIntoDirection);
+    return draggedObj->moveInDirection(d2);
 
 }
 
@@ -157,7 +165,17 @@ coords movableElements::getOffset()
 }
 
 
+void movableElements::setMovable(bool m)
+{
+    this->movable=m;
+}
 
+
+
+void movableElements::setCanPush(bool sp)
+{
+   this->_me_canPush=sp;
+}
 
 
 

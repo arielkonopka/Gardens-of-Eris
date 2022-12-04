@@ -3,12 +3,12 @@
 
 int chamber::lastid=0;
 
-chamber::chamber(int x,int y)
+chamber::chamber(int x,int y):width(x),height(y)
 {
     randomWordGen *rwg=new randomWordGen();
-    this->chamberArray.resize(boost::extents[x][y]);
-    this->width=x;
-    this->height=y;
+    this->chamberArray=new bElem**[x];
+    for(int c=0;c<x;c++)
+        this->chamberArray[c]=new bElem*[y];
     this->garbageBin=gCollect::getInstance();
     this->setInstanceId(chamber::lastid++);
     for(int cX=0; cX<x; cX++)

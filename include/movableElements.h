@@ -18,8 +18,6 @@ class movableElements :  virtual  public bElem
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
         movableElements(chamber *board);
-        movableElements(chamber *board,int x, int y);
-
         virtual ~movableElements();
         virtual bool isMovable();
         virtual bool moveInDirection(direction dir);
@@ -30,11 +28,13 @@ class movableElements :  virtual  public bElem
         virtual int getMoved();
         virtual bool dragInDirection(direction dragIntoDirection);
         virtual coords getOffset();
+        void setMovable(bool m);
+        void setCanPush(bool sp);
         direction facing;
-        bool movable;
     protected:
 
     private:
+        bool movable=true;
         unsigned int _me_moved=0;
         int movingTotalTime=0;
         bool _me_canPush=true;

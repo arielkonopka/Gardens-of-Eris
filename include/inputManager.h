@@ -2,7 +2,7 @@
 #define INPUTMANAGER_H
 #include "commons.h"
 #include <allegro5/allegro.h>
-
+#include <iostream>
 /** \brief This class is responsible for all user input, keys, mouse clicks, touches, pad clicks, etc...
  *
  * \param none

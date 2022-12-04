@@ -37,7 +37,6 @@ class bElem
 public:
     bElem();
     bElem(chamber *board);
-    bElem(chamber *board,int x, int y);
 
     static videoElement::videoElementDef* vd;
 
@@ -99,7 +98,7 @@ public:
     virtual coords getAbsCoords(direction dir);
     virtual direction getDirection();
     virtual bool setDirection(direction dir);
-    virtual int getType();
+    virtual constexpr int getType() { return _belemType; };
     virtual int getSubtype();
     virtual int getAnimPh();
     virtual int getSwitchId();
@@ -112,7 +111,6 @@ public:
     virtual bool isDestroyed();
     virtual bool isTeleporting();
     virtual void setTeleporting(int time);
-    virtual bool isInteractive();
     virtual bool isProvisioned();
     virtual bool isMovable();
 
@@ -178,7 +176,7 @@ protected:
 
 private:
     chamber *attachedBoard=nullptr;
-    ALLEGRO_MUTEX* elementMutex;
+    ALLEGRO_MUTEX* elementMutex=nullptr;
     static int instances;
     static unsigned int sTaterCounter;
     struct _cfg

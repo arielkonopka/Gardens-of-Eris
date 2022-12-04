@@ -20,9 +20,11 @@ void bElem::resetInstances()
 
 
 
-bElem::bElem() :elementMutex(al_create_mutex())
+bElem::bElem() : elementMutex(al_create_mutex())
 {
     this->eConfig.instance=bElem::instances++;
+    this->state.myDirection=UP;
+
     if(!bElem::randomNumberGeneratorInitialized)
     {
         std::random_device rd;
@@ -40,49 +42,9 @@ bElem::bElem() :elementMutex(al_create_mutex())
     }
 }
 
-bElem::bElem(chamber* board):attachedBoard(board),elementMutex(al_create_mutex())
+bElem::bElem(chamber* board): bElem()
 {
-
-
-    this->eConfig.instance=bElem::instances++;
-    if(!bElem::randomNumberGeneratorInitialized)
-    {
-        std::random_device rd;
-        std::mt19937::result_type seed = rd() ^ (
-                                             (std::mt19937::result_type)
-                                             std::chrono::duration_cast<std::chrono::seconds>(
-                                                     std::chrono::system_clock::now().time_since_epoch()
-                                             ).count() +
-                                             (std::mt19937::result_type)
-                                             std::chrono::duration_cast<std::chrono::microseconds>(
-                                                     std::chrono::high_resolution_clock::now().time_since_epoch()
-                                             ).count() );
-        bElem::randomNumberGenerator.seed(seed);
-        bElem::randomNumberGeneratorInitialized=true;
-    }
-
-}
-
-bElem::bElem(chamber* board, int x, int y): attachedBoard(board),elementMutex(al_create_mutex())
-{
-    this->eConfig.instance=bElem::instances++;
-    this->setCoords((coords)
-    {
-        x,y
-    });
-    // If we fail to place the object on a board, we will let it hanging, check, if x or y are ==-1
-    if (this->attachedBoard->chamberArray[x][y]!=nullptr)
-    {
-        if (this->stepOnElement(this->attachedBoard->chamberArray[x][y])==false)
-        {
-            this->state.myPosition=NOCOORDS;
-        }
-    }
-    else
-    {
-        this->attachedBoard->chamberArray[x][y]=this;
-    }
-
+    this->attachedBoard=board;
 }
 
 
@@ -128,10 +90,7 @@ bool bElem::setDirection(direction dir)
     return true;
 }
 
-bool bElem::isInteractive()
-{
-    return false;
-}
+
 
 chamber* bElem::getBoard()
 {
@@ -292,6 +251,7 @@ oState bElem::disposeElement()
         return ERROR;
 
     }
+    this->state.disposed=true;
     if(this->isLiveElement())
     {
         this->deregisterLiveElement(this);
@@ -325,7 +285,6 @@ oState bElem::disposeElement()
     {
         stash->stepOnElement(board->getElement(oCoords));
     }
-    this->state.disposed=true;
     this->attachedBoard=nullptr;
     this->state.myPosition=NOCOORDS;
     gCollect::getInstance()->addToBin(this);
@@ -396,10 +355,6 @@ ALLEGRO_MUTEX* bElem::getMyMutex()
 }
 
 
-int bElem::getType()
-{
-    return _belemType;
-}
 
 int bElem::getSubtype()
 {
@@ -453,23 +408,17 @@ bool bElem::interact(bElem *who)
 
 bool bElem::destroy()
 {
-    if(this->getSteppingOnElement()!=nullptr)
-        this->getSteppingOnElement()->destroy();
 
-    if (this->canBeDestroyed()) // && (!this->isDestroyed()))
+    if (this->canBeDestroyed() || this->isSteppable()) // && (!this->isDestroyed()))
     {
-
-        this->registerLiveElement(this);
+        if (this->canBeDestroyed())
+            this->registerLiveElement(this);
         this->state.destroyed=_defaultDestroyTime+this->getCntr();
         this->state.destTimeBeg=this->getCntr();
         this->state.destTimeReq=_defaultDestroyTime;
-        return true;
-    }
-    if (this->isSteppable())
-    {
-        this->state.destroyed=_defaultDestroyTime+this->getCntr();
-        this->state.destTimeBeg=this->getCntr();
-        this->state.destTimeReq=_defaultDestroyTime;
+        if(this->getSteppingOnElement()!=nullptr)
+            this->getSteppingOnElement()->destroy();
+
         return true;
     }
     return false;
@@ -601,6 +550,7 @@ bool bElem::canCollect()
 // remove element from the board, and return it for further processing(if not needed, run .dispose() on it)
 bElem* bElem::removeElement()
 {
+
     if (this->state.myPosition==NOCOORDS || this->getBoard()==nullptr)
     {
         return (this->isDisposed())?nullptr:this;

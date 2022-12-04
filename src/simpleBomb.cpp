@@ -42,7 +42,7 @@ bool simpleBomb::mechanics()
     if(this->getWait()==2)
     {
 
-        bElem::destroy();
+       // bElem::destroy();
         this->explode();
 
     }

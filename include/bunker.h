@@ -11,7 +11,6 @@ class bunker : public mechanical, public nonSteppable,public movableElements
         static videoElement::videoElementDef* vd;
         virtual videoElement::videoElementDef* getVideoElementDef();
         bunker(chamber *board);
-        bunker(chamber *board,int x, int y);
         virtual ~bunker();
         virtual bool mechanics();
         direction findLongestShot();

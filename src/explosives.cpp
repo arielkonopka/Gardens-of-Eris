@@ -6,10 +6,6 @@ explosives::explosives(chamber *board):bElem(board)
     //ctor
 }
 
-explosives::explosives(chamber* board, int x, int y):bElem(board,x,y)
-{
-
-}
 
 explosives::~explosives()
 {
@@ -19,10 +15,14 @@ explosives::~explosives()
 bool explosives::explode()
 {
     bElem *el;
-    //this->destroy();
+    coords mc=this->getCoords();
+    chamber* brd=this->getBoard();
+    bElem* step;
+    this->disposeElement();
+    step=brd->getElement(mc);
     for (int cnt=0 ; cnt<4; cnt++)
     {
-        el=this->getElementInDirection((direction)(cnt));
+        el=step->getElementInDirection((direction)(cnt));
         if (el!=nullptr)
         {
             el->destroy();
@@ -31,6 +31,8 @@ bool explosives::explode()
                 el->destroy();
         }
     }
+    step->destroy();
+
     return false;
 }
 

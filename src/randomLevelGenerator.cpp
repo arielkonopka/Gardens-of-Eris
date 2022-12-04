@@ -32,39 +32,39 @@ int randomLevelGenerator::checkWalls(int x, int y)
     bool  walls[]= {false,false,false,false};
     if (x>0)
     {
-        if (this->mychamber->chamberArray[x-1][y]->getType()==_wallType) walls[0]=true;
+        if (this->mychamber->getElement(x-1,y)->getType()==_wallType) walls[0]=true;
     }
     if (x<this->mychamber->width)
     {
-        if (this->mychamber->chamberArray[x+1][y]->getType()==_wallType) walls[1]=true;
+        if (this->mychamber->getElement(x+1,y)->getType()==_wallType) walls[1]=true;
 
     }
     if (y>0)
     {
-        if (this->mychamber->chamberArray[x][y-1]->getType()==_wallType) walls[2]=true;
+        if (this->mychamber->getElement(x,y-1)->getType()==_wallType) walls[2]=true;
     }
     if (y<this->mychamber->height)
     {
-        if (this->mychamber->chamberArray[x][y+1]->getType()==_wallType) walls[3]=true;
+        if (this->mychamber->getElement(x,y+1)->getType()==_wallType) walls[3]=true;
 
     }
     if (walls[0] && walls[1] && walls[2] && !walls[3])
     {
-        this->mychamber->chamberArray[x-1][y]->disposeElement();
-        this->mychamber->chamberArray[x][y]=new wall(this->mychamber);
+        this->mychamber->getElement(x-1,y)->disposeElement();
+        this->mychamber->setElement((coords){x,y},new wall(this->mychamber));
     }
     if (walls[0] && walls[1] && walls[3] && !walls[2])
     {
-        this->mychamber->chamberArray[x+1][y]->disposeElement();
+        this->mychamber->getElement(x+1,y)->disposeElement();
     }
 
     if (walls[0] && !walls[1] && walls[3] && walls[2])
     {
-        this->mychamber->chamberArray[x][y+1]->disposeElement();
+        this->mychamber->getElement(x,y+1)->disposeElement();
     }
     if (!walls[0] && walls[1] && walls[3] && walls[2])
     {
-        this->mychamber->chamberArray[x][y-1]->disposeElement();
+        this->mychamber->getElement(x,y-1)->disposeElement();
     }
 
 
@@ -148,7 +148,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
         //we draw vertical line
         for (int a=y1; a<=y2; a++)
         {
-            if (a!=d && this->mychamber->chamberArray[c][a]->isSteppable()==true && this->mychamber->chamberArray[c+2][a]->isSteppable()==true)
+            if (a!=d && this->mychamber->getElement(c,a)->isSteppable()==true && this->mychamber->getElement(c+2,a)->isSteppable()==true)
             {
                 if (a<d+2)
                 {
@@ -159,10 +159,10 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
                     doorPlaces2.push_back(a);
                 }
             }
-            if (this->mychamber->chamberArray[c+1][a]->isSteppable())
+            if (this->mychamber->getElement(c+1,a)->isSteppable())
             {
                 bElem *newElement=new wall(this->mychamber);
-                newElement->stepOnElement(this->mychamber->chamberArray[c+1][a]);
+                newElement->stepOnElement(this->mychamber->getElement(c+1,a));
             }
             else
             {
@@ -176,14 +176,14 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
             if (doorPlaces1.size()>0)
             {
                 int rnd=this->gen()%(doorPlaces1.size());
-                this->mychamber->chamberArray[c+1][doorPlaces1[rnd]]->disposeElement();
+                this->mychamber->getElement(c+1,doorPlaces1[rnd])->disposeElement();
                 doorPlaces1[rnd]=doorPlaces1[doorPlaces1.size()-1];
                 doorPlaces1.pop_back();
             }
             if (doorPlaces2.size()>0)
             {
                 int rnd=this->gen()%(doorPlaces2.size());
-                this->mychamber->chamberArray[c+1][doorPlaces2[rnd]]->disposeElement();
+                this->mychamber->getElement(c+1,doorPlaces2[rnd])->disposeElement();
                 //if(rnd<doorPlaces2.size()-1)
                 doorPlaces2[rnd]=doorPlaces2[doorPlaces2.size()-1];
                 doorPlaces2.pop_back();
@@ -192,13 +192,14 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
 
     }
     //we draw horizontal line
+
     if (d!=y2) // divider exists
     {
         doorPlaces1.clear();
         doorPlaces2.clear();
         for (int a=x1; a<=x2; a++)
         {
-            if (a!=c && this->mychamber->chamberArray[a][d]->isSteppable()==true && this->mychamber->chamberArray[a][d+2]->isSteppable()==true)
+            if (a!=c && this->mychamber->getElement(a,d)->isSteppable()==true && this->mychamber->getElement(a,d+2)->isSteppable()==true)
             {
                 if (a<c+2)
                 {
@@ -209,10 +210,10 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
                     doorPlaces2.push_back(a);
                 }
             }
-            if (mychamber->chamberArray[a][d+1]->isSteppable())
+            if (mychamber->getElement(a,d+1)->isSteppable())
             {
                 bElem *newElement=new wall(this->mychamber);
-                newElement->stepOnElement(this->mychamber->chamberArray[a][d+1]);
+                newElement->stepOnElement(this->mychamber->getElement(a,d+1));
             }
         }
         for (int cnt=0; cnt<holes; cnt++)
@@ -220,7 +221,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
             if (doorPlaces1.size()>0)
             {
                 int rnd=this->gen()%(doorPlaces1.size());
-                this->mychamber->chamberArray[doorPlaces1[rnd]][d+1]->disposeElement();
+                this->mychamber->getElement(doorPlaces1[rnd],d+1)->disposeElement();
                 doorPlaces1[rnd]=doorPlaces1[doorPlaces1.size()-1];
                 doorPlaces1.pop_back();
             }
@@ -231,7 +232,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
             if (doorPlaces2.size()>0)
             {
                 int rnd=this->gen()%(doorPlaces2.size());
-                this->mychamber->chamberArray[doorPlaces2[rnd]][d+1]->disposeElement();
+                this->mychamber->getElement(doorPlaces2[rnd],d+1)->disposeElement();
                 doorPlaces2[rnd]=doorPlaces2[doorPlaces2.size()-1];
                 doorPlaces2.pop_back();
             }
@@ -303,8 +304,8 @@ bool randomLevelGenerator::generateLevel(int holes)
     {
         bElem *newElem=new wall(this->mychamber);
         bElem *newElem1=new wall(this->mychamber);
-        newElem->stepOnElement(this->mychamber->chamberArray[c][0]);
-        newElem1->stepOnElement(this->mychamber->chamberArray[c][this->height-1]);
+        newElem->stepOnElement(this->mychamber->getElement(c,0));
+        newElem1->stepOnElement(this->mychamber->getElement(c,this->height-1));
 
     }
     for(int c=0; c<this->height; c++)
@@ -312,8 +313,8 @@ bool randomLevelGenerator::generateLevel(int holes)
 
         bElem *newElem2=new wall(this->mychamber);
         bElem *newElem3=new wall(this->mychamber);
-        newElem2->stepOnElement(this->mychamber->chamberArray[0][c]);
-        newElem3->stepOnElement(this->mychamber->chamberArray[this->width-1][c]);
+        newElem2->stepOnElement(this->mychamber->getElement(0,c));
+        newElem3->stepOnElement(this->mychamber->getElement(this->width-1,c));
     }
 
     // build probablility table - this way we can pick random objects with different probablilities
@@ -498,28 +499,28 @@ bool randomLevelGenerator::placeDoors(elementToPlace element,chamberArea* locati
     //Ok, now we need to place the door.
     for(int c1=location->upLeft.x-1; c1<=location->downRight.x+1; c1++)
     {
-        if (this->mychamber->chamberArray[c1][location->upLeft.y-1]->isSteppable())
+        if (this->mychamber->getElement(c1,location->upLeft.y-1)->isSteppable())
         {
             bElem* neEl=this->createElement(element);
-            neEl->stepOnElement(this->mychamber->chamberArray[c1][location->upLeft.y-1]);
+            neEl->stepOnElement(this->mychamber->getElement(c1,location->upLeft.y-1));
         }
-        if (this->mychamber->chamberArray[c1][location->downRight.y+1]->isSteppable())
+        if (this->mychamber->getElement(c1,location->downRight.y+1)->isSteppable())
         {
             bElem* neEl=this->createElement(element);
-            neEl->stepOnElement(this->mychamber->chamberArray[c1][location->downRight.y+1]);
+            neEl->stepOnElement(this->mychamber->getElement(c1,location->downRight.y+1));
         }
     }
     for (int c2=location->upLeft.y; c2<=location->downRight.y; c2++)
     {
-        if (this->mychamber->chamberArray[location->upLeft.x-1][c2]->isSteppable())
+        if (this->mychamber->getElement(location->upLeft.x-1,c2)->isSteppable())
         {
             bElem* neEl=this->createElement(element);
-            neEl->stepOnElement(this->mychamber->chamberArray[location->upLeft.x-1][c2]);
+            neEl->stepOnElement(this->mychamber->getElement(location->upLeft.x-1,c2));
         }
-        if (this->mychamber->chamberArray[location->downRight.x+1][c2]->isSteppable())
+        if (this->mychamber->getElement(location->downRight.x+1,c2)->isSteppable())
         {
             bElem* neEl=this->createElement(element);
-            neEl->stepOnElement(this->mychamber->chamberArray[location->downRight.x+1][c2]);
+            neEl->stepOnElement(this->mychamber->getElement(location->downRight.x+1,c2));
         }
 
     }

@@ -9,9 +9,7 @@ nonSteppable::nonSteppable(chamber *board):bElem(board)
 
 
 }
-nonSteppable::nonSteppable(chamber* board,int x, int y) : bElem(board,x,y)
-{
-}
+
 
 
 nonSteppable::~nonSteppable()

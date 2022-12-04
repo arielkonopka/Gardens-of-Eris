@@ -377,7 +377,7 @@ int presenter::presentEverything()
         // the idea is to serve the keyboard state constantly, we avoid actions that are too fast
         // by having timers on everything, like: once you shoot, you will be able to shoot in some defined time
         // same with movement, object cycling, gun cycling, using things, interacting with things.
-
+  //      std::cout<<cItem.type<<" "<<cItem.dir<<"\n";
         if (cItem.type==7)
             return 1;
 //        std::cout<<cItem.type<<"K\n";

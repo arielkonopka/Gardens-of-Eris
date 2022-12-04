@@ -14,31 +14,15 @@ int door::getType()
 
 door::door(chamber* board) : bElem(board)
 {
-    this->initMe();
+   this->setDirection(UP);
 }
-door::door(chamber* board, int x, int y) :bElem(board,x,y)
-{
-    this->initMe();
-}
+
 door::door(chamber* board, int subtype) :bElem(board)
 {
     this->setSubtype(subtype);
-    this->initMe();
 }
 
-door::door(chamber* board, int subtype, int x, int y):bElem(board,x,y)
-{
-    this->setSubtype(subtype);
-    this->initMe();
-}
 
-void door::initMe()
-{
-    this->interacted=-1;
-    this->open=false;
-    this->locked=true;
-    this->setDirection(UP);
-}
 bool door::isSteppable()
 {
     return this->open;
@@ -123,10 +107,7 @@ bool door::interact(bElem* who)
     }
     return true;
 }
-bool door::isInteractive()
-{
-    return true;
-}
+
 bool door::canBeKilled()
 {
     return false;

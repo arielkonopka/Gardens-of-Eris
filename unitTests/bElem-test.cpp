@@ -106,9 +106,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateThenDispose,T,all_test_types)
 {
     coords point= {3,3};
     chamber* chmbr=new chamber(10,10); // we need only a small chamber
+
     BOOST_ASSERT( chmbr!=nullptr );
+
     bElem* beOrig=chmbr->getElement(point); // ok, now let's step on something
     bElem* be=new T(chmbr);
+
     BOOST_ASSERT( be!=nullptr );
     be->stepOnElement(chmbr->getElement(point));
     BOOST_CHECK(be->getBoard()==chmbr);
@@ -128,14 +131,30 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateThenDispose,T,all_test_types)
     BOOST_CHECK(be->getCoords()==NOCOORDS);
     gCollect::getInstance()->purgeGarbage();
     delete chmbr;
-
-
-
 }
 
 
 
+BOOST_AUTO_TEST_CASE(StackAndRemoveFromTheFeet)
+{
+    coords point={3,3};
+    chamber* mc=new chamber(10,10);
+    bElem* o=mc->getElement(point);
+    bElem* e=new bElem(mc);
+    bElem* e1=new bElem(mc);
+    BOOST_CHECK(o->getInstanceid()!=e->getInstanceid() && o->getInstanceid()!=e1->getInstanceid());
+    e->stepOnElement(mc->getElement(point));
+    e1->stepOnElement(mc->getElement(point));
+    o->disposeElement();
+    gCollect::getInstance()->purgeGarbage();
+    e1->disposeElement();
+    gCollect::getInstance()->purgeGarbage();
+    e->disposeElement();
+//    gCollect::getInstance()->purgeGarbage();
+    BOOST_CHECK(mc->getElement(point)->getInstanceid()!=e->getInstanceid());
 
+    delete mc;
+}
 
 
 
@@ -195,7 +214,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndRemovingTest,T,all_test_types)
     int ccc=0;
     for(int x=0; x<10; x++)
     {
-        bElem* be=new bElem(mc,3,3);
+        bElem* be=new bElem(mc);
+        be->stepOnElement(mc->getElement(3,3));
         BOOST_ASSERT(mc->getElement(3,3)->getInstanceid()==be->getInstanceid());
         BOOST_ASSERT(mc->getElement(3,3)->getSteppingOnElement()!=nullptr);
     }
@@ -260,7 +280,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDisposingTest,T,all_test_types)
     int myId;
     for(int x=0; x<100; x++)
     {
-        bElem* be=new bElem(mc,3,3);
+        bElem* be=new bElem(mc);
+        be->stepOnElement(mc->getElement(3,3));
         BOOST_ASSERT(mc->getElement(3,3)->getInstanceid()==be->getInstanceid());
         BOOST_ASSERT(mc->getElement(3,3)->getSteppingOnElement()!=nullptr);
     }

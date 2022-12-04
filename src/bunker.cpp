@@ -1,16 +1,13 @@
 #include "bunker.h"
 
 videoElement::videoElementDef* bunker::vd=nullptr;
+
 bunker::bunker(chamber *board):mechanical(board), nonSteppable(board),movableElements(board),myGun(new plainGun(board,1))
 {
 //    this->setDirection(UP);
 
 }
-bunker::bunker(chamber* board, int x, int y):mechanical(board,x,y), nonSteppable(board,x,y),movableElements(board,x,y),myGun(new plainGun(board,1))
-{
-//    this->setCoords((coords){x,y});
-//    this->setDirection(UP);
-}
+
 
 
 videoElement::videoElementDef* bunker::getVideoElementDef()

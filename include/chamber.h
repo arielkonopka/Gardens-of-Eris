@@ -19,7 +19,7 @@ class chamber
 {
     public:
         controlItem cntrlItm;
-        int width;;
+        int width;
         int height;
         coords player;
         gCollect *garbageBin;
@@ -27,7 +27,6 @@ class chamber
         bElem* getElement(coords point);
         void setElement(int x, int y, bElem* elem);
         void setElement(coords point,bElem* elem);
-        boost::multi_array<bElem *,2> chamberArray;
         chamber(int x,int y);
         ~chamber();
         int getInstanceId();
@@ -36,6 +35,7 @@ class chamber
     protected:
 
     private:
+        bElem ***chamberArray;
         colour chamberColour;
         std::string chamberName;
         void setInstanceId(int id);

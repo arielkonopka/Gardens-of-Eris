@@ -56,6 +56,7 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         dir=RIGHT;
         type=0;
     }
+
     if ((this->pressed_keys[ALLEGRO_KEY_RSHIFT] || this->pressed_keys[ALLEGRO_KEY_LSHIFT]) && type>=0)
         type=1;
     if ((this->pressed_keys[ALLEGRO_KEY_RCTRL] || this->pressed_keys[ALLEGRO_KEY_LCTRL]) && type>=0)
@@ -70,6 +71,8 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         type=6;
     if (this->pressed_keys[ALLEGRO_KEY_ESCAPE] && this->pressed_keys[ALLEGRO_KEY_LSHIFT])
         type=7;
+    if(this->pressed_keys[ALLEGRO_KEY_SPACE])
+        type=8;
     return (controlItem)
     {
         type,dir
