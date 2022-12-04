@@ -167,8 +167,8 @@ bool player::mechanics()
     switch(this->getBoard()->cntrlItm.type)
     {
     case 0:
-        if(this->moveInDirection(this->getBoard()->cntrlItm.dir));
-        this->animPh++;
+        if(this->moveInDirection(this->getBoard()->cntrlItm.dir))
+            this->animPh++;
         break;
 
     case 1:
