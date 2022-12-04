@@ -19,7 +19,7 @@ if [ "${1}" = "-sq" ] ; then
     shift
 fi
 
-#sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev 
+sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev 
 #
 if [ "${1}" = "-m" ] ; then
     module="src/${2}"
