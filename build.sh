@@ -64,12 +64,8 @@ done
 fi
 
 if [ "${sonarQ}" = "true" ] ; then
-    #generate coverage report
     p="${PWD}"
-#    cd "${reportPath}"
-#    for it in "${p}"/obj/GoE-objects/src/*.o "${p}"/obj/GoE-objects/unitTests/*.o ; do
     gcovr obj/GoE-objects/src/ obj/GoE-objects/unitTests/ --sonarqube -o "${PWD}/CoverageReports/coverageReport.XML"
-#    done
 
 
 fi
