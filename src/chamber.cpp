@@ -51,8 +51,9 @@ chamber::~chamber()
             while(this->chamberArray[cX][cY]->disposeElementUnsafe()==DISPOSED);
         }
         this->garbageBin->purgeGarbage();
-
+        delete this->chamberArray[cX];
     }
+    delete this->chamberArray;
 }
 
 
