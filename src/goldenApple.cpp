@@ -18,6 +18,7 @@ int goldenApple::getType()
 goldenApple::goldenApple(chamber* board):collectible(board),nonSteppable(board),killableElements(board), explosives(board)
 {
     this->setSubtype(0);
+    this->setStats(new elemStats(55));
     goldenApple::appleNumber++;
     goldenApple::apples.push_back(this);
 }
@@ -25,6 +26,7 @@ goldenApple::goldenApple(chamber* board):collectible(board),nonSteppable(board),
 goldenApple::goldenApple(chamber* board, int x, int y):collectible(board,x,y),nonSteppable(board,x,y),killableElements(board,x,y), explosives(board,x,y)
 {
     this->setSubtype(0);
+    this->setStats(new elemStats(55));
     goldenApple::appleNumber++;
     goldenApple::apples.push_back(this);
 }

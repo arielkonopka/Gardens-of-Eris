@@ -6,6 +6,7 @@ videoElement::videoElementDef* monster::vd=nullptr;
 
 monster::monster(chamber *board): killableElements(board), nonSteppable(board), mechanical(board), movableElements(board)
 {
+    this->setStats(new elemStats(_defaultEnergy));
     this->animph=0;
     this->setInventory(new inventory(this));
     this->internalCnt=0;
@@ -35,6 +36,7 @@ monster::monster(chamber *board): killableElements(board), nonSteppable(board), 
 monster::monster(chamber* board, int newSubtype): killableElements(board), nonSteppable(board), mechanical(board), movableElements(board)
 {
     this->setInventory(new inventory(this));
+    this->setStats(new elemStats(_defaultEnergy));
     this->animph=0;
     this->internalCnt=0;
     this->setDirection(UP);
@@ -101,11 +103,11 @@ bool monster::checkNeigh()
         }
 
 
-        if(this->weapon!=nullptr || this->myInventory->getActiveWeapon()!=nullptr)
+        if(this->weapon!=nullptr || this->getInventory()->getActiveWeapon()!=nullptr)
         {
             while(e!=nullptr)
             {
-                if((this->myInventory->getActiveWeapon()!=nullptr || this->weapon!=nullptr) &&
+                if((this->getInventory()->getActiveWeapon()!=nullptr || this->weapon!=nullptr) &&
                     ((e->getType()==_player &&  e->isActive()) ||
                      (e->getType()==_patrollingDrone && e->isLiveElement())))
                 {
@@ -116,7 +118,7 @@ bool monster::checkNeigh()
                         this->weapon->use(this);
                     } else
                     {
-                        this->myInventory->getActiveWeapon()->use(this);
+                        this->getInventory()->getActiveWeapon()->use(this);
                     }
                     this->setDirection(td);
                     this->setWait(_mov_delay);
@@ -133,7 +135,7 @@ bool monster::checkNeigh()
                 //closed door?
                 if(e->getType()==_door && !e->isSteppable())
                 {
-                    if(this->myInventory->countTokens(_door,e->getSubtype())>0) //we got the key? Go for it
+                    if(this->getInventory()->countTokens(_door,e->getSubtype())>0) //we got the key? Go for it
                     {
                         this->setDirection(d);
                         this->inited=false;

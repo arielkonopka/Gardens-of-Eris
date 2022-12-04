@@ -5,7 +5,7 @@ videoElement::videoElementDef* patrollingDrone::vd=nullptr;
 patrollingDrone::patrollingDrone(chamber* board): killableElements(board), nonSteppable(board), mechanical(board,false), movableElements(board)
 {
     this->setSubtype(0);
-    this->myInventory=new inventory(this);
+    this->setInventory(new inventory(this));
     this->setActive(false);
     this->steppables=new bool*[(_defaultRecurrenceDepth*2)+1];
     for(int c=0; c<(_defaultRecurrenceDepth*2)+1; c++)
@@ -29,7 +29,7 @@ patrollingDrone::~patrollingDrone()
 patrollingDrone::patrollingDrone(chamber* board, int x, int y):killableElements(board,x,y), nonSteppable(board,x,y), mechanical(board,x,y,false), movableElements(board,x,y)
 {
     this->setSubtype(0);
-    this->myInventory=new inventory(this);
+    this->setInventory(new inventory(this));
     this->setActive(false);
     this->steppables=new bool*[(_defaultRecurrenceDepth*2)+1];
     for(int c=0; c<(_defaultRecurrenceDepth*2)+1; c++)

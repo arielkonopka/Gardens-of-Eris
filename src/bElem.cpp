@@ -10,7 +10,7 @@ std::mt19937 bElem::randomNumberGenerator;
 
 int bElem::getInstanceid()
 {
-    return this->instance;
+    return this->eConfig.instance;
 }
 
 void bElem::resetInstances()
@@ -20,102 +20,9 @@ void bElem::resetInstances()
 
 
 
-bElem::bElem()
+bElem::bElem() :elementMutex(al_create_mutex())
 {
-
-    this->init();
-}
-
-bElem::bElem(chamber* board)
-{
-    this->init();
-    this->x=-1;
-    this->y=-1;
-    this->attachedBoard=board;
-
-
-}
-bool bElem::isUsable()
-{
-    return false;
-}
-
-bool bElem::isWeapon()
-{
-    return false;
-}
-
-
-bElem::bElem(chamber* board, int x, int y)
-{
-    this->init();
-    this->attachedBoard=board;
-    this->x=x;
-    this->y=y;
-    // If we fail to place the object on a board, we will let it hanging, check, if x or y are ==-1
-    if (this->attachedBoard->chamberArray[x][y]!=nullptr)
-    {
-        if (this->stepOnElement(this->attachedBoard->chamberArray[x][y])==false)
-        {
-            this->x=-1;
-            this->y=-1;
-        }
-    }
-    else
-    {
-        this->attachedBoard->chamberArray[x][y]=this;
-    }
-
-}
-coords bElem::getOffset()
-{
-    return {0,0};
-}
-bool bElem::isWaiting()
-{
-    if((long int)this->waiting>(long int)this->getCntr()+_maxWaitingTtime)
-        this->waiting=0;
-    if ((long int)(this->getCntr())<(long int)(this->waiting)) // the counter can get overloaded
-        return true;
-    return false;
-}
-
-void bElem::setWait(int time)
-{
-    this->waiting=this->getCntr()+time;
-}
-
-int bElem::getWait()
-{
-    return (this->waiting>0)?(int)this->waiting-(int)this->getCntr():0;
-}
-void bElem::init()
-{
-    this->elementMutex=al_create_mutex();
-    this->telReqTime=0;
-    this->killTimeReq=0;
-    this->destTimeReq=0;
-    this->killTimeBeg=0;
-    this->destTimeBeg=0;
-    this->telTimeReq=0;
-    this->setSubtype(0);
-    this->setDirection(NODIRECTION);
-    this->waiting=0;
-    this->disposed=false;
-    this->hasActivatedMechanics=false;
-    this->stomping=nullptr;
-    this->collector=nullptr;
-    this->attachedBoard=nullptr;
-
-    this->animPhase=0;
-    this->myStats=new elemStats(_defaultEnergy);
-    this->killed=0;
-    this->steppingOn=nullptr;
-    this->interacted=0;
-    this->destroyed=0;
-    this->instance=bElem::instances++;
-
-    this->myInventory=nullptr;
+    this->eConfig.instance=bElem::instances++;
     if(!bElem::randomNumberGeneratorInitialized)
     {
         std::random_device rd;
@@ -131,12 +38,92 @@ void bElem::init()
         bElem::randomNumberGenerator.seed(seed);
         bElem::randomNumberGeneratorInitialized=true;
     }
-    this->telInProgress=0;
+}
+
+bElem::bElem(chamber* board):attachedBoard(board),elementMutex(al_create_mutex())
+{
+
+
+    this->eConfig.instance=bElem::instances++;
+    if(!bElem::randomNumberGeneratorInitialized)
+    {
+        std::random_device rd;
+        std::mt19937::result_type seed = rd() ^ (
+                                             (std::mt19937::result_type)
+                                             std::chrono::duration_cast<std::chrono::seconds>(
+                                                     std::chrono::system_clock::now().time_since_epoch()
+                                             ).count() +
+                                             (std::mt19937::result_type)
+                                             std::chrono::duration_cast<std::chrono::microseconds>(
+                                                     std::chrono::high_resolution_clock::now().time_since_epoch()
+                                             ).count() );
+        bElem::randomNumberGenerator.seed(seed);
+        bElem::randomNumberGeneratorInitialized=true;
+    }
+
+}
+
+bElem::bElem(chamber* board, int x, int y): attachedBoard(board),elementMutex(al_create_mutex())
+{
+    this->eConfig.instance=bElem::instances++;
+    this->setCoords((coords)
+    {
+        x,y
+    });
+    // If we fail to place the object on a board, we will let it hanging, check, if x or y are ==-1
+    if (this->attachedBoard->chamberArray[x][y]!=nullptr)
+    {
+        if (this->stepOnElement(this->attachedBoard->chamberArray[x][y])==false)
+        {
+            this->state.myPosition=NOCOORDS;
+        }
+    }
+    else
+    {
+        this->attachedBoard->chamberArray[x][y]=this;
+    }
+
+}
+
+
+bool bElem::isUsable()
+{
+    return false;
+}
+
+bool bElem::isWeapon()
+{
+    return false;
+}
+
+
+
+coords bElem::getOffset()
+{
+    return {0,0};
+}
+bool bElem::isWaiting()
+{
+    if((long int)this->state.waiting>(long int)this->getCntr()+_maxWaitingTtime)
+        this->state.waiting=0;
+    if ((long int)(this->getCntr())<(long int)(this->state.waiting)) // the counter can get overloaded
+        return true;
+    return false;
+}
+
+void bElem::setWait(int time)
+{
+    this->state.waiting=this->getCntr()+time;
+}
+
+int bElem::getWait()
+{
+    return (this->state.waiting>0)?(int)this->state.waiting-(int)this->getCntr():0;
 }
 
 bool bElem::setDirection(direction dir)
 {
-    this->myDirection=dir;
+    this->state.myDirection=dir;
 
     return true;
 }
@@ -154,54 +141,53 @@ chamber* bElem::getBoard()
 void bElem::setBoard(chamber* board)
 {
     this->attachedBoard=board;
-    if (this->myInventory!=nullptr)
+    if (this->eConfig.myInventory!=nullptr)
     {
-        this->myInventory->updateBoard();
+        this->eConfig.myInventory->updateBoard();
     }
-
-
-
 }
 
 
 direction bElem::getDirection()
 {
-    return this->myDirection;
+    return this->state.myDirection;
 }
 
 void bElem::setCoords(int x, int y)
 {
-    this->x=x;
-    this->y=y;
+    this->state.myPosition=(coords)
+    {
+        x,y
+    };
 }
 void bElem::setCoords(coords point)
 {
-    this->setCoords(point.x,point.y);
+    this->state.myPosition=point;
 }
 
 bElem* bElem::getStomper()
 {
-    return this->stomping;
+    return this->state.stomping;
 }
 
 void bElem::stomp(bElem* who)
 {
-    this->stomping=who;
+    this->state.stomping=who;
 }
 
 void bElem::unstomp()
 {
-    this->stomping=nullptr;
+    this->state.stomping=nullptr;
 }
 
 void bElem::setCollected(bElem* who)
 {
-    this->collector=who;
+    this->state.collector=who;
 }
 
 void bElem::setDropped()
 {
-    this->collector=nullptr;
+    this->state.collector=nullptr;
 }
 
 /*
@@ -213,19 +199,18 @@ void bElem::setDropped()
 */
 bool bElem::stepOnElement(bElem* step)
 {
-    if (step==nullptr || step->isSteppable()==false || step->getBoard()==nullptr || step->disposed)
+    if (step==nullptr || step->isSteppable()==false || step->getBoard()==nullptr || step->isDisposed())
         return false;
-    //if(this->getStomper()!=nullptr || this->getSteppingOnElement()!=nullptr)
     this->removeElement();
     this->setCoords(step->getCoords());
     this->setBoard(step->getBoard());
-    this->steppingOn=step;
+    this->state.steppingOn=step;
     if(step->getStomper()!=nullptr)
     {
         bElem* stmpr=step->getStomper();
         step->unstomp();
         this->stomp(stmpr);
-        stmpr->steppingOn=this;
+        stmpr->state.steppingOn=this;
     }
     else
     {
@@ -238,22 +223,14 @@ bool bElem::stepOnElement(bElem* step)
 
 
 
-
-coords bElem::getCoords()
-{
-    coords mycoords;
-    mycoords.x=this->x;
-    mycoords.y=this->y;
-    return mycoords;
-}
 oState bElem::disposeElementUnsafe()
 {
     oState res=DISPOSED;
     chamber *myBoard=this->getBoard();
     coords mycoords=this->getCoords();
-    if(this->disposed==true)
+    if(this->isDisposed()==true)
         return ERROR;
-    this->disposed=true;
+    this->state.disposed=true;
     if(mycoords.x>=0 && mycoords.y>=0 && this->getBoard()!=nullptr) //object on a board? need extra steps
     {
         if(this->getSteppingOnElement()!=nullptr || this->getStomper()!=nullptr)
@@ -263,27 +240,27 @@ oState bElem::disposeElementUnsafe()
         }
         else
         {
-            this->getBoard()->setElement(this->x,this->y,nullptr);
+            this->getBoard()->setElement(this->state.myPosition,nullptr);
             res=nullptrREACHED;
         }
-        if(this->getType()!=_stash && this->myInventory!=nullptr && this->myInventory->isEmpty()==false && this->getType()!=_rubishType && this->getType()!=_plainMissile && this->getType()!=_plainGun )
+        if(this->getType()!=_stash && this->getInventory()!=nullptr && this->getInventory()->isEmpty()==false && this->getType()!=_rubishType && this->getType()!=_plainMissile && this->getType()!=_plainGun )
         {
             bElem* stash=new rubbish(myBoard);
-            stash->myInventory=this->myInventory;
-            stash->myInventory->changeOwner(stash);
-            this->myInventory=nullptr;
-            if(myBoard->getElement(mycoords.x,mycoords.y)->isSteppable())
+            stash->setInventory(this->getInventory());
+            stash->getInventory()->changeOwner(stash);
+            this->setInventory(nullptr);
+            if(myBoard->getElement(mycoords)->isSteppable())
             {
-                stash->stepOnElement(myBoard->getElement(mycoords.x,mycoords.y));
+                stash->stepOnElement(myBoard->getElement(mycoords));
             }
             else
             {
                 bool stashed=false;
                 for(int c=0; c<4; c++)
                 {
-                    if(myBoard->getElement(mycoords.x,mycoords.y)->isSteppableDirection((direction)c))
+                    if(myBoard->getElement(mycoords)->isSteppableDirection((direction)c))
                     {
-                        stash->stepOnElement(myBoard->getElement(mycoords.x,mycoords.y)->getElementInDirection((direction)c));
+                        stash->stepOnElement(myBoard->getElement(mycoords)->getElementInDirection((direction)c));
                         stashed=true;
                         break;
                     }
@@ -298,9 +275,8 @@ oState bElem::disposeElementUnsafe()
     }
 
     gCollect::getInstance()->addToBin(this); //add myself to to bin - this should be the only way of the object disposal!
-    this->disposed=true;
-    this->x=-1; //we set the state of the object to be unprovisioned - out of the game.
-    this->y=-1;
+    this->state.disposed=true;
+    this->state.myPosition=NOCOORDS;
     this->attachedBoard=nullptr;
     return res; // false means that there is no more elements to go.
 }
@@ -310,7 +286,7 @@ oState bElem::disposeElement()
     rubbish* stash=nullptr;
     coords oCoords=this->getCoords();
     chamber* board=this->getBoard();
-    if(this->disposed==true)
+    if(this->isDisposed()==true)
     {
         std::cout<<"Tried to dispose the same element another time!\n";
         return ERROR;
@@ -324,14 +300,13 @@ oState bElem::disposeElement()
     {
         //  std::cout<<"Removing collected item from"<<this->getCollector()->myInventory<<"\n";
 
-        inventory* cInv=this->getCollector()->myInventory;
+        inventory* cInv=this->getCollector()->getInventory();
         if(cInv!=nullptr)
             cInv->removeCollectibleFromInventory(this->getInstanceid());
         this->setDropped();
-        this->disposed=true;
+        this->state.disposed=true;
         this->attachedBoard=nullptr;
-        this->x=-1;
-        this->y=-1;
+        this->state.myPosition=NOCOORDS;
         gCollect::getInstance()->addToBin(this);
         return DISPOSED;
     }
@@ -350,10 +325,9 @@ oState bElem::disposeElement()
     {
         stash->stepOnElement(board->getElement(oCoords));
     }
-    this->disposed=true;
+    this->state.disposed=true;
     this->attachedBoard=nullptr;
-    this->x=-1;
-    this->y=-1;
+    this->state.myPosition=NOCOORDS;
     gCollect::getInstance()->addToBin(this);
     return DISPOSED;
 }
@@ -365,10 +339,9 @@ oState bElem::disposeElement()
  */
 coords bElem::getAbsCoords(direction dir)
 {
-    coords res;
-    res.x=this->x;
-    res.y=this->y;
-
+    coords res=this->getCoords();
+    if (this->attachedBoard==nullptr)
+        return NOCOORDS;
     switch (dir)
     {
     case UP:
@@ -386,9 +359,6 @@ coords bElem::getAbsCoords(direction dir)
     case NODIRECTION:
         break;
     }
-    if (this->attachedBoard==nullptr)
-        return NOCOORDS;
-//    std::cout<<"resxy "<<res.y<<" "<<(this->attachedBoard->width)<<"\n";
     if (res.y>=this->attachedBoard->height || res.y<0 || res.x>=this->attachedBoard->width || res.x<0)
     {
         return NOCOORDS;
@@ -408,14 +378,14 @@ bElem* bElem::getElementInDirection(direction di)
 
 bElem::~bElem()
 {
-    delete this->myStats;
+    if(this->getStats()!=nullptr)
+        delete this->eConfig.myStats;
     al_destroy_mutex(this->elementMutex);
     if(this->isLiveElement())
         this->deregisterLiveElement(this);
-    if(this->myInventory!=nullptr)
+    if(this->getInventory()!=nullptr)
     {
-        delete this->myInventory;
-
+        delete this->eConfig.myInventory;
     }
 }
 
@@ -433,7 +403,7 @@ int bElem::getType()
 
 int bElem::getSubtype()
 {
-    return this->subtype;
+    return this->eConfig.subtype;
 }
 
 int bElem::getAmmo()
@@ -449,7 +419,7 @@ void bElem::setAmmo()
 
 bool bElem::isProvisioned()
 {
-    if (this->attachedBoard!=nullptr && this->x!=-1 && this->y!=-1 )
+    if (this->attachedBoard!=nullptr && this->getCoords()!=NOCOORDS)
         return true;
     return false;
 }
@@ -466,7 +436,7 @@ bool bElem::use(bElem *who)
 
 void bElem::stopWaiting()
 {
-    this->waiting=0;
+    this->state.waiting=0;
 }
 
 
@@ -475,7 +445,7 @@ bool bElem::interact(bElem *who)
 {
     if(this->canInteract()) /* penalty for getting into counter overflow */
     {
-        this->interacted=this->getCntr()+_interactedTime;
+        this->state.interacted=this->getCntr()+_interactedTime;
         return true;
     }
     return false;
@@ -483,25 +453,23 @@ bool bElem::interact(bElem *who)
 
 bool bElem::destroy()
 {
+    if(this->getSteppingOnElement()!=nullptr)
+        this->getSteppingOnElement()->destroy();
 
-    if (this->canBeDestroyed()==true) // && (!this->isDestroyed()))
+    if (this->canBeDestroyed()) // && (!this->isDestroyed()))
     {
 
         this->registerLiveElement(this);
-        this->destroyed=_defaultDestroyTime+this->getCntr();
-        this->destTimeBeg=this->getCntr();
-        this->destTimeReq=_defaultDestroyTime;
-        //if(this->getSteppingOnElement()!=nullptr)
-//            this->getSteppingOnElement()->destroy();
-
-        //  this->killed=_defaultDestroyTime+this->getCntr();
+        this->state.destroyed=_defaultDestroyTime+this->getCntr();
+        this->state.destTimeBeg=this->getCntr();
+        this->state.destTimeReq=_defaultDestroyTime;
         return true;
     }
     if (this->isSteppable())
     {
-        this->destroyed=_defaultDestroyTime+this->getCntr();
-        this->destTimeBeg=this->getCntr();
-        this->destTimeReq=_defaultDestroyTime;
+        this->state.destroyed=_defaultDestroyTime+this->getCntr();
+        this->state.destTimeBeg=this->getCntr();
+        this->state.destTimeReq=_defaultDestroyTime;
         return true;
     }
     return false;
@@ -513,15 +481,15 @@ int bElem::getAnimPh()
     int base=(int)this->getCntr();
     if(this->isDying())
     {
-        base=(int)(this->getCntr()-this->killTimeBeg);
+        base=(int)(this->getCntr()-this->state.killTimeBeg);
     }
     if(this->isDestroyed())
     {
-        base=(int)(this->getCntr()-this->destTimeBeg);
+        base=(int)(this->getCntr()-this->state.destTimeBeg);
     }
     if(this->isTeleporting())
     {
-        base=(int)(this->getCntr()-this->telReqTime);
+        base=(int)(this->getCntr()-this->state.telReqTime);
     }
     return base>>3;
 }
@@ -553,21 +521,20 @@ bool bElem::isSwitchOn()
 
 bool bElem::mechanics()
 {
-    this->taterCounter++; //this is our own source of sequential numbers
+    this->state.taterCounter++; //this is our own source of sequential numbers
     if((this->getBoard()==nullptr || this->getCoords()==NOCOORDS) && (this->getCollector()==nullptr))
         return false;
 
-    if (this->canBeDestroyed() && (long int)this->destroyed>0 && this->getCntr()>=this->destTimeBeg+this->destTimeReq-1 && this->getType()!=_belemType )
+    if (this->canBeDestroyed() && (long int)this->state.destroyed>0 && this->getCntr()>=this->state.destTimeBeg+this->state.destTimeReq-1 && this->getType()!=_belemType )
     {
         this->disposeElement();
         return false;
     }
-    if((long int)this->killed>0 && this->canBeKilled() && this->getCntr()>=this->killTimeBeg+this->killTimeReq-1 )
+    if((long int)this->state.killed>0 && this->canBeKilled() && this->getCntr()>=this->state.killTimeBeg+this->state.killTimeReq-1 )
     {
         this->disposeElement(); //it seems we really died. what a waste
         return false;
     }
-
     if(this->isWaiting() || this->isTeleporting() || this->isDying() || this->isDestroyed())
         return false;
 
@@ -582,13 +549,11 @@ bool bElem::isSteppable()
 bool bElem::canBeKilled()
 {
     return true;
-    //return (!this->isDying() && !this->isTeleporting() && this->isDestroyed());
 };
 
 bool bElem::canBeDestroyed()
 {
     return true;
-    //return (!this->isDying() && this->isDestroyed());
 }
 
 bool bElem::isSteppableDirection(direction di)
@@ -613,59 +578,56 @@ videoElement::videoElementDef* bElem::getVideoElementDef()
 
 bool bElem::isDying()
 {
-    if((long int)this->killed>(long int)this->getCntr()+_maxWaitingTtime)
-        this->killed=0;
-    return (this->killed>0 && (long int)this->killed>=(long int)this->getCntr());
+    if((long int)this->state.killed>(long int)this->getCntr()+_maxWaitingTtime)
+        this->state.killed=0;
+    return (this->state.killed>0 && (long int)this->state.killed>=(long int)this->getCntr());
 }
 
 bool bElem::isTeleporting()
 {
-    if((long int)this->telInProgress>(long int)this->getCntr()+_maxWaitingTtime)
-        this->telInProgress=0;
-    if ((long int)(this->getCntr())<(long int)(this->telInProgress)) // the counter can get overloaded
+    if((long int)this->state.telInProgress>(long int)this->getCntr()+_maxWaitingTtime)
+        this->state.telInProgress=0;
+    if ((long int)(this->getCntr())<(long int)(this->state.telInProgress)) // the counter can get overloaded
         return true;
     return false;
 
 }
 
 
-bool bElem::isCollectible()
-{
-    return false;
-}
-
 bool bElem::canCollect()
 {
-    return myInventory!=nullptr;
+    return this->eConfig.myInventory!=nullptr;
 }
 // remove element from the board, and return it for further processing(if not needed, run .dispose() on it)
 bElem* bElem::removeElement()
 {
-    if (this->x<0 || this->y<0 || this->getBoard()==nullptr)
+    if (this->state.myPosition==NOCOORDS || this->getBoard()==nullptr)
     {
-        return (this->disposed)?nullptr:this;
+        return (this->isDisposed())?nullptr:this;
     }
     if(this->getSteppingOnElement()!=nullptr && this->getStomper()!=nullptr)
     {
-        this->getStomper()->steppingOn=this->steppingOn;
+        this->getStomper()->state.steppingOn=this->state.steppingOn;
         this->getSteppingOnElement()->stomp(this->getStomper());
-    } else if (this->getSteppingOnElement()!=nullptr && this->getStomper()==nullptr)
+    }
+    else if (this->getSteppingOnElement()!=nullptr && this->getStomper()==nullptr)
     {
-        this->attachedBoard->setElement(this->x,this->y,this->getSteppingOnElement());
+        this->attachedBoard->setElement(this->getCoords(),this->getSteppingOnElement());
         this->getSteppingOnElement()->unstomp();
-    } else if (this->getSteppingOnElement()==nullptr && this->getStomper()!=nullptr)
+    }
+    else if (this->getSteppingOnElement()==nullptr && this->getStomper()!=nullptr)
     {
-        this->getStomper()->steppingOn=nullptr;
-    } else if(this->getStomper()==nullptr && this->getSteppingOnElement()==nullptr)
+        this->getStomper()->state.steppingOn=nullptr;
+    }
+    else if(this->getStomper()==nullptr && this->getSteppingOnElement()==nullptr)
     {
         bElem *newElem=new bElem(this->attachedBoard);
         newElem->setCoords(this->getCoords());
         newElem->attachedBoard->setElement(newElem->getCoords(),newElem);
     }
     this->unstomp();
-    this->steppingOn=nullptr;
-    this->x=-1;
-    this->y=-1;
+    this->state.steppingOn=nullptr;
+    this->state.myPosition=NOCOORDS;
     this->attachedBoard=nullptr;
     return this;
 }
@@ -678,7 +640,7 @@ bool bElem::canInteract()
     if (this->getType()==_player)
         std::cout<<"interacted "<<this->interacted<<"  taterCounter "<<this->sTaterCounter<<"\n";
 #endif
-    return (this->interacted<this->getCntr()|| this->interacted>this->getCntr()+_interactedTime+10);
+    return (this->state.interacted<this->getCntr()|| this->state.interacted>this->getCntr()+_interactedTime+10);
 }
 
 // Collect another element. The collectible contains location information. that way,
@@ -704,48 +666,27 @@ bool bElem::collect(bElem *collectible)
     std::cout<<"Collect "<<collected->getType()<<" st: "<<collected->getSubtype()<<"\n";
 #endif
     collectible->setCollected(this);
-    this->myInventory->addToInventory(collectible);
+    this->eConfig.myInventory->addToInventory(collectible);
     return true;
 }
 
-bElem* bElem::getCollector()
-{
-    return this->collector;
-}
-
-
-
-
-
-bool bElem::selfAlign()
-{
-    return false;
-}
 
 bool bElem::setSubtype(int st)
 {
     al_lock_mutex(this->elementMutex);
-    this->subtype=st;
+    this->eConfig.subtype=st;
     al_unlock_mutex(this->elementMutex);
     return true;
 }
 
 
 
-bool bElem::hurt(int points)
-{
-    return false;
-}
-
-int bElem::getEnergy()
-{
-    return this->myStats->getEnergy();
-}
 
 bool bElem::setEnergy(int points)
 {
     al_lock_mutex(this->elementMutex);
-    this->myStats->setEnergy(points);
+    if(this->getStats()!=nullptr)
+        this->getStats()->setEnergy(points);
     al_unlock_mutex(this->elementMutex);
     return true;
 }
@@ -758,27 +699,27 @@ bool bElem::kill()
     }
     if(!isLiveElement())
         this->registerLiveElement(this);
-    this->killTimeBeg=this->getCntr();
-    this->killTimeReq=_defaultKillTime;
-    this->killed=_defaultKillTime+this->getCntr();
+    this->state.killTimeBeg=this->getCntr();
+    this->state.killTimeReq=_defaultKillTime;
+    this->state.killed=_defaultKillTime+this->getCntr();
     return true;
 }
 
 bool bElem::isDestroyed()
 {
-    if((long int)this->destroyed+_maxWaitingTtime<(long int)this->getCntr())
-        this->destroyed=0;
+    if((long int)this->state.destroyed+_maxWaitingTtime<(long int)this->getCntr())
+        this->state.destroyed=0;
 
-    return this->destroyed>0 && (long int)this->destroyed>=(long int)this->getCntr();
+    return this->state.destroyed>0 && (long int)this->state.destroyed>=(long int)this->getCntr();
 }
 
 elemStats* bElem::getStats()
 {
-    return this->myStats;
+    return this->eConfig.myStats;
 }
 void bElem::setStats(elemStats* stat)
 {
-    this->myStats=stat; // we do not do anything with the stats, please use it wisely
+    this->eConfig.myStats=stat; // we do not do anything with the stats, please use it wisely
 }
 
 bool bElem::isMod()
@@ -865,9 +806,9 @@ int bElem::getMoved()
 }
 void bElem::setTeleporting(int time)
 {
-    this->telReqTime=this->getCntr();
-    this->telTimeReq=time;
-    this->telInProgress=this->getCntr()+time;
+    this->state.telReqTime=this->getCntr();
+    this->state.telTimeReq=time;
+    this->state.telInProgress=this->getCntr()+time;
 
 }
 
@@ -875,18 +816,12 @@ void bElem::setTeleporting(int time)
 
 void bElem::registerLiveElement(bElem* who)
 {
+#ifdef _VerbousMode_
+    std::cout<<"Register mechanics by: "<<who->getType()<<" "<<who->getInstanceid()<<"RL\n";
+#endif
     if (this->isLiveElement())
         return;
-    this->hasActivatedMechanics=true;
-    /*
-    for(std::vector<bElem*>::iterator p=bElem::liveElems.begin(); p!=bElem::liveElems.end(); p++) //we don't register objects twice
-    {
-        if ((*p)->getInstanceid()==who->getInstanceid())
-        {
-            return;
-        }
-    }
-    */
+    this->state.hasActivatedMechanics=true;
     bElem::liveElems.push_back(who);
 }
 
@@ -900,24 +835,22 @@ void bElem::deregisterLiveElement(bElem* who)
         if(who->getInstanceid()==(*p)->getInstanceid())
         {
             bElem::liveElems.erase(p);
-            //std::cout<<"Deregistered element "<<who->getType()<<" "<<who<<"\n";
+            //std::<<"Deregistered element "<<who->getType()<<" "<<who<<"\n";
         }
         else
         {
             p++;
         }
     }
-    this->hasActivatedMechanics=false;
+    this->state.hasActivatedMechanics=false;
 }
 
 void bElem::runLiveElements()
 {
-//    std::cout<<"Active Elements: "<<bElem::liveElems.size()<<"\n";
+    //  std::cout<<"Active Elements: "<<bElem::liveElems.size()<<"\n";
     bElem::tick();
     for(unsigned int p=0; p<bElem::liveElems.size(); p++)
     {
-
-
         if(bElem::liveElems[p]->getCoords()!=NOCOORDS)
         {
             bElem::liveElems[p]->mechanics();
@@ -952,7 +885,7 @@ unsigned int bElem::getCntr()
 
 bool bElem::isLiveElement()
 {
-    return this->hasActivatedMechanics;
+    return this->state.hasActivatedMechanics;
 }
 
 bool bElem::isLocked()
@@ -984,7 +917,7 @@ bool bElem::unlockThisObject(bElem* who)
 
 void bElem::setInventory(inventory* inv)
 {
-    this->myInventory=inv;
+    this->eConfig.myInventory=inv;
 }
 
 

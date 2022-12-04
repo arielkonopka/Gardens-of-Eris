@@ -457,6 +457,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
 
     bElem* myObj=new T(mc);
     bool canBeDestroyed=myObj->canBeDestroyed();
+    bool isSteppable=myObj->isSteppable();
   //  int origType=myObj->getType();
     // std::cout<<"type:"<<myObj->getType()<<" "<<_belemType<<"\n";
     int instance=myObj->getInstanceid();
@@ -465,14 +466,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
 
     myObj->stepOnElement(mc->getElement(3,3));
     myObj->destroy();
-    for(int c=0; c<_defaultDestroyTime; c++)
+    for(int c=0; c<_defaultDestroyTime+1; c++)
     {
         BOOST_CHECK(mc->getElement(3,3)->isDestroyed()==true);
         bElem::runLiveElements();
     }
     myObj=mc->getElement(3,3);
     BOOST_CHECK(mc->getElement(3,3)->isDestroyed()==false);
-    if(!canBeDestroyed)
+    if(!canBeDestroyed || isSteppable)
     {
         BOOST_CHECK(mc->getElement(3,3)->getInstanceid()==instance);
     }

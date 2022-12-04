@@ -46,7 +46,7 @@ chamber::~chamber()
 {
     for (int cX=0; cX<this->width; cX++)
     {
-        for (int cY=0; cY<this->height;cY++)
+        for (int cY=0; cY<this->height; cY++)
         {
             while(this->chamberArray[cX][cY]->disposeElementUnsafe()==DISPOSED);
         }
@@ -78,7 +78,7 @@ bElem* chamber::getElement(int x, int y)
 
 void chamber::setElement(int x, int y, bElem* elem)
 {
-     if (x<0 || x>this->width-1 || y<0 || y>this->height-1)
+    if (x<0 || x>this->width-1 || y<0 || y>this->height-1)
         return;
     this->chamberArray[x][y]=elem;
 }

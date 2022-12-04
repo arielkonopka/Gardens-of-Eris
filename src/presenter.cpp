@@ -16,7 +16,7 @@ presenter::presenter(chamber *board)
         std::cout<<"Dupa nie inicjalizacja!\n";
 
     }
-    this->alTimer = al_create_timer(1.0 / 60);
+    this->alTimer = al_create_timer(1.0 / 50);
 //    this->scrTimer=al_create_timer(1.0/40);
     this->evQueue= al_create_event_queue();
     al_register_event_source(this->evQueue, al_get_keyboard_event_source());
@@ -24,8 +24,8 @@ presenter::presenter(chamber *board)
 //    al_register_event_source(this->evQueue, al_get_timer_event_source(this->scrTimer));
     this->_cp_attachedBoard=board;
     al_get_monitor_info(0, &info);
-    this->scrWidth = info.x2;// - info.x1; /* Assume this is 1366 */
-    this->scrHeight= info.y2;// - info.y1; /* Assume this is 768 */
+    this->scrWidth = info.x2-50;// - info.x1; /* Assume this is 1366 */
+    this->scrHeight= info.y2-50;// - info.y1; /* Assume this is 768 */
     //  std::cout<<"SCR: "<<this->scrWidth<<","<<this->scrHeight<<"\n";
     this->sWidth=0;
     this->sHeight=0;
@@ -50,11 +50,11 @@ presenter::~presenter()
 }
 bool presenter::initializeDisplay()
 {
-    al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+    al_set_new_display_flags(ALLEGRO_WINDOWED);
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
 //   al_set_new_display_refresh_rate( 50 );
     this->display = al_create_display(this->scrWidth, this->scrHeight);
-    al_hide_mouse_cursor(this->display);
+    //al_hide_mouse_cursor(this->display);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
   //  al_set_new_bitmap_flags(ALLEGRO_FULLSCREEN);
     this->internalBitmap=al_create_bitmap(this->scrWidth+64,this->scrHeight+64);
@@ -259,8 +259,11 @@ void presenter::prepareStatsThing()
     this->showText(21,0,6,0,"Stats");
     this->showText(21,0,5,32,"P:");
     this->showText(21,1,5,0,"Dex:");
-    this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getGlobalPoints()));
-    this->showText(22,1,5,0,std::to_string(aPlayer->getStats()->getDexterity()));
+    if(aPlayer->getStats()!=nullptr)
+    {
+        this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getGlobalPoints()));
+        this->showText(22,1,5,0,std::to_string(aPlayer->getStats()->getDexterity()));
+    }
 }
 
 
@@ -377,7 +380,9 @@ int presenter::presentEverything()
 
         if (cItem.type==7)
             return 1;
-        this->_cp_attachedBoard->cntrlItm=cItem;
+//        std::cout<<cItem.type<<"K\n";
+        if(currentPlayer->getBoard()!=nullptr)
+            currentPlayer->getBoard()->cntrlItm=cItem;
 
 
     }

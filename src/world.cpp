@@ -37,12 +37,7 @@ chamber* world::getActiveChamber()
     {
         return this->activeChamber;
     }
-    else
-    {
-        return this->findActiveChamber();
-    }
-    return nullptr;
-
+    return this->findActiveChamber();
 }
 
 

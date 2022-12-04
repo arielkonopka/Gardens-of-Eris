@@ -7,15 +7,11 @@ videoElement::videoElementDef* movableElements::vd=nullptr;
 
 movableElements::movableElements(chamber *board) : bElem(board)
 {
-    this->_me_moved=0;
-    this->_me_canPush=false;
-    this->movable=true;
+
 }
 movableElements::movableElements(chamber *board,int x, int y) : bElem(board,x,y)
 {
-    this->_me_moved=0;
-    this->_me_canPush=false;
-    this->movable=true;
+
 }
 
 movableElements::~movableElements()
@@ -59,9 +55,9 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
             return true;
         }
     }
-    if (this->canCollect()==true && this->myInventory!=nullptr && stepOn->isCollectible()==true)
+    if (this->canCollect()==true && this->getInventory()!=nullptr && stepOn->isCollectible()==true)
     {
-        if (this->collect(stepOn)==true)
+        if (this->collect(stepOn)==true && this->getStats())
             //if (this->collect(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)
         {
             this->getStats()->countCollect(stepOn);

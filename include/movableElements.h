@@ -35,9 +35,9 @@ class movableElements :  virtual  public bElem
     protected:
 
     private:
-        unsigned int _me_moved;
-        int movingTotalTime;
-        bool _me_canPush;
+        unsigned int _me_moved=0;
+        int movingTotalTime=0;
+        bool _me_canPush=true;
 
 };
 

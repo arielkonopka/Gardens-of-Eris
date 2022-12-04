@@ -1,23 +1,15 @@
 #include "bunker.h"
 
 videoElement::videoElementDef* bunker::vd=nullptr;
-bunker::bunker(chamber *board):mechanical(board), nonSteppable(board),movableElements(board)
+bunker::bunker(chamber *board):mechanical(board), nonSteppable(board),movableElements(board),myGun(new plainGun(board,1))
 {
-    this->myGun=new plainGun(board,1);
-    this->setDirection(UP);
-    this->rotated=0;
-    this->interacted=-1;
-    this->help=0;
-    this->activatedBy=nullptr;
+//    this->setDirection(UP);
+
 }
-bunker::bunker(chamber* board, int x, int y):mechanical(board,x,y), nonSteppable(board,x,y),movableElements(board,x,y)
+bunker::bunker(chamber* board, int x, int y):mechanical(board,x,y), nonSteppable(board,x,y),movableElements(board,x,y),myGun(new plainGun(board,1))
 {
-    this->myGun=new plainGun(board,1);
-    this->setDirection(UP);
-    this->rotated=0;
-    this->interacted=-1;
-    this->help=0;
-    this->activatedBy=nullptr;
+//    this->setCoords((coords){x,y});
+//    this->setDirection(UP);
 }
 
 
@@ -69,9 +61,7 @@ bool bunker::mechanics()
         return res;
     if(randomTest>990)
     {
-
         this->myGun->use(this);
-        //   this->setMoved(_plainGunCharge);
     }
     return res;
 }
@@ -88,8 +78,6 @@ bool bunker::interact(bElem* Who)
         this->setStats(Who->getStats());
         Who->lockThisObject(this);
     }
-
-
     return true;
 }
 

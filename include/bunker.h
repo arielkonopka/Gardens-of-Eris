@@ -19,12 +19,12 @@ class bunker : public mechanical, public nonSteppable,public movableElements
         virtual bool interact(bElem* Who);
         virtual bool isMovable();
     protected:
-        int help;
+        int help=0;
         plainGun *myGun;
-        int rotated;
+        int rotated=0;
     private:
-        elemStats* backUp;
-        bElem* activatedBy;
+        elemStats* backUp=nullptr;
+        bElem* activatedBy=nullptr;
 };
 
 #endif // BUNKER_H

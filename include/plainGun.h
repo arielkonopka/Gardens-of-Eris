@@ -28,8 +28,8 @@ protected:
 private:
     int ammo=-1;
     unsigned int shot=0;
-    int energy=-1;
-    int maxEnergy=-1;
+   int maxEnergy;
+
 };
 
 #endif // PLAINGUN_H
