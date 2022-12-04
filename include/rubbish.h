@@ -13,9 +13,7 @@ class rubbish: public nonSteppable, public collectible
         static videoElement::videoElementDef* vd;
         rubbish(chamber *board);
         int getType();
-    protected:
 
-    private:
 };
 
 #endif // RUBBISH_

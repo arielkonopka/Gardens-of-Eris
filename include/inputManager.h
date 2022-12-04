@@ -17,9 +17,7 @@ class inputManager
         inputManager();
         virtual ~inputManager();
         bool pressed_keys[ALLEGRO_KEY_MAX];
-    protected:
 
-    private:
 };
 
 #endif // INPUTMANAGER_H

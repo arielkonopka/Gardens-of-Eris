@@ -17,7 +17,6 @@ public:
     unsigned int getEnergy();
     void setEnergy(int en);
     unsigned int getStrength();
-protected:
 
 private:
     void updateDexterity();

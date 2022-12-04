@@ -42,7 +42,6 @@ class videoElementDef
         static void initializeDriver();
     protected:
         static bool initialized;
-    private:
 
 };
 

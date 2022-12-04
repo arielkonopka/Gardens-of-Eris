@@ -31,7 +31,6 @@ class movableElements :  virtual  public bElem
         void setMovable(bool m);
         void setCanPush(bool sp);
         direction facing;
-    protected:
 
     private:
         bool movable=true;

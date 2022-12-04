@@ -13,9 +13,6 @@ public:
 
     virtual bool explode();
 
-protected:
-
-private:
 };
 
 #endif // EXPLOSIVES_H

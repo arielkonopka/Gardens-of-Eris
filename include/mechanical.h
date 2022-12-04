@@ -12,9 +12,7 @@ class mechanical : virtual public bElem
         mechanical(chamber *board,bool registerEl);
         virtual ~mechanical();
 
-    protected:
 
-    private:
 
 };
 

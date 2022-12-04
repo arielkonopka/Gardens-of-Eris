@@ -17,7 +17,6 @@ public:
     virtual bool destroy();
     virtual int getType();
     virtual bool mechanics();
-protected:
 
 private:
     bool exploded;

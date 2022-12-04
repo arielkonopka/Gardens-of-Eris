@@ -17,9 +17,7 @@ public:
     key(chamber *board,int subtype);
     virtual ~key();
 
-protected:
 
-private:
 };
 
 #endif // KEY_H

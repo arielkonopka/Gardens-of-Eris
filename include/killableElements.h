@@ -11,9 +11,7 @@ class killableElements : virtual public bElem
     public:
         killableElements(chamber* board);
         virtual bool hurt(int points);
-    protected:
 
-    private:
 };
 
 #endif // KILLABLEELEMENTS_H

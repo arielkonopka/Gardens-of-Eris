@@ -26,7 +26,6 @@ public:
     virtual void unstomp();
     virtual bool mechanics();
 
-protected:
 private:
 
     static std::vector<teleport*> allTeleporters;

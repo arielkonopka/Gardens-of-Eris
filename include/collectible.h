@@ -13,9 +13,7 @@ public:
     collectible(chamber *board);
     virtual ~collectible();
     virtual bool isCollectible();
-protected:
 
-private:
 };
 
 #endif // COLLECTIBLE_H

@@ -172,8 +172,6 @@ public:
     void setInventory(inventory* inv);
     virtual int getTypeInDirection(direction di);
 
-protected:
-
 private:
     chamber *attachedBoard=nullptr;
     ALLEGRO_MUTEX* elementMutex=nullptr;

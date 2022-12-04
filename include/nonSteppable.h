@@ -18,8 +18,7 @@ class nonSteppable : virtual public bElem
         nonSteppable(chamber *board,int x, int y);
         virtual ~nonSteppable();
         bool isSteppable();
-    protected:
-    private:
+
 
 };
 

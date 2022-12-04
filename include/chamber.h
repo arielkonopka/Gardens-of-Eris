@@ -32,7 +32,6 @@ class chamber
         int getInstanceId();
         std::string getName();
         colour getChColour();
-    protected:
 
     private:
         bElem ***chamberArray;

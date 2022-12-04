@@ -23,7 +23,7 @@ public:
     virtual void setMaxEnergy(int me);
     virtual bElem* createProjectible(bElem* who);
 
-protected:
+
 
 private:
     int ammo=-1;

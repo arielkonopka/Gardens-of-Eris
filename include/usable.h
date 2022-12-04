@@ -15,9 +15,6 @@ public:
     virtual bool use(bElem *who,direction dir);
     virtual bool isUsable();
 
-protected:
-
-private:
 };
 
 #endif // USABLE_H

@@ -20,7 +20,6 @@ class wall : public nonSteppable
         int getType();
         virtual bool canBeKilled();
         virtual bool canBeDestroyed();
-    protected:
 
 
 };

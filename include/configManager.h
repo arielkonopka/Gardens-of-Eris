@@ -51,7 +51,6 @@ class configManager
         gameConfig* getConfig();
         void configReload();
 
-    protected:
 
     private:
         gameConfig* gConfObj;

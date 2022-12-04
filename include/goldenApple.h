@@ -14,7 +14,6 @@ public:
     virtual bool kill();
     goldenApple(chamber *board);
     virtual ~goldenApple();
-protected:
 
 private:
     static unsigned int appleNumber;

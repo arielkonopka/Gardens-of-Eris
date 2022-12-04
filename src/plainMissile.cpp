@@ -21,7 +21,6 @@ plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(my
     this->setMoved(0);
     this->setWait(_plainMissileSpeed);
     this->setDirection(UP);
-  // this->setInventory(new inventory(this )); // This is for a mod, that could be installed on the ammo
     this->setMoved(0);
     this->setSubtype(0);
 }

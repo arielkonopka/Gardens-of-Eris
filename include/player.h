@@ -27,7 +27,6 @@ public:
     virtual bool shootGun();
     virtual oState disposeElement();
 
-protected:
 
 
 private:
