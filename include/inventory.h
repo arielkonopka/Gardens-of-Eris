@@ -61,12 +61,12 @@ public:
     std::vector<bElem*> usables;
     std::vector<bElem*> keys;
 protected:
-    int wPos;
-    int uPos;
+    int wPos=0;
+    int uPos=0;
 private:
     virtual void incrementTokenNumber(tType token);
     virtual void decrementTokenNumber(tType token);
-    bElem *owner;
+    bElem *owner=nullptr;
     std::map<tType,int> tokenNumbers;
 };
 

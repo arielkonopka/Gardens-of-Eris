@@ -7,58 +7,23 @@ videoElement::videoElementDef* monster::vd=nullptr;
 monster::monster(chamber *board): killableElements(board), nonSteppable(board), mechanical(board), movableElements(board)
 {
     this->setStats(new elemStats(_defaultEnergy));
-    this->animph=0;
     this->setInventory(new inventory(this));
-    this->internalCnt=0;
-    this->setDirection(UP);
-    this->setSubtype(0);
-    this->inited=false;
-    this->weapon=nullptr;
+    if(bElem::randomNumberGenerator()%2==0)
+    {
+        this->rotA=1;
+        this->rotB=3;
+    }
     if(bElem::randomNumberGenerator()%5==0)
     {
         this->weapon=new plainGun(board,1);
-        this->weapon->setAmmo(55555);
-        this->weapon->setMaxEnergy(5);
+        this->weapon->setAmmo(5*(5+bElem::randomNumberGenerator()%55));
+        this->weapon->setMaxEnergy(5*(10+bElem::randomNumberGenerator()%20));
     }
-    if(bElem::randomNumberGenerator()%2==0)
-    {
-        this->rotA=1;
-        this->rotB=3;
-    }
-    else
-    {
-        this->rotA=3;
-        this->rotB=1;
-    }
-
 }
 
-monster::monster(chamber* board, int newSubtype): killableElements(board), nonSteppable(board), mechanical(board), movableElements(board)
+monster::monster(chamber* board, int newSubtype): monster(board)
 {
-    this->setInventory(new inventory(this));
-    this->setStats(new elemStats(_defaultEnergy));
-    this->animph=0;
-    this->internalCnt=0;
-    this->setDirection(UP);
     this->setSubtype(newSubtype);
-    this->inited=false;
-    this->weapon=nullptr;
-    if(bElem::randomNumberGenerator()%2==0)
-    {
-        this->rotA=1;
-        this->rotB=3;
-    }
-    else
-    {
-        this->rotA=3;
-        this->rotB=1;
-    }
-     if(bElem::randomNumberGenerator()%5==0)
-    {
-        this->weapon=new plainGun(board,1);
-        this->weapon->setAmmo(55555);
-        this->weapon->setMaxEnergy(5);
-    }
 
 }
 
@@ -108,15 +73,16 @@ bool monster::checkNeigh()
             while(e!=nullptr)
             {
                 if((this->getInventory()->getActiveWeapon()!=nullptr || this->weapon!=nullptr) &&
-                    ((e->getType()==_player &&  e->isActive()) ||
-                     (e->getType()==_patrollingDrone && e->isLiveElement())))
+                        ((e->getType()==_player &&  e->isActive()) ||
+                         (e->getType()==_patrollingDrone && e->isLiveElement())))
                 {
                     direction td=this->getDirection();
                     this->setDirection(d);
                     if(this->weapon!=nullptr)
                     {
                         this->weapon->use(this);
-                    } else
+                    }
+                    else
                     {
                         this->getInventory()->getActiveWeapon()->use(this);
                     }

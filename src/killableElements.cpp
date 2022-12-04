@@ -10,11 +10,6 @@ killableElements::killableElements(chamber* board) :bElem(board)
 
 
 
-killableElements::~killableElements()
-{
-    //dtor
-}
-
 
 
 

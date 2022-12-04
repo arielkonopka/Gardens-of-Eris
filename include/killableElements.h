@@ -10,7 +10,6 @@ class killableElements : virtual public bElem
 {
     public:
         killableElements(chamber* board);
-        virtual ~killableElements();
         virtual bool hurt(int points);
     protected:
 

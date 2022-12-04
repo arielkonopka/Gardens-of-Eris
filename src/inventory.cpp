@@ -1,11 +1,8 @@
 #include "inventory.h"
 #include "bElem.h"
 
-inventory::inventory(bElem *owner)
+inventory::inventory(bElem *owner):owner(owner)
 {
-    this->owner=owner;
-    this->wPos=0;
-    this->uPos=0;
 
 }
 inventory::~inventory()

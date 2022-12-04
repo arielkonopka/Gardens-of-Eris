@@ -14,7 +14,7 @@ int door::getType()
 
 door::door(chamber* board) : bElem(board)
 {
-   this->setDirection(UP);
+
 }
 
 door::door(chamber* board, int subtype) :bElem(board)

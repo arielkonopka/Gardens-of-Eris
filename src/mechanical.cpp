@@ -12,7 +12,7 @@ mechanical::~mechanical()
     this->deregisterLiveElement(this);
 
 }
-mechanical::mechanical(chamber* board, bool registerEl):bElem(board)
+mechanical::mechanical(chamber* board, bool registerEl): mechanical(board)
 {
     if(registerEl) this->registerLiveElement(this);
 }
