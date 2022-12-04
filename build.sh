@@ -1,13 +1,13 @@
 #!/bin/bash
-
-gccbin="gcc-10"
 objPath=./obj/GoE-objects/
 extraflags="-g"
-mkdir -p ${objPath}/{src,unitTests}
 defines="" #-D_VerbousMode_" 
 opts="-Wall -std=gnu++20  ${defines} -g -O3 -Og"
 
-sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev 
+. ./build.sh.cfg
+mkdir -p ${objPath}/{src,unitTests}
+
+#sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev 
 #
 if [ "${1}" = "-m" ] ; then
     module="src/${2}"
@@ -39,10 +39,12 @@ for x in unitTests/*.cpp ; do
     a=$(basename $x)
     echo "${gccbin} ${objPath}src/*.o  ${objPath}/${x%.cpp}.o -o ./GoE-tests-${a%.cpp} -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm -lboost_unit_test_framework"
     ${gccbin} ${objPath}src/*.o  ${objPath}/${x%.cpp}.o -o ./GoE-tests-${a%.cpp} -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm -lboost_unit_test_framework  3>&1 2>&1 >>compile.log
-    ./GoE-tests-${a%.cpp} -r detailed -m CLF -e "Report_${a%.cpp}.log" -k testslog.log 
-    r=$?
-    if [ ${r} -gt 0 ] ; then
-	echo "Module ${a%.cpp} has failed the tests".
+    if [ "${runTests}" = "true" ]; then
+	./GoE-tests-${a%.cpp} -r detailed -m CLF -e "Report_${a%.cpp}.log" -k testslog.log 
+	r=$?
+	if [ ${r} -gt 0 ] ; then
+	    echo "Module ${a%.cpp} has failed the tests".
+	fi
     fi
 done
 
