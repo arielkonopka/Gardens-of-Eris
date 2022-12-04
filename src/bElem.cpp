@@ -283,7 +283,8 @@ oState bElem::disposeElement()
     this->removeElement();
     if(stash!=nullptr)
     {
-        stash->stepOnElement(board->getElement(oCoords));
+        if(!stash->stepOnElement(board->getElement(oCoords)))
+            delete stash;
     }
     this->attachedBoard=nullptr;
     this->state.myPosition=NOCOORDS;
