@@ -208,7 +208,6 @@ return true;
 //shoots any suitable gun
     bool player::shootGun()
     {
-        // bool res=false;
         bElem* gun=this->getInventory()->getActiveWeapon();
         if(gun!=nullptr)
         {

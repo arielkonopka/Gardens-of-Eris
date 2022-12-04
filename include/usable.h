@@ -9,7 +9,6 @@ class usable : virtual public bElem
 {
 public:
     usable();
-    virtual ~usable();
     usable(chamber *board);
     virtual bool use(bElem *who);
     virtual bool use(bElem *who,direction dir);

@@ -90,7 +90,6 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
 
     int c=x2,dc1=-1,dc2=-1;
     int d=y2,dd1=-1,dd2=-1;
-    //  bElem *belem;
     int dx,dy;
     dx=x2-x1;
     dc1=dx+1;
@@ -184,7 +183,6 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
             {
                 int rnd=this->gen()%(doorPlaces2.size());
                 this->mychamber->getElement(c+1,doorPlaces2[rnd])->disposeElement();
-                //if(rnd<doorPlaces2.size()-1)
                 doorPlaces2[rnd]=doorPlaces2[doorPlaces2.size()-1];
                 doorPlaces2.pop_back();
             }
@@ -250,8 +248,6 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
 
 bool randomLevelGenerator::placeElementCollection(chamberArea* chmbrArea,std::vector<elementToPlace>* elements)
 {
-//   chamberArea::foundAreas.clear();
-//    chmbrArea->findElementsToStepOn(mychamber);
 #ifdef _VerbousMode_
     std::cout<<"Chosen area properties - surface: "<<chmbrArea->surface<<" x,y,x1,y1:"<<chmbrArea->upLeft.x<<" "<<chmbrArea->upLeft.y<<" "<<chmbrArea->downRight.x<<" "<<chmbrArea->downRight.y<<"\n";
 #endif
@@ -294,7 +290,6 @@ bool randomLevelGenerator::generateLevel(int holes)
     int tolerance=100;
     this->headNode=this->lvlGenerate(1,1,this->width-2,this->height-2,_iterations,holes);
 
-    //int availableSurface=
     this->headNode->calculateInitialSurface();
 
     std::vector<elementToPlace> elementCollection; // here we will store the elements to be placed on the board

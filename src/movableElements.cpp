@@ -55,10 +55,8 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
     if (this->canCollect()==true && this->getInventory()!=nullptr && stepOn->isCollectible()==true)
     {
         if (this->collect(stepOn)==true && this->getStats())
-            //if (this->collect(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)
         {
             this->getStats()->countCollect(stepOn);
-            // this->setMoved(speed);
             return true;
         }
     }
@@ -66,7 +64,6 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
     {
         if(stepOn->interact(this)==true)
         {
-            // this->setMoved(speed);
             return true;
 
         }

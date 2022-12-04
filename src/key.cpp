@@ -22,9 +22,3 @@ key::key(chamber* board, int subtype): collectible(board), nonSteppable(board)
     this->setDirection(UP);
 }
 
-
-
-key::~key()
-{
-
-}

@@ -5,14 +5,11 @@
 
 
 #include "inventory.h"
-//#include "rubbish.h"
 #include "chamber.h"
 #include "gCollect.h"
 #include "videoElementDef.h"
 #include <chrono>
 #include <random>
-//class chamber;
-//class gCollect; // we will keep objects to be removed from the memory here. this is convenient because we would not fore an object to commit suicide, but instead we would "park" it here for later cleanup
 
 #include "gCollect.h"
 
@@ -23,10 +20,8 @@ namespace videoElement
 
 class videoElementDef;
 }
-//class gCollect;
 class chamber;
 
-//class inventory
 class nonSteppable;
 
 typedef enum { DISPOSED=0,nullptrREACHED=1,ERROR=2} oState;

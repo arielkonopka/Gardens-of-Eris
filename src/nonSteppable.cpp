@@ -12,11 +12,7 @@ nonSteppable::nonSteppable(chamber *board):bElem(board)
 
 
 
-nonSteppable::~nonSteppable()
-{
 
-    //dtor
-}
 bool nonSteppable::isSteppable()
 {
     return false;

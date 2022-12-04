@@ -26,9 +26,9 @@ public:
 
 
 private:
-    int ammo=-1;
+    int ammo=1+(bElem::randomNumberGenerator()%_plainGunAmmo);
     unsigned int shot=0;
-   int maxEnergy;
+   int maxEnergy=20*(1+(bElem::randomNumberGenerator()&3));
 
 };
 

@@ -1,10 +1,6 @@
 #include "usable.h"
 
 
-usable::~usable()
-{
-    //dtor
-}
 bool usable::use(bElem* who)
 {
     return true;

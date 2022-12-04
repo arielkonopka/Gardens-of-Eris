@@ -125,7 +125,6 @@ bool patrollingDrone::mechanics()
             this->clearVisited();
             this->setVisited(c.x,c.y);
             l=this->findSomething(el,_defaultRecurrenceDepth,(direction)cnt);
-            //    std::cout<<"Length "<<l<<" "<<d<<"\n";
             if(l<length)
             {
                 length=l;
@@ -135,7 +134,6 @@ bool patrollingDrone::mechanics()
         }
     }
 
-  //  std::cout<<"Length "<<length<<" "<<dir<<"\n";
     if(dir!=NODIRECTION && length<50 && dir!=(direction)(((int)this->getDirection()+2)%4))
     {
         this->moveInDirection(dir);

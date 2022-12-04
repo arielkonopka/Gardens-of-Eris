@@ -11,7 +11,6 @@ public:
     virtual videoElement::videoElementDef* getVideoElementDef();
 
     collectible(chamber *board);
-    virtual ~collectible();
     virtual bool isCollectible();
 
 };

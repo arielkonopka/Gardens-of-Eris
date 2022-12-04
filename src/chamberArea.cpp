@@ -57,8 +57,7 @@ chamberArea::~chamberArea() // if we remove the node, we remove all its children
             _par->surface=_surf;
             _par=_par->parent;
         }
-        //    if (_originalParent->children.size()==0) //this was a last child? Remove parent node, as it is full.
-        //        delete _originalParent;
+
     }
 }
 chamberArea::chamberArea(int xu, int yu, int xd, int yd)
@@ -144,7 +143,6 @@ void chamberArea::findElementsRec(chamber* mychamber)
                 if (mychamber->getElement(x,y)->isSteppable() && this->checkIfElementIsFree(x,y,mychamber))
                 {
                     chamberArea::foundElements.push_back(mychamber->getElement(x,y));
-                    //       std::cout<<".";
                 }
             }
         }
@@ -164,10 +162,8 @@ void chamberArea::findElementsRec(chamber* mychamber)
 
 bool chamberArea::findElementsToStepOn(chamber* myChamber)
 {
-//   std::cout<<"FindElementsToStepOn\n[";
     chamberArea::foundElements.clear();
     this->findElementsRec(myChamber);
-    // std::cout<<"]\n-----------------\n";
     return chamberArea::foundElements.size()>0;
 
 }
@@ -197,39 +193,6 @@ void chamberArea::findChambersCloseToSurface(int s,int tolerance)
     return;
 }
 
-// We are checking the neighboorhood. We are doing it in kind of naive way, we assume,
-//that if there are sequences steppable/not steppable of length 1, then we say, it is impossible to put an object there.
-/*
-bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
-{
-    sNeighboorhood neigh=mychamber->getElement(x,y)->getSteppableNeighboorhood();
-    if(neigh.nTypes[7]==_door)
-        neigh.steppable[7]=true;
-    bool lastStep=neigh.steppable[7]; //last element
-
-    int gap=0;
-    for (int c=0; c<8; c++)
-    {
-        if(neigh.nTypes[c%8]==_door)
-            neigh.steppable[c%8]=true;
-        if(lastStep!=neigh.steppable[c%8])
-        {
-            if(gap<2)
-            {
-                return false;
-            }
-            lastStep=neigh.steppable[c%8];
-            gap=0;
-        }
-        else
-        {
-            gap++;
-        }
-    }
-    return true;
-}
-*/
-/* Let's try something different, we are not supposed to be between any close wall*/
 bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
 {
     if(mychamber->getElement(x,y)->isSteppable()==false)

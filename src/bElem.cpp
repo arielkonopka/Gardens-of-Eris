@@ -258,8 +258,6 @@ oState bElem::disposeElement()
     }
     if(this->getCollector()!=nullptr)
     {
-        //  std::cout<<"Removing collected item from"<<this->getCollector()->myInventory<<"\n";
-
         inventory* cInv=this->getCollector()->getInventory();
         if(cInv!=nullptr)
             cInv->removeCollectibleFromInventory(this->getInstanceid());
@@ -785,7 +783,6 @@ void bElem::deregisterLiveElement(bElem* who)
         if(who->getInstanceid()==(*p)->getInstanceid())
         {
             bElem::liveElems.erase(p);
-            //std::<<"Deregistered element "<<who->getType()<<" "<<who<<"\n";
         }
         else
         {
@@ -797,7 +794,6 @@ void bElem::deregisterLiveElement(bElem* who)
 
 void bElem::runLiveElements()
 {
-    //  std::cout<<"Active Elements: "<<bElem::liveElems.size()<<"\n";
     bElem::tick();
     for(unsigned int p=0; p<bElem::liveElems.size(); p++)
     {
