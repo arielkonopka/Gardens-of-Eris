@@ -30,8 +30,39 @@ class chamber;
 class nonSteppable;
 
 typedef enum { DISPOSED=0,nullptrREACHED=1,ERROR=2} oState;
+struct _cfg
+{
+    bool amIUsable=false;
+    int subtype=0;
+    elemStats* myStats=nullptr;
+    inventory *myInventory=nullptr;
+    int instance;
 
+};
+struct _eStatus
+{
+    bool disposed=false;
+    bool hasActivatedMechanics=false;
 
+    unsigned int telTimeReq=0;
+    unsigned int telReqTime=0;
+    unsigned int killTimeReq=0;
+    unsigned int killTimeBeg=0;
+    unsigned int destTimeReq=0;
+    unsigned int destTimeBeg=0;
+    unsigned int telInProgress=0;
+    bElem *steppingOn=nullptr;
+    bElem *stomping=nullptr;
+    bElem *collector=nullptr;
+    unsigned int interacted=0;
+    int waiting=0;
+    int destroyed=0;
+    int animPhase=0;
+    int taterCounter=0; //Internal counter
+    coords myPosition=NOCOORDS;
+    direction myDirection=NODIRECTION;
+    int killed=0;
+};
 class bElem
 {
 public:
@@ -98,7 +129,10 @@ public:
     virtual coords getAbsCoords(direction dir);
     virtual direction getDirection();
     virtual bool setDirection(direction dir);
-    virtual constexpr int getType() { return _belemType; };
+    virtual constexpr int getType()
+    {
+        return _belemType;
+    };
     virtual int getSubtype();
     virtual int getAnimPh();
     virtual int getSwitchId();
@@ -177,39 +211,8 @@ private:
     ALLEGRO_MUTEX* elementMutex=nullptr;
     static int instances;
     static unsigned int sTaterCounter;
-    struct _cfg
-    {
-        bool amIUsable=false;
-        int subtype=0;
-        elemStats* myStats=nullptr;
-        inventory *myInventory=nullptr;
-        int instance;
-
-    } eConfig;
-    struct _st
-    {
-        bool disposed=false;
-        bool hasActivatedMechanics=false;
-
-        unsigned int telTimeReq=0;
-        unsigned int telReqTime=0;
-        unsigned int killTimeReq=0;
-        unsigned int killTimeBeg=0;
-        unsigned int destTimeReq=0;
-        unsigned int destTimeBeg=0;
-        unsigned int telInProgress=0;
-        bElem *steppingOn=nullptr;
-        bElem *stomping=nullptr;
-        bElem *collector=nullptr;
-        unsigned int interacted=0;
-        int waiting=0;
-        int destroyed=0;
-        int animPhase=0;
-        int taterCounter=0; //Internal counter
-        coords myPosition=NOCOORDS;
-        direction myDirection=NODIRECTION;
-        int killed=0;
-    } state;
+    struct _cfg eConfig;
+    struct _eStatus state;
     std::vector<bElem*> lockers;
 
 
