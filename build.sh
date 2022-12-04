@@ -7,7 +7,7 @@ opts="-Wall -std=gnu++20  ${defines} -g -O3 -Og"
 . ./build.sh.cfg
 mkdir -p ${objPath}/{src,unitTests}
 
-#sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev 
+sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev 
 #
 if [ "${1}" = "-m" ] ; then
     module="src/${2}"

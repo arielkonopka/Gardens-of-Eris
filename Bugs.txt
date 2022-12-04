@@ -1,0 +1,5 @@
+* player shooting gun, for some reason when the gun must be disposed, it tries to take two guns.
+    write tests for the gun and the player
+
+
+* presenter around line 314 - wrong def in json file?
