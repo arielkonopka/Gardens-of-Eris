@@ -17,13 +17,13 @@ class bunker : public mechanical, public nonSteppable,public movableElements
         virtual bool selfAlign();
         virtual bool interact(bElem* Who);
         virtual bool isMovable();
-    protected:
-        int help=0;
-        plainGun *myGun;
-        int rotated=0;
+
     private:
         elemStats* backUp=nullptr;
         bElem* activatedBy=nullptr;
+        int help=0;
+        plainGun *myGun;
+        int rotated=0;
 };
 
 #endif // BUNKER_H

@@ -27,7 +27,6 @@ public:
     virtual bool mechanics();
 
 private:
-
     static std::vector<teleport*> allTeleporters;
     bool removeFromAllTeleporters();
     bool connectionsMade;

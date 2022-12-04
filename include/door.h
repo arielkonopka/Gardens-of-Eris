@@ -21,12 +21,10 @@ public:
     virtual ~door();
     virtual bool canBeKilled();
     virtual bool canBeDestroyed();
-protected:
-    bool open=false;
-    bool locked=true;
-
 private:
     int interacted=-1;
+    bool open=false;
+    bool locked=true;
 
 };
 
