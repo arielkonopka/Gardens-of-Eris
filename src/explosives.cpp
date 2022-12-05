@@ -18,8 +18,9 @@ bool explosives::explode()
     coords mc=this->getCoords();
     chamber* brd=this->getBoard();
     bElem* step;
-    this->disposeElement();
+    this->removeElement();
     step=brd->getElement(mc);
+    step->destroy();
     for (int cnt=0 ; cnt<4; cnt++)
     {
         el=step->getElementInDirection((direction)(cnt));
@@ -31,8 +32,7 @@ bool explosives::explode()
                 el->destroy();
         }
     }
-    step->destroy();
-
+    this->disposeElement();
     return false;
 }
 

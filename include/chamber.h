@@ -1,8 +1,6 @@
 #ifndef CHAMBER_H
 #define CHAMBER_H
-#include <boost/multi_array.hpp>
 #include "commons.h"
-//#include  "bElem.h"
 #include "gCollect.h"
 #include "randomWordGen.h"
 

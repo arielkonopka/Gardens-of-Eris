@@ -1,24 +1,19 @@
 #ifndef BELEM_H
 #define BELEM_H
+#include <chrono>
+#include <random>
+
 #include "commons.h"
 #include "objectTypes.h"
-
-
 #include "inventory.h"
 #include "chamber.h"
 #include "gCollect.h"
 #include "videoElementDef.h"
-#include <chrono>
-#include <random>
-
-#include "gCollect.h"
-
 #include "elemStats.h"
+
 namespace videoElement
 {
-
-
-class videoElementDef;
+    class videoElementDef;
 }
 class chamber;
 

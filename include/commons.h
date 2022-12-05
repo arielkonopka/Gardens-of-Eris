@@ -1,7 +1,8 @@
 #ifndef COMMONS_H
 #define COMMONS_H
 #include <stddef.h>
-#define _belemType 0
+#define _belemType -1
+#define _floorType 0
 #define _stillElemType 1
 #define _rubishType 2
 #define _nonSteppableType 3

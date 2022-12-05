@@ -1,5 +1,8 @@
 #include "../include/bElem.h"
-#include "elements.h"
+#include "floorElement.h"
+#include "rubbish.h"
+
+
 videoElement::videoElementDef* bElem::vd=nullptr;
 std::vector<bElem*> bElem::liveElems;
 unsigned int bElem::sTaterCounter=0;
@@ -407,7 +410,7 @@ bool bElem::interact(bElem *who)
 bool bElem::destroy()
 {
 
-    if (this->canBeDestroyed() || this->isSteppable()) // && (!this->isDestroyed()))
+    if (this->canBeDestroyed() || this->isSteppable() ||this->isDestroyed() ) // && (!this->isDestroyed()))
     {
         if (this->canBeDestroyed())
             this->registerLiveElement(this);
@@ -569,7 +572,7 @@ bElem* bElem::removeElement()
     }
     else if(this->getStomper()==nullptr && this->getSteppingOnElement()==nullptr)
     {
-        bElem *newElem=new bElem(this->attachedBoard);
+        bElem *newElem=new floorElement(this->attachedBoard);
         newElem->setCoords(this->getCoords());
         newElem->attachedBoard->setElement(newElem->getCoords(),newElem);
     }

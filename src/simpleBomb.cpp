@@ -20,23 +20,24 @@ bool simpleBomb::kill()
 
 bool simpleBomb::destroy()
 {
-    bool res=bElem::destroy();
-    if(!res || this->triggered)
+    //bool res=bElem::destroy();
+  /*  if( this->triggered)
     {
-        return false;
+        return bElem::destroy();
     }
+   */
+    this->registerLiveElement(this);
     this->triggered=true;
     this->setWait(20);
-    return res;
+    return true;
 }
 
 bool simpleBomb::mechanics()
 {
     bool r=bElem::mechanics();
-    if(this->getWait()==2)
+    if(this->getWait()==1)
     {
         this->explode();
-
     }
     return r;
 }
