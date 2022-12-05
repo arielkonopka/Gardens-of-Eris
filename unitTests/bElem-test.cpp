@@ -9,7 +9,7 @@
 #define BOOST_TEST_MODULE Fixtures
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
-#include "floor.h"
+#include "floorElement.h"
 
 
 
