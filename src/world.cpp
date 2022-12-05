@@ -4,7 +4,7 @@ world* world::theInstance=nullptr;
 
 world::world()
 {
-    this->garbageBin=gCollect::getInstance();
+
 
 }
 

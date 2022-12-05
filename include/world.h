@@ -12,7 +12,6 @@ class world
         virtual ~world();
         chamber* getActiveChamber();
         void createAChamber();
-    protected:
     private:
         std::vector<chamber*> theWorldContainer;
         int chambers;
@@ -22,7 +21,6 @@ class world
         std::vector<randomLevelGenerator*> rGens;
         static world* theInstance;
         world(); // we will have a singleton class this time.
-        gCollect* garbageBin;
 
 };
 

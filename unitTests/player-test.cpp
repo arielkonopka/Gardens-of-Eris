@@ -106,6 +106,53 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
     }
     delete mc;
 }
+
+BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
+{
+    std::vector<chamber*> m;
+    player* p;
+    player* p1;
+    player* p0;
+    int iid;
+    for(int c=0;c<10;c++)
+        m.push_back(new chamber(105,10));
+
+    p0=new player(m[0]);
+    p0->stepOnElement(m[1]->getElement(0,0));
+    p0->setActive(true);
+    for(int a=0;a<100;a++)
+    {
+        //std::cout<<a<<"\n";
+        p=new player(nullptr);
+        BOOST_CHECK(p->stepOnElement(nullptr)==false);
+        BOOST_CHECK(p->stepOnElement(m[a%m.size()]->getElement(a,a%10))==true);
+        BOOST_CHECK(p->stepOnElement(m[a%m.size()]->getElement(a,a%10))==false);
+        BOOST_CHECK(p->interact(nullptr)==false);
+        BOOST_CHECK(p->interact(p0)==true);
+        BOOST_CHECK(p->interact(p0)==false);
+    }
+    for(int c=0;c<100;c++)
+        bElem::runLiveElements();
+
+
+    p=player::getActivePlayer();
+    while(p!=nullptr)
+    {
+        iid=p->getInstanceid();
+        p->disposeElement();
+        p1=player::getActivePlayer();
+        if(p1!=nullptr)
+            BOOST_CHECK(iid!=p1->getInstanceid());
+        gCollect::getInstance()->purgeGarbage();
+        p=p1;
+    }
+    for(int c=0;c<10;c++)
+        delete m[c];
+    m.clear();
+
+
+}
+
 BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestroyedWithBomb)
 {
     chamber* mc=new chamber(10,10);

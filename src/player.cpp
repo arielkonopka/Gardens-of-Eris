@@ -108,7 +108,7 @@ oState player::disposeElement()
 
 bool player::interact(bElem* who)
 {
-    if (who==nullptr)
+    if (who==nullptr || this->getBoard()==nullptr)
         return false;
     if(this->isActive())
         return false;
@@ -230,6 +230,8 @@ return true;
 
     void player::setActive(bool act)
     {
+        if(this->getBoard()==nullptr)
+            return;
         this->activated=act;
         this->setTeleporting(_teleportationTime);
     }

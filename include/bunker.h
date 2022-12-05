@@ -23,7 +23,6 @@ class bunker : public mechanical, public nonSteppable,public movableElements
         bElem* activatedBy=nullptr;
         int help=0;
         plainGun *myGun;
-        int rotated=0;
 };
 
 #endif // BUNKER_H
