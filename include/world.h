@@ -20,7 +20,7 @@ class world
         chamber* findActiveChamber();
         std::vector<randomLevelGenerator*> rGens;
         static world* theInstance;
-        world(); // we will have a singleton class this time.
+        world()=default; // we will have a singleton class this time.
 
 };
 
