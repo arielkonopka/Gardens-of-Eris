@@ -17,13 +17,12 @@ public:
     unsigned int getEnergy();
     void setEnergy(int en);
     unsigned int getStrength();
-protected:
 
 private:
     void updateDexterity();
-    unsigned int globalPoints;
-    unsigned int _dPoints;
-    unsigned int dexterity;
+    unsigned int globalPoints=0;
+    unsigned int _dPoints=1;
+    unsigned int dexterity=1;
     unsigned int strength;
     unsigned int energy;
 };

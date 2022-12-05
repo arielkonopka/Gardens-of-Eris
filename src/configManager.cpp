@@ -7,10 +7,6 @@ configManager::configManager()
     this->configReload();
 }
 
-configManager::~configManager()
-{
-    //dtor
-}
 configManager* configManager::getInstance()
 {
     if(configManager::instance==nullptr)

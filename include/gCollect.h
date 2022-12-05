@@ -21,7 +21,6 @@ class gCollect
         int garbageQsize();
         static gCollect* getInstance();
          std::vector<bElem *> garbageVector;
-    protected:
 
     private:
         gCollect();

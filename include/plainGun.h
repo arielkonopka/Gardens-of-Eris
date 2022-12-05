@@ -23,13 +23,13 @@ public:
     virtual void setMaxEnergy(int me);
     virtual bElem* createProjectible(bElem* who);
 
-protected:
+
 
 private:
-    int ammo=-1;
+    int ammo=1+(bElem::randomNumberGenerator()%_plainGunAmmo);
     unsigned int shot=0;
-    int energy=-1;
-    int maxEnergy=-1;
+   int maxEnergy=20*(1+(bElem::randomNumberGenerator()&3));
+
 };
 
 #endif // PLAINGUN_H

@@ -10,16 +10,12 @@ videoElement::videoElementDef* plainGun::getVideoElementDef()
 //public usable, public mechanical, public collectible, public nonSteppable
 plainGun::plainGun(chamber *board): usable(board), mechanical(board), collectible(board), nonSteppable(board)
 {
-    this->maxEnergy=_plainMissileEnergy;
-    this->ammo=_plainGunAmmo;
-    this->myInventory=new inventory(this);
+    this->setStats(new elemStats(((bElem::randomNumberGenerator()%4)+1)*25));
 }
 
 plainGun::plainGun(chamber* board, int newSubtype): usable(board), mechanical(board), collectible(board), nonSteppable(board)
 {
-    this->maxEnergy=_plainMissileEnergy;
-    this->ammo=_plainGunAmmo;
-    this->myInventory=new inventory(this);
+    this->setStats(new elemStats(((bElem::randomNumberGenerator()%4)+1)*25));
     this->setSubtype(newSubtype);
 }
 
@@ -88,7 +84,8 @@ bool plainGun::use(bElem* who)
             }*/
             else if (myel->canBeKilled() )
             {
-                who->getStats()->countKill(myel);
+                if(who->getStats()!=nullptr)
+                    who->getStats()->countKill(myel);
                 myel->hurt(this->getEnergy());
                 // this->disposeElement();
             }

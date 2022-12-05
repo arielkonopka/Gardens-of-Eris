@@ -58,10 +58,6 @@ bool teleport::createConnectionsWithinSUbtype()
 
 
 
-bool teleport::isInteractive()
-{
-    return true;
-}
 videoElement::videoElementDef* teleport::getVideoElementDef()
 {
     return teleport::vd;

@@ -5,7 +5,7 @@ videoElement::videoElementDef* plainMissile::vd=nullptr;
 plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber), movableElements(mychamber), mechanical(mychamber)
 {
     this->statsOwner=nullptr;
-
+    this->setStats(new elemStats(_plainMissileEnergy));
     this->setEnergy(_plainMissileEnergy);
     this->setMoved(0);
     this->setWait(_plainMissileSpeed);
@@ -16,12 +16,11 @@ plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber), mo
 plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber),  movableElements(mychamber), mechanical(mychamber)
 {
     this->statsOwner=nullptr;
-
+    this->setStats(new elemStats(energy));
     this->setEnergy(energy);
     this->setMoved(0);
     this->setWait(_plainMissileSpeed);
     this->setDirection(UP);
-    this->myInventory=new inventory(this ); // This is for a mod, that could be installed on the ammo
     this->setMoved(0);
     this->setSubtype(0);
 }
@@ -58,7 +57,7 @@ videoElement::videoElementDef* plainMissile::getVideoElementDef()
 }
 bool plainMissile::setEnergy(int points)
 {
-    if(this->statsOwner!=nullptr)
+    if(this->statsOwner!=nullptr && this->statsOwner->getStats()!=nullptr)
     {
         int ep=(points*4)/(_dexterityLevels+1-this->statsOwner->getStats()->getDexterity());
         int dp=points-ep;
@@ -99,7 +98,7 @@ bool plainMissile::mechanics()
             }
  */
             myel->hurt(this->getEnergy());
-            if(this->statsOwner!=nullptr)
+            if(this->statsOwner!=nullptr && this->statsOwner->getStats()!=nullptr)
             {
                 this->statsOwner->getStats()->countHit(myel);
             }
@@ -109,7 +108,7 @@ bool plainMissile::mechanics()
             }
             else
             {
-                if(this->statsOwner!=nullptr)
+                if(this->statsOwner!=nullptr && this->statsOwner->getStats()!=nullptr)
                 {
                     this->statsOwner->getStats()->countKill(myel);
                 }

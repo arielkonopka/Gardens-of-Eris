@@ -8,7 +8,6 @@ class soundManager
         ~soundManager();
         soundManager* getInstance();
 
-    protected:
 
 
     private:

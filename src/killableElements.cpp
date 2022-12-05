@@ -5,27 +5,10 @@ killableElements::killableElements(chamber* board) :bElem(board)
 
 }
 
-killableElements::killableElements(chamber* board, int x, int y):bElem(board,x,y)
-{
-}
-
-killableElements::killableElements(chamber* board, bool registerEl):bElem(board)
-{
-}
-
-killableElements::killableElements(chamber* board, int x, int y, bool registerEl): bElem(board,x,y)
-{
-}
 
 
 
 
-
-
-killableElements::~killableElements()
-{
-    //dtor
-}
 
 
 

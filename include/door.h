@@ -12,25 +12,19 @@ public:
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
     door(chamber* board);
-    door(chamber* board,int x, int y);
     door(chamber* board,int subtype);
-    door(chamber* board,int subtype,int x, int y);
     virtual bool interact(bElem *who);
     virtual bool isSteppable();
     virtual bool isOpen();
     virtual void stomp(bElem* who);
     virtual void unstomp();
     virtual ~door();
-    virtual bool isInteractive();
     virtual bool canBeKilled();
     virtual bool canBeDestroyed();
-protected:
-    bool open;
-    bool locked;
-
 private:
-    void initMe();
-    int interacted;
+    int interacted=-1;
+    bool open=false;
+    bool locked=true;
 
 };
 

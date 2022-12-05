@@ -10,6 +10,8 @@
 class player : public killableElements,public movableElements,public nonSteppable,public mechanical
 {
 public:
+    player(chamber *board);
+    virtual ~player();
     static unsigned int countVisitedPlayers();
     virtual videoElement::videoElementDef* getVideoElementDef();
     static videoElement::videoElementDef* vd;
@@ -22,12 +24,9 @@ public:
     void setActive(bool act);
     bool isActive();
     int getAnimPh();
-    player(chamber *board);
-    virtual ~player();
     virtual bool shootGun();
     virtual oState disposeElement();
 
-protected:
 
 
 private:

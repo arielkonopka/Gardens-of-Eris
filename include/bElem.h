@@ -5,14 +5,11 @@
 
 
 #include "inventory.h"
-//#include "rubbish.h"
 #include "chamber.h"
 #include "gCollect.h"
 #include "videoElementDef.h"
 #include <chrono>
 #include <random>
-//class chamber;
-//class gCollect; // we will keep objects to be removed from the memory here. this is convenient because we would not fore an object to commit suicide, but instead we would "park" it here for later cleanup
 
 #include "gCollect.h"
 
@@ -21,23 +18,51 @@ namespace videoElement
 {
 
 
-    class videoElementDef;
+class videoElementDef;
 }
-//class gCollect;
 class chamber;
 
-//class inventory
 class nonSteppable;
 
 typedef enum { DISPOSED=0,nullptrREACHED=1,ERROR=2} oState;
+struct _cfg
+{
+    bool amIUsable=false;
+    int subtype=0;
+    elemStats* myStats=nullptr;
+    inventory *myInventory=nullptr;
+    int instance;
 
+};
+struct _eStatus
+{
+    bool disposed=false;
+    bool hasActivatedMechanics=false;
 
+    unsigned int telTimeReq=0;
+    unsigned int telReqTime=0;
+    unsigned int killTimeReq=0;
+    unsigned int killTimeBeg=0;
+    unsigned int destTimeReq=0;
+    unsigned int destTimeBeg=0;
+    unsigned int telInProgress=0;
+    bElem *steppingOn=nullptr;
+    bElem *stomping=nullptr;
+    bElem *collector=nullptr;
+    unsigned int interacted=0;
+    int waiting=0;
+    int destroyed=0;
+    int animPhase=0;
+    int taterCounter=0; //Internal counter
+    coords myPosition=NOCOORDS;
+    direction myDirection=NODIRECTION;
+    int killed=0;
+};
 class bElem
 {
 public:
     bElem();
     bElem(chamber *board);
-    bElem(chamber *board,int x, int y);
 
     static videoElement::videoElementDef* vd;
 
@@ -56,7 +81,10 @@ public:
     virtual void setCoords(coords point);
 
     virtual void setActive(bool active);
-    virtual bool selfAlign();
+    virtual constexpr bool selfAlign()
+    {
+        return false;
+    };
     virtual bool setSubtype(int st);
     virtual bool stepOnElement(bElem *step);
     virtual bool isLiveElement();
@@ -64,7 +92,10 @@ public:
     virtual bElem* getStomper();
     virtual void stomp(bElem* who); //Notifies an object that other element is stepping on it, we get a stepper's reference
     virtual void unstomp();         //the object was released
-    virtual bElem* getCollector();
+    virtual constexpr bElem* getCollector()
+    {
+        return this->state.collector;
+    };
     virtual void setCollected(bElem* who); //notify the object that it got collected
     virtual void setDropped(); // notify it got dropped
 
@@ -75,7 +106,10 @@ public:
     virtual bool interact(bElem *who);
     virtual bool destroy();
     virtual bool kill();
-    virtual bool hurt(int points);
+    virtual constexpr bool hurt(int points)
+    {
+        return false;
+    };
     virtual bool isSteppable();
     virtual bool isSteppableDirection(direction di);
     virtual bElem *getElementInDirection(direction di);
@@ -83,25 +117,34 @@ public:
     virtual bool canBeKilled();
     virtual bool canBeDestroyed();
 
-    virtual coords getCoords();
+    virtual constexpr coords getCoords()
+    {
+        return this->state.myPosition;
+    };
     virtual coords getAbsCoords(direction dir);
     virtual direction getDirection();
     virtual bool setDirection(direction dir);
-    virtual int getType();
+    virtual constexpr int getType()
+    {
+        return _belemType;
+    };
     virtual int getSubtype();
     virtual int getAnimPh();
     virtual int getSwitchId();
     virtual int getEnergy();
+
     virtual bool setEnergy(int points);
     virtual bool isDying();
     virtual bool isDestroyed();
     virtual bool isTeleporting();
     virtual void setTeleporting(int time);
-    virtual bool isInteractive();
     virtual bool isProvisioned();
     virtual bool isMovable();
 
-    virtual bool isCollectible();
+    virtual constexpr bool isCollectible()
+    {
+        return false;
+    };
     virtual bool canCollect();
     virtual bool collect(bElem* collectible);
     virtual bool canInteract();
@@ -114,8 +157,8 @@ public:
     virtual bool isActive();
     virtual bool isOpen();
     virtual bool isSwitchOn();
-    virtual elemStats* getStats();
-    virtual void setStats(elemStats* stat); // warning, unsafe method
+    constexpr elemStats* getStats() { return this->eConfig.myStats; };
+    void setStats(elemStats* stat); // warning, unsafe method
     virtual bool isMod(); // is the element a mod of another element? - mod is an object that changes other object's behavior
     virtual modType getModType();
     virtual bElem* removeElement(); // removes element from the board, and returns it for further processing, usefull for eg. for collecting stuff
@@ -132,63 +175,40 @@ public:
     static std::vector<bElem*> liveElems;
 
     static void tick();
-    virtual unsigned int getCntr();
+    virtual  unsigned int getCntr();
     virtual chamber* getBoard();
-    virtual constexpr bool isFading() { return false; };
+    virtual constexpr bool isFading()
+    {
+        return false;
+    };
     virtual bool isLocked();
     virtual bool lockThisObject(bElem* who);
     virtual bool unlockThisObject(bElem* who);
     constexpr bool isDisposed()
     {
-        return this->disposed;
+        return this->state.disposed;
     };
     constexpr inventory* getInventory()
     {
-        return this->myInventory ;
+        return this->eConfig.myInventory;
     };
     constexpr bElem* getSteppingOnElement()
     {
-        return this->steppingOn;
+        return this->state.steppingOn;
     };
     void setInventory(inventory* inv);
-
-protected:
-    unsigned int interacted;
-    bElem *steppingOn=nullptr;
-    int subtype;
-    inventory *myInventory;
-    std::vector<bElem*> lockers;
-    int waiting;
-    int instance;
-    int destroyed;
-
-    int animPhase=0;
-    int taterCounter=0; //Internal counter
-
-    int x,y;
-    direction myDirection;
-    bool amIUsable;
-    int killed;
-private:
-    ALLEGRO_MUTEX* elementMutex;
-    unsigned int telTimeReq;
-    unsigned int telReqTime;
-    unsigned int killTimeReq;
-    unsigned int killTimeBeg;
-    unsigned int destTimeReq;
-    unsigned int destTimeBeg;
     virtual int getTypeInDirection(direction di);
+
+private:
+    chamber *attachedBoard=nullptr;
+    ALLEGRO_MUTEX* elementMutex=nullptr;
     static int instances;
-    bool disposed;
-    elemStats* myStats;
-    unsigned int telInProgress;
-    bool hasActivatedMechanics;
     static unsigned int sTaterCounter;
-    virtual void init();
-    //  static videoElement::videoElementDef *def;
-    bElem *stomping;
-    bElem *collector;
-    chamber *attachedBoard;
+    struct _cfg eConfig;
+    struct _eStatus state;
+    std::vector<bElem*> lockers;
+
+
 };
 
 #endif // BELEM_H

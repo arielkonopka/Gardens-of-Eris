@@ -106,6 +106,53 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
     }
     delete mc;
 }
+
+BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
+{
+    std::vector<chamber*> m;
+    player* p;
+    player* p1;
+    player* p0;
+    int iid;
+    for(int c=0; c<10; c++)
+        m.push_back(new chamber(105,10));
+
+    p0=new player(m[0]);
+    p0->stepOnElement(m[1]->getElement(0,0));
+    p0->setActive(true);
+    for(int a=0; a<100; a++)
+    {
+        //std::cout<<a<<"\n";
+        p=new player(nullptr);
+        BOOST_CHECK(p->stepOnElement(nullptr)==false);
+        BOOST_CHECK(p->stepOnElement(m[a%m.size()]->getElement(a,a%10))==true);
+        BOOST_CHECK(p->stepOnElement(m[a%m.size()]->getElement(a,a%10))==false);
+        BOOST_CHECK(p->interact(nullptr)==false);
+        BOOST_CHECK(p->interact(p0)==true);
+        BOOST_CHECK(p->interact(p0)==false);
+    }
+    for(int c=0; c<100; c++)
+        bElem::runLiveElements();
+
+
+    p=player::getActivePlayer();
+    while(p!=nullptr)
+    {
+        iid=p->getInstanceid();
+        p->disposeElement();
+        p1=player::getActivePlayer();
+        if(p1!=nullptr)
+            BOOST_CHECK(iid!=p1->getInstanceid());
+        gCollect::getInstance()->purgeGarbage();
+        p=p1;
+    }
+    for(int c=0; c<10; c++)
+        delete m[c];
+    m.clear();
+
+
+}
+
 BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestroyedWithBomb)
 {
     chamber* mc=new chamber(10,10);
@@ -122,7 +169,7 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
     BOOST_CHECK(goldenApple::getAppleNumber()>=2);
     sb->kill();
     // We take time for the exploded bomb to finish
-    for(int c=0;c<100;c++)
+    for(int c=0; c<100; c++)
         bElem::runLiveElements();
     BOOST_CHECK(goldenApple::getAppleNumber()>=2);
 
@@ -131,7 +178,7 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
     sb->stepOnElement(mc->getElement(2,2));
     sb->kill();
     // We take time for the exploded bomb to finish
-    for(int c=0;c<100;c++)
+    for(int c=0; c<100; c++)
         bElem::runLiveElements();
     gCollect::getInstance()->purgeGarbage();
     BOOST_CHECK(goldenApple::getAppleNumber()==0);
@@ -140,6 +187,90 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
 
 }
 
+
+void controlPlayer(chamber* mc,controlItem cntrlItm)
+{
+    player* p=player::getActivePlayer();
+    BOOST_CHECK(p!=nullptr);
+    if(p==nullptr)
+        return;
+    coords c0,c1;
+    for(int c=0; c<100; c++)
+        bElem::runLiveElements();
+    c0=p->getCoords();
+    mc->cntrlItm=cntrlItm;
+    for(int c=0; c<100; c++)
+        bElem::runLiveElements();
+    mc->cntrlItm.type=-1;
+    mc->cntrlItm.dir=NODIRECTION;
+    for(int c=0; c<100; c++)
+        bElem::runLiveElements();
+    c1=p->getCoords();
+    if(cntrlItm.type==0 || cntrlItm.type==4)
+        BOOST_CHECK(c0!=c1);
+    else
+        BOOST_CHECK(c0==c1);
+
+}
+
+void checkplayerKilled()
+{
+    player* p=player::getActivePlayer();
+    int iid1=p->getInstanceid();
+    for(int c=0; c<100; c++)
+        bElem::runLiveElements();
+    p=player::getActivePlayer();
+    if(p!=nullptr)
+    {
+        std::cout<<"Player żyje: "<<iid1<<" "<<p->getInstanceid();
+    }
+    BOOST_CHECK(p==nullptr || iid1!=p->getInstanceid());
+
+}
+
+BOOST_AUTO_TEST_CASE(MovePlayer)
+{
+    chamber* mc=new chamber(100,100);
+    coords c0,c1;
+    controlItem ci;
+    while(player::getActivePlayer()!=nullptr)
+    {
+        player::getActivePlayer();
+        player::getActivePlayer()->disposeElement();
+        gCollect::getInstance()->purgeGarbage();
+    }
+    player* p=new player(mc);
+    plainGun* pg=new plainGun(mc);
+    p->collect(pg);
+    p->stepOnElement(mc->getElement(50,50));
+    p->setActive(true);
+    for(int c=0; c<8; c++)
+    {
+        if(c==6)
+        {
+            mc->cntrlItm.type=6;
+            checkplayerKilled();
+            p=new player(mc);
+            pg=new plainGun(mc);
+            p->collect(pg);
+            p->stepOnElement(mc->getElement(50,50));
+            p->setActive(true);
+            continue;
+        }
+        ci.type=c;
+        ci.dir=UP;
+        controlPlayer(mc,ci);
+        ci.dir=DOWN;
+        controlPlayer(mc,ci);
+        ci.dir=LEFT;
+        controlPlayer(mc,ci);
+        ci.dir=RIGHT;
+        controlPlayer(mc,ci);
+
+    }
+    delete mc;
+
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 

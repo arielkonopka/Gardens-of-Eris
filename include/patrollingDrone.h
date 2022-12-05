@@ -18,7 +18,7 @@ class patrollingDrone : public killableElements, public nonSteppable, public mec
         virtual bool interact(bElem* who);
         int getType();
 
-    protected:
+
 
     private:
         void setVisited(int x, int y);

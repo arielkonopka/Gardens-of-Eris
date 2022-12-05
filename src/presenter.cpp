@@ -13,20 +13,18 @@ presenter::presenter(chamber *board)
 
     if(!al_init_image_addon())
     {
-        std::cout<<"Dupa nie inicjalizacja!\n";
+        std::cout<<"Could not initialize the image addon!!\n";
+        exit(0);
 
     }
-    this->alTimer = al_create_timer(1.0 / 60);
-//    this->scrTimer=al_create_timer(1.0/40);
+    this->alTimer = al_create_timer(1.0 / 50);
     this->evQueue= al_create_event_queue();
     al_register_event_source(this->evQueue, al_get_keyboard_event_source());
     al_register_event_source(this->evQueue, al_get_timer_event_source(this->alTimer));
-//    al_register_event_source(this->evQueue, al_get_timer_event_source(this->scrTimer));
     this->_cp_attachedBoard=board;
     al_get_monitor_info(0, &info);
-    this->scrWidth = info.x2;// - info.x1; /* Assume this is 1366 */
-    this->scrHeight= info.y2;// - info.y1; /* Assume this is 768 */
-    //  std::cout<<"SCR: "<<this->scrWidth<<","<<this->scrHeight<<"\n";
+    this->scrWidth = info.x2-50;// - info.x1; /* Assume this is 1366 */
+    this->scrHeight= info.y2-50;// - info.y1; /* Assume this is 768 */
     this->sWidth=0;
     this->sHeight=0;
     this->spacing=0;
@@ -50,13 +48,10 @@ presenter::~presenter()
 }
 bool presenter::initializeDisplay()
 {
-    al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+    al_set_new_display_flags(ALLEGRO_WINDOWED);
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
-//   al_set_new_display_refresh_rate( 50 );
     this->display = al_create_display(this->scrWidth, this->scrHeight);
-    al_hide_mouse_cursor(this->display);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
-  //  al_set_new_bitmap_flags(ALLEGRO_FULLSCREEN);
     this->internalBitmap=al_create_bitmap(this->scrWidth+64,this->scrHeight+64);
     this->statsStripe=al_create_bitmap(this->scrWidth,this->scrHeight/3);
     return true;
@@ -68,7 +63,6 @@ bool presenter::initializeDisplay()
 
 bool presenter::presentAChamber(presenterMode mod)
 {
-    //_cp_gameReasonOut reason=USERREQ;
     switch(mod)
     {
     case MENU:
@@ -98,7 +92,6 @@ void presenter::showSplash()
     al_draw_bitmap(splash,450,0,0);
     al_wait_for_vsync();
     al_flip_display();
-    //  delete splash;
 }
 bool presenter::loadCofiguredData()
 {
@@ -109,7 +102,7 @@ bool presenter::loadCofiguredData()
     this->myfont=al_load_ttf_font(gcfg->FontFile.c_str(),32,0);
     if(this->myfont==nullptr)
     {
-        std::cout<<"Fonty się nie załadowały\n";
+        std::cout<<"Font assets are not loaded properly, check the configuration.\n";
         return false;
     }
     this->splashFname=gcfg->splashScr;
@@ -138,7 +131,6 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* el
 {
     coords coords,offset= {0,0};
     int sx,sy;
-   // videoElement::aphases *phs; //Video element, that defines the animation of an object
     if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem==nullptr) return;
     if(!ignoreOffset)
     {
@@ -222,7 +214,6 @@ void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  tex
     if(this->myfont!=nullptr)
     {
         al_draw_text(this->myfont,c,(float)scrx,(float)scry,0,text.c_str());
-        // std::cout<<"drawing text\n";
     }
 }
 
@@ -259,8 +250,11 @@ void presenter::prepareStatsThing()
     this->showText(21,0,6,0,"Stats");
     this->showText(21,0,5,32,"P:");
     this->showText(21,1,5,0,"Dex:");
-    this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getGlobalPoints()));
-    this->showText(22,1,5,0,std::to_string(aPlayer->getStats()->getDexterity()));
+    if(aPlayer->getStats()!=nullptr)
+    {
+        this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getGlobalPoints()));
+        this->showText(22,1,5,0,std::to_string(aPlayer->getStats()->getDexterity()));
+    }
 }
 
 
@@ -269,7 +263,10 @@ void presenter::prepareStatsThing()
 void presenter::showGameField()
 {
     player* player=player::getActivePlayer();
-    coords b=player->getCoords()-(coords){(this->scrTilesX)/2,(this->scrTilesY)/2};
+    coords b=player->getCoords()-(coords)
+    {
+        (this->scrTilesX)/2,(this->scrTilesY)/2
+    };
     std::vector<movingSprite> mSprites;
     mSprites.clear();
     int x,y;
@@ -326,15 +323,11 @@ int presenter::presentEverything()
 {
     player* currentPlayer=nullptr;
     ALLEGRO_EVENT event;
-//   presenter* instance=this;
     controlItem cItem;
     bool fin=false;
 
-    // ALLEGRO_THREAD* visual=al_create_thread(shGFL,&instance);
     bElem::runLiveElements();
-    //  al_start_thread(visual);
     al_start_timer(this->alTimer);
-//    al_start_timer(this->scrTimer);
     while(!fin)
     {
         al_wait_for_event(this->evQueue, &event);
@@ -346,8 +339,6 @@ int presenter::presentEverything()
         }
         if(event.type == ALLEGRO_EVENT_TIMER)
         {
-            //        if(event.timer.source==this->alTimer)
-            //        {
             this->_cp_attachedBoard->player=NOCOORDS;
             bElem::runLiveElements();
             gCollect::getInstance()->purgeGarbage();
@@ -358,28 +349,16 @@ int presenter::presentEverything()
             if(currentPlayer->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
                 fin=true;
             this->_cp_attachedBoard=currentPlayer->getBoard();
-
-//            }
-
-//            if(event.timer.source==this->scrTimer)
-//            {
-
-
             this->showGameField();
-            //  std::cout<<"\033[0G x,y ->"<<this->_cp_attachedBoard->player.x<<","<<this->_cp_attachedBoard->player.y;
-            //  std::cout<<blue<<"\n";
-//            }
         }
         cItem=this->inpMngr->translateEvent(&event); //We always got a status on what to do. remember, everything must have a timer!
         // the idea is to serve the keyboard state constantly, we avoid actions that are too fast
         // by having timers on everything, like: once you shoot, you will be able to shoot in some defined time
         // same with movement, object cycling, gun cycling, using things, interacting with things.
-
         if (cItem.type==7)
             return 1;
-        this->_cp_attachedBoard->cntrlItm=cItem;
-
-
+        if(currentPlayer!=nullptr && currentPlayer->getBoard()!=nullptr)
+            currentPlayer->getBoard()->cntrlItm=cItem;
     }
     return 1;
 }

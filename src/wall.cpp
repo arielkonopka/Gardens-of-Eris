@@ -25,11 +25,6 @@ int wall::getType()
 }
 
 
-wall::~wall()
-{
-    //dtor
-}
-
 //Return video element definition object, this will come in handy when drawing the object
 videoElement::videoElementDef* wall::getVideoElementDef()
 {

@@ -7,16 +7,9 @@ videoElement::videoElementDef* movableElements::vd=nullptr;
 
 movableElements::movableElements(chamber *board) : bElem(board)
 {
-    this->_me_moved=0;
-    this->_me_canPush=false;
-    this->movable=true;
+
 }
-movableElements::movableElements(chamber *board,int x, int y) : bElem(board,x,y)
-{
-    this->_me_moved=0;
-    this->_me_canPush=false;
-    this->movable=true;
-}
+
 
 movableElements::~movableElements()
 {
@@ -24,7 +17,7 @@ movableElements::~movableElements()
 }
 bool movableElements::isMovable()
 {
-    return this->movable && !this->isDestroyed() && !this->isDying();
+    return this->movable && !this->isDestroyed() && !this->isDying() && !this->isTeleporting();
 }
 
 bool movableElements::moveInDirection(direction dir)
@@ -59,21 +52,18 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
             return true;
         }
     }
-    if (this->canCollect()==true && this->myInventory!=nullptr && stepOn->isCollectible()==true)
+    if (this->canCollect()==true && this->getInventory()!=nullptr && stepOn->isCollectible()==true)
     {
-        if (this->collect(stepOn)==true)
-            //if (this->collect(this->attachedBoard->chamberArray[ncoord.x][ncoord.y])==true)
+        if (this->collect(stepOn)==true && this->getStats())
         {
             this->getStats()->countCollect(stepOn);
-            // this->setMoved(speed);
             return true;
         }
     }
-    if (this->canInteract()==true && stepOn->isInteractive()==true)
+    if (this->canInteract()==true)
     {
         if(stepOn->interact(this)==true)
         {
-            // this->setMoved(speed);
             return true;
 
         }
@@ -124,11 +114,22 @@ int movableElements::getMoved()
 
 bool movableElements::dragInDirection(direction dragIntoDirection)
 {
-    direction objFromDir=(direction)(((int)dragIntoDirection)+2);
+    direction objFromDir=(direction)((((int)dragIntoDirection)+2)%4);
+    direction d2=dragIntoDirection;
     bElem *draggedObj=this->getElementInDirection(objFromDir);
-    if(!draggedObj->isSteppable())
+    if(draggedObj==nullptr)
         return false;
-    return draggedObj->moveInDirection(dragIntoDirection);
+    if(!draggedObj->isMovable())
+    {
+        d2=(direction)((((int)this->getDirection())+2)%4);
+        draggedObj=this->getElementInDirection(d2);
+        d2=this->getDirection();
+        if(draggedObj==nullptr || !draggedObj->isMovable())
+            return false;
+    }
+
+    this->moveInDirection(dragIntoDirection);
+    return draggedObj->moveInDirection(d2);
 
 }
 
@@ -161,7 +162,17 @@ coords movableElements::getOffset()
 }
 
 
+void movableElements::setMovable(bool m)
+{
+    this->movable=m;
+}
 
+
+
+void movableElements::setCanPush(bool sp)
+{
+   this->_me_canPush=sp;
+}
 
 
 

@@ -12,8 +12,6 @@ class world
         virtual ~world();
         chamber* getActiveChamber();
         void createAChamber();
-    protected:
-        gCollect* garbageBin;
     private:
         std::vector<chamber*> theWorldContainer;
         int chambers;
@@ -22,7 +20,8 @@ class world
         chamber* findActiveChamber();
         std::vector<randomLevelGenerator*> rGens;
         static world* theInstance;
-        world(); // we will have a singleton class this time.
+        world()=default; // we will have a singleton class this time.
+
 };
 
 #endif // WORLD_H

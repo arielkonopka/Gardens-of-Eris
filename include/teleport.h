@@ -15,7 +15,6 @@ public:
     teleport(chamber* board,int newSubtype);
     virtual ~teleport();
     virtual bool interact(bElem *who);
-    virtual bool isInteractive();
     virtual bool teleportIt(bElem *who);
     virtual oState disposeElement();
     virtual oState disposeElementUnsafe();
@@ -27,9 +26,7 @@ public:
     virtual void unstomp();
     virtual bool mechanics();
 
-protected:
 private:
-
     static std::vector<teleport*> allTeleporters;
     bool removeFromAllTeleporters();
     bool connectionsMade;

@@ -7,8 +7,9 @@ player* player::activePlayer=nullptr;
 
 player::player(chamber *board) : killableElements(board), movableElements(board),nonSteppable(board),mechanical(board)
 {
-    this->setMoved(0);
-    this->myInventory=new inventory(this);
+    this->setInventory(new inventory(this));
+    this->registerLiveElement(this);
+    this->setStats(new elemStats(100));
     if(player::allPlayers.size()>0)
     {
         this->activated=false;
@@ -107,7 +108,7 @@ oState player::disposeElement()
 
 bool player::interact(bElem* who)
 {
-    if (who==nullptr)
+    if (who==nullptr || this->getBoard()==nullptr)
         return false;
     if(this->isActive())
         return false;
@@ -142,127 +143,119 @@ videoElement::videoElementDef* player::getVideoElementDef()
 
 bool player::mechanics()
 {
-    bool res=killableElements::mechanics();
 
+    bool res=killableElements::mechanics();
     if (this->isActive()==true)
     {
-        this->getBoard()->player.x=this->x;
-        this->getBoard()->player.y=this->y;
+        this->getBoard()->player.x=this->getCoords().x;
+        this->getBoard()->player.y=this->getCoords().y;
     }
     else
     {
         return true; // Inactive player, not very useful;
     }
+
     if(!res)
         return false;
+
     if(this->getMoved()>0)
     {
         if(bElem::getCntr()%4==0) this->animPh++;
         return true;
     }
+
     switch(this->getBoard()->cntrlItm.type)
     {
     case 0:
-    {
-        bool res=this->moveInDirection(this->getBoard()->cntrlItm.dir);
-        if (res) this->animPh++;
-        return true;
-    }
-    case 1:
-    {
-        this->setDirection(this->getBoard()->cntrlItm.dir);
-        bool res=this->shootGun();
-        if (res)
-            this->animPh+=(this->taterCounter%2);
-        break;
-    }
-    case 2:
-    {
-
-
-        bElem* obj=this->getElementInDirection(this->getBoard()->cntrlItm.dir);
-        bool res;
-        this->setDirection(this->getBoard()->cntrlItm.dir);
-        if (obj==nullptr)
-            return false;
-        res=obj->interact(this);
-        if (res)
+        if(this->moveInDirection(this->getBoard()->cntrlItm.dir))
             this->animPh++;
         break;
-    }
+
+    case 1:
+        this->setDirection(this->getBoard()->cntrlItm.dir);
+        if(this->shootGun()) this->animPh+=(this->getCntr()%2);
+        break;
+    case 2:
+        if (this->getElementInDirection(this->getBoard()->cntrlItm.dir)==nullptr)
+            return false;
+        this->setDirection(this->getBoard()->cntrlItm.dir);
+        if (this->getElementInDirection(this->getBoard()->cntrlItm.dir)->interact(this))
+            this->animPh++;
+        break;
     case 3:
-    {
-        this->myInventory->nextUsable();
+        this->getInventory()->nextUsable();
         this->setWait(_mov_delay);
         break;
-    }
     case 4:
-        if (this->myInventory->getUsable()!=nullptr)
-        {
-            this->myInventory->getUsable()->use(this->getElementInDirection(this->getBoard()->cntrlItm.dir));
-        };
+        if(this->dragInDirection(this->getBoard()->cntrlItm.dir))
+            this->animPh++;
+        else if(this->moveInDirection(this->getBoard()->cntrlItm.dir)) this->animPh++;
+        break;
+    case 8:
+        if (this->getInventory()->getUsable()!=nullptr)
+            this->getInventory()->getUsable()->use(this->getElementInDirection(this->getBoard()->cntrlItm.dir));
         break;
     case 5:
-        this->myInventory->nextGun();
+        this->getInventory()->nextGun();
         this->setWait(_mov_delay);
         break;
     case 6:
         this->kill();
         break;
     }
-    return true;
+return true;
 }
-
 //shoots any suitable gun
-bool player::shootGun()
-{
-    // bool res=false;
-    bElem* gun=this->myInventory->getActiveWeapon();
-    if(gun!=nullptr)
+    bool player::shootGun()
     {
-        gun->use(this);
+        bElem* gun=this->getInventory()->getActiveWeapon();
+        if(gun!=nullptr)
+        {
+            gun->use(this);
+            return true;
+        }
+        this->setWait(_interactedTime*2);
+        return false;
+
+    }
+
+
+
+
+    bool player::canPush()
+    {
         return true;
     }
-    this->setWait(_interactedTime*2);
-    return false;
-
-}
 
 
-
-
-bool player::canPush()
-{
-    return true;
-}
-
-
-void player::setActive(bool act)
-{
-    this->activated=act;
-    this->setTeleporting(_teleportationTime);
-}
+    void player::setActive(bool act)
+    {
+        if(this->getBoard()==nullptr)
+            return;
+        this->activated=act;
+        this->setTeleporting(_teleportationTime);
+    }
 
 
 
-bool player::isActive()
-{
-    return this->activated; // temporary, in the future only one player should be active in the whole chamber array
-}
+    bool player::isActive()
+    {
+        return this->activated; // temporary, in the future only one player should be active in the whole chamber array
+    }
 
 
-int player::getType()
-{
-    return _player;
-}
+    int player::getType()
+    {
+        return _player;
+    }
 
 
-int player::getAnimPh()
-{
-    if(this->isTeleporting() || this->isDying() || this->isDestroyed() || !this->isActive())
-        return bElem::getAnimPh();
-    return this->animPh;
-}
+    int player::getAnimPh()
+    {
+        if(this->isTeleporting() || this->isDying() || this->isDestroyed() || !this->isActive())
+            return bElem::getAnimPh();
+        return this->animPh;
+    }
 
 
 

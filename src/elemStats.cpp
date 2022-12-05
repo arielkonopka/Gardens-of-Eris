@@ -1,14 +1,9 @@
 #include "elemStats.h"
 #include "bElem.h"
 
-elemStats::elemStats(int energy)
+elemStats::elemStats(int energy): strength(energy),energy(energy)
 {
-    this->energy=energy;
-    this->globalPoints=0;
-    this->_dPoints=1;
     this->updateDexterity();
-    this->strength=this->energy;
-
 }
 
 elemStats::~elemStats()

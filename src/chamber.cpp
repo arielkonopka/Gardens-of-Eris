@@ -3,12 +3,11 @@
 
 int chamber::lastid=0;
 
-chamber::chamber(int x,int y)
+chamber::chamber(int x,int y):width(x),height(y),chamberArray(new bElem**[x])
 {
     randomWordGen *rwg=new randomWordGen();
-    this->chamberArray.resize(boost::extents[x][y]);
-    this->width=x;
-    this->height=y;
+    for(int c=0;c<x;c++)
+        this->chamberArray[c]=new bElem*[y];
     this->garbageBin=gCollect::getInstance();
     this->setInstanceId(chamber::lastid++);
     for(int cX=0; cX<x; cX++)
@@ -46,13 +45,14 @@ chamber::~chamber()
 {
     for (int cX=0; cX<this->width; cX++)
     {
-        for (int cY=0; cY<this->height;cY++)
+        for (int cY=0; cY<this->height; cY++)
         {
             while(this->chamberArray[cX][cY]->disposeElementUnsafe()==DISPOSED);
         }
         this->garbageBin->purgeGarbage();
-
+        delete this->chamberArray[cX];
     }
+    delete this->chamberArray;
 }
 
 
@@ -78,7 +78,7 @@ bElem* chamber::getElement(int x, int y)
 
 void chamber::setElement(int x, int y, bElem* elem)
 {
-     if (x<0 || x>this->width-1 || y<0 || y>this->height-1)
+    if (x<0 || x>this->width-1 || y<0 || y>this->height-1)
         return;
     this->chamberArray[x][y]=elem;
 }

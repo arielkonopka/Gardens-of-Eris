@@ -11,9 +11,7 @@ class levelLoader
         levelLoader();
         ~levelLoader();
 
-    protected:
 
-    private:
 };
 
 #endif // LEVELLOADER_

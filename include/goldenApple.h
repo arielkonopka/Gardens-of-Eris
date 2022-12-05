@@ -13,9 +13,7 @@ public:
     virtual int getType();
     virtual bool kill();
     goldenApple(chamber *board);
-    goldenApple(chamber *board,int x, int y);
     virtual ~goldenApple();
-protected:
 
 private:
     static unsigned int appleNumber;

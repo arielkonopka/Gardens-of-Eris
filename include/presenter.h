@@ -44,16 +44,6 @@ typedef enum { MENU=0, SETTINGS=1,EDITOR=2,DEMO=3,GAME=4} presenterMode;
 typedef enum { LOST=0, USERREQ=1, PAUSE=2, TELEPORTREQ=3 } _cp_gameReasonOut;
 
 
-/*
-problemy do rozwiązania:
-utworzyć viewport, który będzie pokazywał aktualny kawałek pola gry,
-stworzyć metodę, która narysuje widoczny kawałek pola gry
-żeby utworzyć viewport, chamber powinien zawierać metodę lokalizacji gracza (zwracać będzie koordynaty aktywnego gracza),
-viewport powinien być tak ustawiony, że gracz powinien być w środku pola widzenia, za wyjątkiem sytuacji, gdy gracz dochodzi do krawędzi planszy
-
-na początek jednak nie będziemy tego tak rysować, tylko będziemy rysowac pierwsze scrTilesX i scrTilesY elementów, żeby mieć jakąkolwiek prezentację
-
-*/
 
 class presenter
 {
@@ -73,10 +63,9 @@ public:
     //void showGameFieldLoop();
     void prepareStatsThing();
 
-protected:
-    bool attachGraphicsToSPrites;
 
 private:
+
     ALLEGRO_FONT* myfont;
     std::string splashFname;
     inputManager* inpMngr;
@@ -96,7 +85,7 @@ private:
     _cp_gameReasonOut presentGamePlay();
     chamber *_cp_attachedBoard;
     ALLEGRO_TIMER* alTimer;
-   // ALLEGRO_TIMER* scrTimer;
+    // ALLEGRO_TIMER* scrTimer;
 
     ALLEGRO_DISPLAY* display;
 

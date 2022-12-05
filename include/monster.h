@@ -20,15 +20,12 @@ class monster : public killableElements, public nonSteppable, public mechanical,
         virtual bool checkNeigh();
         virtual bool steppableNeigh();
 
-    protected:
 
     private:
-        plainGun* weapon;
-        bool inited;
-        int rotA;
-        int rotB;
-        int animph;
-        int internalCnt;
+        plainGun* weapon=nullptr;
+        bool inited=false;
+        int rotA=3;
+        int rotB=1;
 
 };
 

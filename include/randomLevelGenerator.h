@@ -66,9 +66,6 @@ public:
     virtual ~randomLevelGenerator();
     bool generateLevel(int holes);
 
-    //      bool addSpaceToCreate(spaceToCreate spc);
-protected:
-
 private:
     int doorTypes;
     bool placeElementCollection(chamberArea* chmbrArea,std::vector<elementToPlace>* elements);

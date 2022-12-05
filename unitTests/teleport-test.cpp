@@ -51,7 +51,8 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
     chamber* mc=new chamber(6,6);
     teleport* tel1=new teleport(mc,0);
     teleport* tel2=new teleport(mc,0);
-    bElem* transportEl=new bElem(mc,1,2);
+    bElem* transportEl=new bElem(mc);
+    transportEl->stepOnElement(mc->getElement(1,2));
     bElem::tick();
     bElem::tick();
     transportEl->setDirection(RIGHT);
@@ -81,8 +82,11 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
     coords t2crds={3,4};
     teleport* tel1=new teleport(mc,0);
     teleport* tel2=new teleport(mc,1);
-    bElem* _tr1=new bElem(mc,2,1);
-    bElem* _tr2=new bElem(mc,5,4);
+    bElem* _tr1=new bElem(mc);
+    bElem* _tr2=new bElem(mc);
+    _tr1->stepOnElement(mc->getElement(2,1));
+    _tr2->stepOnElement(mc->getElement(5,6));
+
     tel1->stepOnElement(mc->getElement(2,2));
     tel2->stepOnElement(mc->getElement(4,4));
     _tr1->setDirection(DOWN);

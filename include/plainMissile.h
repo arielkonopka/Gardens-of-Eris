@@ -16,12 +16,10 @@ public:
     virtual bool mechanics();
     virtual void stomp(bElem *who);
     virtual bool setEnergy(int points);
-protected:
 
-
-    bool killing;
 private:
     bElem* statsOwner;
+
 };
 
 #endif // PLAINMISSILE_H

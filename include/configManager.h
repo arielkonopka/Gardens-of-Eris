@@ -47,11 +47,9 @@ class configManager
 {
     public:
        static configManager* getInstance();
-        ~configManager();
         gameConfig* getConfig();
         void configReload();
 
-    protected:
 
     private:
         gameConfig* gConfObj;

@@ -11,20 +11,18 @@ class bunker : public mechanical, public nonSteppable,public movableElements
         static videoElement::videoElementDef* vd;
         virtual videoElement::videoElementDef* getVideoElementDef();
         bunker(chamber *board);
-        bunker(chamber *board,int x, int y);
         virtual ~bunker();
         virtual bool mechanics();
         direction findLongestShot();
         virtual bool selfAlign();
         virtual bool interact(bElem* Who);
         virtual bool isMovable();
-    protected:
-        int help;
-        plainGun *myGun;
-        int rotated;
+
     private:
-        elemStats* backUp;
-        bElem* activatedBy;
+        elemStats* backUp=nullptr;
+        bElem* activatedBy=nullptr;
+        int help=0;
+        plainGun *myGun;
 };
 
 #endif // BUNKER_H

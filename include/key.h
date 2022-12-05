@@ -15,11 +15,8 @@ public:
     key(chamber *board);
     key(chamber *board,int x,int y);
     key(chamber *board,int subtype);
-    virtual ~key();
 
-protected:
 
-private:
 };
 
 #endif // KEY_H
