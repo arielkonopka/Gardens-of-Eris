@@ -186,7 +186,70 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
     delete mc;
 
 }
+BOOST_AUTO_TEST_CASE(MovePlayer)
+{
+    chamber* mc=new chamber(100,100);
+    controlItem cntrlItm;
+    coords c0,c1;
+    while(player::getActivePlayer()!=nullptr)
+    {
+            player::getActivePlayer();
+            player::getActivePlayer()->disposeElement();
+            gCollect::getInstance()->purgeGarbage();
+    }
+    player* p=new player(mc);
+    p->stepOnElement(mc->getElement(10,10));
+    p->setActive(true);
+    p=player::getActivePlayer();
+    for(int c=0;c<100;c++)
+        bElem::runLiveElements();
+    c0=p->getCoords();
+    mc->cntrlItm.type=0;
+    mc->cntrlItm.dir=RIGHT;
+    for(int c=0;c<100;c++)
+        bElem::runLiveElements();
+    mc->cntrlItm.type=0;
+    mc->cntrlItm.dir=NODIRECTION;
+    for(int c=0;c<100;c++)
+        bElem::runLiveElements();
+    c1=p->getCoords();
+    BOOST_CHECK(c0!=c1);
 
+    c0=p->getCoords();
+    mc->cntrlItm.type=0;
+    mc->cntrlItm.dir=DOWN;
+    bElem::runLiveElements();
+    mc->cntrlItm.type=0;
+    mc->cntrlItm.dir=NODIRECTION;
+    for(int c=0;c<100;c++)
+        bElem::runLiveElements();
+    c1=p->getCoords();
+    BOOST_CHECK(c0!=c1);
+
+    c0=p->getCoords();
+    mc->cntrlItm.type=0;
+    mc->cntrlItm.dir=LEFT;
+    bElem::runLiveElements();
+    mc->cntrlItm.type=0;
+    mc->cntrlItm.dir=NODIRECTION;
+    for(int c=0;c<100;c++)
+        bElem::runLiveElements();
+    c1=p->getCoords();
+    BOOST_CHECK(c0!=c1);
+
+
+    c0=p->getCoords();
+    mc->cntrlItm.type=0;
+    mc->cntrlItm.dir=UP;
+    bElem::runLiveElements();
+    mc->cntrlItm.type=0;
+    mc->cntrlItm.dir=NODIRECTION;
+    for(int c=0;c<100;c++)
+        bElem::runLiveElements();
+    c1=p->getCoords();
+    BOOST_CHECK(c0!=c1);
+
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
