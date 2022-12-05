@@ -2,11 +2,7 @@
 
 world* world::theInstance=nullptr;
 
-world::world()
-{
 
-
-}
 
 world::~world()
 {

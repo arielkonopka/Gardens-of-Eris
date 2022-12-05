@@ -683,7 +683,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TryToRemoveElementMoreThanNeeded,T,all_test_types)
     delete mc;
 }
 
+BOOST_AUTO_TEST_CASE(rwg)
+{
+    randomLevelGenerator* rwg=new randomLevelGenerator(400,400);
+    BOOST_CHECK(rwg!=nullptr);
+    BOOST_CHECK(rwg->mychamber!=nullptr);
 
+    delete rwg;
+    rwg=new randomLevelGenerator(40,40);
+    BOOST_CHECK(rwg!=nullptr);
+    BOOST_CHECK(rwg->mychamber!=nullptr);
+
+    delete rwg;
+    rwg=new randomLevelGenerator(10,10);
+    BOOST_CHECK(rwg!=nullptr);
+    BOOST_CHECK(rwg->mychamber!=nullptr);
+
+    delete rwg;
+
+
+}
 
 // BOOST_AUTO_TEST_CASE()
 

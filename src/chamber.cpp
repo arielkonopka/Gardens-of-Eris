@@ -3,10 +3,9 @@
 
 int chamber::lastid=0;
 
-chamber::chamber(int x,int y):width(x),height(y)
+chamber::chamber(int x,int y):width(x),height(y),chamberArray(new bElem**[x])
 {
     randomWordGen *rwg=new randomWordGen();
-    this->chamberArray=new bElem**[x];
     for(int c=0;c<x;c++)
         this->chamberArray[c]=new bElem*[y];
     this->garbageBin=gCollect::getInstance();
