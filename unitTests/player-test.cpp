@@ -192,6 +192,8 @@ void controlPlayer(chamber* mc,controlItem cntrlItm)
 {
     player* p=player::getActivePlayer();
     BOOST_CHECK(p!=nullptr);
+    if(p==nullptr)
+        return;
     coords c0,c1;
     for(int c=0; c<100; c++)
         bElem::runLiveElements();
