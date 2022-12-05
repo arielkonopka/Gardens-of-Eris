@@ -80,7 +80,7 @@ void bElem::setWait(int time)
 
 int bElem::getWait()
 {
-    return (this->state.waiting>0)?(int)this->state.waiting-(int)this->getCntr():0;
+    return (this->state.waiting>0)?this->state.waiting-(int)this->getCntr():0;
 }
 
 bool bElem::setDirection(direction dir)
