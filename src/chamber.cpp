@@ -1,5 +1,5 @@
 #include "chamber.h"
-
+#include "floorElement.h"
 
 int chamber::lastid=0;
 
@@ -14,7 +14,7 @@ chamber::chamber(int x,int y):width(x),height(y),chamberArray(new bElem**[x])
     {
         for (int cY=0; cY<y; cY++)
         {
-            bElem* neEl=new bElem(this); // With chambers it is different. The stepOnElement cannot work on nullptrs.
+            bElem* neEl=new floorElement(this); // With chambers it is different. The stepOnElement cannot work on nullptrs.
             this->setElement(cX,cY,neEl);
             if(bElem::randomNumberGenerator()%10==0)
                 neEl->setSubtype(1);

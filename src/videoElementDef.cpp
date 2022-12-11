@@ -110,6 +110,9 @@ void videoElementDef::initializeDriver()
         case _belemType:
             ::bElem::vd=ved;
             break;
+        case _floorType:
+            ::floorElement::vd=ved;
+            break;
         case _wallType:
             ::wall::vd=ved;
             break;

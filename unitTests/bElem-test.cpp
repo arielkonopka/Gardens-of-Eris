@@ -9,13 +9,13 @@
 #define BOOST_TEST_MODULE Fixtures
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
-
+#include "floorElement.h"
 
 
 
 typedef boost::mpl::list<bElem,killableElements,player,mechanical,collectible,door,explosives,movableElements> base_test_types;
 
-typedef boost::mpl::list<bElem,bunker,door,explosives,goldenApple,key,killableElements,mechanical,monster,movableElements,nonSteppable,patrollingDrone,plainGun,plainMissile,player,rubbish,teleport,usable,wall> all_test_types;
+typedef boost::mpl::list<bElem,bunker,floorElement,door,explosives,goldenApple,key,killableElements,mechanical,monster,movableElements,nonSteppable,patrollingDrone,plainGun,plainMissile,player,rubbish,teleport,usable,wall> all_test_types;
 
 
 int countTheStack(bElem* in)

@@ -14,7 +14,7 @@ int key::getType()
 
 key::key(chamber* board) : collectible(board), nonSteppable(board)
 {
-this->setDirection(UP);
+    this->setDirection(UP);
 }
 key::key(chamber* board, int subtype): collectible(board), nonSteppable(board)
 {

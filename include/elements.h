@@ -26,5 +26,6 @@
 #include "goldenApple.h"
 #include "wall.h"
 #include "rubbish.h"
+#include "floorElement.h"
 
 #endif // ELEMENTS_H_INCLUDED

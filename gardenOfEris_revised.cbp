@@ -80,6 +80,7 @@
 		<Unit filename="include/elemStats.h" />
 		<Unit filename="include/elements.h" />
 		<Unit filename="include/explosives.h" />
+		<Unit filename="include/floorElement.h" />
 		<Unit filename="include/gCollect.h" />
 		<Unit filename="include/goldenApple.h" />
 		<Unit filename="include/inputManager.h" />
@@ -117,6 +118,7 @@
 		<Unit filename="src/door.cpp" />
 		<Unit filename="src/elemStats.cpp" />
 		<Unit filename="src/explosives.cpp" />
+		<Unit filename="src/floor.cpp" />
 		<Unit filename="src/gCollect.cpp" />
 		<Unit filename="src/goldenApple.cpp" />
 		<Unit filename="src/inputManager.cpp" />
