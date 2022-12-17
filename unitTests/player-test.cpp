@@ -11,7 +11,7 @@ BOOST_AUTO_TEST_SUITE( PlayerTests )
 
 BOOST_AUTO_TEST_CASE(PlayerShootsGun)
 {
-    bool gunDisposed=false;
+//    bool gunDisposed=false;
     std::shared_ptr<chamber> mc=chamber::makeNewChamber({5,5});
     std::shared_ptr<player> plr=bElem::generateAnElement<player>(mc);
     plr->stepOnElement(mc->getElement(2,2));

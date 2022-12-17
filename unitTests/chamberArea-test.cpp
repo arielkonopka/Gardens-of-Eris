@@ -1,7 +1,6 @@
 #include "elements.h"
 #include "commons.h"
 #include "chamber.h"
-#include "gCollect.h"
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Fixtures
 #include <boost/test/unit_test.hpp>
