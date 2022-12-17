@@ -5,7 +5,7 @@
 
 namespace presenter
 {
-presenter::presenter(chamber *board)
+presenter::presenter(std::shared_ptr<chamber> board)
 {
     ALLEGRO_MONITOR_INFO info;
     al_init();
@@ -127,7 +127,7 @@ bool presenter::loadCofiguredData()
 
 */
 
-void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, bElem* elem,bool ignoreOffset,int mode)
+void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shared_ptr<bElem> elem,bool ignoreOffset,int mode)
 {
     coords coords,offset= {0,0};
     int sx,sy;
@@ -220,12 +220,12 @@ void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  tex
 
 void presenter::prepareStatsThing()
 {
-    player* aPlayer=player::getActivePlayer();
+    std::shared_ptr<bElem> aPlayer=player::getActivePlayer();
     al_set_target_bitmap(this->statsStripe);
     al_clear_to_color(al_map_rgba(0,0,0,255));
     this->showText(1,1,0,5,"Garden: "+aPlayer->getBoard()->getName());
     this->showObjectTile(1,0,0,0,aPlayer,true,_mode_onlyTop);
-    this->showText(2,0,0,0,std::to_string(aPlayer->countVisitedPlayers()));
+    this->showText(2,0,0,0,std::to_string(player::countVisitedPlayers()));
     this->showText(2,0,0,32,std::to_string(aPlayer->getEnergy()));
     this->showObjectTile(4,0,0,0,aPlayer->getInventory()->getActiveWeapon(),true,_mode_onlyTop);
     if( aPlayer->getInventory()->getActiveWeapon()!=nullptr)
@@ -236,7 +236,7 @@ void presenter::prepareStatsThing()
     for (int cnt=0; cnt<5; cnt++)
     {
         int tokens;
-        bElem *key=aPlayer->getInventory()->getKey(_key,cnt,false);
+        std::shared_ptr<bElem> key=aPlayer->getInventory()->getKey(_key,cnt,false);
         if(key!=nullptr)
         {
             tokens=aPlayer->getInventory()->countTokens(key->getType(),key->getSubtype());
@@ -262,7 +262,7 @@ void presenter::prepareStatsThing()
  */
 void presenter::showGameField()
 {
-    player* player=player::getActivePlayer();
+    std::shared_ptr<bElem> player=player::getActivePlayer();
     coords b=player->getCoords()-(coords)
     {
         (this->scrTilesX)/2,(this->scrTilesY)/2
@@ -293,7 +293,7 @@ void presenter::showGameField()
     for(x=0; x<this->scrTilesX+1; x++)
         for(y=0; y<this->scrTilesY+1; y++)
         {
-            bElem* elemToDisplay=player->getBoard()->getElement(x+(this->previousPosition.x),y+(this->previousPosition.y));
+            std::shared_ptr<bElem> elemToDisplay=player->getBoard()->getElement(x+(this->previousPosition.x),y+(this->previousPosition.y));
             if(elemToDisplay!=nullptr && elemToDisplay->getMoved()>0)
             {
                 mSprites.push_back({x,y,elemToDisplay});
@@ -321,7 +321,7 @@ void presenter::showGameField()
 
 int presenter::presentEverything()
 {
-    player* currentPlayer=nullptr;
+    std::shared_ptr<bElem> currentPlayer=nullptr;
     ALLEGRO_EVENT event;
     controlItem cItem;
     bool fin=false;
@@ -341,7 +341,6 @@ int presenter::presentEverything()
         {
             this->_cp_attachedBoard->player=NOCOORDS;
             bElem::runLiveElements();
-            gCollect::getInstance()->purgeGarbage();
             if((currentPlayer=player::getActivePlayer())==nullptr)
             {
                 return 2;

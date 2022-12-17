@@ -1,4 +1,4 @@
-#ifndef _UNIT_TEST_BUILD_
+
 #include <exception>
 #include <string>
 #include <iostream>
@@ -13,31 +13,19 @@
 int main( int argc, char * argv[] )
 {
     bool finish=false;
-    bElem::resetInstances();
-  //  struct timespec delay;
 
-   // delay.tv_sec=0;
-   // delay.tv_nsec=2;
-    randomLevelGenerator *rndl;
-    rndl=new randomLevelGenerator(150,150);
-    chamber* myFirstChamber=rndl->mychamber;
-    presenter::presenter *myPresenter=new presenter::presenter(myFirstChamber);
-
+    randomLevelGenerator* rndl=new randomLevelGenerator(150,150);
+    presenter::presenter *myPresenter=new presenter::presenter(rndl->mychamber);
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
     myPresenter->showSplash();
-
+    rndl->generateLevel(10);
     for (int cnt=5;cnt>0;cnt--)
     {
         rndl=new randomLevelGenerator(100+((5-cnt)*50)+(rndl->gen()%10)*5,100+((5-cnt)*50)+(rndl->gen()%10)*5);
         rndl->generateLevel(cnt);
     }
 
-
-
-  //  myPresenter->showGameField(1,1);
-
-  //  int blue=0;
 
     while(!finish)
     {
@@ -58,14 +46,10 @@ int main( int argc, char * argv[] )
         }
     }
 
-    bElem* n=new key(myFirstChamber,10);
-    n->setSubtype(10);
-    //std::cout<<"\n\n"<<n->getSubtype();
 
-    delete myFirstChamber;
     return 0;
 }
 
-#endif
+
 
 

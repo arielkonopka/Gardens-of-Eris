@@ -12,12 +12,17 @@ int door::getType()
     return _door;
 }
 
-door::door(chamber* board) : bElem(board)
+
+door::door():bElem()
+{
+
+}
+door::door(std::shared_ptr<chamber> board) : bElem(board)
 {
 
 }
 
-door::door(chamber* board, int subtype) :bElem(board)
+door::door(std::shared_ptr<chamber> board, int subtype) :bElem(board)
 {
     this->setSubtype(subtype);
 }
@@ -31,9 +36,9 @@ bool door::isOpen()
 {
     return this->open;
 }
-void door::stomp(bElem* who)
+void door::stomp(std::shared_ptr<bElem> who)
 {
-    bElem* key=nullptr;
+    std::shared_ptr<bElem> key=nullptr;
     if(this->getSubtype()%2==1)
     {
         if(who->getInventory()!=nullptr)
@@ -59,14 +64,15 @@ void door::unstomp()
         this->open=false;
         this->setDirection((!this->open)?UP:LEFT);
     }
+    bElem::unstomp();
 }
 
 
 /* open the door if you can */
-bool door::interact(bElem* who)
+bool door::interact(std::shared_ptr<bElem> who)
 {
     bool bres=bElem::interact(who);
-    bElem* key=nullptr;
+    std::shared_ptr<bElem> key=nullptr;
     if (!bres)
         return false;
     //std::cout<<"can interact\n";

@@ -48,14 +48,14 @@ typedef enum { LOST=0, USERREQ=1, PAUSE=2, TELEPORTREQ=3 } _cp_gameReasonOut;
 class presenter
 {
 public:
-    presenter(chamber *board);
+    presenter(std::shared_ptr<chamber> board);
     ~presenter();
     bool initializeDisplay();
     int presentEverything();
     bool presentAChamber(presenterMode mod);
     bool loadCofiguredData();
     void showSplash();
-    void showObjectTile(int x,int y,int offsetX,int offsetY,bElem *elem,bool ignoreOffset,int mode);
+    void showObjectTile(int x,int y,int offsetX,int offsetY,std::shared_ptr<bElem> elem,bool ignoreOffset,int mode);
     void showText(int x,int y,int offsetX,int offsetY,std::string text);
     //relX and relY are coordinates on a board, that indicate where the player is
     void showGameField();
@@ -83,7 +83,7 @@ private:
     ALLEGRO_BITMAP* statsStripe;
     int bsHeight,bsWidth;
     _cp_gameReasonOut presentGamePlay();
-    chamber *_cp_attachedBoard;
+    std::shared_ptr<chamber> _cp_attachedBoard;
     ALLEGRO_TIMER* alTimer;
     // ALLEGRO_TIMER* scrTimer;
 
@@ -94,7 +94,7 @@ private:
     {
         int x;
         int y;
-        bElem* elem;
+        std::shared_ptr<bElem> elem;
 
     } movingSprite;
 

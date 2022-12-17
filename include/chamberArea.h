@@ -9,7 +9,7 @@ class chamberArea
 
 public:
     static std::vector<chamberArea*> foundAreas;
-    static std::vector<bElem* > foundElements;
+    static std::vector<std::shared_ptr<bElem> > foundElements;
     chamberArea(int xu, int yu, int xd, int yd);
     virtual ~chamberArea();
     bool addChildNode(chamberArea *child);
@@ -19,11 +19,11 @@ public:
     std::vector<chamberArea* > children;
     chamberArea* parent;
     int calculateInitialSurface();
-    int calculateSurface(chamber *mychamber);
-    bool findElementsToStepOn(chamber *myChamber);
-    void findElementsRec(chamber* mychamber);
+    int calculateSurface(std::shared_ptr<chamber> mychamber);
+    bool findElementsToStepOn(std::shared_ptr<chamber> myChamber);
+    void findElementsRec(std::shared_ptr<chamber>  mychamber);
     void findChambersCloseToSurface(int s,int tolerance);
-    bool checkIfElementIsFree(int x,int y, chamber *mychamber);
+    bool checkIfElementIsFree(int x,int y, std::shared_ptr<chamber> mychamber);
     bool childrenLock;
     void removeEmptyNodes();
 };

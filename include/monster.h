@@ -2,7 +2,6 @@
 #define MONSTER_H
 #include "objectTypes.h"
 #include "chamber.h"
-#include "gCollect.h"
 #include "videoElementDef.h"
 #include "killableElements.h"
 #include "plainGun.h"
@@ -12,8 +11,9 @@ class monster : public killableElements, public nonSteppable, public mechanical,
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
-        monster(chamber *board);
-        monster(chamber *board,int newSubtype);
+        monster();
+        monster(std::shared_ptr<chamber> board);
+        monster(std::shared_ptr<chamber> board,int newSubtype);
         ~monster();
         int getType();
         virtual bool mechanics();

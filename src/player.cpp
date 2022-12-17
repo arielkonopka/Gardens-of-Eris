@@ -1,15 +1,14 @@
 #include "player.h"
 
 videoElement::videoElementDef* player::vd=nullptr;
-std::vector<player*> player::allPlayers;
-std::vector<player*> player::visitedPlayers;
-player* player::activePlayer=nullptr;
+std::vector<std::shared_ptr<bElem>> player::allPlayers;
+std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
+std::shared_ptr<bElem>  player::activePlayer=nullptr;
 
-player::player(chamber *board) : killableElements(board), movableElements(board),nonSteppable(board),mechanical(board)
+player::player(std::shared_ptr<chamber> board) : killableElements(board), movableElements(board),nonSteppable(board),mechanical(board)
 {
-    this->setInventory(new inventory(this));
-    this->registerLiveElement(this);
-    this->setStats(new elemStats(100));
+    this->setInventory(std::make_shared<inventory>());
+    this->setStats(std::make_shared<elemStats>(100));
     if(player::allPlayers.size()>0)
     {
         this->activated=false;
@@ -18,15 +17,32 @@ player::player(chamber *board) : killableElements(board), movableElements(board)
     {
         this->activated=true;
     }
-    player::allPlayers.push_back(this);
-
 }
-player* player::getActivePlayer()
+
+player::player():killableElements(),movableElements(),nonSteppable(),mechanical()
+{
+    this->setInventory(std::make_shared<inventory>());
+    this->setStats(std::make_shared<elemStats>(100));
+}
+
+bool player::additionalProvisioning()
+{
+    if(bElem::additionalProvisioning()==true)
+        return true;
+    this->provisioned=true;
+    player::allPlayers.push_back(shared_from_this());
+    this->getInventory()->changeOwner(shared_from_this());
+    this->registerLiveElement(shared_from_this());
+    return false;
+}
+
+
+std::shared_ptr<bElem> player::getActivePlayer()
 {
     if (player::activePlayer==nullptr)
     {
         /* find active player, because it is nullptr */
-        for(player* p:player::allPlayers)
+        for(auto p:player::allPlayers)
         {
             if (p->isActive())
             {
@@ -43,25 +59,35 @@ player* player::getActivePlayer()
 
 player::~player()
 {
-
-    //We remove all the collected weapons and stuff, we need to remember, that this is our responsibility to destroy our objects
-    for(std::vector<player*>::iterator p=player::allPlayers.begin(); p!=player::allPlayers.end();)
+    std::cout<<"Destroy player\n";
+    for(unsigned int c=0; c<player::allPlayers.size();)
     {
-        player* px=*p;
-        if(this->getInstanceid()==px->getInstanceid())
-            player::allPlayers.erase(p);
+        if(player::allPlayers[c]->getInstanceid()==this->getInstanceid())
+        {
+            std::cout<<"Attempting to remove myself from allPlayers\n";
+            player::allPlayers.erase(player::allPlayers.begin()+c);
+            std::cout<<" * Success!\n";
+        }
         else
-            p++;
+        {
+            c++;
+        }
     }
-    for(std::vector<player*>::iterator p=player::visitedPlayers.begin(); p!=player::visitedPlayers.end();)
+    for(unsigned int c=0; c<player::visitedPlayers.size();)
     {
-        player* px=*p;
-        if(this->getInstanceid()==px->getInstanceid())
-            player::visitedPlayers.erase(p);
-        else
-            p++;
-    }
+        if(player::visitedPlayers[c]->getInstanceid()==this->getInstanceid())
+        {
+            std::cout<<"Attempting to remove myself from visitedPlayers\n";
+            player::visitedPlayers.erase(player::visitedPlayers.begin()+c);
+            std::cout<<" * Success!\n";
 
+        }
+        else
+        {
+            c++;
+        }
+    }
+    std::cout<<"Done destroy\n";
 }
 
 
@@ -81,7 +107,7 @@ oState player::disposeElement()
         if(player::visitedPlayers.size()>0)
         {
             // Activate next inactive player avatar
-            bElem* p=player::visitedPlayers[0];
+            std::shared_ptr<bElem> p=player::visitedPlayers[0];
             p->setActive(true);
             p->getBoard()->player=p->getCoords();
             player::visitedPlayers.erase(player::visitedPlayers.begin());
@@ -89,7 +115,7 @@ oState player::disposeElement()
     }
     for(unsigned int cnt=0; cnt<player::allPlayers.size();)
     {
-        if(player::allPlayers[cnt]==this)
+        if(player::allPlayers[cnt]==shared_from_this())
         {
             player::allPlayers.erase(player::allPlayers.begin()+cnt);
         }
@@ -97,7 +123,7 @@ oState player::disposeElement()
     }
     for(unsigned int cnt=0; cnt<player::visitedPlayers.size();)
     {
-        if(player::visitedPlayers[cnt]==this)
+        if(player::visitedPlayers[cnt]==shared_from_this())
         {
             player::visitedPlayers.erase(player::visitedPlayers.begin()+cnt);
         }
@@ -106,7 +132,7 @@ oState player::disposeElement()
     return killableElements::disposeElement();
 }
 
-bool player::interact(bElem* who)
+bool player::interact(std::shared_ptr<bElem> who)
 {
     if (who==nullptr || this->getBoard()==nullptr)
         return false;
@@ -120,7 +146,7 @@ bool player::interact(bElem* who)
 #ifdef _VerbousMode_
         std::cout<<"Adding new avatar\n";
 #endif
-        player::visitedPlayers.push_back(this);
+        player::visitedPlayers.push_back(shared_from_this());
         this->visited=true;
     }
     return true;
@@ -179,7 +205,7 @@ bool player::mechanics()
         if (this->getElementInDirection(this->getBoard()->cntrlItm.dir)==nullptr)
             return false;
         this->setDirection(this->getBoard()->cntrlItm.dir);
-        if (this->getElementInDirection(this->getBoard()->cntrlItm.dir)->interact(this))
+        if (this->getElementInDirection(this->getBoard()->cntrlItm.dir)->interact(shared_from_this()))
             this->animPh++;
         break;
     case 3:
@@ -203,59 +229,59 @@ bool player::mechanics()
         this->kill();
         break;
     }
-return true;
+    return true;
 }
 //shoots any suitable gun
-    bool player::shootGun()
+bool player::shootGun()
+{
+    std::shared_ptr<bElem> gun=this->getInventory()->getActiveWeapon();
+    if(gun!=nullptr)
     {
-        bElem* gun=this->getInventory()->getActiveWeapon();
-        if(gun!=nullptr)
-        {
-            gun->use(this);
-            return true;
-        }
-        this->setWait(_interactedTime*2);
-        return false;
-
-    }
-
-
-
-
-    bool player::canPush()
-    {
+        gun->use(shared_from_this());
         return true;
     }
+    this->setWait(_interactedTime*2);
+    return false;
 
-
-    void player::setActive(bool act)
-    {
-        if(this->getBoard()==nullptr)
-            return;
-        this->activated=act;
-        this->setTeleporting(_teleportationTime);
-    }
+}
 
 
 
-    bool player::isActive()
-    {
-        return this->activated; // temporary, in the future only one player should be active in the whole chamber array
-    }
+
+bool player::canPush()
+{
+    return true;
+}
 
 
-    int player::getType()
-    {
-        return _player;
-    }
+void player::setActive(bool act)
+{
+    if(this->getBoard()==nullptr)
+        return;
+    this->activated=act;
+    this->setTeleporting(_teleportationTime);
+}
 
 
-    int player::getAnimPh()
-    {
-        if(this->isTeleporting() || this->isDying() || this->isDestroyed() || !this->isActive())
-            return bElem::getAnimPh();
-        return this->animPh;
-    }
+
+bool player::isActive()
+{
+    return this->activated; // temporary, in the future only one player should be active in the whole chamber array
+}
+
+
+int player::getType()
+{
+    return _player;
+}
+
+
+int player::getAnimPh()
+{
+    if(this->isTeleporting() || this->isDying() || this->isDestroyed() || !this->isActive())
+        return bElem::getAnimPh();
+    return this->animPh;
+}
 
 
 

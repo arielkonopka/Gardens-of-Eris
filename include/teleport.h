@@ -11,18 +11,19 @@ public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
-    teleport(chamber* board);
-    teleport(chamber* board,int newSubtype);
+    teleport();
+    teleport(std::shared_ptr<chamber> board);
+    teleport(std::shared_ptr<chamber> board,int newSubtype);
     virtual ~teleport();
-    virtual bool interact(bElem *who);
-    virtual bool teleportIt(bElem *who);
+    virtual bool interact(std::shared_ptr<bElem> who);
+    virtual bool teleportIt(std::shared_ptr<bElem> who);
     virtual oState disposeElement();
     virtual oState disposeElementUnsafe();
     virtual bool canBeKilled();
     virtual bool canBeDestroyed();
     virtual bool createConnectionsWithinSUbtype();
     virtual bool isSteppable();
-    virtual void stomp(bElem* who);
+    virtual void stomp(std::shared_ptr<bElem> who);
     virtual void unstomp();
     virtual bool mechanics();
 

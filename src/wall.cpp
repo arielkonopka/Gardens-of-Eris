@@ -4,19 +4,23 @@
 videoElement::videoElementDef* wall::vd=nullptr;
 
 
-wall::wall(chamber* board) : nonSteppable(board)
+wall::wall(std::shared_ptr<chamber> board) : nonSteppable(board)
 {
 
             this->setSubtype(0);
 }
 
-wall::wall(chamber* board,int subtype) : nonSteppable(board)
+wall::wall(std::shared_ptr<chamber> board,int subtype) : nonSteppable(board)
 {
 
             this->setSubtype(subtype);
 
 }
 
+wall::wall():nonSteppable()
+{
+
+}
 
 
 int wall::getType()

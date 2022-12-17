@@ -1,6 +1,11 @@
 #ifndef COMMONS_H
 #define COMMONS_H
 #include <stddef.h>
+#include <memory>
+#include <vector>
+
+
+
 #define _belemType -1
 #define _floorType 0
 #define _stillElemType 1

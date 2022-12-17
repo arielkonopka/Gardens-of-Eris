@@ -11,9 +11,10 @@ public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
-    virtual bool use(bElem *who);
-    plainGun(chamber *board);
-    plainGun(chamber *board,int newSubtype);
+    virtual bool use(std::shared_ptr<bElem> who);
+    plainGun();
+    plainGun(std::shared_ptr<chamber> board);
+    plainGun(std::shared_ptr<chamber> board,int newSubtype);
     virtual bool mechanics();
     virtual ~plainGun();
     bool isWeapon();
@@ -21,7 +22,7 @@ public:
     virtual int getAmmo();
     virtual void setAmmo(int ammo);
     virtual void setMaxEnergy(int me);
-    virtual bElem* createProjectible(bElem* who);
+    virtual std::shared_ptr<bElem> createProjectible(std::shared_ptr<bElem> who);
 
 
 

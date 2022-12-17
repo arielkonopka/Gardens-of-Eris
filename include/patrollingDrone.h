@@ -10,12 +10,12 @@ class patrollingDrone : public killableElements, public nonSteppable, public mec
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
-        patrollingDrone(chamber* board);
-        patrollingDrone(chamber* board,int x, int y);
+        patrollingDrone();
+        patrollingDrone(std::shared_ptr<chamber> board);
         virtual ~patrollingDrone();
         virtual bool mechanics();
-        virtual int findSomething(bElem* elem,int n,int denyDir);
-        virtual bool interact(bElem* who);
+        virtual int findSomething(std::shared_ptr<bElem> elem,int n,int denyDir);
+        virtual bool interact(std::shared_ptr<bElem> who);
         int getType();
 
 
@@ -25,7 +25,7 @@ class patrollingDrone : public killableElements, public nonSteppable, public mec
         bool wasVisited(int x, int y);
         void clearVisited();
     coords boardSize;
-        bool **steppables;
+        std::vector<std::vector<bool>> steppables;
 };
 
 #endif // PATROLLINGDRONE_H

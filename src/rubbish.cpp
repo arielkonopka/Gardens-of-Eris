@@ -3,8 +3,12 @@
 
 videoElement::videoElementDef* rubbish::vd=nullptr;
 
+rubbish::rubbish():bElem(),nonSteppable(),collectible()
+{
 
-rubbish::rubbish(chamber *board) : bElem(board),nonSteppable(board),collectible(board)
+}
+
+rubbish::rubbish(std::shared_ptr<chamber> board) : bElem(board),nonSteppable(board),collectible(board)
 {
 }
 

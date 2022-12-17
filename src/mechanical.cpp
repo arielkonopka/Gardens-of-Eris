@@ -1,20 +1,31 @@
 #include "mechanical.h"
 
-mechanical::mechanical(chamber* board):bElem(board)
+mechanical::mechanical(std::shared_ptr<chamber> board):bElem(board)
 {
-    this->registerLiveElement(this);
 }
 
 
 
 mechanical::~mechanical()
 {
-    this->deregisterLiveElement(this);
+
+    this->deregisterLiveElement(this->getInstanceid());
 
 }
-mechanical::mechanical(chamber* board, bool registerEl): bElem(board)
+mechanical::mechanical(std::shared_ptr<chamber> board, bool rEl): bElem(board),registerEl(rEl)
 {
-    if(registerEl) this->registerLiveElement(this);
+
 }
 
 
+mechanical::mechanical():bElem()
+{
+
+}
+bool mechanical::additionalProvisioning()
+{
+    if(bElem::additionalProvisioning()==true)
+        return true;
+    if(this->registerEl) this->registerLiveElement(shared_from_this());
+    return false;
+}

@@ -11,12 +11,13 @@ public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
-    door(chamber* board);
-    door(chamber* board,int subtype);
-    virtual bool interact(bElem *who);
+    door();
+    door(std::shared_ptr<chamber>  board);
+    door(std::shared_ptr<chamber>  board,int subtype);
+    virtual bool interact(std::shared_ptr<bElem> who);
     virtual bool isSteppable();
     virtual bool isOpen();
-    virtual void stomp(bElem* who);
+    virtual void stomp(std::shared_ptr<bElem> who);
     virtual void unstomp();
     virtual ~door();
     virtual bool canBeKilled();

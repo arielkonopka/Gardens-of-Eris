@@ -3,6 +3,7 @@
 #include "commons.h"
 #include "plainGun.h"
 #include <nonSteppable.h>
+#include "bElem.h"
 
 
 class bunker : public mechanical, public nonSteppable,public movableElements
@@ -10,19 +11,20 @@ class bunker : public mechanical, public nonSteppable,public movableElements
     public:
         static videoElement::videoElementDef* vd;
         virtual videoElement::videoElementDef* getVideoElementDef();
-        bunker(chamber *board);
+        bunker();
+        bunker(std::shared_ptr<chamber> board);
         virtual ~bunker();
         virtual bool mechanics();
         direction findLongestShot();
         virtual bool selfAlign();
-        virtual bool interact(bElem* Who);
+        virtual bool interact(std::shared_ptr<bElem> Who);
         virtual bool isMovable();
 
     private:
-        elemStats* backUp=nullptr;
-        bElem* activatedBy=nullptr;
+        std::shared_ptr<elemStats> backUp=nullptr;
+        std::shared_ptr<bElem> activatedBy=nullptr;
         int help=0;
-        plainGun *myGun;
+        std::shared_ptr<bElem> myGun;
 };
 
 #endif // BUNKER_H

@@ -39,7 +39,7 @@ void elemStats::updateDexterity()
     this->dexterity=log2(this->_dPoints)+_initialDexterity;
 }
 
-void elemStats::countHit(bElem* what)
+void elemStats::countHit(std::shared_ptr<bElem> what)
 {
     if(what==nullptr) return;
 
@@ -71,7 +71,7 @@ void elemStats::countHit(bElem* what)
     }
 }
 
-void elemStats::countCollect(bElem* what)
+void elemStats::countCollect(std::shared_ptr<bElem> what)
 {
     this->globalPoints++;
     if(what->getType()==_goldenAppleType)
@@ -79,7 +79,7 @@ void elemStats::countCollect(bElem* what)
 
 }
 
-void elemStats::countKill(bElem* what)
+void elemStats::countKill(std::shared_ptr<bElem> what)
 {
     this->_dPoints+=5;
     this->globalPoints++;

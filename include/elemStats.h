@@ -3,15 +3,15 @@
 #include <math.h>
 #include "commons.h"
 class bElem;
-class elemStats
+class elemStats : public std::enable_shared_from_this<elemStats>
 {
 public:
     elemStats(int energy);
     virtual ~elemStats();
 
-    void countHit(bElem* what);
-    void countCollect(bElem* what);
-    void countKill(bElem* what);
+    void countHit(std::shared_ptr<bElem> what);
+    void countCollect(std::shared_ptr<bElem> what);
+    void countKill(std::shared_ptr<bElem> what);
     unsigned int getGlobalPoints();
     unsigned int getDexterity();
     unsigned int getEnergy();

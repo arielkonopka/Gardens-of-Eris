@@ -7,12 +7,14 @@
 
 class mechanical : virtual public bElem
 {
-    public:
-        mechanical(chamber *board);
-        mechanical(chamber *board,bool registerEl);
-        virtual ~mechanical();
-
-
+public:
+    mechanical();
+    mechanical(std::shared_ptr<chamber> board);
+    mechanical(std::shared_ptr<chamber> board,bool rEl);
+    virtual ~mechanical();
+    virtual bool additionalProvisioning() ;
+private:
+   bool registerEl=true;
 
 };
 

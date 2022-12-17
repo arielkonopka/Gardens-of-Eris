@@ -4,9 +4,13 @@
 videoElement::videoElementDef* nonSteppable::vd=nullptr;
 
 
-nonSteppable::nonSteppable(chamber *board):bElem(board)
+nonSteppable::nonSteppable(std::shared_ptr<chamber> board):bElem(board)
 {
 
+
+}
+nonSteppable::nonSteppable():bElem()
+{
 
 }
 

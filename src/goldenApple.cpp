@@ -3,7 +3,7 @@
 videoElement::videoElementDef* goldenApple::vd=nullptr;
 
 unsigned int goldenApple::appleNumber=0;
-std::vector<goldenApple*>  goldenApple::apples;
+std::vector<std::shared_ptr<bElem>>  goldenApple::apples;
 
 videoElement::videoElementDef* goldenApple::getVideoElementDef()
 {
@@ -15,14 +15,29 @@ int goldenApple::getType()
     return _goldenAppleType;
 }
 
-goldenApple::goldenApple(chamber* board):collectible(board),nonSteppable(board),killableElements(board), explosives(board)
+goldenApple::goldenApple(std::shared_ptr<chamber> board):collectible(board),nonSteppable(board),killableElements(board), explosives(board)
 {
     this->setSubtype(0);
-    this->setStats(new elemStats(55));
-    goldenApple::appleNumber++;
-    goldenApple::apples.push_back(this);
+    this->setStats(std::make_shared<elemStats>(555));
+
 }
 
+bool goldenApple::additionalProvisioning()
+{
+    if(bElem::additionalProvisioning()==true)
+        return true;
+    goldenApple::appleNumber++;
+    goldenApple::apples.push_back(shared_from_this());
+    return false;
+}
+
+
+
+
+goldenApple::goldenApple():collectible(),nonSteppable(),killableElements(),explosives()
+{
+
+}
 
 
 goldenApple::~goldenApple()
@@ -30,7 +45,7 @@ goldenApple::~goldenApple()
     goldenApple::appleNumber--;
     for(unsigned int cnt=0; cnt<goldenApple::apples.size();)
     {
-        if(goldenApple::apples[cnt]==this)
+        if(goldenApple::apples[cnt]==shared_from_this())
         {
             goldenApple::apples.erase(goldenApple::apples.begin()+cnt);
 
@@ -46,7 +61,7 @@ int goldenApple::getAppleNumber()
 }
 
 
-goldenApple* goldenApple::getApple(int num)
+std::shared_ptr<bElem> goldenApple::getApple(int num)
 {
     return goldenApple::apples.at(num);
 }

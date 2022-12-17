@@ -1,21 +1,21 @@
 #include "elements.h"
 #include "commons.h"
 #include "chamber.h"
-#include "gCollect.h"
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Fixtures
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
+#include <memory>
 
 BOOST_AUTO_TEST_SUITE( PlayerTests )
 
 BOOST_AUTO_TEST_CASE(PlayerShootsGun)
 {
     bool gunDisposed=false;
-    chamber* mc=new chamber(5,5);
-    player* plr=new player(mc);
+    std::shared_ptr<chamber> mc=chamber::makeNewChamber({5,5});
+    std::shared_ptr<player> plr=bElem::generateAnElement<player>(mc);
     plr->stepOnElement(mc->getElement(2,2));
-    plainGun* pGun=new plainGun(mc);
+    std::shared_ptr<plainGun> pGun=bElem::generateAnElement<plainGun>(mc);
     pGun->setSubtype(0);
     pGun->stepOnElement(mc->getElement(3,2));
     plr->setActive(true);
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
     plr->setDirection(UP);
     for(int c=0; c<50; c++)
     {
-        bElem* wep=plr->getInventory()->getActiveWeapon();
+        std::shared_ptr<bElem> wep=plr->getInventory()->getActiveWeapon();
         if(wep!=nullptr)
         {
             plr->shootGun();
@@ -35,20 +35,12 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
 
     }
     BOOST_CHECK(plr->getInventory()->getActiveWeapon()==nullptr);
-    for(unsigned int c=0; c<gCollect::getInstance()->garbageVector.size(); c++)
-    {
-        if(gCollect::getInstance()->garbageVector[c]->getInstanceid()==pGun->getInstanceid())
-        {
-            gunDisposed=true;
-        }
-    }
-    BOOST_ASSERT(gunDisposed==true);
-    gCollect::getInstance()->purgeGarbage();
-    pGun=new plainGun(mc);
+
+    pGun=bElem::generateAnElement<plainGun>(mc);
     pGun->setSubtype(0);
     pGun->stepOnElement(mc->getElement(3,2));
     plr->collect(pGun);
-    pGun=new plainGun(mc);
+    pGun=bElem::generateAnElement<plainGun>(mc);
     pGun->setSubtype(0);
     pGun->stepOnElement(mc->getElement(3,2));
     plr->collect(pGun);
@@ -59,17 +51,16 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
     plr->disposeElement();
 
     BOOST_CHECK(mc->getElement(2,2)->getType()==_rubishType);
-    delete mc;
 }
 
 
 
 BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
 {
-    chamber* mc=new chamber(10,10);
-    player* p=nullptr;
-    p=new player(mc);
-    bElem* e=nullptr;
+    std::shared_ptr<chamber> mc=chamber::makeNewChamber({10,10});
+    std::shared_ptr<player> p=nullptr;
+    p=bElem::generateAnElement<player>(mc);
+    std::shared_ptr<bElem> e=nullptr;
     for(int cnt=0; cnt<10000; cnt++)
     {
         e=mc->getElement(1,2);
@@ -77,7 +68,6 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
         BOOST_CHECK(e!=p);
         p->stepOnElement(e);
         e->disposeElement();
-        gCollect::getInstance()->purgeGarbage();
         p->setActive(true);
         //p->moveInDirection(RIGHT);
         BOOST_CHECK(p->removeElement()!=nullptr);
@@ -91,7 +81,7 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
         {
             for(int b=0; b<10; b++)
             {
-                bElem* e=mc->getElement(a,b);
+                std::shared_ptr<bElem> e=mc->getElement(a,b);
                 BOOST_ASSERT(e!=nullptr);
                 while(e!=nullptr)
                 {
@@ -104,26 +94,27 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
         }
         BOOST_CHECK(instances==1);
     }
-    delete mc;
+
 }
 
 BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
 {
-    std::vector<chamber*> m;
-    player* p;
-    player* p1;
-    player* p0;
+    std::vector<std::shared_ptr<chamber>> m;
+    std::shared_ptr<player> p;
+    std::shared_ptr<player> p1;
+    std::shared_ptr<player> p0;
+    std::shared_ptr<bElem> tp,tp1;
     int iid;
     for(int c=0; c<10; c++)
-        m.push_back(new chamber(105,10));
+        m.push_back(chamber::makeNewChamber({105,10}));
 
-    p0=new player(m[0]);
+    p0=bElem::generateAnElement<player>(m[0]);
     p0->stepOnElement(m[1]->getElement(0,0));
     p0->setActive(true);
     for(int a=0; a<100; a++)
     {
         //std::cout<<a<<"\n";
-        p=new player(nullptr);
+        p=bElem::generateAnElement<player>();
         BOOST_CHECK(p->stepOnElement(nullptr)==false);
         BOOST_CHECK(p->stepOnElement(m[a%m.size()]->getElement(a,a%10))==true);
         BOOST_CHECK(p->stepOnElement(m[a%m.size()]->getElement(a,a%10))==false);
@@ -135,19 +126,16 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
         bElem::runLiveElements();
 
 
-    p=player::getActivePlayer();
-    while(p!=nullptr)
+    tp=player::getActivePlayer();
+    while(tp!=nullptr)
     {
-        iid=p->getInstanceid();
-        p->disposeElement();
-        p1=player::getActivePlayer();
+        iid=tp->getInstanceid();
+        tp->disposeElement();
+        tp1=player::getActivePlayer();
         if(p1!=nullptr)
             BOOST_CHECK(iid!=p1->getInstanceid());
-        gCollect::getInstance()->purgeGarbage();
-        p=p1;
+        tp=tp1;
     }
-    for(int c=0; c<10; c++)
-        delete m[c];
     m.clear();
 
 
@@ -155,14 +143,14 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
 
 BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestroyedWithBomb)
 {
-    chamber* mc=new chamber(10,10);
-    goldenApple* gc=new goldenApple(mc);
-    player* p=new player(mc);
-    simpleBomb* sb=new simpleBomb(mc);
+    std::shared_ptr<chamber> mc=chamber::makeNewChamber({10,10});
+    std::shared_ptr<goldenApple> gc=bElem::generateAnElement<goldenApple>(mc);
+    std::shared_ptr<player> p=bElem::generateAnElement<player>(mc);
+    std::shared_ptr<simpleBomb> sb=bElem::generateAnElement<simpleBomb>(mc);
     p->stepOnElement(mc->getElement(2,1));
     sb->stepOnElement(mc->getElement(2,2));
     gc->stepOnElement(mc->getElement(1,1));
-    gc=new goldenApple(mc);
+    gc=bElem::generateAnElement<goldenApple>(mc);
     gc->stepOnElement(mc->getElement(1,2));
     p->collect(mc->getElement(1,1));
     p->collect(mc->getElement(1,2));
@@ -173,26 +161,21 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
         bElem::runLiveElements();
     BOOST_CHECK(goldenApple::getAppleNumber()>=2);
 
-    gCollect::getInstance()->purgeGarbage();
-    sb=new simpleBomb(mc);
+    sb=bElem::generateAnElement<simpleBomb>(mc);
     sb->stepOnElement(mc->getElement(2,2));
     sb->kill();
     // We take time for the exploded bomb to finish
     for(int c=0; c<100; c++)
         bElem::runLiveElements();
-    gCollect::getInstance()->purgeGarbage();
     BOOST_CHECK(goldenApple::getAppleNumber()==0);
-
-    delete mc;
-
 }
 
 
-void controlPlayer(chamber* mc,controlItem cntrlItm)
+void controlPlayer(std::shared_ptr<chamber> mc,controlItem cntrlItm)
 {
-    player* p=player::getActivePlayer();
-    BOOST_CHECK(p!=nullptr);
-    if(p==nullptr)
+    std::shared_ptr<bElem> p=player::getActivePlayer();
+    BOOST_CHECK(p.get()!=nullptr);
+    if(p.get()==nullptr)
         return;
     coords c0,c1;
     for(int c=0; c<100; c++)
@@ -215,7 +198,7 @@ void controlPlayer(chamber* mc,controlItem cntrlItm)
 
 void checkplayerKilled()
 {
-    player* p=player::getActivePlayer();
+    std::shared_ptr<bElem> p=player::getActivePlayer();
     int iid1=p->getInstanceid();
     for(int c=0; c<100; c++)
         bElem::runLiveElements();
@@ -230,19 +213,18 @@ void checkplayerKilled()
 
 BOOST_AUTO_TEST_CASE(MovePlayer)
 {
-    chamber* mc=new chamber(100,100);
+    std::shared_ptr<chamber> mc=chamber::makeNewChamber({100,100});
     coords c0,c1;
     controlItem ci;
     while(player::getActivePlayer()!=nullptr)
     {
         player::getActivePlayer();
         player::getActivePlayer()->disposeElement();
-        gCollect::getInstance()->purgeGarbage();
     }
-    player* p=new player(mc);
-    plainGun* pg=new plainGun(mc);
-    p->collect(pg);
+    std::shared_ptr<player> p=bElem::generateAnElement<player>(mc);
+    std::shared_ptr<plainGun> pg=bElem::generateAnElement<plainGun>(mc);
     p->stepOnElement(mc->getElement(50,50));
+    p->collect(pg);
     p->setActive(true);
     for(int c=0; c<8; c++)
     {
@@ -250,8 +232,8 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
         {
             mc->cntrlItm.type=6;
             checkplayerKilled();
-            p=new player(mc);
-            pg=new plainGun(mc);
+            p=bElem::generateAnElement<player>(mc);
+            pg=bElem::generateAnElement<plainGun>(mc);
             p->collect(pg);
             p->stepOnElement(mc->getElement(50,50));
             p->setActive(true);
@@ -268,7 +250,7 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
         controlPlayer(mc,ci);
 
     }
-    delete mc;
+
 
 }
 

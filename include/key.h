@@ -8,13 +8,15 @@
 
 class key : public collectible, public nonSteppable
 {
+
 public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
-    key(chamber *board);
-    key(chamber *board,int x,int y);
-    key(chamber *board,int subtype);
+    key(std::shared_ptr<chamber> board);
+    key(std::shared_ptr<chamber> board,int x,int y);
+    key(std::shared_ptr<chamber> board,int subtype);
+    key();
 
 
 };
