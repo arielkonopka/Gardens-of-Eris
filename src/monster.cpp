@@ -4,10 +4,10 @@
 videoElement::videoElementDef* monster::vd=nullptr;
 
 
-monster::monster(chamber *board): killableElements(board), nonSteppable(board), mechanical(board), movableElements(board)
+monster::monster(std::shared_ptr<chamber> board): killableElements(board), nonSteppable(board), mechanical(board), movableElements(board)
 {
-    this->setStats(new elemStats(_defaultEnergy));
-    this->setInventory(new inventory(this));
+    this->setStats(std::make_shared<elemStats>(_defaultEnergy));
+    this->setInventory(std::make_shared<inventory>());
     if(bElem::randomNumberGenerator()%2==0)
     {
         this->rotA=1;
@@ -21,9 +21,13 @@ monster::monster(chamber *board): killableElements(board), nonSteppable(board), 
     }
 }
 
-monster::monster(chamber* board, int newSubtype): monster(board)
+monster::monster(std::shared_ptr<chamber>  board, int newSubtype): monster(board)
 {
     this->setSubtype(newSubtype);
+
+}
+monster::monster():killableElements(),nonSteppable(),mechanical(),movableElements()
+{
 
 }
 
@@ -50,7 +54,7 @@ bool monster::checkNeigh()
     for(int c=0; c<4; c++)
     {
         direction d=(direction)c;
-        bElem* e=this->getElementInDirection(d);;
+        std::shared_ptr<bElem> e=this->getElementInDirection(d);;
         if(e==nullptr)
             continue;
         if(e->isCollectible())
@@ -80,11 +84,11 @@ bool monster::checkNeigh()
                     this->setDirection(d);
                     if(this->weapon!=nullptr)
                     {
-                        this->weapon->use(this);
+                        this->weapon->use(shared_from_this());
                     }
                     else
                     {
-                        this->getInventory()->getActiveWeapon()->use(this);
+                        this->getInventory()->getActiveWeapon()->use(shared_from_this());
                     }
                     this->setDirection(td);
                     this->setWait(_mov_delay);

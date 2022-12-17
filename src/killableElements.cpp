@@ -1,12 +1,16 @@
 #include "killableElements.h"
 
-killableElements::killableElements(chamber* board) :bElem(board)
+killableElements::killableElements(std::shared_ptr<chamber> board) :bElem(board)
 {
 
 }
 
 
 
+killableElements::killableElements():bElem()
+{
+
+}
 
 
 

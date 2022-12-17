@@ -2,7 +2,7 @@
 
 
 std::vector<chamberArea*> chamberArea::foundAreas;
-std::vector<bElem*> chamberArea::foundElements;
+std::vector<std::shared_ptr<bElem>> chamberArea::foundElements;
 
 chamberArea::~chamberArea() // if we remove the node, we remove all its children
 {
@@ -104,7 +104,7 @@ int chamberArea::calculateInitialSurface()
 }
 
 //calculate surfaces in the children nodes
-int chamberArea::calculateSurface(chamber* mychamber)
+int chamberArea::calculateSurface(std::shared_ptr<chamber> mychamber)
 {
     int surface_=0;
     if(this->children.size()==0)
@@ -132,7 +132,7 @@ int chamberArea::calculateSurface(chamber* mychamber)
     return surface_;
 }
 
-void chamberArea::findElementsRec(chamber* mychamber)
+void chamberArea::findElementsRec(std::shared_ptr<chamber> mychamber)
 {
     if (this->children.size()==0)
     {
@@ -160,7 +160,7 @@ void chamberArea::findElementsRec(chamber* mychamber)
 
 }
 
-bool chamberArea::findElementsToStepOn(chamber* myChamber)
+bool chamberArea::findElementsToStepOn(std::shared_ptr<chamber> myChamber)
 {
     chamberArea::foundElements.clear();
     this->findElementsRec(myChamber);
@@ -193,7 +193,7 @@ void chamberArea::findChambersCloseToSurface(int s,int tolerance)
     return;
 }
 
-bool chamberArea::checkIfElementIsFree(int x, int y, chamber* mychamber)
+bool chamberArea::checkIfElementIsFree(int x, int y, std::shared_ptr<chamber> mychamber)
 {
     if(mychamber->getElement(x,y)->isSteppable()==false)
         return false;

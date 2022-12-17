@@ -2,10 +2,10 @@
 
 
 videoElement::videoElementDef* plainMissile::vd=nullptr;
-plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber), movableElements(mychamber), mechanical(mychamber)
+plainMissile::plainMissile(std::shared_ptr<chamber> mychamber) : killableElements(mychamber), movableElements(mychamber), mechanical(mychamber)
 {
     this->statsOwner=nullptr;
-    this->setStats(new elemStats(_plainMissileEnergy));
+    this->setStats(std::make_shared<elemStats>(_plainMissileEnergy));
     this->setEnergy(_plainMissileEnergy);
     this->setMoved(0);
     this->setWait(_plainMissileSpeed);
@@ -13,10 +13,10 @@ plainMissile::plainMissile(chamber *mychamber) : killableElements(mychamber), mo
     this->setMoved(0);
     this->setSubtype(0);
 }
-plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(mychamber),  movableElements(mychamber), mechanical(mychamber)
+plainMissile::plainMissile(std::shared_ptr<chamber> mychamber, int energy) : killableElements(mychamber),  movableElements(mychamber), mechanical(mychamber)
 {
     this->statsOwner=nullptr;
-    this->setStats(new elemStats(energy));
+    this->setStats(std::make_shared<elemStats>(energy));
     this->setEnergy(energy);
     this->setMoved(0);
     this->setWait(_plainMissileSpeed);
@@ -24,12 +24,16 @@ plainMissile::plainMissile(chamber* mychamber, int energy) : killableElements(my
     this->setMoved(0);
     this->setSubtype(0);
 }
+plainMissile::plainMissile():killableElements(),movableElements(),mechanical()
+{
+
+}
 
 plainMissile::~plainMissile()
 {
     if(this->statsOwner!=nullptr)
     {
-        this->statsOwner->unlockThisObject(this);
+        this->statsOwner->unlockThisObject(shared_from_this());
         this->statsOwner=nullptr;
     }
     //dtor
@@ -39,7 +43,7 @@ int plainMissile::getType()
     return _plainMissile;
 }
 
-void plainMissile::stomp(bElem* who)
+void plainMissile::stomp(std::shared_ptr<bElem> who)
 {
     bElem::stomp(who);
     if(who->getType()!=this->getType())
@@ -79,7 +83,7 @@ bool plainMissile::mechanics()
         return true;
     if (this->getMoved()==0 && mvd==0)
     {
-        bElem *myel=this->getElementInDirection(this->getDirection());
+        std::shared_ptr<bElem> myel=this->getElementInDirection(this->getDirection());
         if(myel==nullptr || myel->isDying() || myel->isTeleporting() || myel->isDestroyed())
         {
             this->disposeElement();
@@ -124,7 +128,7 @@ bool plainMissile::mechanics()
     }
     return res;
 }
-void plainMissile::setStatsOwner(bElem* owner)
+void plainMissile::setStatsOwner(std::shared_ptr<bElem> owner)
 {
     if(owner!=nullptr)
     {

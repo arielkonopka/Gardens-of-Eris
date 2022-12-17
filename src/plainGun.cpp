@@ -8,20 +8,20 @@ videoElement::videoElementDef* plainGun::getVideoElementDef()
     return plainGun::vd;
 }
 //public usable, public mechanical, public collectible, public nonSteppable
-plainGun::plainGun(chamber *board): usable(board), mechanical(board), collectible(board), nonSteppable(board)
+plainGun::plainGun(std::shared_ptr<chamber> board): usable(board), mechanical(board), collectible(board), nonSteppable(board)
 {
-    this->setStats(new elemStats(((bElem::randomNumberGenerator()%4)+1)*25));
+    this->setStats(std::make_shared<elemStats>(((bElem::randomNumberGenerator()%4)+1)*25));
 }
 
-plainGun::plainGun(chamber* board, int newSubtype): usable(board), mechanical(board), collectible(board), nonSteppable(board)
+plainGun::plainGun(std::shared_ptr<chamber>  board, int newSubtype): usable(board), mechanical(board), collectible(board), nonSteppable(board)
 {
-    this->setStats(new elemStats(((bElem::randomNumberGenerator()%4)+1)*25));
+    this->setStats(std::make_shared<elemStats>(((bElem::randomNumberGenerator()%4)+1)*25));
     this->setSubtype(newSubtype);
 }
 
-bElem* plainGun::createProjectible(bElem *who)
+std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
 {
-    plainMissile* pm=new plainMissile(who->getBoard());
+    std::shared_ptr<bElem> pm=bElem::generateAnElement<plainMissile>(who->getBoard());
     pm->setStatsOwner(who);
     who->lockThisObject(pm);
     pm->setDirection(who->getDirection());
@@ -30,6 +30,10 @@ bElem* plainGun::createProjectible(bElem *who)
     return pm;
 }
 
+plainGun::plainGun():usable(),mechanical(),collectible(),nonSteppable()
+{
+
+}
 
 
 int plainGun::getType()
@@ -45,9 +49,9 @@ bool plainGun::isWeapon()
 {
     return true;
 }
-bool plainGun::use(bElem* who)
+bool plainGun::use(std::shared_ptr<bElem> who)
 {
-    bElem *myel;
+    std::shared_ptr<bElem> myel;
     if (who==nullptr)
     {
 #ifdef _VerbousMode_

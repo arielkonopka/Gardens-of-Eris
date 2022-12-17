@@ -9,8 +9,8 @@ class collectible : virtual public bElem
 public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
-
-    collectible(chamber *board);
+    collectible();
+    collectible(std::shared_ptr<chamber> board);
     virtual bool isCollectible();
 
 };

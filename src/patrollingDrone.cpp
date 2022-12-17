@@ -2,63 +2,69 @@
 
 videoElement::videoElementDef* patrollingDrone::vd=nullptr;
 
-patrollingDrone::patrollingDrone(chamber* board): killableElements(board), nonSteppable(board), mechanical(board,false), movableElements(board)
+patrollingDrone::patrollingDrone(std::shared_ptr<chamber> board): killableElements(board), nonSteppable(board), mechanical(board,false), movableElements(board)
 {
     this->setSubtype(0);
-    this->setInventory(new inventory(this));
+    this->setInventory(std::make_shared<inventory>());
     this->setActive(false);
-    this->steppables=new bool*[(_defaultRecurrenceDepth*2)+1];
+
     for(int c=0; c<(_defaultRecurrenceDepth*2)+1; c++)
     {
-        this->steppables[c]=new bool[(_defaultRecurrenceDepth*2)+1];
+        std::vector<bool> vb;
+        for(int d=0; d<(_defaultRecurrenceDepth*2)+1; d++)
+            vb.push_back(false);
+        this->steppables.push_back(vb);
+
     }
     this->boardSize.x=board->width;
     this->boardSize.y=board->height;
 
 }
 
+patrollingDrone::patrollingDrone() : killableElements(),nonSteppable(),mechanical(),movableElements()
+{
+
+}
+
+
 patrollingDrone::~patrollingDrone()
 {
-    for(int c=0; c<(_defaultRecurrenceDepth*2)+1; c++)
-    {
-        delete this->steppables[c];
-    }
-    delete this->steppables;
+
 }
 
 
 void patrollingDrone::setVisited(int x, int y)
 {
-        coords mycrds=this->getCoords();
-        int nx=mycrds.x-x+(_defaultRecurrenceDepth*2)+1;
-        int ny=mycrds.y-y+(_defaultRecurrenceDepth*2)+1;
-        if (nx<0 || nx>=(_defaultRecurrenceDepth*2)+1 || ny<0 || ny>=(_defaultRecurrenceDepth*2)+1)
-            return;
-        this->steppables[nx][ny]=true;
+    coords mycrds=this->getCoords();
+    int nx=mycrds.x-x+(_defaultRecurrenceDepth*2)+1;
+    int ny=mycrds.y-y+(_defaultRecurrenceDepth*2)+1;
+    if (nx<0 || nx>=(_defaultRecurrenceDepth*2)+1 || ny<0 || ny>=(_defaultRecurrenceDepth*2)+1)
+        return;
+    this->steppables[nx][ny]=true;
 }
 
 bool patrollingDrone::wasVisited(int x, int y)
 {
-        coords mycrds=this->getCoords();
-        int nx=mycrds.x-x+(_defaultRecurrenceDepth*2)+1;
-        int ny=mycrds.y-y+(_defaultRecurrenceDepth*2)+1;
-        if (nx<0 || nx>=(_defaultRecurrenceDepth*2)+1 || ny<0 || ny>=(_defaultRecurrenceDepth*2)+1)
-            return true;
-        return this->steppables[nx][ny];
+    coords mycrds=this->getCoords();
+    int nx=mycrds.x-x+(_defaultRecurrenceDepth*2)+1;
+    int ny=mycrds.y-y+(_defaultRecurrenceDepth*2)+1;
+    if (nx<0 || nx>=(_defaultRecurrenceDepth*2)+1 || ny<0 || ny>=(_defaultRecurrenceDepth*2)+1)
+        return true;
+    return this->steppables[nx][ny];
 }
 
 void patrollingDrone::clearVisited()
 {
     for(int cx=0; cx<(_defaultRecurrenceDepth*2)+1; cx++)
-            for(int cy=0; cy<(_defaultRecurrenceDepth*2)+1; cy++)
-            {
-                this->steppables[cx][cy]=false;
-            }
+        for(int cy=0; cy<(_defaultRecurrenceDepth*2)+1; cy++)
+        {
+            this->steppables[cx][cy]=false;
+        }
 
 }
 
 
-int patrollingDrone::findSomething(bElem* elem,int n,int denyDir)
+int patrollingDrone::findSomething(std::shared_ptr<bElem> elem,int n,int denyDir)
 {
     int length=555; // this is too long route
     coords eCrds=elem->getCoords();
@@ -67,8 +73,8 @@ int patrollingDrone::findSomething(bElem* elem,int n,int denyDir)
     this->setVisited(eCrds.x,eCrds.y);
     for(int d=0; d<4; d++)
     {
-        bElem* el=elem->getElementInDirection((direction)d);
-        if(el!=nullptr)
+        std::shared_ptr<bElem> el=elem->getElementInDirection((direction)d);
+        if(el.get()!=nullptr)
         {
             if(el->getType()==_goldenAppleType || el->getType()==_key || el->getType()==_plainGun)
                 return 0;
@@ -77,9 +83,9 @@ int patrollingDrone::findSomething(bElem* elem,int n,int denyDir)
     //ok, we are here, because we should look harder
     for(int d=0; d<4; d++)
     {
-        bElem* el=elem->getElementInDirection((direction)((d+denyDir)%4));
+        std::shared_ptr<bElem> el=elem->getElementInDirection((direction)((d+denyDir)%4));
 
-        if(el!=nullptr && el->isSteppable())
+        if(el.get()!=nullptr && el->isSteppable())
         {
             coords crds=el->getCoords();
             if(this->wasVisited(crds.x,crds.y))
@@ -111,8 +117,8 @@ bool patrollingDrone::mechanics()
 
         int l;
         direction d=(direction)cnt;
-        bElem* el=this->getElementInDirection(d);
-        if(el==nullptr) continue;
+        std::shared_ptr<bElem> el=this->getElementInDirection(d);
+        if(el.get()==nullptr) continue;
         if(el->getType()==_key || el->getType()==_goldenAppleType || el->getType()==_plainGun)
         {
             this->collect(el);
@@ -120,7 +126,7 @@ bool patrollingDrone::mechanics()
         }
 
 
-        if(el!=nullptr && el->isSteppable())
+        if(el.get()!=nullptr && el->isSteppable())
         {
             this->clearVisited();
             this->setVisited(c.x,c.y);
@@ -154,14 +160,14 @@ bool patrollingDrone::mechanics()
 
 
 
-bool patrollingDrone::interact(bElem* who)
+bool patrollingDrone::interact(std::shared_ptr<bElem> who)
 {
     bool res=killableElements::interact(who);
     if (!res) return false;
     if(who->getType()!=_player)
         return false;
     if(!this->isLiveElement())
-        this->registerLiveElement(this);
+        this->registerLiveElement(shared_from_this());
     this->setActive(true);
     return true;
 

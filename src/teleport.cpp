@@ -3,19 +3,28 @@
 videoElement::videoElementDef* teleport::vd=nullptr;
 std::vector<teleport*> teleport::allTeleporters;
 
-teleport::teleport(chamber* board):nonSteppable(board)
+teleport::teleport(std::shared_ptr<chamber> board):nonSteppable(board)
 {
     this->connectionsMade=false;
     teleport::allTeleporters.push_back(this);
     this->theOtherEnd=nullptr; // we do not have the other end configured yet. We will configure it on interact method;
 }
-teleport::teleport(chamber* board,int newSubtype):nonSteppable(board)
+teleport::teleport(std::shared_ptr<chamber> board,int newSubtype):nonSteppable(board)
 {
     this->connectionsMade=false;
     teleport::allTeleporters.push_back(this);
     this->theOtherEnd=nullptr; // we do not have the other end configured yet. We will configure it on interact method;
     this->setSubtype(newSubtype);
 }
+
+teleport::teleport():nonSteppable()
+{
+    this->connectionsMade=false;
+    teleport::allTeleporters.push_back(this);
+    this->theOtherEnd=nullptr; // we do not
+}
+
+
 
 teleport::~teleport()
 {
@@ -25,7 +34,7 @@ teleport::~teleport()
 
 }
 /* here we will try to teleport an object to the becon connected to this teleporter. if the becon is not yet established, randomly choose one */
-bool teleport::interact(bElem* who)
+bool teleport::interact(std::shared_ptr<bElem> who)
 {
     if (bElem::interact(who)==false)
         return false;
@@ -69,7 +78,7 @@ int teleport::getType()
 }
 
 //Teleport to this becon
-bool teleport::teleportIt(bElem* who)
+bool teleport::teleportIt(std::shared_ptr<bElem> who)
 {
     int dir=(int)who->getDirection();
     who->setTeleporting(_teleportationTime);
@@ -114,11 +123,11 @@ bool teleport::isSteppable()
     return false;
 }
 
-void teleport::stomp(bElem* who)
+void teleport::stomp(std::shared_ptr<bElem> who)
 {
     nonSteppable::stomp(who);
     this->setWait(_teleportStandTime);
-    this->registerLiveElement(this);
+    this->registerLiveElement(shared_from_this());
 
 
 }
@@ -127,7 +136,7 @@ void teleport::unstomp()
 {
     nonSteppable::unstomp();
     if(this->isLiveElement())
-        this->deregisterLiveElement(this);
+        this->deregisterLiveElement(this->getInstanceid());
 }
 
 bool teleport::mechanics()
@@ -137,7 +146,7 @@ bool teleport::mechanics()
         if(this->getStomper()!=nullptr)
         {
             this->interact(this->getStomper());
-            this->deregisterLiveElement(this);
+            this->deregisterLiveElement(this->getInstanceid());
         }
     };
     return nonSteppable::mechanics();

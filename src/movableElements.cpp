@@ -4,8 +4,12 @@
 videoElement::videoElementDef* movableElements::vd=nullptr;
 
 
+movableElements::movableElements():bElem()
+{
 
-movableElements::movableElements(chamber *board) : bElem(board)
+}
+
+movableElements::movableElements(std::shared_ptr<chamber> board) : bElem(board)
 {
 
 }
@@ -27,8 +31,8 @@ bool movableElements::moveInDirection(direction dir)
 
 bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 {
-    bElem* stepOn=this->getElementInDirection(dir);
-    if (stepOn==nullptr || this->getMoved()>0 || this->isDying() || this->isTeleporting() || this->isDestroyed() )
+    std::shared_ptr<bElem> stepOn=this->getElementInDirection(dir);
+    if (stepOn.get()==nullptr || this->getMoved()>0 || this->isDying() || this->isTeleporting() || this->isDestroyed() )
         return false;
     this->setDirection(dir);
     if (stepOn->isSteppable()==true)
@@ -39,8 +43,8 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
     }
     else if (this->canPush()==true && stepOn->isMovable()==true)
     {
-        bElem* stepOn2=stepOn->getElementInDirection(dir);
-        if(stepOn2==nullptr)
+        std::shared_ptr<bElem> stepOn2=stepOn->getElementInDirection(dir);
+        if(stepOn2.get()==nullptr)
             return false;
         if (stepOn2->isSteppable())
         {
@@ -52,9 +56,9 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
             return true;
         }
     }
-    if (this->canCollect()==true && this->getInventory()!=nullptr && stepOn->isCollectible()==true)
+    if (this->canCollect()==true && this->getInventory().get()!=nullptr && stepOn->isCollectible()==true)
     {
-        if (this->collect(stepOn)==true && this->getStats())
+        if (this->collect(stepOn)==true && this->getStats().get()!=nullptr)
         {
             this->getStats()->countCollect(stepOn);
             return true;
@@ -62,7 +66,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
     }
     if (this->canInteract()==true)
     {
-        if(stepOn->interact(this)==true)
+        if(stepOn->interact(shared_from_this())==true)
         {
             return true;
 
@@ -116,15 +120,15 @@ bool movableElements::dragInDirection(direction dragIntoDirection)
 {
     direction objFromDir=(direction)((((int)dragIntoDirection)+2)%4);
     direction d2=dragIntoDirection;
-    bElem *draggedObj=this->getElementInDirection(objFromDir);
-    if(draggedObj==nullptr)
+    std::shared_ptr<bElem> draggedObj=this->getElementInDirection(objFromDir);
+    if(draggedObj.get()==nullptr)
         return false;
     if(!draggedObj->isMovable())
     {
         d2=(direction)((((int)this->getDirection())+2)%4);
         draggedObj=this->getElementInDirection(d2);
         d2=this->getDirection();
-        if(draggedObj==nullptr || !draggedObj->isMovable())
+        if(draggedObj.get()==nullptr || !draggedObj->isMovable())
             return false;
     }
 

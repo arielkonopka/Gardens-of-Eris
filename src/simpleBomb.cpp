@@ -3,10 +3,16 @@
 videoElement::videoElementDef* simpleBomb::vd=nullptr;
 
 
-simpleBomb::simpleBomb(chamber* board):explosives(board),nonSteppable(board),killableElements(board), movableElements(board)
+simpleBomb::simpleBomb(std::shared_ptr<chamber> board):explosives(board),nonSteppable(board),killableElements(board), movableElements(board)
 {
 
 }
+
+simpleBomb::simpleBomb():explosives(),nonSteppable(),killableElements(),movableElements()
+{
+
+}
+
 
 bool simpleBomb::hurt(int points)
 {
@@ -26,7 +32,7 @@ bool simpleBomb::destroy()
         return bElem::destroy();
     }
    */
-    this->registerLiveElement(this);
+    this->registerLiveElement(shared_from_this());
     this->triggered=true;
     this->setWait(20);
     return true;

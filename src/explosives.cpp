@@ -1,11 +1,15 @@
 #include "explosives.h"
 
 
-explosives::explosives(chamber *board):bElem(board)
+explosives::explosives(std::shared_ptr<chamber> board):bElem(board)
 {
     //ctor
 }
 
+explosives::explosives():bElem()
+{
+
+}
 
 explosives::~explosives()
 {
@@ -14,10 +18,10 @@ explosives::~explosives()
 
 bool explosives::explode()
 {
-    bElem *el;
+    std::shared_ptr<bElem> el;
     coords mc=this->getCoords();
-    chamber* brd=this->getBoard();
-    bElem* step;
+    std::shared_ptr<chamber>  brd=this->getBoard();
+    std::shared_ptr<bElem> step;
     this->removeElement();
     step=brd->getElement(mc);
     step->destroy();

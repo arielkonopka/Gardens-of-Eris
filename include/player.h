@@ -10,14 +10,15 @@
 class player : public killableElements,public movableElements,public nonSteppable,public mechanical
 {
 public:
-    player(chamber *board);
+    player();
+    player(std::shared_ptr<chamber> board);
     virtual ~player();
     static unsigned int countVisitedPlayers();
     virtual videoElement::videoElementDef* getVideoElementDef();
     static videoElement::videoElementDef* vd;
-    static player* getActivePlayer();
+    static std::shared_ptr<bElem> getActivePlayer();
     bool mechanics();
-    bool interact(bElem *who);
+    bool interact(std::shared_ptr<bElem> who);
     bool canPush();
     bool getVisited();
     int getType();
@@ -26,13 +27,11 @@ public:
     int getAnimPh();
     virtual bool shootGun();
     virtual oState disposeElement();
-
-
-
+    virtual bool additionalProvisioning();
 private:
-    static player* activePlayer;
-    static std::vector<player*> allPlayers;
-    static std::vector<player*> visitedPlayers;
+    static std::shared_ptr<bElem> activePlayer;
+    static std::vector<std::shared_ptr<bElem>> allPlayers;
+    static std::vector<std::shared_ptr<bElem>> visitedPlayers;
     bool visited=false;
     int animPh=0;
     int moved=0;
@@ -40,6 +39,7 @@ private:
     bool activated=false;
     int used=0;
     int interacted=0;
+    bool provisioned=false;
 };
 
 #endif // PLAYER_H

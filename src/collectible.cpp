@@ -1,8 +1,12 @@
 #include "collectible.h"
 videoElement::videoElementDef* collectible::vd=nullptr;
 
-collectible::collectible(chamber *board):bElem(board)
+collectible::collectible(std::shared_ptr<chamber> board):bElem(board)
 {
+}
+collectible::collectible():bElem()
+{
+
 }
 
 

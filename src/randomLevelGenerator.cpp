@@ -4,8 +4,7 @@ randomLevelGenerator::randomLevelGenerator(int w, int h)
 {
     this->width=w;
     this->height=h;
-    this->mychamber=new chamber(w,h);
-    this->garbageCollector=gCollect::getInstance();
+    this->mychamber=chamber::makeNewChamber({w,h});
     std::random_device rd;
     std::mt19937::result_type seed = rd() ^ (
                                          (std::mt19937::result_type)
@@ -51,7 +50,10 @@ int randomLevelGenerator::checkWalls(int x, int y)
     if (walls[0] && walls[1] && walls[2] && !walls[3])
     {
         this->mychamber->getElement(x-1,y)->disposeElement();
-        this->mychamber->setElement((coords){x,y},new wall(this->mychamber));
+        this->mychamber->setElement((coords)
+        {
+            x,y
+        },bElem::generateAnElement<wall>(this->mychamber));
     }
     if (walls[0] && walls[1] && walls[3] && !walls[2])
     {
@@ -160,7 +162,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
             }
             if (this->mychamber->getElement(c+1,a)->isSteppable())
             {
-                bElem *newElement=new wall(this->mychamber);
+                std::shared_ptr<bElem> newElement=bElem::generateAnElement<wall>(this->mychamber);
                 newElement->stepOnElement(this->mychamber->getElement(c+1,a));
             }
             else
@@ -210,7 +212,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
             }
             if (mychamber->getElement(a,d+1)->isSteppable())
             {
-                bElem *newElement=new wall(this->mychamber);
+                std::shared_ptr<bElem> newElement=bElem::generateAnElement<wall>(this->mychamber);
                 newElement->stepOnElement(this->mychamber->getElement(a,d+1));
             }
         }
@@ -265,7 +267,7 @@ bool randomLevelGenerator::placeElementCollection(chamberArea* chmbrArea,std::ve
             if((long int)chamberArea::foundElements.size()<=0)
                 break;
             unsigned int selectedEl=this->gen()%chamberArea::foundElements.size(); //find the position in the found elements
-            bElem* newElem=createElement((*elements)[cnt]);
+            std::shared_ptr<bElem> newElem=createElement((*elements)[cnt]);
             newElem->stepOnElement(chamberArea::foundElements[selectedEl]); //place element on a board
             newElem->selfAlign();
             chamberArea::foundElements.erase(chamberArea::foundElements.begin()+selectedEl);
@@ -297,8 +299,8 @@ bool randomLevelGenerator::generateLevel(int holes)
     //draw the walls around the whole chamber
     for(int c=0; c<this->width; c++)
     {
-        bElem *newElem=new wall(this->mychamber);
-        bElem *newElem1=new wall(this->mychamber);
+        std::shared_ptr<bElem> newElem=bElem::generateAnElement<wall>(this->mychamber);
+        std::shared_ptr<bElem> newElem1=bElem::generateAnElement<wall>(this->mychamber);
         newElem->stepOnElement(this->mychamber->getElement(c,0));
         newElem1->stepOnElement(this->mychamber->getElement(c,this->height-1));
 
@@ -306,8 +308,8 @@ bool randomLevelGenerator::generateLevel(int holes)
     for(int c=0; c<this->height; c++)
     {
 
-        bElem *newElem2=new wall(this->mychamber);
-        bElem *newElem3=new wall(this->mychamber);
+        std::shared_ptr<bElem> newElem2=bElem::generateAnElement<wall>(this->mychamber);
+        std::shared_ptr<bElem> newElem3=bElem::generateAnElement<wall>(this->mychamber);
         newElem2->stepOnElement(this->mychamber->getElement(0,c));
         newElem3->stepOnElement(this->mychamber->getElement(this->width-1,c));
     }
@@ -496,12 +498,12 @@ bool randomLevelGenerator::placeDoors(elementToPlace element,chamberArea* locati
     {
         if (this->mychamber->getElement(c1,location->upLeft.y-1)->isSteppable())
         {
-            bElem* neEl=this->createElement(element);
+            std::shared_ptr<bElem> neEl=this->createElement(element);
             neEl->stepOnElement(this->mychamber->getElement(c1,location->upLeft.y-1));
         }
         if (this->mychamber->getElement(c1,location->downRight.y+1)->isSteppable())
         {
-            bElem* neEl=this->createElement(element);
+            std::shared_ptr<bElem> neEl=this->createElement(element);
             neEl->stepOnElement(this->mychamber->getElement(c1,location->downRight.y+1));
         }
     }
@@ -509,12 +511,12 @@ bool randomLevelGenerator::placeDoors(elementToPlace element,chamberArea* locati
     {
         if (this->mychamber->getElement(location->upLeft.x-1,c2)->isSteppable())
         {
-            bElem* neEl=this->createElement(element);
+            std::shared_ptr<bElem> neEl=this->createElement(element);
             neEl->stepOnElement(this->mychamber->getElement(location->upLeft.x-1,c2));
         }
         if (this->mychamber->getElement(location->downRight.x+1,c2)->isSteppable())
         {
-            bElem* neEl=this->createElement(element);
+            std::shared_ptr<bElem> neEl=this->createElement(element);
             neEl->stepOnElement(this->mychamber->getElement(location->downRight.x+1,c2));
         }
 
@@ -525,34 +527,34 @@ bool randomLevelGenerator::placeDoors(elementToPlace element,chamberArea* locati
 }
 
 
-bElem* randomLevelGenerator::createElement(elementToPlace element)
+std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace element)
 {
     switch(element.eType)
     {
     case _collectible:
-        return new collectible(this->mychamber);
+        return bElem::generateAnElement<collectible>(this->mychamber);
     case _goldenAppleType:
-        return new goldenApple(this->mychamber);
+        return bElem::generateAnElement<goldenApple>(this->mychamber);
     case _player:
-        return new player(this->mychamber);
+        return bElem::generateAnElement<player>(this->mychamber);
     case _door:
-        return new door(this->mychamber,element.eSubType);
+        return bElem::generateAnElement<door>(this->mychamber,element.eSubType);
     case _key:
-        return new key(this->mychamber,element.eSubType);
+        return bElem::generateAnElement<key>(this->mychamber,element.eSubType);
     case _monster:
-        return new monster(this->mychamber,element.eSubType);
+        return bElem::generateAnElement<monster>(this->mychamber,element.eSubType);
     case _plainGun:
-        return new plainGun(this->mychamber,element.eSubType);
+        return bElem::generateAnElement<plainGun>(this->mychamber,element.eSubType);
     case _bunker:
-        return new bunker(this->mychamber);
+        return bElem::generateAnElement<bunker>(this->mychamber);
     case _teleporter:
-        return new teleport(this->mychamber,element.eSubType);
+        return bElem::generateAnElement<teleport>(this->mychamber,element.eSubType);
     case _movableType:
-        return new movableElements(this->mychamber);
+        return bElem::generateAnElement<movableElements>(this->mychamber);
     case _simpleBombType:
-        return new simpleBomb(this->mychamber);
+        return bElem::generateAnElement<simpleBomb>(this->mychamber);
     case _patrollingDrone:
-        return new patrollingDrone(this->mychamber);
+        return bElem::generateAnElement<patrollingDrone>(this->mychamber);
     }
     return nullptr;
 }

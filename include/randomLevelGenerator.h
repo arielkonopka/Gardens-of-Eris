@@ -57,10 +57,10 @@ class randomLevelGenerator
 public:
     chamberArea* headNode;
     std::mt19937 gen;
-    bElem* createElement(elementToPlace element);
+    std::shared_ptr<bElem> createElement(elementToPlace element);
 
 
-    chamber *mychamber;
+    std::shared_ptr<chamber> mychamber;
     randomLevelGenerator(int w,int h);
 
     virtual ~randomLevelGenerator();
@@ -74,7 +74,6 @@ private:
     bool placeDoors(elementToPlace element,chamberArea* location);
     void addElementToPlace(elementToPlace element);
     int checkWalls(int x, int y);
-    gCollect *garbageCollector;
     int width;
     int height;
 

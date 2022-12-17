@@ -9,16 +9,17 @@ public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
-    plainMissile(chamber *mychamber);
-    plainMissile(chamber *mychamber,int energy);
-    void setStatsOwner(bElem* owner);
+    plainMissile();
+    plainMissile(std::shared_ptr<chamber> mychamber);
+    plainMissile(std::shared_ptr<chamber> mychamber,int energy);
+    void setStatsOwner(std::shared_ptr<bElem> owner);
     virtual ~plainMissile();
     virtual bool mechanics();
-    virtual void stomp(bElem *who);
+    virtual void stomp(std::shared_ptr<bElem> who);
     virtual bool setEnergy(int points);
 
 private:
-    bElem* statsOwner;
+    std::shared_ptr<bElem> statsOwner;
 
 };
 

@@ -7,17 +7,18 @@ class goldenApple : public collectible,public nonSteppable,public killableElemen
 {
 public:
     static videoElement::videoElementDef* vd;
-    static goldenApple* getApple(int num);
+    static std::shared_ptr<bElem> getApple(int num);
     virtual videoElement::videoElementDef* getVideoElementDef();
     static  int getAppleNumber();
     virtual int getType();
     virtual bool kill();
-    goldenApple(chamber *board);
+    goldenApple(std::shared_ptr<chamber> board);
+    goldenApple();
     virtual ~goldenApple();
-
+    virtual bool additionalProvisioning();
 private:
     static unsigned int appleNumber;
-    static std::vector<goldenApple*> apples;
+    static std::vector<std::shared_ptr<bElem>> apples;
 };
 
 #endif // GOLDENAPPLE_H

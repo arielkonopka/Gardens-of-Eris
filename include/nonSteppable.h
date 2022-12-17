@@ -14,8 +14,9 @@ class nonSteppable : virtual public bElem
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
-        nonSteppable(chamber *board);
-        nonSteppable(chamber *board,int x, int y);
+        nonSteppable();
+        nonSteppable(std::shared_ptr<chamber> board);
+        nonSteppable(std::shared_ptr<chamber> board,int x, int y);
         bool isSteppable();
 
 

@@ -1,39 +1,10 @@
 #include "inventory.h"
 #include "bElem.h"
 
-inventory::inventory(bElem *owner):owner(owner)
-{
-
-}
-inventory::~inventory()
-{
-
-  //  std::cout<<"Destroy inventory "<<this->owner<<"\n";
-    //We place the objects in the garbage collector.
- //   std::cout<<"Remove weapons\n";
-    for(auto  w:this->weapons)
-        w->disposeElement();
-  //  std::cout<<"Remove usables\n";
-    for(auto u: this->usables)
-        u->disposeElement();
-  //  std::cout<<"Remove tokens\n";
-    for(auto t:this->tokens)
-    {
-
-    //    std::cout<<"Token owner"<<t->getCollector()<<"\n";
-        t->disposeElement();
-    }
-   // std::cout<<"Remove keys\n";
-    for(auto k:this->keys)
-        k->disposeElement();
-   // std::cout<<"Remove mods\n";
-    for(auto m:this->mods)
-        m->disposeElement();
-
-}
 
 
-void inventory::changeOwner(bElem* who)
+
+void inventory::changeOwner(std::shared_ptr<bElem> who)
 {
     this->owner=who;
     for(auto w:this->weapons)
@@ -156,10 +127,10 @@ bool inventory::removeCollectibleFromInventory(int instance)
 }
 
 
-bElem* inventory::getKey(int type, int subtype,bool removeIt)
+std::shared_ptr<bElem> inventory::getKey(int type, int subtype,bool removeIt)
 {
     /* finds a key in the inventory and returns it, when nothing found, nullptr is returned*/
-    bElem* res;
+    std::shared_ptr<bElem> res;
     for(size_t c=0; c<this->keys.size(); c++)
     {
         if(this->keys[c]->getType()==type && this->keys[c]->getSubtype()==subtype)
@@ -192,7 +163,7 @@ int inventory::countTokens(int type, int subtype)
 
 
 
-bElem* inventory::getUsable()
+std::shared_ptr<bElem> inventory::getUsable()
 {
     if(this->usables.size()<=0)
         return nullptr;
@@ -222,7 +193,7 @@ bool inventory::removeActiveWeapon()
 }
 
 
-bElem* inventory::getActiveWeapon()
+std::shared_ptr<bElem> inventory::getActiveWeapon()
 {
     if (this->weapons.size()<=0)
         return nullptr;
@@ -244,7 +215,7 @@ bool inventory::nextGun()
     return true;
 }
 
-bool inventory::addToInventory(bElem* what)
+bool inventory::addToInventory(std::shared_ptr<bElem> what)
 {
     bool res=false;
     if(what==nullptr)
@@ -289,8 +260,6 @@ bool inventory::addToInventory(bElem* what)
     {
         /* this is probably a stash, or something like that. that is why, when we create an object, that shoots infinite ammo, it is better to have gun in non standard places, it would not be picked up that way*/
         this->mergeInventory(what->getInventory());
-        delete what->getInventory();
-        what->setInventory(nullptr);
         what->disposeElement();
         res=true;
     }
@@ -355,7 +324,7 @@ void inventory::decrementTokenNumber(tType token)
 
 
 
-bool inventory::mergeInventory(inventory* theOtherInventory)
+bool inventory::mergeInventory(std::shared_ptr<inventory> theOtherInventory)
 {
     if(theOtherInventory==nullptr)
         return false;
@@ -452,7 +421,9 @@ bool inventory::isEmpty()
 
 void inventory::updateBoard()
 {
-    chamber* board=this->owner->getBoard();
+    if(this->owner.get()==nullptr)
+        return;
+    std::shared_ptr<chamber> board=this->owner->getBoard();
     for(auto w:this->weapons)
     {
         w->setBoard(board);

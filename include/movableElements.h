@@ -7,7 +7,6 @@
 #include "videoElementDef.h"
 
 #include "chamber.h"
-#include "gCollect.h"
 //#include "objectTypes.h"
 
 
@@ -17,7 +16,8 @@ class movableElements :  virtual  public bElem
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
-        movableElements(chamber *board);
+        movableElements();
+        movableElements(std::shared_ptr<chamber> board);
         virtual ~movableElements();
         virtual bool isMovable();
         virtual bool moveInDirection(direction dir);
