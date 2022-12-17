@@ -1,6 +1,5 @@
 #ifndef VIDEOELEMENTDEF_H
 #define VIDEOELEMENTDEF_H
-#include <boost/multi_array.hpp>
 #include <allegro5/allegro5.h>
 #include <vector>
 //#include <allegro5/allegro_font.h>
