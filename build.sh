@@ -32,7 +32,7 @@ examples:
 	runTests="true"
 	;;
     "-gh")
-	sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev
+	sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr
     ;;
     "-sq")
 	extraflags="${extraflags} --coverage -fprofile-abs-path "
