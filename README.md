@@ -120,4 +120,4 @@ When running build.sh, the unit tests would be built as well. You can then run t
 
 ## ChangeLog
 Now every object can have its own animations of death, teleport, destruction and fadingOut, the last one is not supported yet
-
+* changed pointers from raw to managed
