@@ -21,7 +21,7 @@ I thought of a random level generator because of two reasons:
 
 In the meanwhile I got a third reason, I can test it fairly fast, without even loading and saving the level data.
  
-[You can chek the fairly recent video of the gameplay.](https://youtu.be/wQ-Lpc4TViM)
+[You can chek the fairly recent video of the gameplay.](https://www.youtube.com/watch?v=oyiY8wT841o)
 
 
 ## The game story
