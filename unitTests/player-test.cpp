@@ -155,7 +155,12 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
     p->collect(mc->getElement(1,1));
     p->collect(mc->getElement(1,2));
     BOOST_CHECK(goldenApple::getAppleNumber()>=2);
+    p->disposeElement();
+
+    p=nullptr;
+    std::cout<<goldenApple::getAppleNumber()<<"\n";
     sb->kill();
+    gc.reset();
     // We take time for the exploded bomb to finish
     for(int c=0; c<100; c++)
         bElem::runLiveElements();
@@ -167,6 +172,7 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
     // We take time for the exploded bomb to finish
     for(int c=0; c<100; c++)
         bElem::runLiveElements();
+    gc.reset();
     BOOST_CHECK(goldenApple::getAppleNumber()==0);
 }
 

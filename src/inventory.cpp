@@ -45,12 +45,17 @@ void inventory::changeOwner(std::shared_ptr<bElem> who)
 
 bool inventory::removeCollectibleFromInventory(int instance)
 {
- //   std::cout<<"Remove from Inventory: "<<instance<<"\n";
+#ifdef _VerbousMode_
+    std::cout<<"Remove from Inventory: "<<instance<<"\n";
  //   std::cout<<"[w";
+#endif
     for(unsigned int c=0; c<this->weapons.size();)
     {
         if(this->weapons.at(c)->getInstanceid()==instance)
         {
+#ifdef _VerbousMode_
+            std::cout<<".";
+#endif
             this->decrementTokenNumber({this->weapons.at(c)->getType(),this->weapons.at(c)->getSubtype()});
             this->weapons.erase(this->weapons.begin()+c);
 
@@ -69,7 +74,9 @@ bool inventory::removeCollectibleFromInventory(int instance)
             this->decrementTokenNumber({this->usables.at(c)->getType(),this->usables.at(c)->getSubtype()});
 
             this->usables.erase(this->usables.begin()+c);
-
+#ifdef _VerbousMode_
+            std::cout<<".";
+#endif
         }
         else
         {
@@ -77,13 +84,15 @@ bool inventory::removeCollectibleFromInventory(int instance)
         }
 
     }
-  //  std::cout<<"t";
     for(unsigned int c=0; c<this->tokens.size();)
     {
         if(this->tokens.at(c)->getInstanceid()==instance)
         {
             this->decrementTokenNumber({this->tokens.at(c)->getType(),this->tokens.at(c)->getSubtype()});
             this->tokens.erase(this->tokens.begin()+c);
+#ifdef _VerbousMode_
+            std::cout<<".";
+#endif
 
         }
         else
@@ -92,13 +101,15 @@ bool inventory::removeCollectibleFromInventory(int instance)
         }
 
     }
- //   std::cout<<"k";
     for(unsigned int c=0; c<this->keys.size();)
     {
         if(this->keys.at(c)->getInstanceid()==instance)
         {
             this->decrementTokenNumber({this->keys.at(c)->getType(),this->keys.at(c)->getSubtype()});
             this->keys.erase(this->keys.begin()+c);
+#ifdef _VerbousMode_
+            std::cout<<".";
+#endif
 
         }
         else
@@ -107,12 +118,14 @@ bool inventory::removeCollectibleFromInventory(int instance)
         }
 
     }
-   // std::cout<<"m";
     for(unsigned int c=0; c<this->mods.size();)
     {
         if(this->mods.at(c)->getInstanceid()==instance)
         {
              this->decrementTokenNumber({this->mods.at(c)->getType(),this->mods.at(c)->getSubtype()});
+#ifdef _VerbousMode_
+            std::cout<<".";
+#endif
             this->mods.erase(this->mods.begin()+c);
 
         }
@@ -222,6 +235,7 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
         return false;
    // if(what->isDying() || what->isTeleporting() || what->isDestroyed())
    //     return false;
+
     what->setCollected(this->owner);
 
     this->incrementTokenNumber({what->getType(),what->getSubtype()});

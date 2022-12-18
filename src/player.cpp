@@ -55,39 +55,9 @@ std::shared_ptr<bElem> player::getActivePlayer()
 }
 
 
-
-
 player::~player()
 {
-    std::cout<<"Destroy player\n";
-    for(unsigned int c=0; c<player::allPlayers.size();)
-    {
-        if(player::allPlayers[c]->getInstanceid()==this->getInstanceid())
-        {
-            std::cout<<"Attempting to remove myself from allPlayers\n";
-            player::allPlayers.erase(player::allPlayers.begin()+c);
-            std::cout<<" * Success!\n";
-        }
-        else
-        {
-            c++;
-        }
-    }
-    for(unsigned int c=0; c<player::visitedPlayers.size();)
-    {
-        if(player::visitedPlayers[c]->getInstanceid()==this->getInstanceid())
-        {
-            std::cout<<"Attempting to remove myself from visitedPlayers\n";
-            player::visitedPlayers.erase(player::visitedPlayers.begin()+c);
-            std::cout<<" * Success!\n";
 
-        }
-        else
-        {
-            c++;
-        }
-    }
-    std::cout<<"Done destroy\n";
 }
 
 

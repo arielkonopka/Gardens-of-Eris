@@ -10,35 +10,6 @@ int bElem::instances=0;
 bool bElem::randomNumberGeneratorInitialized=false;
 std::mt19937 bElem::randomNumberGenerator;
 
-/*template<class T> std::shared_ptr<T> bElem::generateAnElement(std::shared_ptr<chamber> board)
-{
-    std::shared_ptr<T> l=std::make_shared<T>(board);
-    l->additionalProvisioning();
-    return l;
-}
-
-template<class T> std::shared_ptr<T>  bElem::generateAnElement(std::shared_ptr<chamber> board,int subtype )
-{
-    std::shared_ptr<T> l=std::make_shared<T>(board);
-    l->setSubtype(subtype);
-    l->additionalProvisioning();
-    return l;
-}
-
-template<class T> std::shared_ptr<T>  bElem::generateAnElement()
-{
-    std::shared_ptr<T> l=std::make_shared<T>();
-    l->additionalProvisioning();
-    return l;
-
-}
-
-int nop()
-{
-    bElem::generateAnElement<plainGun>(chamber::makeNewChamber({1,1}),1);
-    return 0;
-}
-*/
 
 int bElem::getInstanceid()
 {
@@ -51,12 +22,11 @@ void bElem::resetInstances()
 }
 
 
-bElem::bElem() : std::enable_shared_from_this<bElem>()
+bElem::bElem() : std::enable_shared_from_this<bElem>(),elementMutex(al_create_mutex())
 {
 
     this->eConfig.instance=bElem::instances++;
     this->state.myDirection=UP;
-//   std::cout<<"constructor of instance "<<this->getInstanceid()<<"\n";
     if(!bElem::randomNumberGeneratorInitialized)
     {
         std::random_device rd;
@@ -72,7 +42,6 @@ bElem::bElem() : std::enable_shared_from_this<bElem>()
         bElem::randomNumberGenerator.seed(seed);
         bElem::randomNumberGeneratorInitialized=true;
     }
-//   std::cout<<"constructor of instance "<<this->getInstanceid()<<"\n";
 }
 
 bElem::bElem(std::shared_ptr<chamber> board): bElem()
@@ -174,7 +143,19 @@ void bElem::unstomp()
 
 void bElem::setCollected(std::shared_ptr<bElem> who)
 {
+#ifdef _VerbousMode_
+
+    if(who.get()!=nullptr)
+        std::cout<<"Set collected me: "<<this->getInstanceid()<<" collector "<<who->getInstanceid()<<"\n";
+    else
+        std::cout<<"Set null on collector "<<this->getInstanceid()<<"\n";
+#endif
     this->state.collector=who;
+#ifdef _VerbousMode_
+
+    std::cout<<"is it set? "<<((this->state.collector.get()!=nullptr)?"yes":"no")<<"\n";
+    std::cout<<"is it set? "<<((this->state.collector.get()==who.get())?"yes":"no")<<"\n";
+#endif
 }
 
 void bElem::setDropped()
@@ -279,7 +260,10 @@ oState bElem::disposeElement()
     std::shared_ptr<bElem> stash=nullptr;
     coords oCoords=this->getCoords();
     //  std::shared_ptr<chamber>  board=this->getBoard();
-    if(this->isDisposed()==true)
+  //  std::cout<<"Disposal of an element. parameters: disposed: "<<((this->isDisposed())?"true":"false")<<" x,y "<<this->getCoords().x<<" "<<this->getCoords().y<<" \n";
+  //  std::cout<<"type: "<<this->getType()<<" collected "<<((this->getCollector().get()!=nullptr)?"true":"false")<<"\n";
+
+    if(this->state.disposed==true)
     {
         std::cout<<"Tried to dispose the same element another time!\n";
         return ERROR;
@@ -292,6 +276,9 @@ oState bElem::disposeElement()
     }
     if(this->getCollector().get()!=nullptr)
     {
+#ifdef _VerbousMode_
+        std::cout<<"The element is collected!\n";
+#endif
         std::shared_ptr<inventory> cInv=this->getCollector()->getInventory();
         if(cInv.get()!=nullptr)
             cInv->removeCollectibleFromInventory(this->getInstanceid());
@@ -307,7 +294,22 @@ oState bElem::disposeElement()
         {
             stash=bElem::generateAnElement<rubbish>(this->getBoard());
             stash->setInventory(this->getInventory());
+            stash->getInventory()->changeOwner(stash);
             this->setInventory(nullptr);
+            if(this->getSteppingOnElement().get()!=nullptr)
+                stash->stepOnElement(this->getSteppingOnElement());
+            else
+            { /*
+                 These situations might happen, when we would like to have the floor destructable, so let's support that situation:
+                 In case, that we want to dispose the element, that stands on nullptr, we will create a floor element, place it underneath disposed element,
+                 and then finally we will make a stash object, and place it on the floor we just had created.
+                */
+                std::shared_ptr<floorElement> nF=bElem::generateAnElement<floorElement>(this->getBoard());
+                nF->setCoords(oCoords);
+                this->state.steppingOn=nF;
+                nF->stomp(shared_from_this());
+                stash->stepOnElement(this->getSteppingOnElement());
+            }
         }
     }
     this->removeElement();
@@ -362,8 +364,7 @@ std::shared_ptr<bElem> bElem::getElementInDirection(direction di)
 
 bElem::~bElem()
 {
-    //  std::cout<<"  * belem destroy instance ["<<this->getInstanceid()<<"] *\n";
-    // al_destroy_mutex(this->elementMutex);
+    al_destroy_mutex(this->elementMutex);
     if(this->isLiveElement())
         this->deregisterLiveElement(this->getInstanceid());
 
@@ -634,7 +635,7 @@ bool bElem::canInteract()
 bool bElem::collect(std::shared_ptr<bElem> collectible)
 {
     std::shared_ptr<bElem> collected;
-    if (collectible.get()==nullptr || collectible->isCollectible()==false ||this->canCollect()==false || collectible->isDying() || collectible->isTeleporting() || collectible->isDestroyed())
+    if (collectible.get()==nullptr || !collectible->isCollectible() ||!this->canCollect()|| collectible->isDying() || collectible->isTeleporting() || collectible->isDestroyed())
     {
         return false;
     }
@@ -642,15 +643,16 @@ bool bElem::collect(std::shared_ptr<bElem> collectible)
     collected=collectible->removeElement();
     if (collected.get()==nullptr) //this should never happen!
     {
-#ifdef _VerbousMode_
         std::cout<<"Collecting failed!\n";
-#endif
         return false;
     }
 #ifdef _VerbousMode_
     std::cout<<"Collect "<<collected->getType()<<" st: "<<collected->getSubtype()<<"\n";
 #endif
     collectible->setCollected(shared_from_this());
+#ifdef _VerbousMode_
+    std::cout<<"Collected set? "<<(collectible->getCollector()==shared_from_this())<<"\n";
+#endif
     this->eConfig.myInventory->addToInventory(collectible);
     return true;
 }
@@ -658,9 +660,9 @@ bool bElem::collect(std::shared_ptr<bElem> collectible)
 
 bool bElem::setSubtype(int st)
 {
-    // al_lock_mutex(this->elementMutex);
+    al_lock_mutex(this->elementMutex);
     this->eConfig.subtype=st;
-    //  al_unlock_mutex(this->elementMutex);
+    al_unlock_mutex(this->elementMutex);
     return true;
 }
 
@@ -669,10 +671,10 @@ bool bElem::setSubtype(int st)
 
 bool bElem::setEnergy(int points)
 {
-    //al_lock_mutex(this->elementMutex);
+    al_lock_mutex(this->elementMutex);
     if(this->getStats().get()!=nullptr)
         this->getStats()->setEnergy(points);
-    //al_unlock_mutex(this->elementMutex);
+    al_unlock_mutex(this->elementMutex);
     return true;
 }
 
@@ -706,8 +708,9 @@ bool bElem::additionalProvisioning()
         return true;
     if(this->getInventory().get()!=nullptr)
     {
-
-
+#ifdef _VerbousMode_
+        std::cout<<"Adding owner to the inventory\n";
+#endif
         this->eConfig.myInventory->changeOwner(shared_from_this());
 #ifdef _VerbousMode_
         std::cout<<"set inv owner to: "<<this->getInstanceid()<<"\n";
