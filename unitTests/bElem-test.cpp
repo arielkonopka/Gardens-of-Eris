@@ -66,7 +66,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
     };
 //    std::cout<<"make chamber\n";
     std::shared_ptr<chamber> chmbr=chamber::makeNewChamber(csize); // we need only a small chamber
-//    std::cout<<"made chamber\n";
     coords cs1=chmbr->getSizeOfChamber();
     BOOST_ASSERT( chmbr!=nullptr );
     BOOST_CHECK( cs1==csize);
@@ -80,7 +79,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
             BOOST_CHECK(beOrig->getCoords()==mcoords); // just check if the allocation is correct
             BOOST_CHECK(beOrig->getStomper().get()==nullptr);
             BOOST_ASSERT(beOrig->getSteppingOnElement().get()==nullptr);
-//            std::cout<<"checking obj: "<<chmbr->getElement(c,d)->getInstanceid()<<"\n";
         }
 
     std::shared_ptr<bElem> beOrig=chmbr->getElement(0,0); // ok, now let's step on something
@@ -213,13 +211,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndRemovingTest,T,all_test_types)
     for(int x=0; x<10; x++)
     {
         std::shared_ptr<bElem> be=bElem::generateAnElement<bElem>(mc);
-        be->additionalProvisioning();
         be->stepOnElement(mc->getElement(3,3));
         BOOST_ASSERT(mc->getElement(3,3)->getInstanceid()==be->getInstanceid());
         BOOST_ASSERT(mc->getElement(3,3)->getSteppingOnElement()!=nullptr);
     }
     std::shared_ptr<bElem> last=bElem::generateAnElement<T>(mc);
-    last->additionalProvisioning();
     last->stepOnElement(mc->getElement(3,3));
 
     //we at first take the last element, at the bottom, because it usually causes issues
@@ -468,7 +464,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
     myObj->destroy();
     for(int c=0; c<_defaultDestroyTime+1; c++)
     {
-        std::cout<<"Waiting for destruction\n";
+      //  std::cout<<"Waiting for destruction\n";
         BOOST_CHECK(mc->getElement(3,3)->isDestroyed()==true);
         bElem::runLiveElements();
     }
@@ -476,7 +472,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
     BOOST_CHECK(mc->getElement(3,3)->isDestroyed()==false);
     if(!canBeDestroyed )
     {
-        std::cout<<"instance "<<instance<<" "<<mc->getElement(3,3)->getInstanceid()<<"\n";
+     //   std::cout<<"instance "<<instance<<" "<<mc->getElement(3,3)->getInstanceid()<<"\n";
         BOOST_CHECK(mc->getElement(3,3)->getInstanceid()==instance);
     }
     else
@@ -550,19 +546,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TryToCollectAnObjectAndDisposeIt,T,all_test_types)
     std::shared_ptr<chamber>  mc=chamber::makeNewChamber({5,5});
 
     std::shared_ptr<bElem> mO=bElem::generateAnElement<T>(mc);
-    mO->additionalProvisioning();
     std::shared_ptr<bElem> mC=bElem::generateAnElement<T>(mc);
-    mC->additionalProvisioning();
     std::shared_ptr<inventory> nInv=std::make_shared<inventory>();
-    mO->setInventory(nInv);
-    mO->collect(mc->getElement(2,3));
+    mO->setInventory(std::make_shared<inventory>());
+    mO->getInventory()->changeOwner(mO);
     mO->stepOnElement(mc->getElement(2,2));
     mC->stepOnElement(mc->getElement(2,3));
     //Check if the collect method works well with its limits
-    BOOST_CHECK(mO->collect(mc->getElement(2,3))==(mO->canCollect()==true && mC->isCollectible()==true));
-    if(mO->canCollect()==true && mC->isCollectible()==true)
+    bool chk=mO->collect(mc->getElement(2,3));
+    BOOST_CHECK(chk==(mO->canCollect() && mC->isCollectible()));
+    if(mO->canCollect()&& mC->isCollectible())
     {
         BOOST_CHECK(mc->getElement(2,3)->getInstanceid()!=mC->getInstanceid());
+        BOOST_CHECK(mC->getCollector().get()!=nullptr);
+        std::cout<<"is in inv?"<<mO->getInventory()->findInInventory(mC->getInstanceid())<<"\n";
     }
     else
     {
@@ -581,7 +578,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TryToCollectAnObjectAndDisposeIt,T,all_test_types)
         for(int b=0; b<mc->height; b++)
         {
             BOOST_CHECK(mc->getElement(a,b)->getInstanceid()!=mC->getInstanceid());
-            if(mc->getElement(a,b)->canCollect()==true)
+            if(mc->getElement(a,b)->canCollect())
             {
                 BOOST_CHECK(mc->getElement(a,b)->getInventory()->findInInventory(mC->getInstanceid())==false);
             }

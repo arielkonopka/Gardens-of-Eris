@@ -43,7 +43,7 @@ examples:
     ;;
     "-m")
 	shift
-	
+        stopme="true"
 	if [ "$buildTests" = "true" ] ;then
 	    module="unitTests/${1}"
 	else
@@ -57,11 +57,11 @@ examples:
 	    echo " * ${gccbin} ${objPath}${module}*.o  ${objPath}/${module}.o -o ./GoE-tests-${a%.cpp} -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm -lboost_unit_test_framework ${linkAdditionalFLags}"
 	    ${gccbin} ${objPath}/src/*.o  ${objPath}/${module}.o  -o ./GoE-tests-${a%.cpp} -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm -lboost_unit_test_framework ${linkAdditionalFLags}   3>&1 2>&1 >>compile.log
 	fi
-	echo "Done"
-	exit 0
+	
     ;;
     "-g")
 	buildGame="true"
+	buildTests="false"
     ;;
     "-a")
 	buildGame="true"
@@ -69,11 +69,18 @@ examples:
     ;;
     "-t")
 	buildTests="true"
+	buildGame="false"
     ;;
     esac
     shift
 done
-
+if [ "${stopme}" = "true" ] ; then
+    echo "Now linking the game..."
+    ${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./GoEoOL/GoEoOL -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm  ${linkAdditionalFLags}  3>&1   2>&1 >>compile.log
+    echo "Done"
+    echo "Enjoy..."
+    exit 0
+fi
 if [ "${buildGame}" = "true" ] ; then
     echo  "Building the game:"
     for x in src/*.cpp ./main.cpp ; do 

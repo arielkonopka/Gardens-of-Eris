@@ -28,6 +28,7 @@ public:
     virtual bool shootGun();
     virtual oState disposeElement();
     virtual bool additionalProvisioning();
+
 private:
     static std::shared_ptr<bElem> activePlayer;
     static std::vector<std::shared_ptr<bElem>> allPlayers;

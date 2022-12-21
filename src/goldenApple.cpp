@@ -39,20 +39,25 @@ goldenApple::goldenApple():collectible(),nonSteppable(),killableElements(),explo
 
 }
 
+oState goldenApple::disposeElement()
+{
+ for(unsigned int cnt=0; cnt<goldenApple::apples.size();)
+    {
+        if(goldenApple::apples[cnt]->getInstanceid()==this->getInstanceid())
+        {
+            goldenApple::apples.erase(goldenApple::apples.begin()+cnt);
+        }
+        else cnt++;
+    }
+    return bElem::disposeElement();
+}
+
 
 goldenApple::~goldenApple()
 {
     goldenApple::appleNumber--;
-    for(unsigned int cnt=0; cnt<goldenApple::apples.size();)
-    {
-        if(goldenApple::apples[cnt]==shared_from_this())
-        {
-            goldenApple::apples.erase(goldenApple::apples.begin()+cnt);
 
-        }
-        else cnt++;
-
-    }
+    std::cout<<"Removed apple\n";
 }
 
 int goldenApple::getAppleNumber()
@@ -75,6 +80,7 @@ bool goldenApple::kill()
 {
     if(killableElements::kill())
     {
+
         this->explode();
         return true;
     }

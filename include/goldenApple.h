@@ -16,6 +16,7 @@ public:
     goldenApple();
     virtual ~goldenApple();
     virtual bool additionalProvisioning();
+    virtual oState disposeElement();
 private:
     static unsigned int appleNumber;
     static std::vector<std::shared_ptr<bElem>> apples;

@@ -56,6 +56,9 @@ class bElem: public virtual std::enable_shared_from_this<bElem>
 {
 public:
 
+/*
+ * these three templates below generate objects. I added them because I need bidirectional connection with everything
+ */
     template <class T>
     static std::shared_ptr<T> generateAnElement(std::shared_ptr<chamber> board)
     {
@@ -221,6 +224,7 @@ public:
     virtual bool additionalProvisioning() ;
 
 private:
+    bElem(const bElem&) = delete;
     std::shared_ptr<chamber> attachedBoard=nullptr;
     ALLEGRO_MUTEX* elementMutex=nullptr;
     static int instances;
