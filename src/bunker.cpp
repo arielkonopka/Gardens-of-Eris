@@ -3,7 +3,7 @@
 videoElement::videoElementDef* bunker::vd=nullptr;
 
 bunker::bunker(std::shared_ptr<chamber> board):mechanical(board), nonSteppable(board),movableElements(board),
-    myGun(bElem::generateAnElement<plainGun>(board,1))
+    myGun(elementFactory::generateAnElement<plainGun>(board,1))
 {
 
 }

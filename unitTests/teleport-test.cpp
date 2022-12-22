@@ -12,8 +12,8 @@ BOOST_AUTO_TEST_SUITE( TeleportObjectTests )
 BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
 {
     std::shared_ptr<chamber> mc=chamber::makeNewChamber({5,5});
-    std::shared_ptr<teleport> tel1=bElem::generateAnElement<teleport>(mc,0);
-    std::shared_ptr<bElem> transportedE=bElem::generateAnElement<bElem>(mc);
+    std::shared_ptr<teleport> tel1=elementFactory::generateAnElement<teleport>(mc,0);
+    std::shared_ptr<bElem> transportedE=elementFactory::generateAnElement<bElem>(mc);
     transportedE->stepOnElement(mc->getElement(2,3));
     //  transportedE->setActive(true);
     coords crds;
@@ -45,9 +45,9 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
     coords crds;
     coords nc= {5,4};
     std::shared_ptr<chamber> mc=chamber::makeNewChamber({6,6});
-    std::shared_ptr<teleport> tel1=bElem::generateAnElement<teleport>(mc,0);
-    std::shared_ptr<teleport>  tel2=bElem::generateAnElement<teleport>(mc,0);
-    std::shared_ptr<bElem> transportEl=bElem::generateAnElement<bElem>(mc);
+    std::shared_ptr<teleport> tel1=elementFactory::generateAnElement<teleport>(mc,0);
+    std::shared_ptr<teleport>  tel2=elementFactory::generateAnElement<teleport>(mc,0);
+    std::shared_ptr<bElem> transportEl=elementFactory::generateAnElement<bElem>(mc);
     transportEl->stepOnElement(mc->getElement(1,2));
     bElem::tick();
     bElem::tick();
@@ -74,10 +74,10 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
     coords ncrds;
     coords t1crds={2,3};
     coords t2crds={3,4};
-    std::shared_ptr<teleport>  tel1=bElem::generateAnElement<teleport>(mc,0);
-    std::shared_ptr<teleport>  tel2=bElem::generateAnElement<teleport>(mc,1);
-    std::shared_ptr<bElem> _tr1=bElem::generateAnElement<bElem>(mc);
-    std::shared_ptr<bElem> _tr2=bElem::generateAnElement<bElem>(mc);
+    std::shared_ptr<teleport>  tel1=elementFactory::generateAnElement<teleport>(mc,0);
+    std::shared_ptr<teleport>  tel2=elementFactory::generateAnElement<teleport>(mc,1);
+    std::shared_ptr<bElem> _tr1=elementFactory::generateAnElement<bElem>(mc);
+    std::shared_ptr<bElem> _tr2=elementFactory::generateAnElement<bElem>(mc);
     _tr1->stepOnElement(mc->getElement(2,1));
     _tr2->stepOnElement(mc->getElement(5,6));
 
@@ -103,12 +103,12 @@ BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
     std::shared_ptr<bElem> tel1,tel2,transported;
     bElem::tick();
 
-    transported=bElem::generateAnElement<bElem>(mc);
+    transported=elementFactory::generateAnElement<bElem>(mc);
     transported->stepOnElement(mc->getElement(pointAt));
     transported->setDirection(RIGHT);
     BOOST_CHECK(transported->isTeleporting()==false);
-    tel1=bElem::generateAnElement<teleport>(mc,1);
-    tel2=bElem::generateAnElement<teleport>(mc,1);
+    tel1=elementFactory::generateAnElement<teleport>(mc,1);
+    tel2=elementFactory::generateAnElement<teleport>(mc,1);
     tel1->stepOnElement(mc->getElement(pointA));
     tel2->stepOnElement(mc->getElement(pointB));
     //ok now step on that teleport

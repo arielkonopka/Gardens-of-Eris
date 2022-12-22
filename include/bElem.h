@@ -59,33 +59,10 @@ public:
 /*
  * these three templates below generate objects. I added them because I need bidirectional connection with everything
  */
-    template <class T>
-    static std::shared_ptr<T> generateAnElement(std::shared_ptr<chamber> board)
-    {
-        std::shared_ptr<T> l=std::make_shared<T>(board);
-        l->additionalProvisioning();
-        return l;
-    }
-    template <class T>
-    static std::shared_ptr<T> generateAnElement(std::shared_ptr<chamber> board,int subtype)
-    {
-        std::shared_ptr<T> l=std::make_shared<T>(board);
-        l->setSubtype(subtype);
-        l->additionalProvisioning();
-        return l;
-    }
 
-    template <class T>
-    static std::shared_ptr<T> generateAnElement()
-    {
-        std::shared_ptr<T> l=std::make_shared<T>();
-        l->additionalProvisioning();
-        return l;
-
-    }
     static videoElement::videoElementDef* vd;
 
-    virtual int getInstanceid();
+    virtual int getInstanceid() const;
     static void resetInstances();
     virtual ALLEGRO_MUTEX* getMyMutex();
     void registerLiveElement(std::shared_ptr<bElem> who);
@@ -187,7 +164,7 @@ public:
     virtual coords getOffset();
     virtual bool isWaiting();
     virtual void setWait(int time);
-    virtual int getWait();
+    virtual int getWait() const;
     virtual void stopWaiting();
     virtual constexpr bool readyToShoot()
     {
@@ -200,7 +177,7 @@ public:
     static std::vector<std::shared_ptr<bElem>> liveElems;
 
     static void tick();
-    virtual  unsigned int getCntr();
+    unsigned int getCntr() const;
 
     virtual constexpr bool isFading()
     {
@@ -220,7 +197,7 @@ public:
     virtual int getTypeInDirection(direction di);
     virtual void setStatsOwner(std::shared_ptr<bElem> owner);
     bElem();
-    bElem(std::shared_ptr<chamber> board);
+    explicit bElem(std::shared_ptr<chamber> board);
     virtual bool additionalProvisioning() ;
 
 private:
