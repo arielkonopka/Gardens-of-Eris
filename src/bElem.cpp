@@ -522,7 +522,7 @@ bool bElem::mechanics()
     if((this->getBoard().get()==nullptr || this->getCoords()==NOCOORDS) && (this->getCollector().get()==nullptr))
         return false;
 
-    if (this->canBeDestroyed() && (long int)this->state.destroyed>0 && this->getCntr()>=this->state.destTimeBeg+this->state.destTimeReq-1 )
+    if ((long int)this->state.destroyed>0 && this->canBeDestroyed() && this->getCntr()>=this->state.destTimeBeg+this->state.destTimeReq-1 )
     {
         this->disposeElement();
         return false;
