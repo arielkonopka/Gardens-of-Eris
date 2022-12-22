@@ -23,8 +23,8 @@ class chamber: public std::enable_shared_from_this<chamber>
         std::shared_ptr<bElem> getElement(coords point);
         void setElement(int x, int y, std::shared_ptr<bElem> elem);
         void setElement(coords point,std::shared_ptr<bElem> elem);
-        chamber(int x,int y);
-        chamber(coords csize);
+        explicit chamber(int x,int y);
+        explicit chamber(coords csize);
         ~chamber();
         int getInstanceId();
         std::string getName();

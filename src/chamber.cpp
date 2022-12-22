@@ -34,7 +34,7 @@ void chamber::createFloor()
 #ifdef _VerbousMode_
             std::cout<<"Create an object to place\n";
 #endif
-            std::shared_ptr<bElem> b=bElem::generateAnElement<floorElement>(shared_from_this());
+            std::shared_ptr<bElem> b=elementFactory::generateAnElement<floorElement>(shared_from_this());
 #ifdef _VerbousMode_
             std::cout<<"created id "<<b->getInstanceid()<<"\n";
 #endif

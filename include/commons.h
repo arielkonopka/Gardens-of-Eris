@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <memory>
 #include <vector>
-
+#include "elementFactory.h"
 
 
 #define _belemType -1
@@ -61,14 +61,14 @@
 typedef struct coords
 {
     int x=-1,y=-1;
-    inline bool operator==(coords a)
+    inline bool operator==(coords a) const
     {
         if (a.x==x && a.y==y)
             return true;
         else
             return false;
     };
-    inline bool operator!=(coords a)
+    inline bool operator!=(coords a) const
     {
         if (a.x!=x || a.y!=y)
             return true;

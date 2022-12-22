@@ -11,7 +11,7 @@ bool bElem::randomNumberGeneratorInitialized=false;
 std::mt19937 bElem::randomNumberGenerator;
 
 
-int bElem::getInstanceid()
+int bElem::getInstanceid() const
 {
     return this->eConfig.instance;
 }
@@ -80,9 +80,10 @@ void bElem::setWait(int time)
     this->state.waiting=this->getCntr()+time;
 }
 
-int bElem::getWait()
+int bElem::getWait() const
 {
-    return (this->state.waiting>0)?this->state.waiting-(int)this->getCntr():0;
+    int res=(this->state.waiting>0)?this->state.waiting-(int)this->getCntr():0;
+    return res;
 }
 
 bool bElem::setDirection(direction dir)
@@ -204,6 +205,8 @@ oState bElem::disposeElementUnsafe()
     if(this->isDisposed()==true)
         return ERROR;
     this->state.disposed=true;
+    if(this->getInventory().get()!=nullptr)
+        this->getInventory()->changeOwner(nullptr);
     if(mycoords.x>=0 && mycoords.y>=0 && this->getBoard()!=nullptr) //object on a board? need extra steps
     {
         if(this->getSteppingOnElement().get()!=nullptr || this->getStomper().get()!=nullptr)
@@ -216,9 +219,10 @@ oState bElem::disposeElementUnsafe()
             this->getBoard()->setElement(this->state.myPosition,nullptr);
             res=nullptrREACHED;
         }
+
         if(this->getType()!=_stash && this->getInventory().get()!=nullptr && this->getInventory()->isEmpty()==false && this->getType()!=_rubishType && this->getType()!=_plainMissile && this->getType()!=_plainGun )
         {
-            std::shared_ptr<bElem> stash=bElem::generateAnElement<rubbish>(myBoard);
+            std::shared_ptr<bElem> stash=elementFactory::generateAnElement<rubbish>(myBoard);
             stash->setInventory(this->getInventory());
             stash->getInventory()->changeOwner(stash);
             this->setInventory(nullptr);
@@ -246,13 +250,16 @@ oState bElem::disposeElementUnsafe()
         }
 
     }
-
-//   gCollect::getInstance()->addToBin(shared_from_this()); //add myself to to bin - this should be the only way of the object disposal!
     this->state.disposed=true;
     this->state.myPosition=NOCOORDS;
     this->attachedBoard=nullptr;
     return res; // false means that there is no more elements to go.
 }
+
+
+
+
+
 
 oState bElem::disposeElement()
 {
@@ -292,10 +299,15 @@ oState bElem::disposeElement()
     {
         if(this->getInventory()->isEmpty()==false)
         {
-            stash=bElem::generateAnElement<rubbish>(this->getBoard());
+            /*
+                Create a rubbish element on the board, so the inventory would not be lost
+             */
+            stash=elementFactory::generateAnElement<rubbish>(this->getBoard());
             stash->setInventory(this->getInventory());
             stash->getInventory()->changeOwner(stash);
             this->setInventory(nullptr);
+            if(this->getStomper().get()!=nullptr)
+                stash->stomp(this->getStomper());
             if(this->getSteppingOnElement().get()!=nullptr)
                 stash->stepOnElement(this->getSteppingOnElement());
             else
@@ -304,7 +316,7 @@ oState bElem::disposeElement()
                  In case, that we want to dispose the element, that stands on nullptr, we will create a floor element, place it underneath disposed element,
                  and then finally we will make a stash object, and place it on the floor we just had created.
                 */
-                std::shared_ptr<floorElement> nF=bElem::generateAnElement<floorElement>(this->getBoard());
+                std::shared_ptr<floorElement> nF=elementFactory::generateAnElement<floorElement>(this->getBoard());
                 nF->setCoords(oCoords);
                 this->state.steppingOn=nF;
                 nF->stomp(shared_from_this());
@@ -607,7 +619,7 @@ std::shared_ptr<bElem> bElem::removeElement()
     }
     else if(this->getStomper().get()==nullptr && this->getSteppingOnElement().get()==nullptr)
     {
-        std::shared_ptr<bElem> newElem=bElem::generateAnElement<floorElement>(this->attachedBoard);
+        std::shared_ptr<bElem> newElem=elementFactory::generateAnElement<floorElement>(this->attachedBoard);
         newElem->setCoords(this->getCoords());
         newElem->attachedBoard->setElement(newElem->getCoords(),newElem);
     }
@@ -874,7 +886,7 @@ void bElem::tick()
 
 }
 
-unsigned int bElem::getCntr()
+unsigned int bElem::getCntr() const
 {
     return bElem::sTaterCounter;
 }

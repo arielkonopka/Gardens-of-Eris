@@ -12,7 +12,7 @@ class player : public killableElements,public movableElements,public nonSteppabl
 public:
     player();
     player(std::shared_ptr<chamber> board);
-    virtual ~player();
+    virtual ~player() =default;
     static unsigned int countVisitedPlayers();
     virtual videoElement::videoElementDef* getVideoElementDef();
     static videoElement::videoElementDef* vd;

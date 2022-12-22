@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( elementCreation,T,all_test_types)
 #ifdef _VerbousMode_
     std::cout<<"attempting to build an elem\n";
 #endif
-    std::shared_ptr<bElem> be=bElem::generateAnElement<T>();
+    std::shared_ptr<bElem> be=elementFactory::generateAnElement<T>();
     BOOST_ASSERT(be->getInstanceid()>=0);
     BOOST_ASSERT( be!=nullptr);
 
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
         }
 
     std::shared_ptr<bElem> beOrig=chmbr->getElement(0,0); // ok, now let's step on something
-    std::shared_ptr<bElem> be=bElem::generateAnElement<T>(chmbr);
+    std::shared_ptr<bElem> be=elementFactory::generateAnElement<T>(chmbr);
     BOOST_ASSERT( be!=nullptr );
     be->stepOnElement(chmbr->getElement(0,0));
     BOOST_CHECK(be->getBoard()==chmbr);
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateThenDispose,T,all_test_types)
     BOOST_ASSERT( chmbr!=nullptr );
 
     std::shared_ptr<bElem> beOrig=chmbr->getElement(point); // ok, now let's step on something
-    std::shared_ptr<bElem> be=bElem::generateAnElement<T>(chmbr);
+    std::shared_ptr<bElem> be=elementFactory::generateAnElement<T>(chmbr);
 
     BOOST_ASSERT( be!=nullptr );
     be->stepOnElement(chmbr->getElement(point));
@@ -140,8 +140,8 @@ BOOST_AUTO_TEST_CASE(StackAndRemoveFromTheFeet)
     coords point= {3,3};
     std::shared_ptr<chamber> mc=chamber::makeNewChamber(csize);
     std::shared_ptr<bElem> o=mc->getElement(point);
-    std::shared_ptr<bElem> e=bElem::generateAnElement<bElem>(mc);
-    std::shared_ptr<bElem> e1=bElem::generateAnElement<bElem>(mc);
+    std::shared_ptr<bElem> e=elementFactory::generateAnElement<bElem>(mc);
+    std::shared_ptr<bElem> e1=elementFactory::generateAnElement<bElem>(mc);
     BOOST_CHECK(o->getInstanceid()!=e->getInstanceid() && o->getInstanceid()!=e1->getInstanceid());
     e->stepOnElement(mc->getElement(point));
     e1->stepOnElement(mc->getElement(point));
@@ -210,12 +210,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndRemovingTest,T,all_test_types)
     int ccc=0;
     for(int x=0; x<10; x++)
     {
-        std::shared_ptr<bElem> be=bElem::generateAnElement<bElem>(mc);
+        std::shared_ptr<bElem> be=elementFactory::generateAnElement<bElem>(mc);
         be->stepOnElement(mc->getElement(3,3));
         BOOST_ASSERT(mc->getElement(3,3)->getInstanceid()==be->getInstanceid());
         BOOST_ASSERT(mc->getElement(3,3)->getSteppingOnElement()!=nullptr);
     }
-    std::shared_ptr<bElem> last=bElem::generateAnElement<T>(mc);
+    std::shared_ptr<bElem> last=elementFactory::generateAnElement<T>(mc);
     last->stepOnElement(mc->getElement(3,3));
 
     //we at first take the last element, at the bottom, because it usually causes issues
@@ -262,12 +262,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDisposingTest,T,all_test_types)
     int myId;
     for(int x=0; x<100; x++)
     {
-        std::shared_ptr<bElem> be=bElem::generateAnElement<bElem>(mc);
+        std::shared_ptr<bElem> be=elementFactory::generateAnElement<bElem>(mc);
         be->stepOnElement(mc->getElement(3,3));
         BOOST_ASSERT(mc->getElement(3,3)->getInstanceid()==be->getInstanceid());
         BOOST_ASSERT(mc->getElement(3,3)->getSteppingOnElement()!=nullptr);
     }
-    std::shared_ptr<bElem> last=bElem::generateAnElement<T>(mc);
+    std::shared_ptr<bElem> last=elementFactory::generateAnElement<T>(mc);
     last->stepOnElement(mc->getElement(3,3));
     te=findLastStep(mc->getElement(3,3));
     BOOST_CHECK(te->getInstanceid()!=mc->getElement(3,3)->getInstanceid());
@@ -304,14 +304,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDestroyingTheWholeChamber,T,all_test_ty
 {
     std::shared_ptr<chamber> mc=chamber::makeNewChamber({11,11});
     std::shared_ptr<bElem> be=nullptr;
-    std::shared_ptr<bElem> be1=bElem::generateAnElement<bElem>(mc);
+    std::shared_ptr<bElem> be1=elementFactory::generateAnElement<bElem>(mc);
     BOOST_CHECK(be1!=nullptr);
     BOOST_CHECK(be1->stepOnElement(mc->getElement(10,10))==true);
     for(int x=0; x<10; x++)
     {
         for(int y=0; y<10; y++)
         {
-            be=bElem::generateAnElement<T>(mc);
+            be=elementFactory::generateAnElement<T>(mc);
             be->stepOnElement(mc->getElement(x,y));
             BOOST_CHECK(be->getInstanceid()==mc->getElement(x,y)->getInstanceid());
             be->setActive(true);
@@ -351,7 +351,7 @@ BOOST_AUTO_TEST_CASE( StepOverElementTests)
     std::shared_ptr<bElem> nElement=nullptr;
     for(int c=0; c<100; c++)
     {
-        nElement=bElem::generateAnElement<bElem>(mc);
+        nElement=elementFactory::generateAnElement<bElem>(mc);
         BOOST_CHECK(nElement->stepOnElement(mc->getElement(point))==true);
         BOOST_CHECK(nElement->getInstanceid()==mc->getElement(point)->getInstanceid());
         BOOST_CHECK(nElement->getCoords()==point);
@@ -365,7 +365,7 @@ BOOST_AUTO_TEST_CASE( StepOverElementTests)
         int origId=0;
         int nEInstanceId=nElement->getInstanceid();
         origId=mc->getElement(point)->getInstanceid();
-        std::shared_ptr<bElem> nE2=bElem::generateAnElement<bElem>(mc);
+        std::shared_ptr<bElem> nE2=elementFactory::generateAnElement<bElem>(mc);
         std::shared_ptr<bElem> stmp,steppOn;
         stmp=nElement->getStomper();
         steppOn=nElement->getSteppingOnElement();
@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE( StepOverElementTests)
 BOOST_AUTO_TEST_CASE_TEMPLATE(SubTypeChecker,T,all_test_types)
 {
     std::shared_ptr<chamber>  mc=chamber::makeNewChamber({10,10});
-    std::shared_ptr<bElem> myobj=bElem::generateAnElement<T>(mc);
+    std::shared_ptr<bElem> myobj=elementFactory::generateAnElement<T>(mc);
     for(int x=0; x<10; x++)
     {
         myobj->setSubtype(x);
@@ -415,7 +415,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(SubTypeChecker,T,all_test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE(WaitMechanismTest,T,base_test_types)
 {
     std::shared_ptr<chamber>  mc=chamber::makeNewChamber({10,10});
-    std::shared_ptr<bElem> testObj=bElem::generateAnElement<T>(mc);
+    std::shared_ptr<bElem> testObj=elementFactory::generateAnElement<T>(mc);
     testObj->stepOnElement(mc->getElement(3,3));
     //  testObj->setActive(true);
     for(int d=1; d<100; d++)
@@ -451,7 +451,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
     coords csize= {10,11};
     std::shared_ptr<chamber>  mc=chamber::makeNewChamber({csize});
 
-    std::shared_ptr<bElem> myObj=bElem::generateAnElement<T>(mc);
+    std::shared_ptr<bElem> myObj=elementFactory::generateAnElement<T>(mc);
     bool canBeDestroyed=myObj->canBeDestroyed();
     // bool isSteppable=myObj->isSteppable();
     //  int origType=myObj->getType();
@@ -486,9 +486,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE(ElementsLockUnlockFeature,T,all_test_types)
 {
     std::shared_ptr<chamber>  mc=chamber::makeNewChamber({5,5});
-    std::shared_ptr<bElem> myElement=bElem::generateAnElement<T>(mc);
-    std::shared_ptr<bElem> blocker=bElem::generateAnElement<T>(mc);
-    std::shared_ptr<bElem> blocker2=bElem::generateAnElement<T>(mc);
+    std::shared_ptr<bElem> myElement=elementFactory::generateAnElement<T>(mc);
+    std::shared_ptr<bElem> blocker=elementFactory::generateAnElement<T>(mc);
+    std::shared_ptr<bElem> blocker2=elementFactory::generateAnElement<T>(mc);
     myElement->stepOnElement(mc->getElement(2,2));
     blocker->stepOnElement(mc->getElement(2,3));
     blocker2->stepOnElement(mc->getElement(3,2));
@@ -513,10 +513,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(InteractTimerMechanismChecker,T,all_test_types)
 {
 
     std::shared_ptr<chamber>  mc=chamber::makeNewChamber({5,5});
-    std::shared_ptr<bElem> tElem=bElem::generateAnElement<T>(mc);
+    std::shared_ptr<bElem> tElem=elementFactory::generateAnElement<T>(mc);
 
     tElem->stepOnElement(mc->getElement(3,3));
-    tElem=bElem::generateAnElement<T>(mc);
+    tElem=elementFactory::generateAnElement<T>(mc);
     tElem->stepOnElement(mc->getElement(2,2));
 
     for(int c=0; c<1000; c++) bElem::tick();
@@ -545,8 +545,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TryToCollectAnObjectAndDisposeIt,T,all_test_types)
 {
     std::shared_ptr<chamber>  mc=chamber::makeNewChamber({5,5});
 
-    std::shared_ptr<bElem> mO=bElem::generateAnElement<T>(mc);
-    std::shared_ptr<bElem> mC=bElem::generateAnElement<T>(mc);
+    std::shared_ptr<bElem> mO=elementFactory::generateAnElement<T>(mc);
+    std::shared_ptr<bElem> mC=elementFactory::generateAnElement<T>(mc);
     std::shared_ptr<inventory> nInv=std::make_shared<inventory>();
     mO->setInventory(std::make_shared<inventory>());
     mO->getInventory()->changeOwner(mO);
@@ -566,7 +566,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TryToCollectAnObjectAndDisposeIt,T,all_test_types)
         BOOST_CHECK(mc->getElement(2,3)->getInstanceid()==mC->getInstanceid());
     }
 
-    mC=bElem::generateAnElement<T>(mc);
+    mC=elementFactory::generateAnElement<T>(mc);
     mC->stepOnElement(mc->getElement(3,2));
     mO->collect(mc->getElement(3,2));
     BOOST_CHECK(mC->isDisposed()==false);
@@ -602,10 +602,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TryToCollectAnObjectAndDisposeIt,T,all_test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE(TryToRemoveElementMoreThanNeeded,T,all_test_types)
 {
     std::shared_ptr<chamber>  mc=chamber::makeNewChamber({5,5});
-    std::shared_ptr<bElem> myObj=bElem::generateAnElement<T>(mc);
+    std::shared_ptr<bElem> myObj=elementFactory::generateAnElement<T>(mc);
     std::shared_ptr<bElem> relic;
     myObj->stepOnElement(mc->getElement(1,1));
-    myObj=bElem::generateAnElement<T>(mc);
+    myObj=elementFactory::generateAnElement<T>(mc);
     myObj->stepOnElement(mc->getElement(2,2));
 
     for(int c=0; c<100; c++)

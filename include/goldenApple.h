@@ -10,13 +10,13 @@ public:
     static std::shared_ptr<bElem> getApple(int num);
     virtual videoElement::videoElementDef* getVideoElementDef();
     static  int getAppleNumber();
-    virtual int getType();
-    virtual bool kill();
+    int getType() final;
+    bool kill() final;
     goldenApple(std::shared_ptr<chamber> board);
     goldenApple();
     virtual ~goldenApple();
-    virtual bool additionalProvisioning();
-    virtual oState disposeElement();
+    bool additionalProvisioning() final;
+    oState disposeElement() final;
 private:
     static unsigned int appleNumber;
     static std::vector<std::shared_ptr<bElem>> apples;

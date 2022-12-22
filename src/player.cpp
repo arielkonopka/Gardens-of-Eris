@@ -55,11 +55,6 @@ std::shared_ptr<bElem> player::getActivePlayer()
 }
 
 
-player::~player()
-{
-
-}
-
 
 unsigned int player::countVisitedPlayers()
 {

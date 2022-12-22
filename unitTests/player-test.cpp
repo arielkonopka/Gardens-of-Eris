@@ -13,9 +13,9 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
 {
 //    bool gunDisposed=false;
     std::shared_ptr<chamber> mc=chamber::makeNewChamber({5,5});
-    std::shared_ptr<player> plr=bElem::generateAnElement<player>(mc);
+    std::shared_ptr<player> plr=elementFactory::generateAnElement<player>(mc);
     plr->stepOnElement(mc->getElement(2,2));
-    std::shared_ptr<plainGun> pGun=bElem::generateAnElement<plainGun>(mc);
+    std::shared_ptr<plainGun> pGun=elementFactory::generateAnElement<plainGun>(mc);
     pGun->setSubtype(0);
     pGun->stepOnElement(mc->getElement(3,2));
     plr->setActive(true);
@@ -36,11 +36,11 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
     }
     BOOST_CHECK(plr->getInventory()->getActiveWeapon()==nullptr);
 
-    pGun=bElem::generateAnElement<plainGun>(mc);
+    pGun=elementFactory::generateAnElement<plainGun>(mc);
     pGun->setSubtype(0);
     pGun->stepOnElement(mc->getElement(3,2));
     plr->collect(pGun);
-    pGun=bElem::generateAnElement<plainGun>(mc);
+    pGun=elementFactory::generateAnElement<plainGun>(mc);
     pGun->setSubtype(0);
     pGun->stepOnElement(mc->getElement(3,2));
     plr->collect(pGun);
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
 {
     std::shared_ptr<chamber> mc=chamber::makeNewChamber({10,10});
     std::shared_ptr<player> p=nullptr;
-    p=bElem::generateAnElement<player>(mc);
+    p=elementFactory::generateAnElement<player>(mc);
     std::shared_ptr<bElem> e=nullptr;
     for(int cnt=0; cnt<10000; cnt++)
     {
@@ -108,13 +108,13 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
     for(int c=0; c<10; c++)
         m.push_back(chamber::makeNewChamber({105,10}));
 
-    p0=bElem::generateAnElement<player>(m[0]);
+    p0=elementFactory::generateAnElement<player>(m[0]);
     p0->stepOnElement(m[1]->getElement(0,0));
     p0->setActive(true);
     for(int a=0; a<100; a++)
     {
         //std::cout<<a<<"\n";
-        p=bElem::generateAnElement<player>();
+        p=elementFactory::generateAnElement<player>();
         BOOST_CHECK(p->stepOnElement(nullptr)==false);
         BOOST_CHECK(p->stepOnElement(m[a%m.size()]->getElement(a,a%10))==true);
         BOOST_CHECK(p->stepOnElement(m[a%m.size()]->getElement(a,a%10))==false);
@@ -144,13 +144,13 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
 BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestroyedWithBomb)
 {
     std::shared_ptr<chamber> mc=chamber::makeNewChamber({10,10});
-    std::shared_ptr<goldenApple> gc=bElem::generateAnElement<goldenApple>(mc);
-    std::shared_ptr<player> p=bElem::generateAnElement<player>(mc);
-    std::shared_ptr<simpleBomb> sb=bElem::generateAnElement<simpleBomb>(mc);
+    std::shared_ptr<goldenApple> gc=elementFactory::generateAnElement<goldenApple>(mc);
+    std::shared_ptr<player> p=elementFactory::generateAnElement<player>(mc);
+    std::shared_ptr<simpleBomb> sb=elementFactory::generateAnElement<simpleBomb>(mc);
     p->stepOnElement(mc->getElement(2,1));
     sb->stepOnElement(mc->getElement(2,2));
     gc->stepOnElement(mc->getElement(1,1));
-    gc=bElem::generateAnElement<goldenApple>(mc);
+    gc=elementFactory::generateAnElement<goldenApple>(mc);
     gc->stepOnElement(mc->getElement(1,2));
     p->collect(mc->getElement(1,1));
     p->collect(mc->getElement(1,2));
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
         bElem::runLiveElements();
     BOOST_CHECK(goldenApple::getAppleNumber()>=2);
 
-    sb=bElem::generateAnElement<simpleBomb>(mc);
+    sb=elementFactory::generateAnElement<simpleBomb>(mc);
     sb->stepOnElement(mc->getElement(2,2));
     sb->kill();
     // We take time for the exploded bomb to finish
@@ -227,8 +227,8 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
         player::getActivePlayer();
         player::getActivePlayer()->disposeElement();
     }
-    std::shared_ptr<player> p=bElem::generateAnElement<player>(mc);
-    std::shared_ptr<plainGun> pg=bElem::generateAnElement<plainGun>(mc);
+    std::shared_ptr<player> p=elementFactory::generateAnElement<player>(mc);
+    std::shared_ptr<plainGun> pg=elementFactory::generateAnElement<plainGun>(mc);
     p->stepOnElement(mc->getElement(50,50));
     p->collect(pg);
     p->setActive(true);
@@ -238,8 +238,8 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
         {
             mc->cntrlItm.type=6;
             checkplayerKilled();
-            p=bElem::generateAnElement<player>(mc);
-            pg=bElem::generateAnElement<plainGun>(mc);
+            p=elementFactory::generateAnElement<player>(mc);
+            pg=elementFactory::generateAnElement<plainGun>(mc);
             p->collect(pg);
             p->stepOnElement(mc->getElement(50,50));
             p->setActive(true);
