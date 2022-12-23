@@ -40,8 +40,8 @@ obiekt ginie (animacja)
 namespace presenter
 {
 
-typedef enum { MENU=0, SETTINGS=1,EDITOR=2,DEMO=3,GAME=4} presenterMode;
-typedef enum { LOST=0, USERREQ=1, PAUSE=2, TELEPORTREQ=3 } _cp_gameReasonOut;
+enum class presenterMode { MENU=0, SETTINGS=1,EDITOR=2,DEMO=3,GAME=4} ;
+enum class _cp_gameReasonOut { LOST=0, USERREQ=1, PAUSE=2, TELEPORTREQ=3 };
 
 
 

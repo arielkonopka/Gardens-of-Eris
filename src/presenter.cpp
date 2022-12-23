@@ -65,15 +65,15 @@ bool presenter::presentAChamber(presenterMode mod)
 {
     switch(mod)
     {
-    case MENU:
+    case presenterMode::MENU:
         break;
-    case EDITOR:
+    case presenterMode::EDITOR:
         break;
-    case DEMO:
+    case presenterMode::DEMO:
         break;
-    case SETTINGS:
+    case presenterMode::SETTINGS:
         break;
-    case GAME:
+    case presenterMode::GAME:
         this->presentGamePlay();
         break;
     }
@@ -82,7 +82,7 @@ bool presenter::presentAChamber(presenterMode mod)
 _cp_gameReasonOut presenter::presentGamePlay()
 {
 
-    return USERREQ;
+    return _cp_gameReasonOut::USERREQ;
 }
 
 void presenter::showSplash()
