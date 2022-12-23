@@ -306,8 +306,8 @@ oState bElem::disposeElement()
             stash->setInventory(this->getInventory());
             stash->getInventory()->changeOwner(stash);
             this->setInventory(nullptr);
-            if(this->getStomper().get()!=nullptr)
-                stash->stomp(this->getStomper());
+//            if(this->getStomper().get()!=nullptr)
+//                stash->stomp(this->getStomper());
             if(this->getSteppingOnElement().get()!=nullptr)
                 stash->stepOnElement(this->getSteppingOnElement());
             else
@@ -457,8 +457,14 @@ bool bElem::interact(std::shared_ptr<bElem> who)
 bool bElem::destroy()
 {
 
-    if (this->canBeDestroyed() || this->isSteppable() ||this->isDestroyed() ) // && (!this->isDestroyed()))
+    if (this->canBeDestroyed() || this->isSteppable() ||this->isDestroyed() || this->isDying()) // && (!this->isDestroyed()))
     {
+        if(this->isDying())
+        {
+            this->state.killed=0;
+            this->state.killTimeBeg=0;
+            this->state.killTimeReq=0;
+        }
         if (this->canBeDestroyed())
             this->registerLiveElement(shared_from_this());
         this->state.destroyed=_defaultDestroyTime+this->getCntr();

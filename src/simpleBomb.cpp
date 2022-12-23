@@ -27,11 +27,11 @@ bool simpleBomb::kill()
 bool simpleBomb::destroy()
 {
     //bool res=bElem::destroy();
-  /*  if( this->triggered)
+    if( this->triggered)
     {
-        return bElem::destroy();
+        return false;
     }
-   */
+
     this->registerLiveElement(shared_from_this());
     this->triggered=true;
     this->setWait(20);
