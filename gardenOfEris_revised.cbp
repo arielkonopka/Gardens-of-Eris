@@ -78,6 +78,7 @@
 		<Unit filename="include/configManager.h" />
 		<Unit filename="include/door.h" />
 		<Unit filename="include/elemStats.h" />
+		<Unit filename="include/elementFactory.h" />
 		<Unit filename="include/elements.h" />
 		<Unit filename="include/explosives.h" />
 		<Unit filename="include/floorElement.h" />
@@ -117,6 +118,7 @@
 		<Unit filename="src/configManager.cpp" />
 		<Unit filename="src/door.cpp" />
 		<Unit filename="src/elemStats.cpp" />
+		<Unit filename="src/elementFactory.cpp" />
 		<Unit filename="src/explosives.cpp" />
 		<Unit filename="src/floor.cpp" />
 		<Unit filename="src/gCollect.cpp" />
