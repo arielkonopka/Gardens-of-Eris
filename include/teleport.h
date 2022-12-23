@@ -9,23 +9,23 @@ class teleport : public nonSteppable
 {
 public:
     static videoElement::videoElementDef* vd;
-    virtual videoElement::videoElementDef* getVideoElementDef();
-    virtual int getType();
+    videoElement::videoElementDef* getVideoElementDef() final;
+    int getType() final;
     teleport();
     teleport(std::shared_ptr<chamber> board);
     teleport(std::shared_ptr<chamber> board,int newSubtype);
-    virtual ~teleport();
-    virtual bool interact(std::shared_ptr<bElem> who);
+    ~teleport() final;
+    bool interact(std::shared_ptr<bElem> who) final;
     virtual bool teleportIt(std::shared_ptr<bElem> who);
     virtual oState disposeElement();
     virtual oState disposeElementUnsafe();
-    virtual bool canBeKilled();
-    virtual bool canBeDestroyed();
+    bool canBeKilled() final;
+    bool canBeDestroyed() final;
     virtual bool createConnectionsWithinSUbtype();
-    virtual bool isSteppable();
-    virtual void stomp(std::shared_ptr<bElem> who);
-    virtual void unstomp();
-    virtual bool mechanics();
+    bool isSteppable() final;
+    void stomp(std::shared_ptr<bElem> who) final;
+    void unstomp() final;
+    bool mechanics() final;
 
 private:
     static std::vector<teleport*> allTeleporters;
