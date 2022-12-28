@@ -85,23 +85,35 @@ void configManager::configReload()
         sdata.eType=sprlist[c]["Type"].GetInt();
         if(sprlist[c].HasMember("Dying"))
         {
-            for(unsigned int c1=0;c1<sprlist[c]["Dying"].Size();c1++)
-            sdata.dying.push_back((coords){sprlist[c]["Dying"][c1][0].GetInt(),sprlist[c]["Dying"][c1][1].GetInt()});
+            for(unsigned int c1=0; c1<sprlist[c]["Dying"].Size(); c1++)
+                sdata.dying.push_back((coords)
+            {
+                sprlist[c]["Dying"][c1][0].GetInt(),sprlist[c]["Dying"][c1][1].GetInt()
+            });
         }
         if(sprlist[c].HasMember("Destroying"))
         {
-            for(unsigned int c1=0;c1<sprlist[c]["Destroying"].Size();c1++)
-            sdata.destroying.push_back((coords){sprlist[c]["Destroying"][c1][0].GetInt(),sprlist[c]["Destroying"][c1][1].GetInt()});
+            for(unsigned int c1=0; c1<sprlist[c]["Destroying"].Size(); c1++)
+                sdata.destroying.push_back((coords)
+            {
+                sprlist[c]["Destroying"][c1][0].GetInt(),sprlist[c]["Destroying"][c1][1].GetInt()
+            });
         }
         if(sprlist[c].HasMember("Teleporting"))
         {
-            for(unsigned int c1=0;c1<sprlist[c]["Teleporting"].Size();c1++)
-            sdata.teleporting.push_back((coords){sprlist[c]["Teleporting"][c1][0].GetInt(),sprlist[c]["Teleporting"][c1][1].GetInt()});
+            for(unsigned int c1=0; c1<sprlist[c]["Teleporting"].Size(); c1++)
+                sdata.teleporting.push_back((coords)
+            {
+                sprlist[c]["Teleporting"][c1][0].GetInt(),sprlist[c]["Teleporting"][c1][1].GetInt()
+            });
         }
         if(sprlist[c].HasMember("Fading"))
         {
-            for(unsigned int c1=0;c1<sprlist[c]["Fading"].Size();c1++)
-            sdata.fadingOut.push_back((coords){sprlist[c]["Fading"][c1][0].GetInt(),sprlist[c]["Fading"][c1][1].GetInt()});
+            for(unsigned int c1=0; c1<sprlist[c]["Fading"].Size(); c1++)
+                sdata.fadingOut.push_back((coords)
+            {
+                sprlist[c]["Fading"][c1][0].GetInt(),sprlist[c]["Fading"][c1][1].GetInt()
+            });
         }
 
 
@@ -116,7 +128,10 @@ void configManager::configReload()
                 {
                     int x=sprlist[c]["AnimDef"][c1][c2][c3][0].GetInt();
                     int y=sprlist[c]["AnimDef"][c1][c2][c3][1].GetInt();
-                    phs.push_back((coords){x,y});
+                    phs.push_back((coords)
+                    {
+                        x,y
+                    });
                 }
                 dirs.push_back(phs);
             }
