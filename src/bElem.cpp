@@ -267,8 +267,8 @@ oState bElem::disposeElement()
     std::shared_ptr<bElem> stash=nullptr;
     coords oCoords=this->getCoords();
     //  std::shared_ptr<chamber>  board=this->getBoard();
-  //  std::cout<<"Disposal of an element. parameters: disposed: "<<((this->isDisposed())?"true":"false")<<" x,y "<<this->getCoords().x<<" "<<this->getCoords().y<<" \n";
-  //  std::cout<<"type: "<<this->getType()<<" collected "<<((this->getCollector().get()!=nullptr)?"true":"false")<<"\n";
+    //  std::cout<<"Disposal of an element. parameters: disposed: "<<((this->isDisposed())?"true":"false")<<" x,y "<<this->getCoords().x<<" "<<this->getCoords().y<<" \n";
+    //  std::cout<<"type: "<<this->getType()<<" collected "<<((this->getCollector().get()!=nullptr)?"true":"false")<<"\n";
 
     if(this->state.disposed==true)
     {
@@ -311,11 +311,12 @@ oState bElem::disposeElement()
             if(this->getSteppingOnElement().get()!=nullptr)
                 stash->stepOnElement(this->getSteppingOnElement());
             else
-            { /*
-                 These situations might happen, when we would like to have the floor destructable, so let's support that situation:
-                 In case, that we want to dispose the element, that stands on nullptr, we will create a floor element, place it underneath disposed element,
-                 and then finally we will make a stash object, and place it on the floor we just had created.
-                */
+            {
+                /*
+                   These situations might happen, when we would like to have the floor destructable, so let's support that situation:
+                   In case, that we want to dispose the element, that stands on nullptr, we will create a floor element, place it underneath disposed element,
+                   and then finally we will make a stash object, and place it on the floor we just had created.
+                  */
                 std::shared_ptr<floorElement> nF=elementFactory::generateAnElement<floorElement>(this->getBoard());
                 nF->setCoords(oCoords);
                 this->state.steppingOn=nF;
@@ -563,12 +564,9 @@ bool bElem::isSteppableDirection(direction di)
 {
     coords tmpcoords;
     tmpcoords=this->getAbsCoords(di);
-    if(!(tmpcoords==NOCOORDS))
+    if(!(tmpcoords==NOCOORDS) && this->attachedBoard->getElement(tmpcoords).get()!=nullptr)
     {
-        if(this->attachedBoard->getElement(tmpcoords).get()!=nullptr)
-        {
-            return this->attachedBoard->getElement(tmpcoords)->isSteppable();
-        }
+        return this->attachedBoard->getElement(tmpcoords)->isSteppable();
     }
     return false;
 }
