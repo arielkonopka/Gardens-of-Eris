@@ -1,17 +1,19 @@
 #include "configManager.h"
 
-configManager* configManager::instance=nullptr;
-configManager::configManager()
+std::shared_ptr<configManager> configManager::instance=nullptr;
+
+configManager::configManager(): std::enable_shared_from_this<configManager>()
 {
-    this->gConfObj=new gameConfig();
+    this->gConfObj=std::make_shared<gameConfig>();
     this->configReload();
 }
 
-configManager* configManager::getInstance()
+std::shared_ptr<configManager> configManager::getInstance()
 {
+    configManager cm=configManager();
     if(configManager::instance==nullptr)
     {
-        configManager::instance=new configManager();
+        configManager::instance=std::make_shared<configManager>();
     }
     return configManager::instance;
 }
@@ -127,7 +129,7 @@ void configManager::configReload()
 
 
 }
-gameConfig* configManager::getConfig()
+std::shared_ptr<gameConfig> configManager::getConfig()
 {
     return this->gConfObj;
 }

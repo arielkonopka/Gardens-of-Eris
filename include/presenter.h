@@ -49,7 +49,7 @@ class presenter
 {
 public:
     presenter(std::shared_ptr<chamber> board);
-    ~presenter();
+    ~presenter() = default;
     bool initializeDisplay();
     int presentEverything();
     bool presentAChamber(presenterMode mod);
@@ -68,7 +68,7 @@ private:
 
     ALLEGRO_FONT* myfont;
     std::string splashFname;
-    inputManager* inpMngr;
+    std::shared_ptr<inputManager> inpMngr;
     int sWidth;
     int sHeight;
     int scrHeight;

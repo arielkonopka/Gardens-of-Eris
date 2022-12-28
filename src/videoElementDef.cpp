@@ -24,7 +24,7 @@ void videoElementDef::initializeDriver()
     if(videoElementDef::initialized)
         return;
     videoElementDef::initialized=true;
-    gameConfig* gameConfig=configManager::getInstance()->getConfig();
+    auto gameConfig=configManager::getInstance()->getConfig();
     if(gameConfig==nullptr || gameConfig->FontFile.size()==0 || gameConfig->spriteFile.size()==0)
     {
         std::cout<<"Graphical assets are not defined in the config file\n";
