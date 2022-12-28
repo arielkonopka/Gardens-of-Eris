@@ -12,8 +12,8 @@ class monster : public killableElements, public nonSteppable, public mechanical,
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
         monster();
-        monster(std::shared_ptr<chamber> board);
-        monster(std::shared_ptr<chamber> board,int newSubtype);
+        explicit monster(std::shared_ptr<chamber> board);
+        explicit monster(std::shared_ptr<chamber> board,int newSubtype);
         ~monster();
         int getType();
         virtual bool mechanics();

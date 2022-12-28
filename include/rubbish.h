@@ -11,7 +11,7 @@ class rubbish:  public collectible
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
         rubbish();
-        rubbish(std::shared_ptr<chamber> board);
+        explicit rubbish(std::shared_ptr<chamber> board);
         void stomp(std::shared_ptr<bElem> who) final;
         bool mechanics() final;
         constexpr int getType() final { return _rubishType; };

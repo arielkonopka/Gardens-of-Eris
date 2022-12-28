@@ -10,8 +10,8 @@ public:
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
     plainMissile();
-    plainMissile(std::shared_ptr<chamber> mychamber);
-    plainMissile(std::shared_ptr<chamber> mychamber,int energy);
+    explicit plainMissile(std::shared_ptr<chamber> mychamber);
+    explicit plainMissile(std::shared_ptr<chamber> mychamber,int energy);
     void setStatsOwner(std::shared_ptr<bElem> owner);
     virtual ~plainMissile();
     virtual bool mechanics();

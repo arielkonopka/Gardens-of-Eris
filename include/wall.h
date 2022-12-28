@@ -14,8 +14,8 @@ class wall : public nonSteppable
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
         wall();
-        wall(std::shared_ptr<chamber> board);
-        wall(std::shared_ptr<chamber> board,int subtype);
+        explicit wall(std::shared_ptr<chamber> board);
+        explicit wall(std::shared_ptr<chamber> board,int subtype);
         virtual  bool isDying();
         int getType();
         virtual bool canBeKilled();
