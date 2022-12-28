@@ -7,6 +7,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <stddef.h>
 #include <iostream>
+#include <memory>
 #include "videoElementDef.h"
 
 #include "inputManager.h"
@@ -43,21 +44,20 @@ typedef struct gameConfig
 
 
 
-class configManager
+class configManager: public std::enable_shared_from_this<configManager>
 {
     public:
-       static configManager* getInstance();
-        gameConfig* getConfig();
+       static std::shared_ptr<configManager> getInstance();
+        std::shared_ptr<gameConfig> getConfig();
         void configReload();
-
+        configManager();
 
     private:
-        gameConfig* gConfObj;
+        std::shared_ptr<gameConfig> gConfObj;
         int tileWidth;
         int tileHeight;
         rapidjson::Document skinDefJson;
-        configManager();
-        static configManager* instance;
+        static std::shared_ptr<configManager> instance;
 };
 
 #endif // CONFIGMANAGER_H

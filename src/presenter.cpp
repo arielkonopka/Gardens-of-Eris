@@ -5,12 +5,11 @@
 
 namespace presenter
 {
-presenter::presenter(std::shared_ptr<chamber> board)
+presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spacing(0),previousPosition({0,0}),positionOnScreen({0,0})
 {
     ALLEGRO_MONITOR_INFO info;
     al_init();
     al_install_keyboard();
-
     if(!al_init_image_addon())
     {
         std::cout<<"Could not initialize the image addon!!\n";
@@ -23,29 +22,12 @@ presenter::presenter(std::shared_ptr<chamber> board)
     al_register_event_source(this->evQueue, al_get_timer_event_source(this->alTimer));
     this->_cp_attachedBoard=board;
     al_get_monitor_info(0, &info);
-    this->scrWidth = info.x2-50;// - info.x1; /* Assume this is 1366 */
-    this->scrHeight= info.y2-50;// - info.y1; /* Assume this is 768 */
-    this->sWidth=0;
-    this->sHeight=0;
-    this->spacing=0;
-    this->inpMngr=new inputManager();
-    this->previousPosition=(coords)
-    {
-        0,0
-    };
-    this->positionOnScreen=(coords)
-    {
-        0,0
-    };
-
-
-
+    this->scrWidth = info.x2-50; /* Assume this is 1366 */
+    this->scrHeight= info.y2-50; /* Assume this is 768 */
+    this->inpMngr=std::make_shared<inputManager>();
 }
 
-presenter::~presenter()
-{
-    delete this->inpMngr;
-}
+
 bool presenter::initializeDisplay()
 {
     al_set_new_display_flags(ALLEGRO_WINDOWED);
@@ -96,7 +78,7 @@ void presenter::showSplash()
 bool presenter::loadCofiguredData()
 {
     videoElement::videoElementDef::initializeDriver();
-    gameConfig* gcfg=configManager::getInstance()->getConfig();
+    std::shared_ptr<gameConfig> gcfg=configManager::getInstance()->getConfig();
     al_init_font_addon();
     al_init_ttf_addon();
     this->myfont=al_load_ttf_font(gcfg->FontFile.c_str(),32,0);
