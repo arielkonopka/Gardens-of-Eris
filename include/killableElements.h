@@ -9,7 +9,7 @@
 class killableElements : virtual public bElem
 {
     public:
-        killableElements(std::shared_ptr<chamber> board);
+        explicit killableElements(std::shared_ptr<chamber> board);
         killableElements() ;
         virtual bool hurt(int points);
 

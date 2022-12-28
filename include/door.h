@@ -12,8 +12,8 @@ public:
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
     door();
-    door(std::shared_ptr<chamber>  board);
-    door(std::shared_ptr<chamber>  board,int subtype);
+    explicit door(std::shared_ptr<chamber>  board);
+    explicit door(std::shared_ptr<chamber>  board,int subtype);
     virtual bool interact(std::shared_ptr<bElem> who);
     virtual bool isSteppable();
     virtual bool isOpen();

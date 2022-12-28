@@ -12,7 +12,7 @@ public:
     static  int getAppleNumber();
     int getType() final;
     bool kill() final;
-    goldenApple(std::shared_ptr<chamber> board);
+    explicit goldenApple(std::shared_ptr<chamber> board);
     goldenApple();
     virtual ~goldenApple();
     bool additionalProvisioning() final;

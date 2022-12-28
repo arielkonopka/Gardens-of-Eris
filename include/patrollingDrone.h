@@ -11,7 +11,7 @@ class patrollingDrone : public killableElements, public nonSteppable, public mec
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
         patrollingDrone();
-        patrollingDrone(std::shared_ptr<chamber> board);
+        explicit patrollingDrone(std::shared_ptr<chamber> board);
         virtual ~patrollingDrone();
         virtual bool mechanics();
         virtual int findSomething(std::shared_ptr<bElem> elem,int n,int denyDir);

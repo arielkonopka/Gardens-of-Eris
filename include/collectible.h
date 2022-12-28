@@ -10,7 +10,7 @@ public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     collectible();
-    collectible(std::shared_ptr<chamber> board);
+    explicit collectible(std::shared_ptr<chamber> board);
     virtual bool isCollectible();
 
 };

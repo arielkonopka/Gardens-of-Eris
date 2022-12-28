@@ -13,9 +13,9 @@ public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
     virtual int getType();
-    key(std::shared_ptr<chamber> board);
-    key(std::shared_ptr<chamber> board,int x,int y);
-    key(std::shared_ptr<chamber> board,int subtype);
+    explicit key(std::shared_ptr<chamber> board);
+    explicit key(std::shared_ptr<chamber> board,int x,int y);
+    explicit key(std::shared_ptr<chamber> board,int subtype);
     key();
 
 

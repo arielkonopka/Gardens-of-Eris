@@ -13,8 +13,8 @@ public:
     virtual int getType();
     virtual bool use(std::shared_ptr<bElem> who);
     plainGun();
-    plainGun(std::shared_ptr<chamber> board);
-    plainGun(std::shared_ptr<chamber> board,int newSubtype);
+    explicit plainGun(std::shared_ptr<chamber> board);
+    explicit plainGun(std::shared_ptr<chamber> board,int newSubtype);
     virtual bool mechanics();
     virtual ~plainGun();
     bool isWeapon();

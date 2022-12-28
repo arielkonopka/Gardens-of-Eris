@@ -12,8 +12,8 @@ public:
     videoElement::videoElementDef* getVideoElementDef() final;
     int getType() final;
     teleport();
-    teleport(std::shared_ptr<chamber> board);
-    teleport(std::shared_ptr<chamber> board,int newSubtype);
+    explicit teleport(std::shared_ptr<chamber> board);
+    explicit teleport(std::shared_ptr<chamber> board,int newSubtype);
     ~teleport() final;
     bool interact(std::shared_ptr<bElem> who) final;
     virtual bool teleportIt(std::shared_ptr<bElem> who);

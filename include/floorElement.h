@@ -10,7 +10,7 @@ class floorElement : public bElem
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
         floorElement();
-        floorElement(std::shared_ptr<chamber> board);
+        explicit floorElement(std::shared_ptr<chamber> board);
         virtual ~floorElement();
         virtual constexpr int getType() { return _floorType; };
         virtual constexpr bool canBeDestroyed() { return false; };

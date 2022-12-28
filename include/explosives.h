@@ -8,7 +8,7 @@ class explosives : virtual public bElem
 {
 public:
 
-    explosives(std::shared_ptr<chamber> board);
+    explicit explosives(std::shared_ptr<chamber> board);
     explosives();
     virtual ~explosives();
 

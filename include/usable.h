@@ -9,7 +9,7 @@ class usable : virtual public bElem
 {
 public:
     usable();
-    usable(std::shared_ptr<chamber> board);
+    explicit usable(std::shared_ptr<chamber> board);
     virtual bool use(std::shared_ptr<bElem> who);
     virtual bool use(std::shared_ptr<bElem> who,direction dir);
     virtual bool isUsable();

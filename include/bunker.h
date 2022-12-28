@@ -17,7 +17,7 @@ class bunker : public mechanical, public nonSteppable,public movableElements
         virtual bool mechanics();
         direction findLongestShot();
         virtual bool selfAlign();
-        virtual bool interact(std::shared_ptr<bElem> Who);
+        bool interact(std::shared_ptr<bElem> Who) final;
         virtual bool isMovable();
 
     private:

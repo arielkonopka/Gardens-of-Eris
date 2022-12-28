@@ -9,8 +9,8 @@ class mechanical : virtual public bElem
 {
 public:
     mechanical();
-    mechanical(std::shared_ptr<chamber> board);
-    mechanical(std::shared_ptr<chamber> board,bool rEl);
+    explicit mechanical(std::shared_ptr<chamber> board);
+    explicit mechanical(std::shared_ptr<chamber> board,bool rEl);
     virtual ~mechanical();
     virtual bool additionalProvisioning() ;
 private:
