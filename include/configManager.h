@@ -46,18 +46,18 @@ typedef struct gameConfig
 
 class configManager: public std::enable_shared_from_this<configManager>
 {
-    public:
-       static std::shared_ptr<configManager> getInstance();
-        std::shared_ptr<gameConfig> getConfig();
-        void configReload();
-        configManager();
+public:
+    static std::shared_ptr<configManager> getInstance();
+    std::shared_ptr<gameConfig> getConfig();
+    void configReload();
+    configManager();
 
-    private:
-        std::shared_ptr<gameConfig> gConfObj;
-        int tileWidth;
-        int tileHeight;
-        rapidjson::Document skinDefJson;
-        static std::shared_ptr<configManager> instance;
+private:
+    std::shared_ptr<gameConfig> gConfObj;
+    int tileWidth;
+    int tileHeight;
+    rapidjson::Document skinDefJson;
+    static std::shared_ptr<configManager> instance;
 };
 
 #endif // CONFIGMANAGER_H
