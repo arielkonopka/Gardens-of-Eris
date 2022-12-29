@@ -37,7 +37,7 @@ bool simpleBomb::destroy()
 bool simpleBomb::mechanics()
 {
     bElem::mechanics();
-    if (this->getWait() != 1)
+    if (this->getWait() > 1)
         return false;
     this->explode();
     return true;
