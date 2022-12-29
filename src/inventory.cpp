@@ -274,6 +274,7 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
     {
         /* this is probably a stash, or something like that. that is why, when we create an object, that shoots infinite ammo, it is better to have gun in non standard places, it would not be picked up that way*/
         this->mergeInventory(what->getInventory());
+        what->setInventory(nullptr);
         what->disposeElement();
         res=true;
     }
@@ -340,7 +341,7 @@ void inventory::decrementTokenNumber(tType token)
 
 bool inventory::mergeInventory(std::shared_ptr<inventory> theOtherInventory)
 {
-    if(theOtherInventory==nullptr)
+    if(theOtherInventory.get()==nullptr)
         return false;
     for(auto w:theOtherInventory->weapons)
     {

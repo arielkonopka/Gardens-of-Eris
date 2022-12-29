@@ -475,11 +475,6 @@ bool randomLevelGenerator::generateLevel(int holes)
 
 }
 
-/*bool randomLevelGenerator::addSpaceToCreate(spaceToCreate spc)
-{
-    this->spacesToCreate.push_back(spc);
-}
-*/
 
 
 
