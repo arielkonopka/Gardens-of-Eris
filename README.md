@@ -6,13 +6,14 @@ Welcome to my pet project. I started it in [Python](https://github.com/arielkono
 From the beginning, this project is not *product oriented*, but rather it is a way to spend little time on building something. I stopped writing code many years ago, and I simply wanted to feel the joy of coding again. Since my life is rather not that *computer centric*, I spend fairly little time one the project, and therefore it advances slowly.
 
 **This is work in progress. It usually works, but be warned.**
+
 # Recent build status
 
 [![GoEoOL](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/cmake.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/cmake.yml)
 
 ## Why the idea
 
-I thought of writting similar kind of a game, since I was a kid. Few years back, I added some code to [GNU Robbo project](http://gnurobbo.sourceforge.net/), and it was fun, but that was pure C and SDL1.2. 
+I thought of writting similar kind of a game, since I was a kid. Few years back, I added some code to [GNU Robbo project](http://gnurobbo.sourceforge.net/), and it was fun, but that was pure C and SDL1.2.
 
 So as soon as I decided to do some coding, I thought of a game to make. I thought of the game's story, and now I'm coding it. In the repo you can find an ubrello5 file with the idea, how the classes in the game should look like. This diagram is far from being finished as well.
 I thought of a random level generator because of two reasons:
@@ -25,7 +26,7 @@ In the meanwhile I got a third reason, I can test it fairly fast, without even l
 
 ## The game story
 
-Ones upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology)) went to her garden, and to all the shock, she had noticed, that all her golden apples had been gone. She as usual got furious. 
+Ones upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology)) went to her garden, and to all the shock, she had noticed, that all her golden apples had been gone. She as usual got furious.
 
 Now you, the [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism) got yourself a mission. The goddes scattered your avatars across the strange world, that she had created for her apples. You must collect all of them, and bring them to your Goddess.
 
@@ -38,8 +39,8 @@ The repository is equipped with build.sh shell script (Bash), you can use it to 
 
 ## Main assumptions
 
-1. The game has only random generated levels. 
-2. Everything should be randomly placed. 
+1. The game has only random generated levels.
+2. Everything should be randomly placed.
 3. It must be possible to walk from any steppable place on a board [class chamber](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/include/chamber.h) to any other steppable place, if we remove all the doors and teleports.
 4. The game actually should be very very large. 5 different chambers are created with different number of holes in the walls - that is something like the difficulty level. The chambers are connected with teleports. There are two types of teleports: stable one - always teleports you to other chamber, than you are currently in, but are bidirectional, you can always come back. Unstable teleports (subType==0) - they are not bidirectional like the stable ones, they randomly get the counter part, and then the counterpart will randomly choose its counter part and so on...
 5. Elements on board do not replace each other when they are moved, they instead step on each other. So we start with a board full of [empty](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/include/bElem.h) elements. We then create new elements and step on the board empty elements. It goes deeper. If we call ellement's mechanics, it would call the mechanics of all the elements that are below (with a flag suggesting, that something is standing on it). I also plan, to have the mechanics being run on collected elements (that could allow to make a shield, or fake apples, which would kill the player, if not used - thrown - possibilities are endless)
@@ -47,7 +48,7 @@ The repository is equipped with build.sh shell script (Bash), you can use it to 
 
 ## Random maze generator
 
-My implementation of [recursive division](https://en.wikipedia.org/wiki/Maze_generation_algorithm) has some deliberate modifications. For eg. first few divisions are made to be more or less equal - the dividing walls can be set only in certin range of places, instead all. 
+My implementation of [recursive division](https://en.wikipedia.org/wiki/Maze_generation_algorithm) has some deliberate modifications. For eg. first few divisions are made to be more or less equal - the dividing walls can be set only in certin range of places, instead all.
 
 # Random element placement
 
@@ -55,9 +56,11 @@ During the labirynth creation, we create a spanning tree. Every node can have mu
 Every node has a surface (a number of available elements), which is calculated like this: if the node has children, the surface is a sum of the children's surfaces, otherwise calculate the surface by the node dimensions.
 On node deletion, we delete all the children, and recalculate the surface - we travel to the root, and update the sums. If the node is the last child, we delete the parent.
 First we construct a start list of the objects:
-* player (possibly multiple elements)
-* a gun - one
-* two keys of the type 0
+
+- player (possibly multiple elements)
+- a gun - one
+- two keys of the type 0
+
 and then we search the spanning tree for the locations that would be sufficient to contain the elements.
 Of these locations we pick randomly a location, where we would scatter the objects.
 On the object scatter, we get the list of available fields (we check the neighboorhood if we do not try to take the place in a passage.
@@ -79,8 +82,10 @@ The game uses two timers. One is used for scrolling and general screen refresh r
 updating fames.
 There is a vector with "mechanical" elements. We add elements that have some mechanics (like they shoot, walk, do something on their own), but the animation phases are handled differently, so objects without mechanics still can have animated sprites.
 There are methods:
+
   1. void registerLiveElement(bElem* who);
   2. void deregisterLiveElement(bElem* who);
+
 One is for registering a mechanical object (there has to be implemeted mechanics method), the other one deregisters the object.
 
 # Teleporters
@@ -94,7 +99,7 @@ When it is odd:
 
 # Shooting guns
 
-A plain gun shoots plain missiles. It is used by an element that can collect it (or create it like bunker) and can use it. A gun takes the operators dexterity, then finds a random value that will be used to decrease missile energy. 
+A plain gun shoots plain missiles. It is used by an element that can collect it (or create it like bunker) and can use it. A gun takes the operators dexterity, then finds a random value that will be used to decrease missile energy.
 Then after the shot, the guns energy is halved. It restores with mechanics() calls. So the faster you shoot, the weaker shots you produce.
 
 # Stats
@@ -108,13 +113,26 @@ When running build.sh, the unit tests would be built as well. You can then run t
 
 ## TODO
 
-- Add new type of a gun, that would shoot bombs - granade launcher
+- Add new type of a gun, that would shoot bombs - grenade launcher
 - Add landmine, a steppable, that would kill you
 - Add movable object without mechanics - a stone to be pushed
 - Add a bot and a camera, when a player is near a camera, all bots are notified about the position
+- Add fire/electric door that can be switched with a switch (indestructable)
+- Add switches that will be linked to the energy doors
+  
+  - Add reasonable mechanism for linking switches with doors. Like doors should have two sitches on both sides, unless the sub-chamber contains a teleport, then it could have only one switch inside.
+  - Different switches
+
+    - Locking - you step on it, it changes state, you step out it does not change anything
+    - nonLocking - when you step on it, it changes state, when you step out it changes the state back - you need to push something on it
+  - What to do when the switch is destroyed:
+
+    - the switch should be removed from the board, therefore no more switching would be possible. the door that it controlled would be set to closed for ever.
+- Modify Apples, so when the avatar has less health than nominal, the apple heals some energy (on collect), but only when it is damaged, because Goddes would not want these anymore. If you have damaged apples in the inventory, these should heal you from time to time. There is a catch, when an apple reaches 0 energy it explodes. There should be a method implemented in the inventory, that would allow to check if there are any damaged apples, and then randomly pick one and perform the healing. This way we would have a "russian rullete" built in the healing mechanism.
 
 ## ChangeLog
 
 Now every object can have its own animations of death, teleport, destruction and fadingOut, the last one is not supported yet
+
 - changed pointers from raw to managed
 - removed Garbage collector, as it is not necessary anymore

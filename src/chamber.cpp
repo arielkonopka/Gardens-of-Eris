@@ -1,93 +1,84 @@
 #include "chamber.h"
 #include "floorElement.h"
 
-int chamber::lastid=0;
-
-
+int chamber::lastid = 0;
 
 std::shared_ptr<chamber> chamber::makeNewChamber(coords csize)
 {
 #ifdef _VerbousMode_
-    std::cout<<"generate chamber"<<csize.x<<","<<csize.y<<"\n";
+    std::cout << "generate chamber" << csize.x << "," << csize.y << "\n";
 #endif
-    std::shared_ptr<chamber> c=std::make_shared<chamber>(csize.x,csize.y);
+    std::shared_ptr<chamber> c = std::make_shared<chamber>(csize.x, csize.y);
 #ifdef _VerbousMode_
-    std::cout<<"generated object\n";
+    std::cout << "generated object\n";
 #endif
     c->createFloor();
     return c;
 }
 
-
 void chamber::createFloor()
 {
 #ifdef _VerbousMode_
-    std::cout<<"Create floor instance ["<<this->getInstanceId()<<"]\n";
-    std::cout<<" cfsize [";
+    std::cout << "Create floor instance [" << this->getInstanceId() << "]\n";
+    std::cout << " cfsize [";
 #endif
-    for(int c=0; c<this->width; c++)
+    for (int c = 0; c < this->width; c++)
     {
 
         std::vector<std::shared_ptr<bElem>> v;
-        for(int d=0; d<this->height; d++)
+        for (int d = 0; d < this->height; d++)
         {
 #ifdef _VerbousMode_
-            std::cout<<"Create an object to place\n";
+            std::cout << "Create an object to place\n";
 #endif
-            std::shared_ptr<bElem> b=elementFactory::generateAnElement<floorElement>(shared_from_this());
+            std::shared_ptr<bElem> b = elementFactory::generateAnElement<floorElement>(shared_from_this());
 #ifdef _VerbousMode_
-            std::cout<<"created id "<<b->getInstanceid()<<"\n";
+            std::cout << "created id " << b->getInstanceid() << "\n";
 #endif
-            if(bElem::randomNumberGenerator()%10==0)
+            if (bElem::randomNumberGenerator() % 10 == 0)
                 b->setSubtype(1);
-            if(bElem::randomNumberGenerator()%100==0)
+            if (bElem::randomNumberGenerator() % 100 == 0)
                 b->setSubtype(2);
-            b->setCoords(c,d);
+            b->setCoords(c, d);
 #ifdef _VerbousMode_
-            std::cout<<"Push object into column vector id "<<b->getInstanceid()<<"\n";
+            std::cout << "Push object into column vector id " << b->getInstanceid() << "\n";
 #endif
             v.push_back(b);
         }
         this->chamberArray.push_back(v);
 #ifdef _VerbousMode_
-        std::cout<<this->chamberArray.size()<<" "<<v.size()<<" ";
+        std::cout << this->chamberArray.size() << " " << v.size() << " ";
 #endif
     }
 #ifdef _VerbousMode_
-    std::cout<<"\n CFsize "<<this->chamberArray.size()<<" "<<this->chamberArray[0].size()<<"\n";
+    std::cout << "\n CFsize " << this->chamberArray.size() << " " << this->chamberArray[0].size() << "\n";
 #endif
 }
 
-
 coords chamber::getSizeOfChamber()
 {
-    return (coords)
-    {
-        (int)this->chamberArray.size(),(this->chamberArray.size()>0)?(int)this->chamberArray[0].size():-1
-    };
+    return (coords){
+        (int)this->chamberArray.size(), (this->chamberArray.size() > 0) ? (int)this->chamberArray[0].size() : -1};
 }
 
-
-chamber::chamber(int x,int y):std::enable_shared_from_this<chamber>(),width(x),height(y)
+chamber::chamber(int x, int y) : std::enable_shared_from_this<chamber>(), width(x), height(y)
 {
-    std::shared_ptr<randomWordGen> rwg=std::make_shared<randomWordGen>();
+    std::shared_ptr<randomWordGen> rwg = std::make_shared<randomWordGen>();
     this->setInstanceId(chamber::lastid++);
-    this->chamberName=rwg->generateWord(3);
-    this->chamberColour.a=255;
-    this->chamberColour.r=30+rwg->randomNumberGenerator()%50;
-    this->chamberColour.g=30+rwg->randomNumberGenerator()%50;
-    this->chamberColour.b=50+rwg->randomNumberGenerator()%70;
+    this->chamberName = rwg->generateWord(3);
+    this->chamberColour.a = 255;
+    this->chamberColour.r = 30 + rwg->randomNumberGenerator() % 50;
+    this->chamberColour.g = 30 + rwg->randomNumberGenerator() % 50;
+    this->chamberColour.b = 50 + rwg->randomNumberGenerator() % 70;
 }
-chamber::chamber(coords csize):chamber(csize.x,csize.y)
+chamber::chamber(coords csize) : chamber(csize.x, csize.y)
 {
-
 }
 
 colour chamber::getChColour()
 {
     return this->chamberColour;
 }
-
 
 chamber::~chamber()
 {
@@ -101,40 +92,34 @@ chamber::~chamber()
         */
 }
 
-
 std::string chamber::getName()
 {
     return this->chamberName;
 }
 
-
 std::shared_ptr<bElem> chamber::getElement(coords point)
 {
-    return this->getElement(point.x,point.y);
+    return this->getElement(point.x, point.y);
 }
-
 
 std::shared_ptr<bElem> chamber::getElement(int x, int y)
 {
-    if (x<0 || y<0 || (unsigned int)x>=this->chamberArray.size() || (unsigned int)y>=this->chamberArray[x].size())
+    if (x < 0 || y < 0 || (unsigned int)x >= this->chamberArray.size() || (unsigned int)y >= this->chamberArray[x].size())
         return nullptr;
     return this->chamberArray[x][y];
 }
 
-
 void chamber::setElement(int x, int y, std::shared_ptr<bElem> elem)
 {
-    if (x<0 || x>this->width-1 || y<0 || y>this->height-1)
+    if (x < 0 || x > this->width - 1 || y < 0 || y > this->height - 1)
         return;
-    this->chamberArray[x][y]=elem;
+    this->chamberArray[x][y] = elem;
 }
-
 
 void chamber::setElement(coords point, std::shared_ptr<bElem> elem)
 {
-    this->setElement(point.x,point.y,elem);
+    this->setElement(point.x, point.y, elem);
 }
-
 
 int chamber::getInstanceId()
 {
@@ -143,8 +128,5 @@ int chamber::getInstanceId()
 
 void chamber::setInstanceId(int id)
 {
-    this->instanceid=id;
+    this->instanceid = id;
 }
-
-
-

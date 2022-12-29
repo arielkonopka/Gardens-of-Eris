@@ -87,9 +87,9 @@ void configManager::configReload()
         {
             for(unsigned int c1=0; c1<sprlist[c]["Dying"].Size(); c1++)
                 sdata.dying.push_back((coords)
-            {
-                sprlist[c]["Dying"][c1][0].GetInt(),sprlist[c]["Dying"][c1][1].GetInt()
-            });
+                {
+                    sprlist[c]["Dying"][c1][0].GetInt(),sprlist[c]["Dying"][c1][1].GetInt()
+                });
         }
         if(sprlist[c].HasMember("Destroying"))
         {

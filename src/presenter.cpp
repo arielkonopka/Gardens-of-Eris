@@ -280,7 +280,6 @@ void presenter::showGameField()
             {
                 mSprites.push_back({x,y,elemToDisplay});
                 this->showObjectTile(x,y,0,0,elemToDisplay,false,_mode_onlyFloor);
-
                 continue;
             }
             this->showObjectTile(x,y,0,0,elemToDisplay,false,_mode_all);
