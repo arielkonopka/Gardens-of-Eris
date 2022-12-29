@@ -1,12 +1,13 @@
 
-# Garden of Eris or Obnoxious labirynth.
+# Garden of Eris or Obnoxious Labyrinth
 
 Welcome to my pet project. I started it in [Python](https://github.com/arielkonopka/pyLurker), but got to the conclusion, that Python would not deliver sufficient speed with the number of elements I plan to have at the same time.
 
-From the beginning, this project is not *product oriented*, but rather it is a way to spend little time on building somthing. I stopped writting code many years ago, and I simply wanted to feel the joy of coding again. Since my life is rather not that *computer centric*, I spend fairly little time one the project, and therefore it advances slowly.
+From the beginning, this project is not *product oriented*, but rather it is a way to spend little time on building something. I stopped writing code many years ago, and I simply wanted to feel the joy of coding again. Since my life is rather not that *computer centric*, I spend fairly little time one the project, and therefore it advances slowly.
 
 **This is work in progress. It usually works, but be warned.**
-# Recent build status:
+# Recent build status
+
 [![GoEoOL](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/cmake.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/cmake.yml)
 
 ## Why the idea
@@ -20,9 +21,7 @@ I thought of a random level generator because of two reasons:
 - I would not have to design the levels
 
 In the meanwhile I got a third reason, I can test it fairly fast, without even loading and saving the level data.
- 
-[You can chek the fairly recent video of the gameplay.](https://www.youtube.com/watch?v=oyiY8wT841o)
-
+[You can check the fairly recent video of the gameplay.](https://www.youtube.com/watch?v=oyiY8wT841o)
 
 ## The game story
 
@@ -30,12 +29,12 @@ Ones upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology)) w
 
 Now you, the [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism) got yourself a mission. The goddes scattered your avatars across the strange world, that she had created for her apples. You must collect all of them, and bring them to your Goddess.
 
-## Building the game.
+## Building the game
+
 To build the game, you need following libraries:
 liballegro5 - better install all of it along with dev packages,
 libboost - I would recommend all of it - including unit-test-framework
 The repository is equipped with build.sh shell script (Bash), you can use it to build the game and the unit tests.
-
 
 ## Main assumptions
 
@@ -50,8 +49,8 @@ The repository is equipped with build.sh shell script (Bash), you can use it to 
 
 My implementation of [recursive division](https://en.wikipedia.org/wiki/Maze_generation_algorithm) has some deliberate modifications. For eg. first few divisions are made to be more or less equal - the dividing walls can be set only in certin range of places, instead all. 
 
-
 # Random element placement
+
 During the labirynth creation, we create a spanning tree. Every node can have multiple children (usually 4), and every node has a parent, except for the head, which has no parent.
 Every node has a surface (a number of available elements), which is calculated like this: if the node has children, the surface is a sum of the children's surfaces, otherwise calculate the surface by the node dimensions.
 On node deletion, we delete all the children, and recalculate the surface - we travel to the root, and update the sums. If the node is the last child, we delete the parent.
@@ -68,14 +67,14 @@ We delete the node that we just filled
 
 Now we construct lists of elements to be placed on the board, we also calculate, if we want to close the spaces, and we search the appropriate spaces, until there is no more space left.
 
-## skins.json file 
+## skins.json file
 
 This file contains the skin definition for the game. It has quite a flexible design, you can for eg. have different animations for different subtypes of element, that are turned in different directions.
-
 
 TBD
 
 ## Mechanics
+
 The game uses two timers. One is used for scrolling and general screen refresh rate. The other is used to perform game mechanics calculations. This way we do not have to review the whole board every frame. It should be good to think of another method of 
 updating fames.
 There is a vector with "mechanical" elements. We add elements that have some mechanics (like they shoot, walk, do something on their own), but the animation phases are handled differently, so objects without mechanics still can have animated sprites.
@@ -84,8 +83,8 @@ There are methods:
   2. void deregisterLiveElement(bElem* who);
 One is for registering a mechanical object (there has to be implemeted mechanics method), the other one deregisters the object.
 
-
 # Teleporters
+
 Every new teleporter is placed in a vector (actually it is a vector of pointers). As soon, as the player interacts with a teleporter it checks if it has attached link to a corresponding teleporter.
 We check the type of a teleporter, if it is even, we:
     If not, we take randomly chosen teleporter from the list, and we remove the interacted element from the list. We set the chosen teleport as the other end.
@@ -93,31 +92,29 @@ We check the type of a teleporter, if it is even, we:
 When it is odd:
     We find the first teleport of the same type but on different chamber. Then we establish connection, where the counterpart will direct to the first teleport.
 
-
-
-
-
 # Shooting guns
+
 A plain gun shoots plain missiles. It is used by an element that can collect it (or create it like bunker) and can use it. A gun takes the operators dexterity, then finds a random value that will be used to decrease missile energy. 
 Then after the shot, the guns energy is halved. It restores with mechanics() calls. So the faster you shoot, the weaker shots you produce.
 
-# Stats 
+# Stats
+
 Element stats is a class that will be responsible for element's stats. You can have a monster, that could shoot and gain better skills with time. :)
 
-## Unit tests.
+## Unit tests
+
 The unit tests should be written in *.cpp files that should be located in unitTests directory.
 When running build.sh, the unit tests would be built as well. You can then run them, they are built as separate executables.
 
-
 ## TODO
-* add blocking mechanism for the garbage collector, so we could like attach foreign stats (or whole bElems) to other objects, these objects could have intependent activity and timespan.
-  like imagine a case:
-    a player shoots a shot and dies just right after.
-    the bullet goes for a while and hits something. (flies longer than the player lives), we would not want the garbage collector to destroy the player, until the bullet finishes its existance.
-    The player would be removed from the board, just the garbage collector would not clean it out.
 
-
+- Add new type of a gun, that would shoot bombs - granade launcher
+- Add landmine, a steppable, that would kill you
+- Add movable object without mechanics - a stone to be pushed
+- Add a bot and a camera, when a player is near a camera, all bots are notified about the position
 
 ## ChangeLog
+
 Now every object can have its own animations of death, teleport, destruction and fadingOut, the last one is not supported yet
-* changed pointers from raw to managed
+- changed pointers from raw to managed
+- removed Garbage collector, as it is not necessary anymore
