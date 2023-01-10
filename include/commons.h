@@ -15,7 +15,7 @@
 #define _movableType    5
 #define _monster 6
 #define _patrollingDrone 7
-
+#define _brickClusterType 8
 #define _player  (100)
 #define _collectible 50
 #define _key 51

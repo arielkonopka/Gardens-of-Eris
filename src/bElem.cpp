@@ -501,7 +501,7 @@ bool bElem::isSwitchOn()
 
 bool bElem::mechanics()
 {
-    this->state.taterCounter++; // this is our own source of sequential numbers
+    this->state.taterCounter++; // this is our own source of sequential numbers, it would work only on registered mechanics
     if ((this->getBoard().get() == nullptr || this->getCoords() == NOCOORDS) && (this->getCollector().get() == nullptr))
         return false;
 
@@ -819,13 +819,16 @@ void bElem::runLiveElements()
     bElem::tick();
     for (unsigned int p = 0; p < bElem::liveElems.size(); p++)
     {
-        if (bElem::liveElems[p]->getCoords() != NOCOORDS)
+        if(bElem::liveElems[p].get()!=nullptr)
         {
-            bElem::liveElems[p]->mechanics();
-        }
-        else if (bElem::liveElems[p]->getStomper().get() != nullptr || bElem::liveElems[p]->getCollector().get() != nullptr)
-        {
-            bElem::liveElems[p]->mechanics();
+            if (bElem::liveElems[p]->getCoords() != NOCOORDS)
+            {
+                bElem::liveElems[p]->mechanics();
+            }
+            else if (bElem::liveElems[p]->getStomper().get() != nullptr || bElem::liveElems[p]->getCollector().get() != nullptr)
+            {
+                bElem::liveElems[p]->mechanics();
+            }
         }
     }
 

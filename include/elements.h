@@ -27,5 +27,6 @@
 #include "wall.h"
 #include "rubbish.h"
 #include "floorElement.h"
-
+#include "simpleBomb.h"
+#include "brickCluster.h"
 #endif // ELEMENTS_H_INCLUDED
