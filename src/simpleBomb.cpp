@@ -22,15 +22,14 @@ bool simpleBomb::kill()
 
 bool simpleBomb::destroy()
 {
+    bElem::destroy();
     if (this->triggered)
     {
-        bElem::destroy();
         return false;
     }
-
     this->registerLiveElement(shared_from_this());
     this->triggered = true;
-    this->setWait(20);
+    this->setWait(5); /* magic number */
     return true;
 }
 
