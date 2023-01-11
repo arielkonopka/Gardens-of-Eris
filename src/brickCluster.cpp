@@ -8,11 +8,9 @@ videoElement::videoElementDef* brickCluster::getVideoElementDef()
     return brickCluster::vd;
 }
 
-brickCluster::brickCluster(std::shared_ptr<chamber> board):movableElements(board)
+brickCluster::brickCluster(std::shared_ptr<chamber> board):movableElements(board),nonSteppable(board)
 {
-
 }
-brickCluster::brickCluster():movableElements()
+brickCluster::brickCluster():movableElements(),nonSteppable()
 {
-    
 }

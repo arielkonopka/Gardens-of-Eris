@@ -62,7 +62,7 @@ public:
 
     static videoElement::videoElementDef* vd;
 
-    virtual int getInstanceid() const;
+    int getInstanceid() const;
     static void resetInstances();
     virtual ALLEGRO_MUTEX* getMyMutex();
     void registerLiveElement(std::shared_ptr<bElem> who);
@@ -82,7 +82,7 @@ public:
     {
         return false;
     };
-    virtual bool setSubtype(int st);
+    bool setSubtype(int st);
     virtual bool stepOnElement(std::shared_ptr<bElem> step);
     virtual bool isLiveElement();
 
