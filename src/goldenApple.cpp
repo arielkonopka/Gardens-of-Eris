@@ -15,6 +15,13 @@ int goldenApple::getType()
     return _goldenAppleType;
 }
 
+bool goldenApple::hurt(int points)
+{
+    this->setSubtype(1);
+    return killableElements::hurt(points);
+}
+
+
 goldenApple::goldenApple(std::shared_ptr<chamber> board):collectible(board),nonSteppable(board),killableElements(board), explosives(board)
 {
     this->setSubtype(0);

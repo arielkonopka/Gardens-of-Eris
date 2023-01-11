@@ -341,6 +341,7 @@ bool randomLevelGenerator::generateLevel(int holes)
 
     for(int c=0; c<5; c++)
     {
+        elementsToChooseFrom.push_back({_brickClusterType,0,1,0,3});
         elementsToChooseFrom.push_back({_key,0,1,0,3});
         elementsToChooseFrom.push_back({_key,2,1,0,3});
         elementsToChooseFrom.push_back({_key,4,1,0,3});
@@ -550,6 +551,8 @@ std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace elemen
         return elementFactory::generateAnElement<simpleBomb>(this->mychamber);
     case _patrollingDrone:
         return elementFactory::generateAnElement<patrollingDrone>(this->mychamber);
+    case _brickClusterType:
+        return elementFactory::generateAnElement<brickCluster>(this->mychamber);
     }
     return nullptr;
 }
