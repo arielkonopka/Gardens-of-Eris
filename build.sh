@@ -34,7 +34,7 @@ examples:
     "-gh")
 	sudo apt update
 	sudo apt full-upgrade -y
-	sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gvovr
+	sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr
     ;;
     "-sq")
 	extraflags="${extraflags} --coverage -fprofile-abs-path "
