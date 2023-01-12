@@ -5,12 +5,12 @@ videoElement::videoElementDef* rubbish::vd=nullptr;
 
 rubbish::rubbish():collectible()
 {
-
+    this->setEnergy(1);
 }
 
 rubbish::rubbish(std::shared_ptr<chamber> board):collectible(board)
 {
-
+    this->setEnergy(1);
 }
 
 
