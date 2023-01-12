@@ -33,8 +33,7 @@ examples:
 	;;
     "-gh")
 	sudo apt update
-#	sudo apt dist-upgrade -y
-	sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev
+	sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gvovr
     ;;
     "-sq")
 	extraflags="${extraflags} --coverage -fprofile-abs-path "
