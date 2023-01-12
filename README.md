@@ -88,6 +88,11 @@ There are methods:
 
 One is for registering a mechanical object (there has to be implemeted mechanics method), the other one deregisters the object.
 
+# Apples
+When an apple is intact it is a collectible token, that must be collected. But when it is broken (like shot at), then it becomes a healing device.
+When a player (or any other element, that can collect), collects the item, it will heal the collector.
+But it would deplaye its own energy, when energy reaches 0, then the apple explodes in the inventory, killing the collector.
+
 # Teleporters
 
 Every new teleporter is placed in a vector (actually it is a vector of pointers). As soon, as the player interacts with a teleporter it checks if it has attached link to a corresponding teleporter.
@@ -115,7 +120,6 @@ When running build.sh, the unit tests would be built as well. You can then run t
 
 - Add new type of a gun, that would shoot bombs - grenade launcher
 - Add landmine, a steppable, that would kill you
-- Add movable object without mechanics - a stone to be pushed
 - Add a bot and a camera, when a player is near a camera, all bots are notified about the position
 - Add fire/electric door that can be switched with a switch (indestructable)
 - Add switches that will be linked to the energy doors
@@ -128,7 +132,6 @@ When running build.sh, the unit tests would be built as well. You can then run t
   - What to do when the switch is destroyed:
 
     - the switch should be removed from the board, therefore no more switching would be possible. the door that it controlled would be set to closed for ever.
-- Modify Apples, so when the avatar has less health than nominal, the apple heals some energy (on collect), but only when it is damaged, because Goddes would not want these anymore. If you have damaged apples in the inventory, these should heal you from time to time. There is a catch, when an apple reaches 0 energy it explodes. There should be a method implemented in the inventory, that would allow to check if there are any damaged apples, and then randomly pick one and perform the healing. This way we would have a "russian rullete" built in the healing mechanism.
 
 ## ChangeLog
 

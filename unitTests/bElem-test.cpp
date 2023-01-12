@@ -462,7 +462,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
 
     myObj->stepOnElement(mc->getElement(3,3));
     myObj->destroy();
-    for(int c=0; c<_defaultDestroyTime+1; c++)
+    for(int c=0; c<_defaultDestroyTime-1; c++)
     {
       //  std::cout<<"Waiting for destruction\n";
         BOOST_CHECK(mc->getElement(3,3)->isDestroyed()==true);

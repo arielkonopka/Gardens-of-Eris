@@ -5,6 +5,7 @@
 
 videoElement::videoElementDef *bElem::vd = nullptr;
 std::vector<std::shared_ptr<bElem>> bElem::liveElems;
+std::vector<int> bElem::toDeregister;
 unsigned int bElem::sTaterCounter = 0;
 int bElem::instances = 0;
 bool bElem::randomNumberGeneratorInitialized = false;
@@ -797,26 +798,30 @@ void bElem::registerLiveElement(std::shared_ptr<bElem> who)
 
 void bElem::deregisterLiveElement(int instanceId)
 {
-    if (!this->isLiveElement())
-        return;
-    std::vector<std::shared_ptr<bElem>>::iterator p;
-    for (p = bElem::liveElems.begin(); p != bElem::liveElems.end();)
-    {
-        if (instanceId == (*p)->getInstanceid())
-        {
-            bElem::liveElems.erase(p);
-        }
-        else
-        {
-            p++;
-        }
-    }
+    toDeregister.push_back(instanceId);
     this->state.hasActivatedMechanics = false;
 }
 
 void bElem::runLiveElements()
 {
     bElem::tick();
+    std::vector<std::shared_ptr<bElem>>::iterator p;
+    // First we remove everything that needs to be deregistered
+    for(int instId: bElem::toDeregister)
+    {
+        for (p = bElem::liveElems.begin(); p != bElem::liveElems.end();)
+        {
+            if (instId == (*p)->getInstanceid())
+            {
+                bElem::liveElems.erase(p);
+            }
+            else
+            {
+                p++;
+            }
+        }
+    }
+    bElem::toDeregister.clear();
     for (unsigned int p = 0; p < bElem::liveElems.size(); p++)
     {
         if(bElem::liveElems[p].get()!=nullptr)

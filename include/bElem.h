@@ -209,7 +209,7 @@ private:
     struct _cfg eConfig;
     struct _eStatus state;
     std::vector<std::shared_ptr<bElem>> lockers;
-
+    static std::vector<int> toDeregister;
 
 };
 

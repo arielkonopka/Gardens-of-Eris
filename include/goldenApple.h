@@ -9,13 +9,14 @@ public:
     static videoElement::videoElementDef* vd;
     static std::shared_ptr<bElem> getApple(int num);
     virtual videoElement::videoElementDef* getVideoElementDef();
+    void setCollected(std::shared_ptr<bElem> who);
     static  int getAppleNumber();
     int getType() final;
     bool kill() final;
     bool hurt(int points);
     explicit goldenApple(std::shared_ptr<chamber> board);
+    bool mechanics();
     goldenApple();
-    virtual ~goldenApple();
     bool additionalProvisioning() final;
     oState disposeElement() final;
 private:
