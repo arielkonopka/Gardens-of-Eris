@@ -9,7 +9,7 @@
 #include <iostream>
 #include <memory>
 #include "videoElementDef.h"
-
+#include <map>
 #include "inputManager.h"
 #include "objectTypes.h"
 #include "commons.h"
@@ -28,6 +28,14 @@ typedef struct spriteData
     std::vector<coords> teleporting;
 } spriteData;
 
+typedef struct sampleData
+{
+    std::string fname;
+    std::string name;
+    std::string description;
+    bool allowMulti=false;
+    int modeOfAction; /* 0 - normal - play and forget, 1 - looped until stopped, or lost view, 2 - backwards, 3 - pingloop -forward and backward until stopped, or lost view */
+} sampleData;
 
 typedef struct gameConfig
 {
@@ -40,6 +48,8 @@ typedef struct gameConfig
     std::vector<coords> gFadingOut;
     std::vector<coords> gTeleporting;
     std::vector<spriteData> sprites;
+    std::map<int,std::map<int,std::map<std::string,std::map<std::string,sampleData>>>> samples;
+
 } gameConfig;
 
 

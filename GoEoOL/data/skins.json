@@ -55,8 +55,33 @@
 
 
                          ]
-                        ]
-        },
+                        ],
+        "Samples": [ 
+	    {
+		"SubType":0,
+		"stEvents":[
+		    {
+		    "EventType": "walk",
+		    "eventData": [
+			    {
+			    "Event": "walkOn",
+			    "fname": "fname",
+			    "name": "Step sounds of a player",
+			    "description": "This is a sample with step sound of a player",
+			    "allowMulti": false,
+			    "modeOfAction":0
+			    }    
+			]
+		    }
+		]    
+
+	} 
+
+	]
+
+
+
+	},
         {
             "Type":6,
             "Name": "Monster",
