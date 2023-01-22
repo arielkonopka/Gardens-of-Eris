@@ -116,6 +116,43 @@ Element stats is a class that will be responsible for element's stats. You can h
 The unit tests should be written in *.cpp files that should be located in unitTests directory.
 When running build.sh, the unit tests would be built as well. You can then run them, they are built as separate executables.
 
+
+## Sound
+We will use [openAL](https://www.openal.org/documentation/openal-1.1-specification.pdf) as our audiodriver, it is because we can have control over object positions, and their sounds.
+The plan is to place the listener in the position of the player, and then produce the sounds in the positions of their objects.
+Since we have multiple chambers, we would not like to have all the sounds playing in the same time, we will have to create contexts, or rather one context, the current one.
+The Idea would be to create only sounds for current chamber, and ignore the others. 
+The problem would be with humming elements that would create only a first sample instance and would never update it. That will have to be considered. Perhaps we need multiple contexts, and then mute the others, but current.
+
+The configuration of the sound data is contained in "samples" field of the configManager data. It is ordered similarily to the sound configuration in JSON file:
+
+    "Samples": [
+        {
+           "SubType":0,
+           "stEvents":[
+            {
+                "EventType": "walk",
+                "eventData": [
+                    {
+                         "Event": "walkOn",
+                         "fname": "fname",
+                         "name": "Step sounds of a player",
+                         "description": "This is a sample with step sound of a player",
+                         "allowMulti": false,
+                         "modeOfAction":0
+                    }
+                  ]
+             }
+          ]
+        }       
+     ]
+
+The sampleData is contained in structure that you can access like configObje->samples[typeId][subtypeId][EventType][Event]
+
+
+
+
+
 ## TODO
 
 - Add new type of a gun, that would shoot bombs - grenade launcher

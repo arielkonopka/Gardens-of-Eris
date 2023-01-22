@@ -77,14 +77,11 @@ void configManager::configReload()
         sdata.eType = sprlist[c]["Type"].GetInt();
         if (sprlist[c].HasMember("Samples"))
         {
-            std::map<int, std::map<std::string, std::map<std::string, sampleData>>> elsamples;
             for (unsigned int i = 0; i < sprlist[c]["Samples"].Size(); i++)
             {
-                std::map<std::string, std::map<std::string,sampleData>> esssamples;
                 int st = sprlist[c]["Samples"][i]["SubType"].GetInt();
                 for (unsigned int i2 = 0; i2 < sprlist[c]["Samples"][i]["stEvents"].Size(); i2++)
                 {
-                    std::map<std::string, sampleData> etsounds;
                     std::string eventType = sprlist[c]["Samples"][i]["stEvents"][i2]["EventType"].GetString();
                     for (unsigned int i3 = 0; i3 < sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"].Size(); i3++)
                     {
@@ -95,14 +92,11 @@ void configManager::configReload()
                         sd.description = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["description"].GetString();
                         sd.allowMulti = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["allowMulti"].GetBool();
                         sd.modeOfAction = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["modeOfAction"].GetInt();
-                        etsounds[evname] = sd;
+                        sd.configured=true;
+                        this->gConfObj->samples[sdata.eType][st][eventType][evname] = sd;
                     }
-                    esssamples[eventType] = etsounds;
                 }
-                elsamples[st]=esssamples;
             }
-            this->gConfObj->samples[sdata.eType]=elsamples;
-
         }
 
         if (sprlist[c].HasMember("Dying"))

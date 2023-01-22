@@ -30,11 +30,12 @@ typedef struct spriteData
 
 typedef struct sampleData
 {
-    std::string fname;
-    std::string name;
-    std::string description;
+    bool configured=false;
+    std::string fname="";
+    std::string name="UNKNOWN";
+    std::string description="This sampleData is empty";
     bool allowMulti=false;
-    int modeOfAction; /* 0 - normal - play and forget, 1 - looped until stopped, or lost view, 2 - backwards, 3 - pingloop -forward and backward until stopped, or lost view */
+    int modeOfAction=-1; /* 0 - normal - play and forget, 1 - looped until stopped, or lost view, 2 - backwards, 3 - pingloop -forward and backward until stopped, or lost view */
 } sampleData;
 
 typedef struct gameConfig
@@ -48,6 +49,7 @@ typedef struct gameConfig
     std::vector<coords> gFadingOut;
     std::vector<coords> gTeleporting;
     std::vector<spriteData> sprites;
+    //samples[ElementType][ElementSubtype][EventType][Event]
     std::map<int,std::map<int,std::map<std::string,std::map<std::string,sampleData>>>> samples;
 
 } gameConfig;
