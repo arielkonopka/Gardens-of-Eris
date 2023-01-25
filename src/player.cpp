@@ -17,12 +17,16 @@ player::player(std::shared_ptr<chamber> board) : killableElements(board), movabl
     {
         this->activated=true;
     }
+    this->mysound=soundManager::getInstance()->registerSound(this->getInstanceid(),this->getType(),this->getSubtype(),"Walk","Walk On")-1;
+    //  std::cout<<"Sndid: "<<this->mysound<<" "<<soundManager::getInstance()->registeredSounds[this->mysound].source<<"\n";
 }
 
 player::player():killableElements(),movableElements(),nonSteppable(),mechanical()
 {
     this->setInventory(std::make_shared<inventory>());
     this->setStats(std::make_shared<elemStats>(100));
+    this->mysound=soundManager::getInstance()->registerSound(this->getInstanceid(),this->getType(),this->getSubtype(),"Walk","Walk On")-1;
+    //  std::cout<<"Sndid: "<<this->mysound<<" "<<soundManager::getInstance()->registeredSounds[this->mysound].source<<"\n";
 }
 
 bool player::additionalProvisioning()
@@ -47,6 +51,7 @@ std::shared_ptr<bElem> player::getActivePlayer()
             if (p->isActive())
             {
                 player::activePlayer=p;
+                soundManager::getInstance()->setListenerChamber(p->getBoard()->getInstanceId());
             }
         }
     }
@@ -140,11 +145,47 @@ bool player::mechanics()
     {
         this->getBoard()->player.x=this->getCoords().x;
         this->getBoard()->player.y=this->getCoords().y;
+        soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId());
     }
     else
     {
         return true; // Inactive player, not very useful;
     }
+    coords3d c3d;
+    c3d.x=this->getCoords().x*32+this->getOffset().x;
+    c3d.z=this->getCoords().y*32+this->getOffset().y;
+    c3d.y=32;
+    coords3d vel;
+    switch(this->getDirection())
+    {
+    case UP:
+        vel= {0,0,-1};
+        break;
+    case LEFT:
+        vel= {-1,0,0};
+        break;
+    case RIGHT:
+        vel= {1,0,0};
+        break;
+    case DOWN:
+        vel= {0,0,1};
+        break;
+    case NODIRECTION:
+        vel= {0,0,0};
+    }
+    if (this->getMoved()>0)
+    {
+        soundManager::getInstance()->setListenerVelocity(vel);
+
+    }
+    else
+    {
+
+        soundManager::getInstance()->setListenerVelocity({0,0,0});
+    }
+    soundManager::getInstance()->setListenerOrientation(vel);
+//    soundManager::getInstance()->setListenerPosition(c3d);
+    soundManager::getInstance()->setListenerPosition({0,0,0});
 
     if(!res)
         return false;
@@ -159,7 +200,10 @@ bool player::mechanics()
     {
     case 0:
         if(this->moveInDirection(this->getBoard()->cntrlItm.dir))
+        {
             this->animPh++;
+            soundManager::getInstance()->playSound(this->mysound,this->getBoard()->getInstanceId());
+        }
         break;
 
     case 1:
@@ -187,9 +231,17 @@ bool player::mechanics()
             this->getInventory()->getUsable()->use(this->getElementInDirection(this->getBoard()->cntrlItm.dir));
         break;
     case 5:
+    {
         this->getInventory()->nextGun();
         this->setWait(_mov_delay);
+        coords3d cc3d;
+        cc3d.x=this->getCoords().x-100;
+        cc3d.z=this->getCoords().y-100;
+        cc3d.y=0;
+        soundManager::getInstance()->setSoundPosition(this->mysound,cc3d);
+        soundManager::getInstance()->playSound(this->mysound,this->getBoard()->getInstanceId());
         break;
+    }
     case 6:
         this->kill();
         break;

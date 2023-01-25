@@ -6,6 +6,8 @@
 #include "objectTypes.h"
 #include "videoElementDef.h"
 #include "plainGun.h"
+#include "soundManager.h"
+
 
 class player : public killableElements,public movableElements,public nonSteppable,public mechanical
 {
@@ -41,6 +43,7 @@ private:
 //    int used=0;
 //    int interacted=0;
     bool provisioned=false;
+    int mysound;
 };
 
 #endif // PLAYER_H

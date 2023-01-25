@@ -34,12 +34,12 @@ soundManager *soundManager::getInstance()
 
 int soundManager::registerSound(int instanceId, int typeId, int subtypeId, std::string eventType, std::string event)
 {
-    if(this->checkSmpExists(instanceId,typeId,subtypeId,eventType,event))
-        return this->registeredSounds[instanceId][typeId][subtypeId][eventType][event].id; // We got the same answer every time
-    // Now get the sample
     std::shared_ptr<gameConfig> gc=configManager::getInstance()->getConfig(); // obtain game configuration structure
     if(!gc->samples[typeId][subtypeId][eventType][event].configured) // no configured samples, we return non existent
-        return -1;
+      {
+          std::cout<<"Samples are not configured!\n";
+         return -1;
+      }
     // is Sample already in the sample table?
     if (this->samplesLoaded[typeId][subtypeId][eventType][event].loaded==false)
     {
@@ -51,45 +51,77 @@ int soundManager::registerSound(int instanceId, int typeId, int subtypeId, std::
         this->samplesLoaded[typeId][subtypeId][eventType][event].mode=gc->samples[typeId][subtypeId][eventType][event].modeOfAction;
     }
     ALuint source;
+    stNode srcNode;
     source = 0;
     alGenSources(1, &source);
     alSourcei(source, AL_BUFFER, (ALint)(this->samplesLoaded[typeId][subtypeId][eventType][event].buffer));
     assert(alGetError()==AL_NO_ERROR && "Failed to setup sound source");
-    this->registeredSounds[instanceId][typeId][subtypeId][eventType][event].source=source;
-    this->registeredSounds[instanceId][typeId][subtypeId][eventType][event].isRegistered=true;
-    this->registeredSounds[instanceId][typeId][subtypeId][eventType][event].id=(int)source;
-    this->registeredSounds[instanceId][typeId][subtypeId][eventType][event].mode=this->samplesLoaded[typeId][subtypeId][eventType][event].mode;
-    return this->registeredSounds[instanceId][typeId][subtypeId][eventType][event].id;
+
+    srcNode.source=source;
+    srcNode.isRegistered=true;
+    srcNode.id=(int)this->registeredSounds.size();
+    srcNode.mode=this->samplesLoaded[typeId][subtypeId][eventType][event].mode;
+    this->registeredSounds.push_back(srcNode);
+    return (int)this->registeredSounds.size();
 };
 
-void soundManager::setSoundPosition(int sndId, coords3d pos)
-{
 
-}
-
-void soundManager::setSoundVelocity(int sndId, coords3d pos)
-{
-
-}
 
 void soundManager::setListenerPosition(coords3d pos)
 {
+    alListener3f(AL_POSITION, (float)pos.x, (float)pos.y, (float)pos.z);
+}
+
+void soundManager::setListenerOrientation(coords3d pos)
+{
+    ALfloat listenerOri[] = { (float)pos.x, (float)pos.y, (float)pos.z,0.0,1.0,0.0};
+    alListenerfv(AL_ORIENTATION, listenerOri);
 
 }
 
 void soundManager::setListenerVelocity(coords3d pos)
 {
+    alListener3f(AL_VELOCITY, (float)pos.x, (float)pos.y, (float)pos.z);
+}
+
+
+/* we just teleported, we need to switch the context, which means stopping all the currently played samples from the previous chamber*/
+void soundManager::setListenerChamber(int chamberId)
+{
+    std::cout<<"We set the chamber for a listener\n";
+    if(chamberId!=this->currSoundSpace && this->currSoundSpace!=-1)
+    {
+        std::cout<<"chamberChange\n";
+
+        //Ok, now we have to do something about it
+        for(unsigned int c=0;c<this->soundSpaces[this->currSoundSpace].size();c++)
+        {
+            alSourceStop(this->soundSpaces[this->currSoundSpace][c]);
+        }
+        soundSpaces[currSoundSpace].clear();
+        currSoundSpace=chamberId;
+    }
+    currSoundSpace=chamberId;
 
 }
 
-void soundManager::setListenerChamber(int chamberId)
+void soundManager::setSoundVelocity(int sndId, coords3d pos)
 {
+    if(sndId<0 || (unsigned int)sndId>this->registeredSounds.size())
+        return;
+    alSource3f(this->registeredSounds[sndId].source,AL_VELOCITY,(float)pos.x,(float)pos.y,(float)pos.z);
 
+}
+void soundManager::setSoundPosition(int sndId, coords3d pos)
+{
+    if(sndId<0 || (unsigned int)sndId>this->registeredSounds.size())
+        return;
+    alSource3f(this->registeredSounds[sndId].source,AL_POSITION,(float)pos.x,(float)pos.y,(float)pos.z);
 }
 
 ALuint soundManager::loadSample(std::string fname)
 {
-     ALenum err, format;
+    ALenum err, format;
     ALuint buffer;
     SNDFILE *sndfile;
     SF_INFO sfinfo;
@@ -133,20 +165,20 @@ ALuint soundManager::loadSample(std::string fname)
         sf_close(sndfile);
         return 0;
     }
-
+    std::cout<<"buffer size needed "<<sfinfo.frames * sfinfo.channels* sizeof(short)<<"\n";
     /* Decode the whole audio file to a buffer. */
-    membuf = new short[((size_t)(sfinfo.frames * sfinfo.channels) * sizeof(short))];
+    membuf = (short *)malloc ((size_t)(sfinfo.frames * sfinfo.channels * sizeof(short)));
 
     num_frames = sf_readf_short(sndfile, membuf, sfinfo.frames);
     if(num_frames < 1)
     {
-        delete membuf;
+        free( membuf);
         sf_close(sndfile);
         fprintf(stderr, "Failed to read samples in %s (%" PRId64 ")\n", fname.c_str(), num_frames);
         return 0;
     }
     num_bytes = (ALsizei)(num_frames * sfinfo.channels) * (ALsizei)sizeof(short);
-
+    std::cout<<"Num bytes: "<<num_bytes<<"\n";
     /* Buffer the audio data into a new buffer object, then free the data and
      * close the file.
      */
@@ -154,7 +186,7 @@ ALuint soundManager::loadSample(std::string fname)
     alGenBuffers(1, &buffer);
     alBufferData(buffer, format, membuf, num_bytes, sfinfo.samplerate);
 
-    delete membuf;
+    free(membuf);
     sf_close(sndfile);
 
     /* Check if an error occured, and clean up if so. */
@@ -171,14 +203,16 @@ ALuint soundManager::loadSample(std::string fname)
 }
 void soundManager::stopSoundsInSpace(int space)
 {
-    for(auto c:this->soundSpaces[space])
-        this->stopSnd(c.src);
+     for(unsigned int c=0;c<this->soundSpaces[space].size();c++)
+        {
+            alSourceStop(this->soundSpaces[space][c]);
+        }
 }
 
 void soundManager::startSoundsInSpace(int space)
 {
     for(auto c:this->soundSpaces[space])
-        this->playSound(c.src,c.sndSpace);
+        alSourcePlay(c);
 }
 
 
@@ -196,6 +230,9 @@ void soundManager::setActiveSndSpace(int sndSpace)
 
 bool soundManager::playSound(int sndId, int chmbrId)
 {
+    if(chmbrId!=this->currSoundSpace || sndId<0)
+        return false;
+    alSourcePlay(this->registeredSounds[sndId].source);
     return false;
 };
 int soundManager::getSndStatus(int sndId)
@@ -204,6 +241,7 @@ int soundManager::getSndStatus(int sndId)
 };
 bool soundManager::stopSnd(int sndId)
 {
+    alSourceStop(this->registeredSounds[sndId].source);
     return false;
 };
 bool soundManager::pauseSnd(int sndId)
@@ -218,9 +256,4 @@ void soundManager::deregisterSnd(int sndId)
 {
 }
 
-
-bool soundManager::checkSmpExists(int instanceId, int typeId, int subtypeId, std::string eventType, std::string event)
-{
-    return this->registeredSounds[instanceId][typeId][subtypeId][eventType][event].isRegistered;
-}
 

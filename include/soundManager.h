@@ -49,7 +49,7 @@ class soundManager
 {
     public:
         ~soundManager();
-        soundManager* getInstance();
+        static soundManager* getInstance();
         int registerSound(int instanceId,int typeId,int subtypeId,std::string eventType,std::string event);
         bool playSound(int sndId,int chmbrId);
         void setSoundPosition(int sndId,coords3d pos);
@@ -57,6 +57,7 @@ class soundManager
         void setListenerPosition(coords3d pos);
         void setListenerVelocity(coords3d pos);
         void setListenerChamber(int chamberId);
+        void setListenerOrientation(coords3d pos);
         int getSndStatus(int sndId);
         bool stopSnd(int sndId);
         bool pauseSnd(int sndId);
@@ -65,19 +66,18 @@ class soundManager
         void setActiveSndSpace(int sndSpace);
 
 
-    private:
+   // private:
         void stopSoundsInSpace(int space);
         void startSoundsInSpace(int space);
         ALuint loadSample(std::string fname);
-        bool checkSmpExists(int instanceId,int typeId,int subtypeId,std::string eventType,std::string event); // check if the sample is already registered
         static soundManager* instance;
         soundManager();
         ALCdevice *sndDevice;
         ALCcontext *sndContext;
         std::map<int, std::map< int, std::map<std::string,std::map<std::string, sndHolder>>>> samplesLoaded;
-        std::vector<std::shared_ptr<sndInstance>> registeredSampleTab;
-        std::map<int , std::map<int, std::map< int, std::map<std::string,std::map<std::string, stNode>>>>> registeredSounds; // the whole sample data, used to register sounds
-        std::map<int,std::vector<sndInstance>> soundSpaces;
+
+        std::vector<stNode> registeredSounds; // the whole sample data, used to register sounds
+        std::map<int,std::vector<ALint>> soundSpaces;
         int currSoundSpace=-1;
 
 
