@@ -32,9 +32,14 @@ examples:
 	runTests="true"
 	;;
     "-gh")
-	sudo apt update
+	echo "Update repository info"
+	sudo apt update 2>&1 >/dev/null
+	echo "Performming full upgrade on the system"
 	sudo apt full-upgrade -y
-	sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcov libopenal-dev libopenal libopenal-data libopenal1
+	echo "Installing allegro5, boost, rapidjson, gcovr"
+	sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr
+	echo "Installing openAl and libsndFile"
+	sudo apt install -y libopenal0a libopenal-dev libalut0 libalut-dev libsndfile1 libsndfile1-dev
     ;;
     "-sq")
 	extraflags="${extraflags} --coverage -fprofile-abs-path "
