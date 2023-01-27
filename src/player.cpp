@@ -17,12 +17,15 @@ player::player(std::shared_ptr<chamber> board) : killableElements(board), movabl
     {
         this->activated=true;
     }
+
+    //  std::cout<<"Sndid: "<<this->mysound<<" "<<soundManager::getInstance()->registeredSounds[this->mysound].source<<"\n";
 }
 
 player::player():killableElements(),movableElements(),nonSteppable(),mechanical()
 {
     this->setInventory(std::make_shared<inventory>());
     this->setStats(std::make_shared<elemStats>(100));
+    //  std::cout<<"Sndid: "<<this->mysound<<" "<<soundManager::getInstance()->registeredSounds[this->mysound].source<<"\n";
 }
 
 bool player::additionalProvisioning()
@@ -47,6 +50,7 @@ std::shared_ptr<bElem> player::getActivePlayer()
             if (p->isActive())
             {
                 player::activePlayer=p;
+                soundManager::getInstance()->setListenerChamber(p->getBoard()->getInstanceId());
             }
         }
     }
@@ -140,12 +144,54 @@ bool player::mechanics()
     {
         this->getBoard()->player.x=this->getCoords().x;
         this->getBoard()->player.y=this->getCoords().y;
+
     }
     else
     {
         return true; // Inactive player, not very useful;
     }
 
+    if(this->getWait()>0)
+    {
+        std::cout<<"waiting\n";
+
+        return false;
+    }
+    coords3d c3d;
+    c3d.x=this->getCoords().x*32+this->getOffset().x;
+    c3d.z=this->getCoords().y*32+this->getOffset().y;
+    c3d.y=50;
+    coords3d vel;
+    switch(this->getDirection())
+    {
+    case UP:
+        vel= {0,0,-1};
+        break;
+    case LEFT:
+        vel= {-1,0,0};
+        break;
+    case RIGHT:
+        vel= {1,0,0};
+        break;
+    case DOWN:
+        vel= {0,0,1};
+        break;
+    case NODIRECTION:
+        vel= {0,0,0};
+    }
+    if (this->getMoved()>0)
+    {
+        soundManager::getInstance()->setListenerVelocity(vel);
+
+    }
+    else
+    {
+
+        soundManager::getInstance()->setListenerVelocity({0,0,0});
+    }
+    soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId());
+    soundManager::getInstance()->setListenerOrientation(vel);
+    soundManager::getInstance()->setListenerPosition(c3d);
     if(!res)
         return false;
 
@@ -159,12 +205,19 @@ bool player::mechanics()
     {
     case 0:
         if(this->moveInDirection(this->getBoard()->cntrlItm.dir))
+        {
             this->animPh++;
+            soundManager::getInstance()->registerSound(this->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),"Walk","Walk On");
+        }
         break;
 
     case 1:
         this->setDirection(this->getBoard()->cntrlItm.dir);
-        if(this->shootGun()) this->animPh+=(this->getCntr()%2);
+        if(this->shootGun())
+        {
+
+            this->animPh+=(this->getCntr()%2);
+        }
         break;
     case 2:
         if (this->getElementInDirection(this->getBoard()->cntrlItm.dir)==nullptr)
@@ -187,9 +240,12 @@ bool player::mechanics()
             this->getInventory()->getUsable()->use(this->getElementInDirection(this->getBoard()->cntrlItm.dir));
         break;
     case 5:
+    {
         this->getInventory()->nextGun();
         this->setWait(_mov_delay);
+
         break;
+    }
     case 6:
         this->kill();
         break;
@@ -202,10 +258,21 @@ bool player::shootGun()
     std::shared_ptr<bElem> gun=this->getInventory()->getActiveWeapon();
     if(gun!=nullptr)
     {
-        gun->use(shared_from_this());
+        if(gun->use(shared_from_this()))
+        {
+            coords3d c3d;
+            c3d.x=this->getCoords().x*32+this->getOffset().x;
+            c3d.z=this->getCoords().y*32+this->getOffset().y;
+            c3d.y=50;
+            coords3d vel= {0,0,0};
+
+            soundManager::getInstance()->registerSound(this->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),"Shoot","Shoot");
+        }
+
+        this->setWait(_interactedTime*2);
         return true;
     }
-    this->setWait(_interactedTime*2);
+    this->setWait(_interactedTime);
     return false;
 
 }

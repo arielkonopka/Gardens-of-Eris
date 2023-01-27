@@ -4,6 +4,7 @@
 #include "plainGun.h"
 #include <nonSteppable.h>
 #include "bElem.h"
+#include "soundManager.h"
 
 
 class bunker : public mechanical, public nonSteppable,public movableElements
@@ -17,6 +18,7 @@ class bunker : public mechanical, public nonSteppable,public movableElements
         virtual bool mechanics();
         direction findLongestShot();
         virtual bool selfAlign();
+        int getType();
         bool interact(std::shared_ptr<bElem> Who) final;
         virtual bool isMovable();
 
@@ -25,6 +27,7 @@ class bunker : public mechanical, public nonSteppable,public movableElements
         std::shared_ptr<bElem> activatedBy=nullptr;
         int help=0;
         std::shared_ptr<bElem> myGun;
+        int sndHummHandle=-1;
 };
 
 #endif // BUNKER_H

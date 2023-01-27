@@ -68,7 +68,7 @@ bool plainGun::use(std::shared_ptr<bElem> who)
     }
 
     if (this->readyToShoot()==false)
-        return true; //The gun is fine, not ready to shoot though
+        return false; //The gun is fine, not ready to shoot though
     this->shot=this->getCntr()+_plainGunCharge;
     if (this->ammo<=0) //odd subtypes have infinite shots
         if (this->getSubtype()%2)
