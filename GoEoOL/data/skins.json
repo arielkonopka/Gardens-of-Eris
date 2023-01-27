@@ -2,6 +2,7 @@
     "FontFile": "data/FreeSerifBold.ttf",
     "SpriteFile": "data/graph/icons64.png",
     "splash screen": "data/graph/ErisDiscordiaclr.png",
+    "SndFifoSize":100,
     "width": 64,
     "height": 64,
     "spacing":4,
@@ -61,17 +62,31 @@
 		"SubType":0,
 		"stEvents":[
 		    {
-		    "EventType": "walk",
+		    "EventType": "Walk",
 		    "eventData": [
 			    {
-			    "Event": "walkOn",
-			    "fname": "data/sounds/nioseThing_shoot.ogg",
+			    "Event": "Walk On",
+			    "fname": "data/sounds/step.ogg",
 			    "name": "Step sounds of a player",
 			    "description": "This is a test sound, now it will be used for sound test",
 			    "allowMulti": false,
 			    "modeOfAction":0
 			    }
 			]
+		    },
+		    {
+		    "EventType": "Shoot",
+		    "eventData": [
+			{
+			    "Event": "Shoot",
+			    "fname": "data/sounds/nioseThing_shoot.ogg",
+			    "allowMulti": false,
+			    "name": "Shoot sound",
+			    "description": "(cc)Ariel Konopka",
+			    "modeOfAction":0
+
+			}
+		    ]
 		    }
 		]
 
@@ -175,7 +190,30 @@
                          [[6,4]],
                          [[5,4]]
                         ]
-                        ]
+                        ],
+                "SamplesX": [
+                        {
+                        "SubType":0,
+                        "stEvents":[
+                        {
+                        "EventType": "Alive",
+                        "eventData": [
+                            {
+                        "Event": "Humm",
+                        "fname": "data/sounds/machinerySound.ogg",
+			    "name": "Machinery sound",
+			    "description": "This is a test sound, now it will be used for sound test",
+			    "allowMulti": false,
+			    "modeOfAction":0
+			    }
+			]
+		    }
+		]
+
+	}
+
+	]
+
         }
         ,{
             "Type":400,

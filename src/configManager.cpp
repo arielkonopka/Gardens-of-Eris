@@ -30,6 +30,7 @@ void configManager::configReload()
     this->gConfObj->gTeleporting.clear();
     this->gConfObj->sylables.clear();
     this->gConfObj->sprites.clear();
+    this->gConfObj->sndFifoSize=this->skinDefJson["SndFifoSize"].GetInt();
     this->gConfObj->FontFile = this->skinDefJson["FontFile"].GetString();
     this->gConfObj->spriteFile = this->skinDefJson["SpriteFile"].GetString();
     this->gConfObj->splashScr = this->skinDefJson["splash screen"].GetString();

@@ -17,7 +17,7 @@ player::player(std::shared_ptr<chamber> board) : killableElements(board), movabl
     {
         this->activated=true;
     }
-    this->mysound=soundManager::getInstance()->registerSound(this->getInstanceid(),this->getType(),this->getSubtype(),"Walk","Walk On")-1;
+
     //  std::cout<<"Sndid: "<<this->mysound<<" "<<soundManager::getInstance()->registeredSounds[this->mysound].source<<"\n";
 }
 
@@ -25,7 +25,6 @@ player::player():killableElements(),movableElements(),nonSteppable(),mechanical(
 {
     this->setInventory(std::make_shared<inventory>());
     this->setStats(std::make_shared<elemStats>(100));
-    this->mysound=soundManager::getInstance()->registerSound(this->getInstanceid(),this->getType(),this->getSubtype(),"Walk","Walk On")-1;
     //  std::cout<<"Sndid: "<<this->mysound<<" "<<soundManager::getInstance()->registeredSounds[this->mysound].source<<"\n";
 }
 
@@ -145,16 +144,23 @@ bool player::mechanics()
     {
         this->getBoard()->player.x=this->getCoords().x;
         this->getBoard()->player.y=this->getCoords().y;
-        soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId());
+
     }
     else
     {
         return true; // Inactive player, not very useful;
     }
+
+    if(this->getWait()>0)
+    {
+        std::cout<<"waiting\n";
+
+        return false;
+    }
     coords3d c3d;
     c3d.x=this->getCoords().x*32+this->getOffset().x;
     c3d.z=this->getCoords().y*32+this->getOffset().y;
-    c3d.y=32;
+    c3d.y=50;
     coords3d vel;
     switch(this->getDirection())
     {
@@ -183,10 +189,9 @@ bool player::mechanics()
 
         soundManager::getInstance()->setListenerVelocity({0,0,0});
     }
+    soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId());
     soundManager::getInstance()->setListenerOrientation(vel);
-//    soundManager::getInstance()->setListenerPosition(c3d);
-    soundManager::getInstance()->setListenerPosition({0,0,0});
-
+    soundManager::getInstance()->setListenerPosition(c3d);
     if(!res)
         return false;
 
@@ -202,13 +207,17 @@ bool player::mechanics()
         if(this->moveInDirection(this->getBoard()->cntrlItm.dir))
         {
             this->animPh++;
-            soundManager::getInstance()->playSound(this->mysound,this->getBoard()->getInstanceId());
+            soundManager::getInstance()->registerSound(this->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),"Walk","Walk On");
         }
         break;
 
     case 1:
         this->setDirection(this->getBoard()->cntrlItm.dir);
-        if(this->shootGun()) this->animPh+=(this->getCntr()%2);
+        if(this->shootGun())
+        {
+
+            this->animPh+=(this->getCntr()%2);
+        }
         break;
     case 2:
         if (this->getElementInDirection(this->getBoard()->cntrlItm.dir)==nullptr)
@@ -234,12 +243,7 @@ bool player::mechanics()
     {
         this->getInventory()->nextGun();
         this->setWait(_mov_delay);
-        coords3d cc3d;
-        cc3d.x=this->getCoords().x-100;
-        cc3d.z=this->getCoords().y-100;
-        cc3d.y=0;
-        soundManager::getInstance()->setSoundPosition(this->mysound,cc3d);
-        soundManager::getInstance()->playSound(this->mysound,this->getBoard()->getInstanceId());
+
         break;
     }
     case 6:
@@ -254,10 +258,21 @@ bool player::shootGun()
     std::shared_ptr<bElem> gun=this->getInventory()->getActiveWeapon();
     if(gun!=nullptr)
     {
-        gun->use(shared_from_this());
+        if(gun->use(shared_from_this()))
+        {
+            coords3d c3d;
+            c3d.x=this->getCoords().x*32+this->getOffset().x;
+            c3d.z=this->getCoords().y*32+this->getOffset().y;
+            c3d.y=50;
+            coords3d vel= {0,0,0};
+
+            soundManager::getInstance()->registerSound(this->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),"Shoot","Shoot");
+        }
+
+        this->setWait(_interactedTime*2);
         return true;
     }
-    this->setWait(_interactedTime*2);
+    this->setWait(_interactedTime);
     return false;
 
 }

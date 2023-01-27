@@ -119,8 +119,13 @@ direction bunker::findLongestShot()
 bool bunker::selfAlign()
 {
     this->setDirection(this->findLongestShot());
+
     return false;
 }
 
 
+int bunker::getType()
+{
+    return _bunker;
+}
 
