@@ -256,6 +256,7 @@ oState bElem::disposeElement()
         std::cout << "Tried to dispose the same element another time!\n";
         return ERROR;
     }
+    //we moved this from a destructor
     if (this->isLiveElement())
     {
         this->deregisterLiveElement(this->getInstanceid());
