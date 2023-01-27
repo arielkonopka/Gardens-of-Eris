@@ -20,6 +20,8 @@ std::shared_ptr<configManager> configManager::getInstance()
 void configManager::configReload()
 {
     FILE *fp = fopen("data/skins.json", "rb"); // non-Windows use "r"
+    if(fp==nullptr)
+        fp = fopen("GoEoOL/data/skins.json", "rb");
     char readBuffer[65536];
     rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
     this->skinDefJson.ParseStream(is);
