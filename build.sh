@@ -4,7 +4,7 @@ extraflags="-g"
 sonarQ="false"
 defines="" #-D_VerbousMode_" 
 opts="-Wall -std=gnu++20  ${defines} -g -O3 -Og"
-
+libs="-lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm -lopenal -lsndfile "
 . ./build.sh.cfg
 
 #rm -rf ${objPath}
@@ -34,7 +34,7 @@ examples:
     "-gh")
 	sudo apt update
 	sudo apt full-upgrade -y
-	sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr
+	sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcov libopenal-dev libopenal libopenal-data libopenal1
     ;;
     "-sq")
 	extraflags="${extraflags} --coverage -fprofile-abs-path "
@@ -56,8 +56,8 @@ examples:
 	${gccbin} ${extraflags} ${opts} -c ${module}.cpp -I./include  -o ${objPath}${module}.o
 	if [ "${buildTests}" = "true" ] ; then
 	    a=`basename ${module}`
-	    echo " * ${gccbin} ${objPath}${module}*.o  ${objPath}/${module}.o -o ./GoE-tests-${a%.cpp} -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm -lboost_unit_test_framework ${linkAdditionalFLags}"
-	    ${gccbin} ${objPath}/src/*.o  ${objPath}/${module}.o  -o ./GoE-tests-${a%.cpp} -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm -lboost_unit_test_framework ${linkAdditionalFLags}   3>&1 2>&1 >>compile.log
+	    echo " * ${gccbin} ${objPath}${module}*.o  ${objPath}/${module}.o -o ./GoE-tests-${a%.cpp} ${libs} -lboost_unit_test_framework ${linkAdditionalFLags}"
+	    ${gccbin} ${objPath}/src/*.o  ${objPath}/${module}.o  -o ./GoE-tests-${a%.cpp} ${libs} -lboost_unit_test_framework ${linkAdditionalFLags}   3>&1 2>&1 >>compile.log
 	fi
 	
     ;;
@@ -78,7 +78,8 @@ examples:
 done
 if [ "${stopme}" = "true" ] ; then
     echo "Now linking the game..."
-    ${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./GoEoOL/GoEoOL -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm  ${linkAdditionalFLags}  3>&1   2>&1 >>compile.log
+    echo "${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./GoEoOL/GoEoOL  ${libs} ${linkAdditionalFLags}"
+    ${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./GoEoOL/GoEoOL  ${libs} ${linkAdditionalFLags}  3>&1   2>&1 >>compile.log
     echo "Done"
     echo "Enjoy..."
     exit 0
@@ -99,8 +100,8 @@ if [ "${buildTests}" = "true" ] ; then
 	echo " * ${gccbin} ${extraflags} ${opts} -c ${x} -I./include  -o ${objPath}/${x%.cpp}.o -D_UNIT_TEST_BUILD_ "
 	${gccbin} ${extraflags} ${opts} -c ${x} -I./include  -o ${objPath}/${x%.cpp}.o -D_UNIT_TEST_BUILD_   3>&1 2>&1 >>compile.log
 	a=$(basename $x)
-	echo " * ${gccbin} ${objPath}src/*.o  ${objPath}/${x%.cpp}.o -o ./GoE-tests-${a%.cpp} -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm -lboost_unit_test_framework ${linkAdditionalFLags}"
-	${gccbin} ${objPath}src/*.o  ${objPath}/${x%.cpp}.o -o ./GoE-tests-${a%.cpp} -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm -lboost_unit_test_framework ${linkAdditionalFLags}   3>&1 2>&1 >>compile.log
+	echo " * ${gccbin} ${objPath}src/*.o  ${objPath}/${x%.cpp}.o -o ./GoE-tests-${a%.cpp}  ${libs} -lboost_unit_test_framework ${linkAdditionalFLags}"
+	${gccbin} ${objPath}src/*.o  ${objPath}/${x%.cpp}.o -o ./GoE-tests-${a%.cpp}  ${libs} -lboost_unit_test_framework ${linkAdditionalFLags}   3>&1 2>&1 >>compile.log
 	if [ "${runTests}" = "true" ]; then
 	    ./GoE-tests-${a%.cpp} -r detailed -m CLF -e "Report_${a%.cpp}.log" -k testslog.log 
 	    r=$?
@@ -120,6 +121,7 @@ if [ "${sonarQ}" = "true" ] ; then
 fi
 
 echo "Now linking the game..."
-
-${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./GoEoOL/GoEoOL -lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm  ${linkAdditionalFLags}  3>&1   2>&1 >>compile.log
+echo "${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./GoEoOL/GoEoOL ${libs}  ${linkAdditionalFLags}"
+ 
+${gccbin} ${objPath}src/*.o  ${objPath}*.o -o ./GoEoOL/GoEoOL ${libs}  ${linkAdditionalFLags}  3>&1   2>&1 >>compile.log
 
