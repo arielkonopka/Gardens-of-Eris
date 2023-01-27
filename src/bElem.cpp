@@ -30,13 +30,13 @@ bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_m
     {
         std::random_device rd;
         std::mt19937::result_type seed = rd() ^ ((std::mt19937::result_type)
-                                                     std::chrono::duration_cast<std::chrono::seconds>(
-                                                         std::chrono::system_clock::now().time_since_epoch())
-                                                         .count() +
-                                                 (std::mt19937::result_type)
-                                                     std::chrono::duration_cast<std::chrono::microseconds>(
-                                                         std::chrono::high_resolution_clock::now().time_since_epoch())
-                                                         .count());
+                                         std::chrono::duration_cast<std::chrono::seconds>(
+                                             std::chrono::system_clock::now().time_since_epoch())
+                                         .count() +
+                                         (std::mt19937::result_type)
+                                         std::chrono::duration_cast<std::chrono::microseconds>(
+                                             std::chrono::high_resolution_clock::now().time_since_epoch())
+                                         .count());
         bElem::randomNumberGenerator.seed(seed);
         bElem::randomNumberGeneratorInitialized = true;
     }
@@ -109,8 +109,10 @@ direction bElem::getDirection()
 
 void bElem::setCoords(int x, int y)
 {
-    this->state.myPosition = (coords){
-        x, y};
+    this->state.myPosition = (coords)
+    {
+        x, y
+    };
 }
 void bElem::setCoords(coords point)
 {
@@ -192,6 +194,9 @@ oState bElem::disposeElementUnsafe()
     coords mycoords = this->getCoords();
     if (this->isDisposed() == true)
         return ERROR;
+    if (this->isLiveElement())
+        this->deregisterLiveElement(this->getInstanceid());
+
     this->state.disposed = true;
     if (this->getInventory().get() != nullptr)
         this->getInventory()->changeOwner(nullptr);
@@ -251,6 +256,10 @@ oState bElem::disposeElement()
         std::cout << "Tried to dispose the same element another time!\n";
         return ERROR;
     }
+    if (this->isLiveElement())
+    {
+        this->deregisterLiveElement(this->getInstanceid());
+    }
     this->state.disposed = true;
 
     if (this->getType() == _rubishType && this->getInventory().get() != nullptr)
@@ -273,10 +282,7 @@ oState bElem::disposeElement()
         return DISPOSED;
     }
 
-    if (this->isLiveElement())
-    {
-        this->deregisterLiveElement(this->getInstanceid());
-    }
+
     if (this->getCollector().get() != nullptr)
     {
 #ifdef _VerbousMode_
@@ -371,8 +377,6 @@ std::shared_ptr<bElem> bElem::getElementInDirection(direction di)
 bElem::~bElem()
 {
     al_destroy_mutex(this->elementMutex);
-    if (this->isLiveElement())
-        this->deregisterLiveElement(this->getInstanceid());
 }
 
 ALLEGRO_MUTEX *bElem::getMyMutex()
