@@ -4,7 +4,7 @@
 #include "usable.h"
 #include "videoElementDef.h"
 #include "plainMissile.h"
-
+#include "soundManager.h"
 class plainGun : public usable, public mechanical, public collectible, public nonSteppable
 {
 public:

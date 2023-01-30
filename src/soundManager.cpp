@@ -61,36 +61,49 @@ soundManager *soundManager::getInstance()
 /* validates sounds in the queue, we do not have to do it often, only on new sound requests, just to control which samples are already not playing */
 void soundManager::checkQueue()
 {
-       for(unsigned int c=0; c<this->registeredSounds.size(); c++)
+    for(unsigned int c=0; c<this->registeredSounds.size(); c++)
+    {
+        stNode n=this->registeredSounds.front();
+        this->registeredSounds.pop_front();
+        if(n.isRegistered && this->isSndPlaying(n.source)==false)
         {
-            stNode n=this->registeredSounds.front();
-            this->registeredSounds.pop_front();
-            if(n.isRegistered && this->isSndPlaying(n.source)==false)
-            {
-                n.isRegistered=false;
-                this->sndRegister[n.elId][n.eventType][n.event].r=false;
-            }
-            this->registeredSounds.push_back(n);
+            n.isRegistered=false;
+            this->sndRegister[n.elId][n.eventType][n.event].r=false;
         }
+        else if (this->isSndPlaying(n.source)==true)
+        {
+            float newVolume = 64.0/this->calcDistance(n.position,this->listenerPos);
+            alSourcef(n.source, AL_GAIN, newVolume);
+        }
+        this->registeredSounds.push_back(n);
+    }
+}
+void soundManager::enableSound()
+{
+    this->active=true;
 }
 
 void soundManager::registerSound(int chamberId, coords3d position,coords3d velocity,int elId,int typeId, int subtypeId, std::string eventType, std::string event)
 {
 
     alGetError();
-    this->checkQueue();
+    if (!this->active || chamberId!=this->currSoundSpace || this->calcDistance(this->listenerPos,position)>720|| !this->gc->samples[typeId][subtypeId][eventType][event].configured)
+        return;
+    if (this->cnt!=bElem::getCntr())
+    {
+        this->checkQueue();
+        this->cnt=bElem::getCntr();
+    }
+
     if(this->sndRegister[elId][eventType][event].r && this->gc->samples[typeId][subtypeId][eventType][event].allowMulti==false)
     {
+        std::cout<<"allowmulti!\n";
         return;
     }
     // is Sample already in the sample table?
     if (this->samplesLoaded[typeId][subtypeId][eventType][event].loaded==false)
     {
-         // obtain game configuration structure
-        if(!this->gc->samples[typeId][subtypeId][eventType][event].configured) // no configured samples, we return non existent
-        {
-            return;
-        }
+        // obtain game configuration structure
         ALuint bid=this->loadSample(this->gc->samples[typeId][subtypeId][eventType][event].fname);
         if(bid==0)
             return;
@@ -102,17 +115,29 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
     stNode srcNode=this->getSndNode();
     alSourcei(srcNode.source, AL_BUFFER, (ALint)(this->samplesLoaded[typeId][subtypeId][eventType][event].buffer));
     srcNode.isRegistered=true;
+    srcNode.position=position;
     srcNode.mode=this->samplesLoaded[typeId][subtypeId][eventType][event].mode;
     srcNode.allowMulti=this->samplesLoaded[typeId][subtypeId][eventType][event].allowMulti;
     srcNode.elId=elId;
     srcNode.eventType=eventType;
     srcNode.event=event;
+    float newVolume = 64.0/this->calcDistance(position,this->listenerPos);
+    alSourcef(srcNode.source, AL_GAIN, newVolume);
     alSourcei(srcNode.source,AL_LOOPING,(this->samplesLoaded[typeId][subtypeId][eventType][event].mode==0)?AL_FALSE:AL_TRUE);
     this->sndRegister[elId][eventType][event].r=true;
     alSourcePlay(srcNode.source);
     this->registeredSounds.push_back(srcNode);
     return;
 };
+
+
+
+int soundManager::calcDistance(coords3d a, coords3d b)
+{
+    return (int)sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y)+(a.z-b.z)*(a.z-b.z));
+}
+
+
 
 /*
  * we get a source from the queue, if it is available, we return it.
@@ -164,7 +189,7 @@ void soundManager::setListenerPosition(coords3d pos)
 
 void soundManager::setListenerOrientation(coords3d pos)
 {
-    ALfloat listenerOri[] = { (float)pos.x, (float)pos.y, (float)pos.z,0.0,1.0,0.0};
+    ALfloat listenerOri[] = { (float)pos.x, (float)pos.y, (float)pos.z,0.0,0.0,1.0};
     alListenerfv(AL_ORIENTATION, listenerOri);
 
 }

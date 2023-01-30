@@ -118,5 +118,16 @@ void goldenApple::setCollected(std::shared_ptr<bElem> who)
     {
         this->registerLiveElement(shared_from_this());
     }
+ /*   if(who.get()!=nullptr && who.get()!=this->getCollector().get() && who->getBoard().get()!=nullptr)
+    {
+        coords3d c3d;
+        c3d.x=who->getCoords().x*32+who->getOffset().x;
+        c3d.z=who->getCoords().y*32+who->getOffset().y;
+        c3d.y=50;
+        coords3d vel= {who->getOffset().x,0,who->getOffset().y};
+        soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),"Found","Collect");
+    }
+    */
     explosives::setCollected(who);
+
 }

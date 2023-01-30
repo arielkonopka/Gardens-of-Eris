@@ -9,7 +9,7 @@
 #include "chamber.h"
 #include "videoElementDef.h"
 #include "elemStats.h"
-
+#include "soundManager.h"
 namespace videoElement
 {
 class videoElementDef;
@@ -17,7 +17,7 @@ class videoElementDef;
 class chamber;
 class nonSteppable;
 
-typedef enum { DISPOSED=0,nullptrREACHED=1,ERROR=2} oState;
+using  oState=enum ost { DISPOSED=0,nullptrREACHED=1,ERROR=2};
 struct _cfg
 {
     bool amIUsable=false;
@@ -177,7 +177,7 @@ public:
     static std::vector<std::shared_ptr<bElem>> liveElems;
 
     static void tick();
-    unsigned int getCntr() const;
+   static unsigned int getCntr();
 
     virtual constexpr bool isFading()
     {

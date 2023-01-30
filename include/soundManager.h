@@ -10,8 +10,8 @@
 #include "configManager.h"
 #include <sndfile.h>
 #include <deque>
-
-
+#include <cmath>
+#include "bElem.h"
 using coords3d=struct crd3d
 {
     int x=-1;
@@ -26,8 +26,7 @@ using sndHolder=struct sampleS
     ALuint buffer;
     int mode;
     bool allowMulti=false;
-    coords3d position;
-    coords3d velocity;
+
 
 };
 
@@ -44,6 +43,8 @@ using stNode=struct sndNode
     int elId=0;
     std::string eventType;
     std::string event;
+    coords3d position;
+    coords3d velocity;
     inline sndNode operator=(sndNode a)
     {
         isRegistered=a.isRegistered;
@@ -72,7 +73,9 @@ public:
     void setListenerVelocity(coords3d pos);
     void setListenerChamber(int chamberId);
     void setListenerOrientation(coords3d pos);
+    void enableSound();
 private:
+    int calcDistance(coords3d a,coords3d b);
     void setSoundPosition(stNode snd,coords3d pos);
     void setSoundVelocity(stNode snd,coords3d pos);
     bool stopSnd(stNode n);
@@ -90,8 +93,9 @@ private:
     void checkQueue();
     coords3d listenerPos= {0,0,0};
     std::shared_ptr<gameConfig> gc;
-     std::shared_ptr<configManager> cm;
-
+    std::shared_ptr<configManager> cm;
+    unsigned int cnt=0;
+    bool active=false;
 };
 
 #endif // SOUNDMANAGER_H

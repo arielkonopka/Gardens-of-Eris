@@ -52,32 +52,39 @@ bool plainGun::isWeapon()
 bool plainGun::use(std::shared_ptr<bElem> who)
 {
     std::shared_ptr<bElem> myel;
+#ifdef _VerbousMode_
     if (who==nullptr)
     {
-#ifdef _VerbousMode_
+
         std::cout<<"Who is nullptr for plain gun!";
-#endif
         return false;
 
     }
     if(who->getType()==_player)
     {
-#ifdef _VerbousMode_
-        std::cout<<"Shoot: "<<this->readyToShoot()<<" s "<<this->shot<<" Energy "<<this->getEnergy()<<"\n";
-#endif
-    }
 
+        std::cout<<"Shoot: "<<this->readyToShoot()<<" s "<<this->shot<<" Energy "<<this->getEnergy()<<"\n";
+
+    }
+#endif
     if (this->readyToShoot()==false)
         return false; //The gun is fine, not ready to shoot though
     this->shot=this->getCntr()+_plainGunCharge;
-    if (this->ammo<=0) //odd subtypes have infinite shots
-        if (this->getSubtype()%2)
-            return false;
+    if (this->ammo<=0 && (this->getSubtype()%2)==0) //odd subtypes have infinite shots
+        return false;
     myel=who->getElementInDirection(who->getDirection());
     if(myel!=nullptr)
     {
         if (this->ammo>0 || this->getSubtype()%2==1)
         {
+
+            coords3d c3d;
+            c3d.x=who->getCoords().x*32+who->getOffset().x;
+            c3d.z=who->getCoords().y*32+who->getOffset().y;
+            c3d.y=50;
+            coords3d vel= {who->getOffset().x,0,who->getOffset().y};
+            soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),"Shoot","Shoot");
+
             if (myel->isSteppable()==true)
             {
                 this->createProjectible(who);

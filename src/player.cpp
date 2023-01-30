@@ -190,7 +190,7 @@ bool player::mechanics()
         soundManager::getInstance()->setListenerVelocity({0,0,0});
     }
     soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId());
-    soundManager::getInstance()->setListenerOrientation(vel);
+    soundManager::getInstance()->setListenerOrientation({0,-1,0});
     soundManager::getInstance()->setListenerPosition(c3d);
     if(!res)
         return false;
@@ -207,7 +207,7 @@ bool player::mechanics()
         if(this->moveInDirection(this->getBoard()->cntrlItm.dir))
         {
             this->animPh++;
-            soundManager::getInstance()->registerSound(this->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),"Walk","Walk On");
+    //        soundManager::getInstance()->registerSound(this->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),"Walk","Walk On");
         }
         break;
 
@@ -260,16 +260,8 @@ bool player::shootGun()
     {
         if(gun->use(shared_from_this()))
         {
-            coords3d c3d;
-            c3d.x=this->getCoords().x*32+this->getOffset().x;
-            c3d.z=this->getCoords().y*32+this->getOffset().y;
-            c3d.y=50;
-            coords3d vel= {0,0,0};
-
-            soundManager::getInstance()->registerSound(this->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),"Shoot","Shoot");
-        }
-
-        this->setWait(_interactedTime*2);
+            this->setWait(_interactedTime*2);
+        };
         return true;
     }
     this->setWait(_interactedTime);

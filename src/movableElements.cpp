@@ -4,12 +4,12 @@
 videoElement::videoElementDef* movableElements::vd=nullptr;
 
 
-movableElements::movableElements():bElem()
+movableElements::movableElements():audibleElement()
 {
 
 }
 
-movableElements::movableElements(std::shared_ptr<chamber> board) : bElem(board)
+movableElements::movableElements(std::shared_ptr<chamber> board) : audibleElement(board)
 {
 
 }
@@ -29,6 +29,7 @@ bool movableElements::moveInDirection(direction dir)
     return this->moveInDirectionSpeed(dir,_mov_delay);
 }
 
+
 bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 {
     std::shared_ptr<bElem> stepOn=this->getElementInDirection(dir);
@@ -39,22 +40,25 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
     {
         this->stepOnElement(stepOn);
         this->setMoved(speed);
+        this->playSound("Move","StepOn");
         return true;
     }
     else if (this->canPush()==true && stepOn->isMovable()==true)
     {
         std::shared_ptr<bElem> stepOn2=stepOn->getElementInDirection(dir);
-        if(stepOn2.get()==nullptr)
-            return false;
-        if (stepOn2->isSteppable())
+        if(stepOn2.get()==nullptr || !stepOn2->isSteppable())
         {
-            stepOn->stepOnElement(stepOn2); //move next object in direction
-            this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
-            this->setMoved(speed+1);
-            stepOn->setMoved(speed+1);
-            stepOn->setDirection(dir);
-            return true;
+           this->playSound("Move","BlockedMove");
+            return false;
         }
+        stepOn->stepOnElement(stepOn2); //move next object in direction
+        this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
+        this->setMoved(speed+1);
+        stepOn->setMoved(speed+1);
+        stepOn->setDirection(dir);
+        this->playSound("Move","Push");
+
+        return true;
     }
     if (this->canCollect()==true && this->getInventory().get()!=nullptr && stepOn->isCollectible()==true)
     {
@@ -175,7 +179,7 @@ void movableElements::setMovable(bool m)
 
 void movableElements::setCanPush(bool sp)
 {
-   this->_me_canPush=sp;
+    this->_me_canPush=sp;
 }
 
 
