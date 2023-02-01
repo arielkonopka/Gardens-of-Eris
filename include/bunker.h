@@ -4,7 +4,7 @@
 #include "plainGun.h"
 #include <nonSteppable.h>
 #include "bElem.h"
-#include "soundManager.h"
+//#include "soundManager.h"
 
 
 class bunker : public mechanical, public nonSteppable,public movableElements

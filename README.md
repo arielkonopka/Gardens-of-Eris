@@ -118,7 +118,9 @@ When running build.sh, the unit tests would be built as well. You can then run t
 
 
 ## Sound
-We will use [openAL](https://www.openal.org/documentation/openal-1.1-specification.pdf) as our audiodriver, it is because we can have control over object positions, and their sounds.
+Our game now has the ability to produce sounds.
+Just inherit after audibleElement, and then you cn use playSound method with two arguments: eventType, and event. These will be used to locate your sound, along with other data, that will be done for you.
+We are using [openAL](https://www.openal.org/documentation/openal-1.1-specification.pdf) as our audiodriver, it is because we can have control over object positions, and just because we can. 
 The plan is to place the listener in the position of the player, and then produce the sounds in the positions of their objects.
 Since we have multiple chambers, we would not like to have all the sounds playing in the same time, we will have to create contexts, or rather one context, the current one.
 The Idea would be to create only sounds for current chamber, and ignore the others. 
@@ -153,6 +155,7 @@ The sampleData is contained in structure that you can access like configObje->sa
 
 
 
+
 ## TODO
 
 - Add new type of a gun, that would shoot bombs - grenade launcher
@@ -176,3 +179,5 @@ Now every object can have its own animations of death, teleport, destruction and
 
 - changed pointers from raw to managed
 - removed Garbage collector, as it is not necessary anymore
+- enabled first sounds, stumbled upon first issue, there is a limited amount of sources, available, so I cannot really have as many as I want... Still have plenty
+    I will have to sort them by the distance to the player and remove the farthest ones.

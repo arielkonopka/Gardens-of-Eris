@@ -8,10 +8,9 @@
 
 #include "chamber.h"
 //#include "objectTypes.h"
+#include "audibleElement.h"
 
-
-
-class movableElements :  virtual  public bElem
+class movableElements :   virtual public audibleElement
 {
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();

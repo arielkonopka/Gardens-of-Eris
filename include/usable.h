@@ -2,10 +2,10 @@
 #define USABLE_H
 
 //#include "commons.h"
-#include "collectible.h"
+#include "audibleElement.h"
 
 
-class usable : virtual public bElem
+class usable : virtual public audibleElement
 {
 public:
     usable();

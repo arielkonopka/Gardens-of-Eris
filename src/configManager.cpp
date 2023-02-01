@@ -32,6 +32,7 @@ void configManager::configReload()
     this->gConfObj->gTeleporting.clear();
     this->gConfObj->sylables.clear();
     this->gConfObj->sprites.clear();
+    this->gConfObj->soundDistance=this->skinDefJson["MaxSoundDistance"].GetInt();
     this->gConfObj->sndFifoSize=this->skinDefJson["SndFifoSize"].GetInt();
     this->gConfObj->FontFile = this->skinDefJson["FontFile"].GetString();
     this->gConfObj->spriteFile = this->skinDefJson["SpriteFile"].GetString();

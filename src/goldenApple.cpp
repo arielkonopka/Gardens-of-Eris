@@ -118,5 +118,5 @@ void goldenApple::setCollected(std::shared_ptr<bElem> who)
     {
         this->registerLiveElement(shared_from_this());
     }
-    explosives::setCollected(who);
+    collectible::setCollected(who);
 }

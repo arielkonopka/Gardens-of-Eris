@@ -2,7 +2,7 @@
 #define GOLDENAPPLE_H
 #include "elements.h"
 #include <vector>
-
+#include "soundManager.h"
 class goldenApple : public collectible,public nonSteppable,public killableElements,public explosives
 {
 public:

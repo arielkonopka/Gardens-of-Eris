@@ -9,7 +9,7 @@
 #include "elements.h"
 #include "presenter.h"
 #include "randomLevelGenerator.h"
-
+#include "soundManager.h"
 int main( int argc, char * argv[] )
 {
     bool finish=false;
@@ -25,7 +25,7 @@ int main( int argc, char * argv[] )
         rndl=new randomLevelGenerator(100+((5-cnt)*50)+(rndl->gen()%10)*5,100+((5-cnt)*50)+(rndl->gen()%10)*5);
         rndl->generateLevel(cnt);
     }
-
+    soundManager::getInstance()->enableSound();
 
     while(!finish)
     {

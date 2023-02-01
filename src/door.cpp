@@ -13,16 +13,16 @@ int door::getType()
 }
 
 
-door::door():bElem()
+door::door():audibleElement()
 {
 
 }
-door::door(std::shared_ptr<chamber> board) : bElem(board)
+door::door(std::shared_ptr<chamber> board) : audibleElement(board)
 {
 
 }
 
-door::door(std::shared_ptr<chamber> board, int subtype) :bElem(board)
+door::door(std::shared_ptr<chamber> board, int subtype) :audibleElement(board)
 {
     this->setSubtype(subtype);
 }
@@ -75,12 +75,13 @@ bool door::interact(std::shared_ptr<bElem> who)
     std::shared_ptr<bElem> key=nullptr;
     if (!bres)
         return false;
-    //std::cout<<"can interact\n";
     if (this->locked==false)
     {
         this->interacted=this->getCntr()+10;
         this->open=!this->open;
         this->setDirection((!this->open)?UP:LEFT);
+        this->playSound("Door",(this->open)?"Unlock":"Lock");
+
         return true;
     }
     //If it cannot collect, it cannot hold a key.
@@ -99,6 +100,7 @@ bool door::interact(std::shared_ptr<bElem> who)
     }
     if(key!=nullptr)
     {
+        this->playSound("Door","Open");
         this->open=true;
         this->locked=false;
         this->setDirection((!this->open)?UP:LEFT);

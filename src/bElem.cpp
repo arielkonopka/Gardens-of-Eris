@@ -143,6 +143,16 @@ void bElem::setCollected(std::shared_ptr<bElem> who)
     else
         std::cout << "Set null on collector " << this->getInstanceid() << "\n";
 #endif
+ /*if(who.get()!=nullptr && who.get()!=this->getCollector().get() && who->getBoard().get()!=nullptr && who->getType()==_player)
+    {
+        coords3d c3d;
+        c3d.x=who->getCoords().x*32+who->getOffset().x;
+        c3d.z=who->getCoords().y*32+who->getOffset().y;
+        c3d.y=50;
+        coords3d vel= {who->getOffset().x,0,who->getOffset().y};
+        soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),"Found","Collect");
+    }
+    */
     this->state.collector = who;
 #ifdef _VerbousMode_
 
@@ -855,7 +865,7 @@ void bElem::tick()
     bElem::sTaterCounter++;
 }
 
-unsigned int bElem::getCntr() const
+unsigned int bElem::getCntr()
 {
     return bElem::sTaterCounter;
 }
