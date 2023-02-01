@@ -4,10 +4,12 @@ videoElement::videoElementDef *simpleBomb::vd = nullptr;
 
 simpleBomb::simpleBomb(std::shared_ptr<chamber> board) : explosives(board), nonSteppable(board), killableElements(board), movableElements(board)
 {
+    this->setSubtype(0);
 }
 
 simpleBomb::simpleBomb() : explosives(), nonSteppable(), killableElements(), movableElements()
 {
+    this->setSubtype(0);
 }
 
 bool simpleBomb::hurt(int points)
@@ -49,5 +51,5 @@ videoElement::videoElementDef *simpleBomb::getVideoElementDef()
 
 int simpleBomb::getType()
 {
-    return _explosivesType;
+    return _simpleBombType;
 }

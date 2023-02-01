@@ -1,11 +1,11 @@
 #include "explosives.h"
 
-explosives::explosives(std::shared_ptr<chamber> board) : bElem(board)
+explosives::explosives(std::shared_ptr<chamber> board) : audibleElement(board)
 {
     // ctor
 }
 
-explosives::explosives() : bElem()
+explosives::explosives() : audibleElement()
 {
 }
 
@@ -20,6 +20,7 @@ bool explosives::explode()
     coords mc=(this->getCollector().get()!=nullptr)?this->getCollector()->getCoords():this->getCoords();
     std::shared_ptr<chamber> brd = (this->getCollector().get()!=nullptr)?this->getCollector()->getBoard():this->getBoard();
     std::shared_ptr<bElem> step;
+    this->playSound("Explosives","Explode"); // This sound must not be looped, otherwise it will be swiped off
     this->removeElement();
     step = brd->getElement(mc);
     step->destroy();
@@ -34,6 +35,7 @@ bool explosives::explode()
                 el->destroy();
         }
     }
+
     this->disposeElement();
     return false;
 }

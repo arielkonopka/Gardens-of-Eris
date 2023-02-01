@@ -144,7 +144,8 @@ bool player::mechanics()
     {
         this->getBoard()->player.x=this->getCoords().x;
         this->getBoard()->player.y=this->getCoords().y;
-
+        if(this->isTeleporting())
+            this->playSound("Teleport","Teleporting");
     }
     else
     {

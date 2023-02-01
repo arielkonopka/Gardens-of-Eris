@@ -13,14 +13,15 @@ bool usable::isUsable()
 
 bool usable::use(std::shared_ptr<bElem> who, direction dir)
 {
+    this->playSound("Usable","Use");
     return true;
 }
 
-usable::usable(std::shared_ptr<chamber> board):bElem(board)
+usable::usable(std::shared_ptr<chamber> board):audibleElement(board)
 {
 
 }
-usable::usable():bElem()
+usable::usable():audibleElement()
 {
 
 }

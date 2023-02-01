@@ -23,27 +23,23 @@ soundManager::soundManager()
         for(int c=0; c<configManager::getInstance()->getConfig()->sndFifoSize; c++)
         {
             ALuint source;
-            stNode srcNode;
+            std::shared_ptr<stNode> srcNode=std::make_shared<stNode>(stNode());
             source = 0;
             alGenSources(1, &source);
-            srcNode.source=source;
-            srcNode.isRegistered=false;
-            alSourcei(srcNode.source, AL_SOURCE_RELATIVE, AL_TRUE);
-            alSourcef(srcNode.source, AL_MAX_DISTANCE, 2000.f); // we want to hear from the distance 100 elements 100*32=3200
-            alSourcef(srcNode.source, AL_REFERENCE_DISTANCE, 1.0f);
-            alSourcef(srcNode.source, AL_PITCH, 1.0f);
-            alSourcef(srcNode.source, AL_GAIN, 1.0f);
-            this->registeredSounds.push_front(srcNode);
+            srcNode->source=source;
+            srcNode->isRegistered=false;
+            alSourcei(srcNode->source, AL_SOURCE_RELATIVE, AL_TRUE);
+            alSourcef(srcNode->source, AL_MAX_DISTANCE, 2000.f); // we want to hear from the distance 100 elements 100*32=3200
+            alSourcef(srcNode->source, AL_REFERENCE_DISTANCE, 1.0f);
+            alSourcef(srcNode->source, AL_PITCH, 1.0f);
+            alSourcef(srcNode->source, AL_GAIN, 1.0f);
+            this->registeredSounds.push_back(srcNode);
         }
     }
     else
     {
         std::cout<<"Sound thinggy issue.\n Device did not exist?\n";
     }
-
-
-
-
 }
 
 soundManager::~soundManager()
@@ -63,19 +59,25 @@ void soundManager::checkQueue()
 {
     for(unsigned int c=0; c<this->registeredSounds.size(); c++)
     {
-        stNode n=this->registeredSounds.front();
-        this->registeredSounds.pop_front();
-        if(n.isRegistered && this->isSndPlaying(n.source)==false)
+        std::shared_ptr<stNode> n=this->registeredSounds[c];
+        /* stop sounds from different board */
+        if (n->isRegistered && this->isSndPlaying(n->source) && (n->soundSpace!=this->currSoundSpace || this->calcDistance(this->listenerPos,n->position)>this->gc->soundDistance))
         {
-            n.isRegistered=false;
-            this->sndRegister[n.elId][n.eventType][n.event].r=false;
+            this->stopSnd(n);
+            n->isRegistered=false;
+            this->sndRegister[n->elId][n->eventType][n->event].r=false;
         }
-        else if (this->isSndPlaying(n.source)==true)
+        if(n->isRegistered && this->isSndPlaying(n->source)==false)
         {
-            float newVolume = 64.0/this->calcDistance(n.position,this->listenerPos);
-            alSourcef(n.source, AL_GAIN, newVolume);
+            n->isRegistered=false;
+            this->sndRegister[n->elId][n->eventType][n->event].r=false;
         }
-        this->registeredSounds.push_back(n);
+        if (this->isSndPlaying(n->source)==true)
+        {
+            float newVolume = 32.0/this->calcDistance(n->position,this->listenerPos);
+
+            alSourcef(n->source, AL_GAIN, (newVolume>1)?1.0:newVolume);
+        }
     }
 }
 void soundManager::enableSound()
@@ -87,17 +89,22 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
 {
 
     alGetError();
-    if (!this->active || chamberId!=this->currSoundSpace || this->calcDistance(this->listenerPos,position)>720|| !this->gc->samples[typeId][subtypeId][eventType][event].configured)
-        return;
+    /*
+    That is a "parasite" kind of activity. That will change when sound manager gets its very own thread.
+    It should be called periodically, but not too fast. we don't care for stale samples so much
+    */
     if (this->cnt!=bElem::getCntr())
     {
         this->checkQueue();
         this->cnt=bElem::getCntr();
     }
+    /*************************************************************/
+    if (!this->active || chamberId!=this->currSoundSpace || this->calcDistance(this->listenerPos,position)>this->gc->soundDistance || !this->gc->samples[typeId][subtypeId][eventType][event].configured)
+        return;
 
     if(this->sndRegister[elId][eventType][event].r && this->gc->samples[typeId][subtypeId][eventType][event].allowMulti==false)
     {
-        std::cout<<"allowmulti!\n";
+
         return;
     }
     // is Sample already in the sample table?
@@ -112,21 +119,21 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
         this->samplesLoaded[typeId][subtypeId][eventType][event].mode=this->gc->samples[typeId][subtypeId][eventType][event].modeOfAction;
         this->samplesLoaded[typeId][subtypeId][eventType][event].allowMulti=this->gc->samples[typeId][subtypeId][eventType][event].allowMulti;
     }
-    stNode srcNode=this->getSndNode();
-    alSourcei(srcNode.source, AL_BUFFER, (ALint)(this->samplesLoaded[typeId][subtypeId][eventType][event].buffer));
-    srcNode.isRegistered=true;
-    srcNode.position=position;
-    srcNode.mode=this->samplesLoaded[typeId][subtypeId][eventType][event].mode;
-    srcNode.allowMulti=this->samplesLoaded[typeId][subtypeId][eventType][event].allowMulti;
-    srcNode.elId=elId;
-    srcNode.eventType=eventType;
-    srcNode.event=event;
-    float newVolume = 64.0/this->calcDistance(position,this->listenerPos);
-    alSourcef(srcNode.source, AL_GAIN, newVolume);
-    alSourcei(srcNode.source,AL_LOOPING,(this->samplesLoaded[typeId][subtypeId][eventType][event].mode==0)?AL_FALSE:AL_TRUE);
+    std::shared_ptr<stNode> srcNode=this->getSndNode();
+    alSourcei(srcNode->source, AL_BUFFER, (ALint)(this->samplesLoaded[typeId][subtypeId][eventType][event].buffer));
+    srcNode->isRegistered=true;
+    srcNode->position=position;
+    srcNode->mode=this->samplesLoaded[typeId][subtypeId][eventType][event].mode;
+    srcNode->allowMulti=this->samplesLoaded[typeId][subtypeId][eventType][event].allowMulti;
+    srcNode->elId=elId;
+    srcNode->eventType=eventType;
+    srcNode->event=event;
+    srcNode->soundSpace=chamberId;
+    float newVolume = 32.0/this->calcDistance(position,this->listenerPos);
+    alSourcef(srcNode->source, AL_GAIN, (newVolume>1)?1.0:newVolume);
+    alSourcei(srcNode->source,AL_LOOPING,(srcNode->mode==0)?AL_FALSE:AL_TRUE);
     this->sndRegister[elId][eventType][event].r=true;
-    alSourcePlay(srcNode.source);
-    this->registeredSounds.push_back(srcNode);
+    alSourcePlay(srcNode->source);
     return;
 };
 
@@ -143,40 +150,23 @@ int soundManager::calcDistance(coords3d a, coords3d b)
  * we get a source from the queue, if it is available, we return it.
  * available means: not registered, not playing at the moment, from other sound space
  */
-stNode soundManager::getSndNode()
+std::shared_ptr<stNode> soundManager::getSndNode()
 {
+    std::shared_ptr<stNode> n=this->registeredSounds[this->regSndPos];
     unsigned int c=0;
-    bool pushloops=false;
-    stNode n=this->registeredSounds.front();
-    this->registeredSounds.pop_front();
-    while(n.isRegistered!=false)
+    this->regSndPos=(this->regSndPos+1)%this->registeredSounds.size();
+    while(n.get()!=nullptr && n->isRegistered)
     {
-        if (this->isSndPlaying(n.source)==false || this->currSoundSpace==n.soundSpace)
-            break;
-        if(pushloops==true && n.mode>0)
-            break;
-        this->registeredSounds.push_back(n);
-        n=this->registeredSounds.front();
-        this->registeredSounds.pop_front();
-        c++;
-        if(c>=this->registeredSounds.size())
+        if ((!this->isSndPlaying(n->source)) || (n->mode>0 && c>this->registeredSounds.size()) || (c>this->registeredSounds.size()*2))
         {
-            if(pushloops==true) /// killing loops did not cut it, we will return first sound we can get our hands on
-                break;
-            c=0;
-            pushloops=true;
-        }
+            this->sndRegister[n->elId][n->eventType][n->event].r=false;
+            n->isRegistered=false;
+            break;
+        };
+        c++;
+        n=this->registeredSounds[this->regSndPos];
+        this->regSndPos=(this->regSndPos+1)%this->registeredSounds.size();
     }
-    if(this->isSndPlaying(n.source))
-    {
-        this->stopSnd(n);
-    }
-    if(n.isRegistered)
-    {
-        this->sndRegister[n.elId][n.eventType][n.event].r=false;
-    }
-
-    n.isRegistered=false;
     return n;
 }
 
@@ -203,31 +193,17 @@ void soundManager::setListenerVelocity(coords3d pos)
 /* we just teleported, we need to switch the context, which means stopping all the currently played samples from the previous chamber*/
 void soundManager::setListenerChamber(int chamberId)
 {
-    if(chamberId!=this->currSoundSpace && this->currSoundSpace!=-1)
-    {
-        for(unsigned int c=0; c<this->registeredSounds.size(); c++)
-        {
-            stNode n=this->registeredSounds.front();
-            this->registeredSounds.pop_front();
-            if(n.soundSpace!=chamberId)
-            {
-                this->sndRegister[n.elId][n.eventType][n.event].r=false;
-                this->stopSnd(n);
-                n.isRegistered=false;
-            }
-            this->registeredSounds.push_back(n);
-        }
-    }
     this->currSoundSpace=chamberId;
+    this->checkQueue();
 }
 
-void soundManager::setSoundVelocity(stNode  snd, coords3d pos)
+void soundManager::setSoundVelocity(std::shared_ptr<stNode>  snd, coords3d pos)
 {
-    alSource3f(snd.source,AL_VELOCITY,(float)pos.x,(float)pos.y,(float)pos.z);
+    alSource3f(snd->source,AL_VELOCITY,(float)pos.x,(float)pos.y,(float)pos.z);
 }
-void soundManager::setSoundPosition(stNode  snd, coords3d pos)
+void soundManager::setSoundPosition(std::shared_ptr<stNode> snd, coords3d pos)
 {
-    alSource3f(snd.source,AL_POSITION,(float)pos.x,(float)pos.y,(float)pos.z);
+    alSource3f(snd->source,AL_POSITION,(float)pos.x,(float)pos.y,(float)pos.z);
 }
 
 ALuint soundManager::loadSample(std::string fname)
@@ -327,8 +303,8 @@ bool soundManager::isSndPlaying(ALint sndId)
 }
 
 
-bool soundManager::stopSnd(stNode n)
+bool soundManager::stopSnd(std::shared_ptr<stNode> n)
 {
-    alSourceStop(n.source);
-    return this->isSndPlaying(n.source);
+    alSourceStop(n->source);
+    return this->isSndPlaying(n->source);
 };

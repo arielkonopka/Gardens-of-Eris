@@ -12,6 +12,7 @@
 #include <deque>
 #include <cmath>
 #include "bElem.h"
+#include <memory>
 using coords3d=struct crd3d
 {
     int x=-1;
@@ -68,7 +69,6 @@ public:
     ~soundManager();
     static soundManager* getInstance();
     void registerSound(int chamberId,coords3d position,coords3d velocity,int elId,int typeId,int subtypeId,std::string eventType,std::string event);
-
     void setListenerPosition(coords3d pos);
     void setListenerVelocity(coords3d pos);
     void setListenerChamber(int chamberId);
@@ -76,17 +76,17 @@ public:
     void enableSound();
 private:
     int calcDistance(coords3d a,coords3d b);
-    void setSoundPosition(stNode snd,coords3d pos);
-    void setSoundVelocity(stNode snd,coords3d pos);
-    bool stopSnd(stNode n);
-    stNode getSndNode();
+    void setSoundPosition(std::shared_ptr<stNode> snd,coords3d pos);
+    void setSoundVelocity(std::shared_ptr<stNode> snd,coords3d pos);
+    bool stopSnd(std::shared_ptr<stNode> n);
+    std::shared_ptr<stNode> getSndNode();
     ALuint loadSample(std::string fname);
     static soundManager* instance;
     soundManager();
     ALCdevice *sndDevice;
     ALCcontext *sndContext;
     std::map<int, std::map< int, std::map<std::string,std::map<std::string, sndHolder>>>> samplesLoaded;
-    std::deque<stNode> registeredSounds; // the whole sample data, used to register sounds
+    std::vector<std::shared_ptr<stNode>> registeredSounds; // the whole sample data, used to register sounds
     std::map<int,std::map<std::string,std::map<std::string,regNode>>> sndRegister;
     int currSoundSpace=-1;
     bool isSndPlaying(ALint sndId);
@@ -96,6 +96,7 @@ private:
     std::shared_ptr<configManager> cm;
     unsigned int cnt=0;
     bool active=false;
+    int regSndPos=0;
 };
 
 #endif // SOUNDMANAGER_H
