@@ -28,7 +28,7 @@ typedef struct spriteData
     std::vector<coords> teleporting;
 } spriteData;
 
-typedef struct sampleData
+using sampleData= struct sampleData
 {
     bool configured=false;
     std::string fname="";
@@ -36,7 +36,15 @@ typedef struct sampleData
     std::string description="This sampleData is empty";
     bool allowMulti=false;
     int modeOfAction=-1; /* 0 - normal - play and forget, 1 - looped until stopped, or lost view, 2 - backwards, 3 - pingloop -forward and backward until stopped, or lost view */
-} sampleData;
+} ;
+using musicData=struct _musicData
+{
+    bool configured=false;
+    std::string filename;
+    std::string name;
+};
+
+
 
 typedef struct gameConfig
 {
@@ -44,7 +52,9 @@ typedef struct gameConfig
     int sndFifoSize=0;
     int soundDistance=1005;
     int tileWidth,tileHeight;
+
     int spacing; //We use spacing in the sprite png file, just for our comfort
+    std::vector<musicData> music;
     std::vector<std::string> sylables;
     std::vector<coords> gDying;
     std::vector<coords> gDestroying;

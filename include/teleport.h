@@ -5,7 +5,8 @@
 #include <nonSteppable.h>
 #include "videoElementDef.h"
 #include "randomLevelGenerator.h"
-class teleport : public nonSteppable
+#include "audibleElement.h"
+class teleport : public nonSteppable,public audibleElement
 {
 public:
     static videoElement::videoElementDef* vd;

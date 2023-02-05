@@ -29,8 +29,8 @@ soundManager::soundManager()
             srcNode->source=source;
             srcNode->isRegistered=false;
             alSourcei(srcNode->source, AL_SOURCE_RELATIVE, AL_TRUE);
-            alSourcef(srcNode->source, AL_MAX_DISTANCE, 2000.f); // we want to hear from the distance 100 elements 100*32=3200
-            alSourcef(srcNode->source, AL_REFERENCE_DISTANCE, 1.0f);
+            alSourcef(srcNode->source, AL_MAX_DISTANCE, 1000.f); // we want to hear from the distance 100 elements 100*32=3200
+            alSourcef(srcNode->source, AL_REFERENCE_DISTANCE, 0.5f);
             alSourcef(srcNode->source, AL_PITCH, 1.0f);
             alSourcef(srcNode->source, AL_GAIN, 1.0f);
             this->registeredSounds.push_back(srcNode);
@@ -99,32 +99,36 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
         this->cnt=bElem::getCntr();
     }
     /*************************************************************/
-    if (!this->active || chamberId!=this->currSoundSpace || this->calcDistance(this->listenerPos,position)>this->gc->soundDistance || !this->gc->samples[typeId][subtypeId][eventType][event].configured)
+    if (!this->active || chamberId!=this->currSoundSpace
+            || this->calcDistance(this->listenerPos,position)>this->gc->soundDistance
+            || !this->gc->samples[typeId][subtypeId][eventType][event].configured
+            || (this->sndRegister[elId][eventType][event].r && this->gc->samples[typeId][subtypeId][eventType][event].allowMulti==false)
+       )
         return;
-
-    if(this->sndRegister[elId][eventType][event].r && this->gc->samples[typeId][subtypeId][eventType][event].allowMulti==false)
+    if(this->samplesLoaded[typeId][subtypeId][eventType][event].get()==nullptr )
+        this->samplesLoaded[typeId][subtypeId][eventType][event]=std::make_shared<sndHolder>();
+    if (this->samplesLoaded[typeId][subtypeId][eventType][event]->loaded==false)
     {
+      if(this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].r==false)
+        {
+            ALuint bid=this->loadSample(this->gc->samples[typeId][subtypeId][eventType][event].fname);
+            if(bid==0)
+                return;
+            this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].r=true;
+            this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].buffer=bid;
+        }
 
-        return;
-    }
-    // is Sample already in the sample table?
-    if (this->samplesLoaded[typeId][subtypeId][eventType][event].loaded==false)
-    {
-        // obtain game configuration structure
-        ALuint bid=this->loadSample(this->gc->samples[typeId][subtypeId][eventType][event].fname);
-        if(bid==0)
-            return;
-        this->samplesLoaded[typeId][subtypeId][eventType][event].buffer=bid;
-        this->samplesLoaded[typeId][subtypeId][eventType][event].loaded=true;
-        this->samplesLoaded[typeId][subtypeId][eventType][event].mode=this->gc->samples[typeId][subtypeId][eventType][event].modeOfAction;
-        this->samplesLoaded[typeId][subtypeId][eventType][event].allowMulti=this->gc->samples[typeId][subtypeId][eventType][event].allowMulti;
+        this->samplesLoaded[typeId][subtypeId][eventType][event]->buffer=this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].buffer;
+        this->samplesLoaded[typeId][subtypeId][eventType][event]->loaded=true;
+        this->samplesLoaded[typeId][subtypeId][eventType][event]->mode=this->gc->samples[typeId][subtypeId][eventType][event].modeOfAction;
+        this->samplesLoaded[typeId][subtypeId][eventType][event]->allowMulti=this->gc->samples[typeId][subtypeId][eventType][event].allowMulti;
     }
     std::shared_ptr<stNode> srcNode=this->getSndNode();
-    alSourcei(srcNode->source, AL_BUFFER, (ALint)(this->samplesLoaded[typeId][subtypeId][eventType][event].buffer));
+    alSourcei(srcNode->source, AL_BUFFER, (ALint)(this->samplesLoaded[typeId][subtypeId][eventType][event]->buffer));
     srcNode->isRegistered=true;
     srcNode->position=position;
-    srcNode->mode=this->samplesLoaded[typeId][subtypeId][eventType][event].mode;
-    srcNode->allowMulti=this->samplesLoaded[typeId][subtypeId][eventType][event].allowMulti;
+    srcNode->mode=this->samplesLoaded[typeId][subtypeId][eventType][event]->mode;
+    srcNode->allowMulti=this->samplesLoaded[typeId][subtypeId][eventType][event]->allowMulti;
     srcNode->elId=elId;
     srcNode->eventType=eventType;
     srcNode->event=event;
@@ -133,6 +137,7 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
     alSourcef(srcNode->source, AL_GAIN, (newVolume>1)?1.0:newVolume);
     alSourcei(srcNode->source,AL_LOOPING,(srcNode->mode==0)?AL_FALSE:AL_TRUE);
     this->sndRegister[elId][eventType][event].r=true;
+    this->sndRegister[elId][eventType][event].stn=srcNode;
     alSourcePlay(srcNode->source);
     return;
 };
@@ -144,6 +149,10 @@ int soundManager::calcDistance(coords3d a, coords3d b)
     return (int)sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y)+(a.z-b.z)*(a.z-b.z));
 }
 
+void soundManager::registerMusic(int musicNo, int chamberId, coords3d position)
+{
+    /*TBC! we should have all the registered samples for music in the config structure*/
+}
 
 
 /*

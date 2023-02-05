@@ -3,13 +3,13 @@
 videoElement::videoElementDef* teleport::vd=nullptr;
 std::vector<teleport*> teleport::allTeleporters;
 
-teleport::teleport(std::shared_ptr<chamber> board):nonSteppable(board)
+teleport::teleport(std::shared_ptr<chamber> board):nonSteppable(board), audibleElement(board)
 {
     this->connectionsMade=false;
     teleport::allTeleporters.push_back(this);
     this->theOtherEnd=nullptr; // we do not have the other end configured yet. We will configure it on interact method;
 }
-teleport::teleport(std::shared_ptr<chamber> board,int newSubtype):nonSteppable(board)
+teleport::teleport(std::shared_ptr<chamber> board,int newSubtype):nonSteppable(board),audibleElement(board)
 {
     this->connectionsMade=false;
     teleport::allTeleporters.push_back(this);
@@ -17,7 +17,7 @@ teleport::teleport(std::shared_ptr<chamber> board,int newSubtype):nonSteppable(b
     this->setSubtype(newSubtype);
 }
 
-teleport::teleport():nonSteppable()
+teleport::teleport():nonSteppable(),audibleElement()
 {
     this->connectionsMade=false;
     teleport::allTeleporters.push_back(this);
@@ -38,6 +38,7 @@ bool teleport::interact(std::shared_ptr<bElem> who)
 {
     if (bElem::interact(who)==false)
         return false;
+    this->playSound("Teleport","Teleporting");
     if(this->connectionsMade==false)
         this->createConnectionsWithinSUbtype();
     return this->theOtherEnd->teleportIt(who);
@@ -125,22 +126,21 @@ bool teleport::isSteppable()
 
 void teleport::stomp(std::shared_ptr<bElem> who)
 {
-    nonSteppable::stomp(who);
+    bElem::stomp(who);
     this->setWait(_teleportStandTime);
     this->registerLiveElement(shared_from_this());
-
-
 }
 
 void teleport::unstomp()
 {
-    nonSteppable::unstomp();
+    bElem::unstomp();
     if(this->isLiveElement())
         this->deregisterLiveElement(this->getInstanceid());
 }
 
 bool teleport::mechanics()
 {
+
     if(!this->isWaiting())
     {
         if(this->getStomper()!=nullptr)

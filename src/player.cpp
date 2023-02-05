@@ -117,6 +117,7 @@ bool player::interact(std::shared_ptr<bElem> who)
 #endif
         player::visitedPlayers.push_back(shared_from_this());
         this->visited=true;
+        this->playSound("Player","ActivateAvatar");
     }
     return true;
 }
