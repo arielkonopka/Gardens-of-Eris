@@ -45,6 +45,14 @@ void configManager::configReload()
     rapidjson::Value &destroying = this->skinDefJson["Destroying"];
     rapidjson::Value &fadingOut = this->skinDefJson["Fading"];
     rapidjson::Value &sprlist = this->skinDefJson["SpriteData"];
+    rapidjson::Value &music=this->skinDefJson["Music"];
+    for(unsigned int c=0;c<music.Size();c++)
+    {
+        musicData md;
+        md.filename=music[c]["Filename"].GetString();
+        md.filename=music[c]["Name"].GetString();
+        this->gConfObj->music.push_back(md);
+    }
     for (unsigned int c = 0; c < dying.Size(); c++)
     {
         int x = dying[c][0].GetInt();

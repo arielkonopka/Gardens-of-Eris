@@ -32,7 +32,13 @@ using sndHolder=struct sampleS
 };
 
 
-
+using muNode=struct _mudNode
+{
+    bool isRegistered=false;
+    ALuint source=0;
+    coords3d position;
+    int chamberId;
+};
 
 using stNode=struct sndNode
 {
@@ -46,22 +52,19 @@ using stNode=struct sndNode
     std::string event;
     coords3d position;
     coords3d velocity;
-    inline sndNode operator=(sndNode a)
-    {
-        isRegistered=a.isRegistered;
-        source=a.source;
-        mode=a.mode;
-        allowMulti=a.allowMulti;
-        soundSpace=a.soundSpace;
-        return a;
-    }
 };
 
 using regNode=struct _regnd
 {
     bool r=false;
+    std::shared_ptr<stNode> stn;
 };
 
+using regSmpFileBuf=struct _rsmpFile
+{
+    bool r=false;
+    ALuint buffer;
+};
 
 class soundManager
 {
@@ -69,6 +72,7 @@ public:
     ~soundManager();
     static soundManager* getInstance();
     void registerSound(int chamberId,coords3d position,coords3d velocity,int elId,int typeId,int subtypeId,std::string eventType,std::string event);
+    void registerMusic(int musicNo,int chamberId, coords3d position);
     void setListenerPosition(coords3d pos);
     void setListenerVelocity(coords3d pos);
     void setListenerChamber(int chamberId);
@@ -85,9 +89,12 @@ private:
     soundManager();
     ALCdevice *sndDevice;
     ALCcontext *sndContext;
-    std::map<int, std::map< int, std::map<std::string,std::map<std::string, sndHolder>>>> samplesLoaded;
+    std::map<int, std::map< int, std::map<std::string,std::map<std::string, std::shared_ptr<sndHolder>>>>> samplesLoaded;
+    std::map<std::string,ALuint> sampleBuffers; // Refactor me! - we need to load each file only once.
     std::vector<std::shared_ptr<stNode>> registeredSounds; // the whole sample data, used to register sounds
     std::map<int,std::map<std::string,std::map<std::string,regNode>>> sndRegister;
+    std::vector<muNode> registeredMusic;
+    std::map<std::string,regSmpFileBuf> sampleFile;
     int currSoundSpace=-1;
     bool isSndPlaying(ALint sndId);
     void checkQueue();

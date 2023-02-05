@@ -91,7 +91,7 @@ One is for registering a mechanical object (there has to be implemeted mechanics
 # Apples
 When an apple is intact it is a collectible token, that must be collected. But when it is broken (like shot at), then it becomes a healing device.
 When a player (or any other element, that can collect), collects the item, it will heal the collector.
-But it would deplaye its own energy, when energy reaches 0, then the apple explodes in the inventory, killing the collector.
+But it would deplay its own energy, when energy reaches 0, then the apple explodes in the inventory, killing the collector.
 
 # Teleporters
 
@@ -121,11 +121,6 @@ When running build.sh, the unit tests would be built as well. You can then run t
 Our game now has the ability to produce sounds.
 Just inherit after audibleElement, and then you cn use playSound method with two arguments: eventType, and event. These will be used to locate your sound, along with other data, that will be done for you.
 We are using [openAL](https://www.openal.org/documentation/openal-1.1-specification.pdf) as our audiodriver, it is because we can have control over object positions, and just because we can. 
-The plan is to place the listener in the position of the player, and then produce the sounds in the positions of their objects.
-Since we have multiple chambers, we would not like to have all the sounds playing in the same time, we will have to create contexts, or rather one context, the current one.
-The Idea would be to create only sounds for current chamber, and ignore the others. 
-The problem would be with humming elements that would create only a first sample instance and would never update it. That will have to be considered. Perhaps we need multiple contexts, and then mute the others, but current.
-
 The configuration of the sound data is contained in "samples" field of the configManager data. It is ordered similarily to the sound configuration in JSON file:
 
     "Samples": [
@@ -150,10 +145,12 @@ The configuration of the sound data is contained in "samples" field of the confi
      ]
 
 The sampleData is contained in structure that you can access like configObje->samples[typeId][subtypeId][EventType][Event]
+We got a singleton soundManager class. It has a method register sound. You pass element instance id, element type id, element subtypeid, event type, and event. The method will load the sample - if necessary, we build sample tree like structure (with hashmaps)- and then would play it.
+But there are limitations:
+* the distance must be right, it is in config file _MaxSoundDistance_
+* the sound must come from the same chamber as the listener (player)
 
-
-
-
+We handle the sounds by having the pool of sources (openAL), which we keep in a circular buffer. That helps us to find oldest samples. When we register the sample (play it) we first seek unregistered samples, if we fail with that, we seek samples that are played in loop (to kill them), and if we fail at that, we kill any first sample we try to overtake.
 
 
 ## TODO
