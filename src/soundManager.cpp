@@ -446,7 +446,7 @@ void soundManager::playSong(int songNo)
 
 void soundManager::threadLoop()
 {
-    while(true)
+    while(this->active)
     {
         this->checkQueue();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
