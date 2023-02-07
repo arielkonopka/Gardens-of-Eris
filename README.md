@@ -26,24 +26,34 @@ In the meanwhile I got a third reason, I can test it fairly fast, without even l
 
 ## The game story
 
-Ones upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology)) went to her garden, and to all the shock, she had noticed, that all her golden apples had been gone. She as usual got furious.
-
+Once upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology)) went to her garden, and to all the shock, she had noticed, that all her golden apples had been gone. She as usual got furious.
 Now you, the [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism) got yourself a mission. The goddes scattered your avatars across the strange world, that she had created for her apples. You must collect all of them, and bring them to your Goddess.
 
 ## Building the game
 
 To build the game, you need following libraries:
-liballegro5 - better install all of it along with dev packages,
-libboost - I would recommend all of it - including unit-test-framework
-The repository is equipped with build.sh shell script (Bash), you can use it to build the game and the unit tests.
+* liballegro5 - better install all of it along with dev packages,
+* libboost - I would recommend all of it - including unit-test-framework
+* rapidjson - 
+* openAL - we use it to play sound
+* libsndfile - we use it to decode audio files
+
+The repository is equipped with build.sh shell script (Bash): ./build.sh, you can use it to build the game, unit tests and install dependencies (./build.sh -gh).
 
 ## Main assumptions
 
 1. The game has only random generated levels.
 2. Everything should be randomly placed.
 3. It must be possible to walk from any steppable place on a board [class chamber](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/include/chamber.h) to any other steppable place, if we remove all the doors and teleports.
-4. The game actually should be very very large. 5 different chambers are created with different number of holes in the walls - that is something like the difficulty level. The chambers are connected with teleports. There are two types of teleports: stable one - always teleports you to other chamber, than you are currently in, but are bidirectional, you can always come back. Unstable teleports (subType==0) - they are not bidirectional like the stable ones, they randomly get the counter part, and then the counterpart will randomly choose its counter part and so on...
-5. Elements on board do not replace each other when they are moved, they instead step on each other. So we start with a board full of [empty](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/include/bElem.h) elements. We then create new elements and step on the board empty elements. It goes deeper. If we call ellement's mechanics, it would call the mechanics of all the elements that are below (with a flag suggesting, that something is standing on it). I also plan, to have the mechanics being run on collected elements (that could allow to make a shield, or fake apples, which would kill the player, if not used - thrown - possibilities are endless)
+4. The game actually should be very very large. 5 different chambers are created with different number of holes in the walls - that is something like the difficulty level. 
+ * The chambers are connected with teleports. 
+ * There are two types of teleports: Internal and inter-chamber
+   Inter-chamber is the same kind of a teleport, but of special subtype 0. There will be one teleporter of that subtype on each chamber.
+   Internal teleporters share common subtype per chamber. These are walk in teleporters. 
+5. Elements on board do not replace each other when they are moved, they instead step on each other. 
+    So we start with a board full of [empty](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/include/floorElement.h) elements. We then create new elements and step on the board empty elements. 
+    With mechanics we deal with a vecotr of live elements (that require their mechanics to be run), then the vecotr is inspected, and each element's mechanics is run. That is how we deal with destruction of inanimate objects, they enable the mechanics by registering a live object.
+    With that the mechanics method will deal with removing the object from the board. If we do not register mechanics, it will only look like it is being destroyed, but will survive.
 6. No code duplications, whenever possible. Now that rule is broken with the video engine, but the engine is to be modified anyway, so this will get eliminated.
 
 ## Random maze generator
@@ -70,16 +80,14 @@ We delete the node that we just filled
 
 Now we construct lists of elements to be placed on the board, we also calculate, if we want to close the spaces, and we search the appropriate spaces, until there is no more space left.
 
-## skins.json file
+# skins.json file
 
 This file contains the skin definition for the game. It has quite a flexible design, you can for eg. have different animations for different subtypes of element, that are turned in different directions.
 
 TBD
 
-## Mechanics
+# Mechanics
 
-The game uses two timers. One is used for scrolling and general screen refresh rate. The other is used to perform game mechanics calculations. This way we do not have to review the whole board every frame. It should be good to think of another method of 
-updating fames.
 There is a vector with "mechanical" elements. We add elements that have some mechanics (like they shoot, walk, do something on their own), but the animation phases are handled differently, so objects without mechanics still can have animated sprites.
 There are methods:
 
@@ -88,12 +96,12 @@ There are methods:
 
 One is for registering a mechanical object (there has to be implemeted mechanics method), the other one deregisters the object.
 
-# Apples
+## Apples
 When an apple is intact it is a collectible token, that must be collected. But when it is broken (like shot at), then it becomes a healing device.
 When a player (or any other element, that can collect), collects the item, it will heal the collector.
 But it would deplay its own energy, when energy reaches 0, then the apple explodes in the inventory, killing the collector.
 
-# Teleporters
+## Teleporters
 
 Every new teleporter is placed in a vector (actually it is a vector of pointers). As soon, as the player interacts with a teleporter it checks if it has attached link to a corresponding teleporter.
 We check the type of a teleporter, if it is even, we:
@@ -102,7 +110,7 @@ We check the type of a teleporter, if it is even, we:
 When it is odd:
     We find the first teleport of the same type but on different chamber. Then we establish connection, where the counterpart will direct to the first teleport.
 
-# Shooting guns
+## Shooting guns
 
 A plain gun shoots plain missiles. It is used by an element that can collect it (or create it like bunker) and can use it. A gun takes the operators dexterity, then finds a random value that will be used to decrease missile energy.
 Then after the shot, the guns energy is halved. It restores with mechanics() calls. So the faster you shoot, the weaker shots you produce.
@@ -111,13 +119,13 @@ Then after the shot, the guns energy is halved. It restores with mechanics() cal
 
 Element stats is a class that will be responsible for element's stats. You can have a monster, that could shoot and gain better skills with time. :)
 
-## Unit tests
+# Unit tests
 
 The unit tests should be written in *.cpp files that should be located in unitTests directory.
 When running build.sh, the unit tests would be built as well. You can then run them, they are built as separate executables.
 
 
-## Sound
+# Sound
 Our game now has the ability to produce sounds.
 Just inherit after audibleElement, and then you cn use playSound method with two arguments: eventType, and event. These will be used to locate your sound, along with other data, that will be done for you.
 We are using [openAL](https://www.openal.org/documentation/openal-1.1-specification.pdf) as our audiodriver, it is because we can have control over object positions, and just because we can. 
@@ -149,6 +157,7 @@ We got a singleton soundManager class. It has a method register sound. You pass 
 But there are limitations:
 * the distance must be right, it is in config file _MaxSoundDistance_
 * the sound must come from the same chamber as the listener (player)
+When the element, that generated sound is removed disposed, only looping sounds are stopped, other have the chance to stop playing by themselvs.
 
 We handle the sounds by having the pool of sources (openAL), which we keep in a circular buffer. That helps us to find oldest samples. When we register the sample (play it) we first seek unregistered samples, if we fail with that, we seek samples that are played in loop (to kill them), and if we fail at that, we kill any first sample we try to overtake.
 
