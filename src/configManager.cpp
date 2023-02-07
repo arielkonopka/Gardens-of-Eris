@@ -50,7 +50,15 @@ void configManager::configReload()
     {
         musicData md;
         md.filename=music[c]["Filename"].GetString();
-        md.filename=music[c]["Name"].GetString();
+        md.name=music[c]["Name"].GetString();
+        if(music[c].HasMember("chamberId"))
+            md.chamberId=music[c]["chamberId"].GetInt();
+        if(music[c].HasMember("Position"))
+        {
+            md.position.x=music[c]["Position"][0].GetInt();
+            md.position.y=music[c]["Position"][1].GetInt();
+            md.position.z=music[c]["Position"][2].GetInt();
+        }
         this->gConfObj->music.push_back(md);
     }
     for (unsigned int c = 0; c < dying.Size(); c++)
@@ -99,9 +107,11 @@ void configManager::configReload()
                     {
                         std::string evname = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["Event"].GetString();
                         sampleData sd;
+                        //sprlist[c].HasMember("Destroying")
                         sd.fname = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["fname"].GetString();
                         sd.name = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["name"].GetString();
-                        sd.description = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["description"].GetString();
+                        if(sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3].HasMember("description"))
+                            sd.description = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["description"].GetString();
                         sd.allowMulti = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["allowMulti"].GetBool();
                         sd.modeOfAction = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["modeOfAction"].GetInt();
                         sd.configured=true;

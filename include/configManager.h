@@ -13,6 +13,7 @@
 #include "inputManager.h"
 #include "objectTypes.h"
 #include "commons.h"
+
 // Singleton pattern, we will not have multiple config files, therefore we do not need multiple instances of config manager
 // this class will read the config json file, and expose gathered information to whatever class needing it
 
@@ -42,6 +43,8 @@ using musicData=struct _musicData
     bool configured=false;
     std::string filename;
     std::string name;
+    int chamberId=-1;
+    coords3d position={0,0,0};
 };
 
 

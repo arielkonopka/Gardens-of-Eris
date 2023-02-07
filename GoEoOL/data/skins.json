@@ -16,8 +16,14 @@
  ],
  "Music": [
     {
-	"Filename":"None",
-	"Name":"No sound"
+	"Filename":"data/music/song01.mp3",
+	"Name":"Song #1",
+	"chamberId":0
+    },
+    {
+	"Filename":"data/music/song01.mp3",
+	"Name":"Song #2",
+	"chamberId":1
     }
     ]
 ,
@@ -673,10 +679,18 @@
 	    {
 		"Event": "Teleporting",
 		"fname": "data/sounds/teleporterOccupied.ogg",
-		"name": "Machinery sound",
+		"name": "Teleporter working sound",
 		"description": "This is a test sound, now it will be used for sound test",
 		"allowMulti": false,
 		"modeOfAction": 0
+	    },
+	    {
+		"Event": "HummingSound",
+		"fname": "data/sounds/machinerySound.ogg",
+		"name": "Machinery sound",
+		"description": "This is a test sound, now it will be used for sound test",
+		"allowMulti": false,
+		"modeOfAction": 1
 	    }
 	]
 	}

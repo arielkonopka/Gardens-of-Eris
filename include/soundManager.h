@@ -13,13 +13,7 @@
 #include <cmath>
 #include "bElem.h"
 #include <memory>
-using coords3d=struct crd3d
-{
-    int x=-1;
-    int y=-1;
-    int z=-1;
-};
-
+#include "commons.h"
 
 using sndHolder=struct sampleS
 {
@@ -35,9 +29,15 @@ using sndHolder=struct sampleS
 using muNode=struct _mudNode
 {
     bool isRegistered=false;
+    int songNo=-1;
     ALuint source=0;
+    ALuint Abuffers[5];
+    std::vector<std::vector<short>> dataStuff;
+    SNDFILE *musicFile=nullptr;
+    SF_INFO musFileinfo;
     coords3d position;
     int chamberId;
+    ALenum format;
 };
 
 using stNode=struct sndNode
@@ -78,8 +78,13 @@ public:
     void setListenerChamber(int chamberId);
     void setListenerOrientation(coords3d pos);
     void enableSound();
+    void stopSoundsByElementId(int elId);
+    void setupSong(int songNo);
+    void playSong(int songNo);
+
 private:
     int calcDistance(coords3d a,coords3d b);
+    ALenum determineFormat(SF_INFO fileInfo,SNDFILE *sndfile);
     void setSoundPosition(std::shared_ptr<stNode> snd,coords3d pos);
     void setSoundVelocity(std::shared_ptr<stNode> snd,coords3d pos);
     bool stopSnd(std::shared_ptr<stNode> n);
@@ -93,6 +98,7 @@ private:
     std::map<std::string,ALuint> sampleBuffers; // Refactor me! - we need to load each file only once.
     std::vector<std::shared_ptr<stNode>> registeredSounds; // the whole sample data, used to register sounds
     std::map<int,std::map<std::string,std::map<std::string,regNode>>> sndRegister;
+
     std::vector<muNode> registeredMusic;
     std::map<std::string,regSmpFileBuf> sampleFile;
     int currSoundSpace=-1;

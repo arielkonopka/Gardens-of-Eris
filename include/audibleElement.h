@@ -9,7 +9,7 @@ class audibleElement : virtual public bElem
     public:
         audibleElement();
         audibleElement(std::shared_ptr<chamber> board);
-        virtual ~audibleElement() = default;
+        virtual ~audibleElement() ;
         void playSound(std::string eventType,std::string event);
     protected:
 
