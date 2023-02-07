@@ -19,27 +19,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
- #   - name: refresh repo information
- #     run: sudo apt update
-    - name: Install allegro
-      run: sudo apt install liballegro5-dev liballegro5.2
-    - name: Install boost
-      run: sudo apt install libboost-all-dev 
-    - name: Install rapidjson
-      run: sudo apt install rapidjson-dev cpp gcc
-    - name: Configure CMake
+    - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr libopenal-dev libalut-dev libsndfile1-dev
+          version: 1.0
+
+    - name: Build the game
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: CC=gcc-10 CXX=g++-10 cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-
-    - name: Build
-       
-      # Build your program with the given configuration
-      run: |
-        export CC=gcc-10
-        export CXX=g++10
-        export CXX_STANDARD=20
-        cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: ${{github.workspace}}/build.sh -g
 
   #  - name: Test
   #    working-directory: ${{github.workspace}}/build
