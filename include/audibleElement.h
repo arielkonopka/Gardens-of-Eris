@@ -11,6 +11,7 @@ class audibleElement : virtual public bElem
         audibleElement(std::shared_ptr<chamber> board);
         virtual ~audibleElement() ;
         void playSound(std::string eventType,std::string event);
+
     protected:
 
     private:

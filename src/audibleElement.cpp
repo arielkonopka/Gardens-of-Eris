@@ -36,6 +36,7 @@ void audibleElement::ps(std::shared_ptr<bElem>who, std::string eventType, std::s
     c3d.z=who->getCoords().y*32+who->getOffset().y;
     c3d.y=0;
     coords3d vel= {who->getOffset().x,0,who->getOffset().y};
+
     soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),eventType,event);
 }
 audibleElement::~audibleElement()
