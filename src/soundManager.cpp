@@ -35,6 +35,7 @@ soundManager::soundManager()
             alSourcef(srcNode->source, AL_GAIN, 1.0f);
             this->registeredSounds.push_back(srcNode);
         }
+
     }
     else
     {
@@ -62,6 +63,7 @@ soundManager *soundManager::getInstance()
 */
 void soundManager::stopSoundsByElementId(int elId)
 {
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
     for(unsigned int c=0; c<this->registeredSounds.size(); c++)
     {
         std::shared_ptr<stNode> n=this->registeredSounds[c];
@@ -79,16 +81,28 @@ void soundManager::stopSoundsByElementId(int elId)
 /* validates sounds in the queue, we do not have to do it often, only on new sound requests, just to control which samples are already not playing */
 void soundManager::checkQueue()
 {
-    this->playSong(0);
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
+    {
+        this->playSong(this->currentMusic);
+    }
+
     for(unsigned int c=0; c<this->registeredSounds.size(); c++)
     {
         std::shared_ptr<stNode> n=this->registeredSounds[c];
+
         /* stop sounds from different board */
         if (n->isRegistered && this->isSndPlaying(n->source) && (n->soundSpace!=this->currSoundSpace || this->calcDistance(this->listenerPos,n->position)>this->gc->soundDistance))
         {
             this->stopSnd(n);
             n->isRegistered=false;
             this->sndRegister[n->elId][n->eventType][n->event].r=false;
+            continue;
+        }
+        if (n->isRegistered && !n->started)
+        {
+            n->started=true;
+            alSourcePlay(n->source);
+            continue;
         }
         if(n->isRegistered && this->isSndPlaying(n->source)==false)
         {
@@ -105,6 +119,11 @@ void soundManager::checkQueue()
 }
 void soundManager::enableSound()
 {
+    if(active)
+        return;
+    std::thread nt=std::thread(&soundManager::threadLoop, this);
+    nt.detach();
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->active=true;
 }
 
@@ -112,13 +131,13 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
 {
 
     alGetError();
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
     /*
     That is a "parasite" kind of activity. That will change when sound manager gets its very own thread.
     It should be called periodically, but not too fast. we don't care for stale samples so much
     */
     if (this->cnt!=bElem::getCntr())
     {
-        this->checkQueue();
         this->cnt=bElem::getCntr();
     }
     /*************************************************************/
@@ -149,6 +168,7 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
     std::shared_ptr<stNode> srcNode=this->getSndNode();
     alSourcei(srcNode->source, AL_BUFFER, (ALint)(this->samplesLoaded[typeId][subtypeId][eventType][event]->buffer));
     srcNode->isRegistered=true;
+    srcNode->started=false;
     srcNode->position=position;
     srcNode->mode=this->samplesLoaded[typeId][subtypeId][eventType][event]->mode;
     srcNode->allowMulti=this->samplesLoaded[typeId][subtypeId][eventType][event]->allowMulti;
@@ -161,7 +181,6 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
     alSourcei(srcNode->source,AL_LOOPING,(srcNode->mode==0)?AL_FALSE:AL_TRUE);
     this->sndRegister[elId][eventType][event].r=true;
     this->sndRegister[elId][eventType][event].stn=srcNode;
-    alSourcePlay(srcNode->source);
     return;
 };
 
@@ -206,6 +225,7 @@ std::shared_ptr<stNode> soundManager::getSndNode()
 void soundManager::setListenerPosition(coords3d pos)
 {
     alListener3f(AL_POSITION, (float)pos.x, (float)pos.y, (float)pos.z);
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->listenerPos=pos;
 }
 
@@ -225,8 +245,8 @@ void soundManager::setListenerVelocity(coords3d pos)
 /* we just teleported, we need to switch the context, which means stopping all the currently played samples from the previous chamber*/
 void soundManager::setListenerChamber(int chamberId)
 {
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->currSoundSpace=chamberId;
-    this->checkQueue();
 }
 
 void soundManager::setSoundVelocity(std::shared_ptr<stNode>  snd, coords3d pos)
@@ -336,7 +356,7 @@ bool soundManager::stopSnd(std::shared_ptr<stNode> n)
 
 void soundManager::setupSong(int songNo)
 {
-
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
     /* no music configured? */
     if (this->gc->music.size()<=0)
     {
@@ -371,8 +391,11 @@ void soundManager::setupSong(int songNo)
     source = 0;
     alGenSources(1, &source);
     muNd.source=source;
-    alGenBuffers(5, &muNd.Abuffers[0]);
-    for(int n=0; n<5; n++)
+    alSource3f(source,AL_POSITION,(float)500,(float)0,(float)500);
+
+    const int buffersNum=3;
+    alGenBuffers(buffersNum, &muNd.Abuffers[0]);
+    for(int n=0; n<buffersNum; n++)
     {
         std::vector<short> buff(65536);
         int num_frames = sf_readf_short(muNd.musicFile, buff.data(), buff.size()/muNd.musFileinfo.channels);
@@ -380,9 +403,8 @@ void soundManager::setupSong(int songNo)
             break;
         std::cout<<"Read frames: "<<num_frames<<"\n";
         alBufferData(muNd.Abuffers[n],muNd.format,buff.data(),buff.size()*sizeof(short),muNd.musFileinfo.samplerate);
-        muNd.dataStuff.push_back(buff);
     }
-    alSourceQueueBuffers(muNd.source,5,&muNd.Abuffers[0]);
+    alSourceQueueBuffers(muNd.source,buffersNum,&muNd.Abuffers[0]);
     muNd.isRegistered=true;
     this->registeredMusic.push_back(muNd);
     alSourcePlay(muNd.source);
@@ -413,7 +435,6 @@ void soundManager::playSong(int songNo)
                 break;
         }
         alBufferData(buffer,this->registeredMusic[songNo].format,buff.data(),buff.size()*sizeof(short),this->registeredMusic[songNo].musFileinfo.samplerate);
-
         alSourceQueueBuffers(this->registeredMusic[songNo].source, 1, &buffer);
 
 
@@ -423,6 +444,14 @@ void soundManager::playSong(int songNo)
 }
 
 
+void soundManager::threadLoop()
+{
+    while(this->active)
+    {
+        this->checkQueue();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
 
 
 

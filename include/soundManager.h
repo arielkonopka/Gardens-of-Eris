@@ -11,6 +11,9 @@
 #include <sndfile.h>
 #include <deque>
 #include <cmath>
+#include <chrono>
+#include <thread>
+#include <mutex>
 #include "bElem.h"
 #include <memory>
 #include "commons.h"
@@ -43,6 +46,7 @@ using muNode=struct _mudNode
 using stNode=struct sndNode
 {
     bool isRegistered=false;
+    bool started=false;
     ALuint source;
     int mode;
     bool allowMulti=false;
@@ -83,6 +87,8 @@ public:
     void playSong(int songNo);
 
 private:
+    void threadLoop();
+    std::mutex snd_mutex;
     int calcDistance(coords3d a,coords3d b);
     ALenum determineFormat(SF_INFO fileInfo,SNDFILE *sndfile);
     void setSoundPosition(std::shared_ptr<stNode> snd,coords3d pos);
@@ -98,7 +104,6 @@ private:
     std::map<std::string,ALuint> sampleBuffers; // Refactor me! - we need to load each file only once.
     std::vector<std::shared_ptr<stNode>> registeredSounds; // the whole sample data, used to register sounds
     std::map<int,std::map<std::string,std::map<std::string,regNode>>> sndRegister;
-
     std::vector<muNode> registeredMusic;
     std::map<std::string,regSmpFileBuf> sampleFile;
     int currSoundSpace=-1;
@@ -110,6 +115,8 @@ private:
     unsigned int cnt=0;
     bool active=false;
     int regSndPos=0;
+    int currentMusic=0;
+    std::thread myThread;
 };
 
 #endif // SOUNDMANAGER_H
