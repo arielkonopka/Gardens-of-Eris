@@ -149,6 +149,7 @@ bool teleport::mechanics()
             this->deregisterLiveElement(this->getInstanceid());
         }
     };
+    this->playSound("Teleport","HummingSound");
     return nonSteppable::mechanics();
 }
 

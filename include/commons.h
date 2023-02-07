@@ -115,4 +115,15 @@ typedef struct neighboorhood
     bool steppable[8]; // whole neighboorhood, starting from up, then up-left, left, down-left, down, down-right, right, up-right
     int  nTypes[8];
 } sNeighboorhood;
+
+
+using coords3d=struct crd3d
+{
+    int x=-1;
+    int y=-1;
+    int z=-1;
+};
+
+
+
  #endif

@@ -40,6 +40,10 @@ soundManager::soundManager()
     {
         std::cout<<"Sound thinggy issue.\n Device did not exist?\n";
     }
+
+
+
+
 }
 
 soundManager::~soundManager()
@@ -53,10 +57,29 @@ soundManager *soundManager::getInstance()
         soundManager::instance = new soundManager();
     return soundManager::instance;
 }
+/*
+ * Stop all sound efx of an element, we stop it by id.
+*/
+void soundManager::stopSoundsByElementId(int elId)
+{
+    for(unsigned int c=0; c<this->registeredSounds.size(); c++)
+    {
+        std::shared_ptr<stNode> n=this->registeredSounds[c];
+        if(n->elId==elId && n->mode>0) // we kill only looping sounds, other will end anyway
+        {
+            this->stopSnd(n);
+            n->isRegistered=false;
+            this->sndRegister[n->elId][n->eventType][n->event].r=false;
+        }
+    }
+}
+
+
 
 /* validates sounds in the queue, we do not have to do it often, only on new sound requests, just to control which samples are already not playing */
 void soundManager::checkQueue()
 {
+    this->playSong(0);
     for(unsigned int c=0; c<this->registeredSounds.size(); c++)
     {
         std::shared_ptr<stNode> n=this->registeredSounds[c];
@@ -109,7 +132,7 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
         this->samplesLoaded[typeId][subtypeId][eventType][event]=std::make_shared<sndHolder>();
     if (this->samplesLoaded[typeId][subtypeId][eventType][event]->loaded==false)
     {
-      if(this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].r==false)
+        if(this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].r==false)
         {
             ALuint bid=this->loadSample(this->gc->samples[typeId][subtypeId][eventType][event].fname);
             if(bid==0)
@@ -215,75 +238,67 @@ void soundManager::setSoundPosition(std::shared_ptr<stNode> snd, coords3d pos)
     alSource3f(snd->source,AL_POSITION,(float)pos.x,(float)pos.y,(float)pos.z);
 }
 
-ALuint soundManager::loadSample(std::string fname)
+
+ALenum soundManager::determineFormat(SF_INFO fileInfo,SNDFILE *sndfile)
 {
-    ALenum err, format;
-    ALuint buffer;
-    SNDFILE *sndfile;
-    SF_INFO sfinfo;
-    short *membuf;
-    sf_count_t num_frames;
-    ALsizei num_bytes;
-
-    /* Open the audio file and check that it's usable. */
-    sndfile = sf_open(fname.c_str(), SFM_READ, &sfinfo);
-    if(!sndfile)
-    {
-        fprintf(stderr, "Could not open audio in %s: %s\n", fname.c_str(), sf_strerror(sndfile));
-        return 0;
-    }
-    if(sfinfo.frames < 1 || sfinfo.frames > (sf_count_t)(INT_MAX/sizeof(short))/sfinfo.channels)
-    {
-        fprintf(stderr, "Bad sample count in %s (%" PRId64 ")\n", fname.c_str(), sfinfo.frames);
-        sf_close(sndfile);
-        return 0;
-    }
-
-    /* Get the sound format, and figure out the OpenAL format */
-    format = AL_NONE;
-    if(sfinfo.channels == 1)
+    ALenum format=AL_NONE;
+    if(fileInfo.channels == 1)
         format = AL_FORMAT_MONO16;
-    else if(sfinfo.channels == 2)
+    else if(fileInfo.channels == 2)
         format = AL_FORMAT_STEREO16;
-    else if(sfinfo.channels == 3)
+    else if(fileInfo.channels == 3)
     {
         if(sf_command(sndfile, SFC_WAVEX_GET_AMBISONIC, NULL, 0) == SF_AMBISONIC_B_FORMAT)
             format = AL_FORMAT_BFORMAT2D_16;
     }
-    else if(sfinfo.channels == 4)
+    else if(fileInfo.channels == 4)
     {
         if(sf_command(sndfile, SFC_WAVEX_GET_AMBISONIC, NULL, 0) == SF_AMBISONIC_B_FORMAT)
             format = AL_FORMAT_BFORMAT3D_16;
     }
     if(!format)
     {
-        fprintf(stderr, "Unsupported channel count: %d\n", sfinfo.channels);
-        sf_close(sndfile);
-        return 0;
+        return AL_NONE;
     }
-    std::cout<<"buffer size needed "<<sfinfo.frames * sfinfo.channels* sizeof(short)<<"\n";
-    /* Decode the whole audio file to a buffer. */
-    membuf = (short *)malloc ((size_t)(sfinfo.frames * sfinfo.channels * sizeof(short)));
+    return format;
+}
 
-    num_frames = sf_readf_short(sndfile, membuf, sfinfo.frames);
-    if(num_frames < 1)
+
+
+ALuint soundManager::loadSample(std::string fname)
+{
+    ALenum err, format;
+    ALuint buffer;
+    SNDFILE *sndfile;
+    SF_INFO sfinfo;
+    sf_count_t num_frames;
+    ALsizei num_bytes;
+    /* Open the audio file and check that it's usable. */
+    sndfile = sf_open(fname.c_str(), SFM_READ, &sfinfo);
+    if(!sndfile)
+        return 0;
+    format = this->determineFormat(sfinfo,sndfile); /* Get the sound format, and figure out the OpenAL format */
+    if(sfinfo.frames < 1 || sfinfo.frames > (sf_count_t)(INT_MAX/sizeof(short))/sfinfo.channels || format==AL_NONE)
     {
-        free( membuf);
         sf_close(sndfile);
-        fprintf(stderr, "Failed to read samples in %s (%" PRId64 ")\n", fname.c_str(), num_frames);
         return 0;
     }
-    num_bytes = (ALsizei)(num_frames * sfinfo.channels) * (ALsizei)sizeof(short);
-    std::cout<<"Num bytes: "<<num_bytes<<"\n";
-    /* Buffer the audio data into a new buffer object, then free the data and
-     * close the file.
-     */
-    buffer = 0;
-    alGenBuffers(1, &buffer);
-    alBufferData(buffer, format, membuf, num_bytes, sfinfo.samplerate);
-
-    free(membuf);
-    sf_close(sndfile);
+    /* Decode the whole audio file to a buffer. */
+    {
+        std::vector<short> buff(sfinfo.frames * sfinfo.channels);
+        num_frames = sf_readf_short(sndfile, buff.data(), sfinfo.frames);
+        sf_close(sndfile);
+        if(num_frames < 1)
+            return 0;
+        num_bytes = (ALsizei)(num_frames * sfinfo.channels) * (ALsizei)sizeof(short);
+        std::cout<<"Num bytes: "<<num_bytes<<"\n";
+        /* Buffer the audio data into a new buffer object, then free the data and
+         * close the file.
+         */
+        buffer = 0;
+        alGenBuffers(1, &buffer);
+        alBufferData(buffer, format, buff.data(), num_bytes, sfinfo.samplerate);
+    }
 
     /* Check if an error occured, and clean up if so. */
     err = alGetError();
@@ -294,7 +309,6 @@ ALuint soundManager::loadSample(std::string fname)
             alDeleteBuffers(1, &buffer);
         return 0;
     }
-
     return buffer;
 }
 
@@ -317,3 +331,103 @@ bool soundManager::stopSnd(std::shared_ptr<stNode> n)
     alSourceStop(n->source);
     return this->isSndPlaying(n->source);
 };
+
+
+
+void soundManager::setupSong(int songNo)
+{
+
+    /* no music configured? */
+    if (this->gc->music.size()<=0)
+    {
+
+        std::cout<<"No music configured!\n";
+        return;
+    }
+    /* we deal with the problem of code and configuration mismatch */
+    if (songNo<0 || this->gc->music.size()<(unsigned int)songNo)
+        songNo=bElem::randomNumberGenerator()%this->gc->music.size();
+    muNode muNd;
+    muNd.songNo=songNo;
+    muNd.musicFile=sf_open(this->gc->music[songNo].filename.c_str(), SFM_READ, &(muNd.musFileinfo));
+    if(!muNd.musicFile)
+    {
+
+        std::cout<<"Music file cannot be open "<<this->gc->music[songNo].filename<<"!\n";
+        return;
+    }
+    if(muNd.musFileinfo.frames < 1 || muNd.musFileinfo.frames > (sf_count_t)(INT_MAX/sizeof(short))/muNd.musFileinfo.channels)
+    {
+        sf_close(muNd.musicFile); /* file contains no data */
+        return;
+    }
+    muNd.format = this->determineFormat(muNd.musFileinfo,muNd.musicFile);
+    if(!muNd.format)
+    {
+        sf_close(muNd.musicFile);
+        return;
+    }
+    ALuint source;
+    source = 0;
+    alGenSources(1, &source);
+    muNd.source=source;
+    alGenBuffers(5, &muNd.Abuffers[0]);
+    for(int n=0; n<5; n++)
+    {
+        std::vector<short> buff(65536);
+        int num_frames = sf_readf_short(muNd.musicFile, buff.data(), buff.size()/muNd.musFileinfo.channels);
+        if(num_frames < 1)
+            break;
+        std::cout<<"Read frames: "<<num_frames<<"\n";
+        alBufferData(muNd.Abuffers[n],muNd.format,buff.data(),buff.size()*sizeof(short),muNd.musFileinfo.samplerate);
+        muNd.dataStuff.push_back(buff);
+    }
+    alSourceQueueBuffers(muNd.source,5,&muNd.Abuffers[0]);
+    muNd.isRegistered=true;
+    this->registeredMusic.push_back(muNd);
+    alSourcePlay(muNd.source);
+    alSourcef(muNd.source, AL_GAIN, 0.05f);
+}
+
+
+void soundManager::playSong(int songNo)
+{
+    ALint buffersProcessed = 0;
+    alGetSourcei(this->registeredMusic[songNo].source, AL_BUFFERS_PROCESSED, &buffersProcessed);
+
+    if(buffersProcessed <= 0)
+        return;
+
+    while(buffersProcessed--)
+    {
+        ALuint buffer;
+        alSourceUnqueueBuffers( this->registeredMusic[songNo].source, 1, &buffer);
+
+        std::vector<short> buff(65536);
+        int num_frames = sf_readf_short(this->registeredMusic[songNo].musicFile, buff.data(), buff.size()/this->registeredMusic[songNo].musFileinfo.channels);
+        if(num_frames < 1)
+        {
+            sf_seek(this->registeredMusic[songNo].musicFile,0,0);
+            num_frames = sf_readf_short(this->registeredMusic[songNo].musicFile, buff.data(), buff.size()/this->registeredMusic[songNo].musFileinfo.channels);
+            if(num_frames < 1)
+                break;
+        }
+        alBufferData(buffer,this->registeredMusic[songNo].format,buff.data(),buff.size()*sizeof(short),this->registeredMusic[songNo].musFileinfo.samplerate);
+
+        alSourceQueueBuffers(this->registeredMusic[songNo].source, 1, &buffer);
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+
