@@ -9,8 +9,14 @@ From the beginning, this project is not *product oriented*, but rather it is a w
 
 # Recent build status
 
-[![GoEoOL](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/cmake.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/cmake.yml)
+Main branch build status: tests with the game:
+
+[![C/C++ CI](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/c-cpp.yml)
+
+Sonarcloud static analysis:
+
 [![SonarCloud](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonarcloud_main.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonarcloud_main.yml)
+
 ## Why the idea
 
 I thought of writting similar kind of a game, since I was a kid. Few years back, I added some code to [GNU Robbo project](http://gnurobbo.sourceforge.net/), and it was fun, but that was pure C and SDL1.2.
