@@ -41,6 +41,7 @@ using muNode=struct _mudNode
     coords3d position;
     int chamberId;
     ALenum format;
+    bool variableVol=false;
 };
 
 using stNode=struct sndNode
@@ -83,10 +84,12 @@ public:
     void setListenerOrientation(coords3d pos);
     void enableSound();
     void stopSoundsByElementId(int elId);
-    void setupSong(int songNo);
+    void setupSong(int songNo,coords3d position,int chamberId,bool vaiableVolume);
     void playSong(int songNo);
 
 private:
+   const bool isSongConfigured(int songNo,coords3d position,int chamberId);
+   int findNearestMusic();
     void threadLoop();
     std::mutex snd_mutex;
     int calcDistance(coords3d a,coords3d b);
@@ -115,7 +118,7 @@ private:
     unsigned int cnt=0;
     bool active=false;
     int regSndPos=0;
-    int currentMusic=0;
+    int currentMusic=1;
     std::thread myThread;
 };
 
