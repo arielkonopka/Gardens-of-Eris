@@ -9,7 +9,7 @@ From the beginning, this project is not *product oriented*, but rather it is a w
 
 # Recent build status
 
-Main brancg build status tests with application:
+Main branch build status: tests with the game:
 
 [![C/C++ CI](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/c-cpp.yml)
 
