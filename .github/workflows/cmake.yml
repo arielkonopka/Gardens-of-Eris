@@ -20,18 +20,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
+      with:
           packages: libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr libopenal-dev libalut-dev libsndfile1-dev
           version: 1.0
-
     - name: Build the game
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: ${{github.workspace}}/build.sh -g
 
-  #  - name: Test
-  #    working-directory: ${{github.workspace}}/build
-  #    # Execute tests defined by the CMake configuration.
-  #    # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-  #    run: ctest -C ${{env.BUILD_TYPE}}
 
