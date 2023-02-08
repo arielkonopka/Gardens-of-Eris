@@ -155,8 +155,6 @@ bool player::mechanics()
 
     if(this->getWait()>0)
     {
-        std::cout<<"waiting\n";
-
         return false;
     }
     coords3d c3d;

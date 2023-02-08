@@ -338,7 +338,11 @@ int presenter::presentEverything()
         if (cItem.type==7)
             return 1;
         if(currentPlayer!=nullptr && currentPlayer->getBoard()!=nullptr)
+        {
+
+
             currentPlayer->getBoard()->cntrlItm=cItem;
+        }
     }
     return 1;
 }

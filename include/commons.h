@@ -76,31 +76,43 @@ typedef struct coords
     }
     inline coords operator+(coords a)
     {
-        return (coords){x+a.x,y+a.y};
+        return (coords)
+        {
+            x+a.x,y+a.y
+        };
     }
     inline coords operator-(coords a)
     {
-        return (coords){x-a.x , y-a.y};
+        return (coords)
+        {
+            x-a.x, y-a.y
+        };
     }
     inline coords operator%(coords a)
     {
-        return (coords){x%a.x,y%a.y};
+        return (coords)
+        {
+            x%a.x,y%a.y
+        };
     }
     inline coords operator*(int a)
     {
-        return (coords){x*a,y*a};
+        return (coords)
+        {
+            x*a,y*a
+        };
     }
 
 
 } coords;
 
 typedef enum { UP=0,LEFT=1,DOWN=2,RIGHT=3,NODIRECTION=5} direction;
- typedef struct controlItem
- {
-     int type; /*-1 - nocommand, 0-move,1-shoot,2-interact,3-gun cycle,4-use element in inventory,5 - cycle inventory,6 - die, 7 - exit */
-     direction dir;
+typedef struct controlItem
+{
+    int type; /*-1 - nocommand, 0-move,1-shoot,2-interact,3-gun cycle,4-use element in inventory,5 - cycle inventory,6 - die, 7 - exit */
+    direction dir;
 
- } controlItem;
+} controlItem;
 
 typedef enum { NONE=0,GUN=1,AMMO=2,ARMOR=3,POWERUP=4} modType;
 
@@ -122,8 +134,15 @@ using coords3d=struct crd3d
     int x=-1;
     int y=-1;
     int z=-1;
+    inline bool operator==(crd3d a) const
+    {
+        if (a.x==x && a.y==y && a.z==z)
+            return true;
+        else
+            return false;
+    };
 };
 
 
 
- #endif
+#endif

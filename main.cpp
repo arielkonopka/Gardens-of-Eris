@@ -14,18 +14,32 @@ int main( int argc, char * argv[] )
 {
     bool finish=false;
 
-    randomLevelGenerator* rndl=new randomLevelGenerator(150,150);
+    randomLevelGenerator* rndl=new randomLevelGenerator(250,250);
     presenter::presenter *myPresenter=new presenter::presenter(rndl->mychamber);
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
     myPresenter->showSplash();
+    soundManager::getInstance()->setupSong(0,{0,0,0},0,true);
+    soundManager::getInstance()->setupSong(1,{rndl->mychamber->width*32,0,0},0,true);
+    soundManager::getInstance()->setupSong(2,{rndl->mychamber->width*32,0,rndl->mychamber->height*32},0,true);
+    soundManager::getInstance()->setupSong(3,{0,0,rndl->mychamber->height*32},0,true);
+    soundManager::getInstance()->setupSong(4,{0,0,0},1,false);
+    soundManager::getInstance()->setupSong(3,{0,0,0},2,false);
+    soundManager::getInstance()->setupSong(2,{0,0,0},3,false);
+    soundManager::getInstance()->setupSong(1,{0,0,0},4,false);
+    soundManager::getInstance()->setupSong(0,{0,0,0},5,false);
+
+
+
     rndl->generateLevel(10);
     for (int cnt=5;cnt>0;cnt--)
     {
         rndl=new randomLevelGenerator(100+((5-cnt)*50)+(rndl->gen()%10)*5,100+((5-cnt)*50)+(rndl->gen()%10)*5);
         rndl->generateLevel(cnt);
     }
+
     soundManager::getInstance()->enableSound();
+
 
     while(!finish)
     {

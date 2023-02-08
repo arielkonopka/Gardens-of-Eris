@@ -21,7 +21,22 @@
 	"chamberId":0
     },
     {
-	"Filename":"data/music/song01.mp3",
+	"Filename":"data/music/song02.mp3",
+	"Name":"Song #2",
+	"chamberId":1
+    },
+    {
+	"Filename":"data/music/song03.mp3",
+	"Name":"Song #2",
+	"chamberId":1
+    },
+    {
+	"Filename":"data/music/song04.mp3",
+	"Name":"Song #2",
+	"chamberId":1
+    },
+    {
+	"Filename":"data/music/song05.mp3",
 	"Name":"Song #2",
 	"chamberId":1
     }
