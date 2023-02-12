@@ -179,7 +179,7 @@ bool player::mechanics()
     case NODIRECTION:
         vel= {0,0,0};
     }
-    if (this->getMoved()>0)
+   /* if (this->getMoved()>0)
     {
         soundManager::getInstance()->setListenerVelocity(vel);
 
@@ -189,6 +189,7 @@ bool player::mechanics()
 
         soundManager::getInstance()->setListenerVelocity({0,0,0});
     }
+    */
     soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId());
     soundManager::getInstance()->setListenerOrientation({0,-1,0});
     soundManager::getInstance()->setListenerPosition(c3d);
@@ -206,23 +207,22 @@ bool player::mechanics()
     case 0:
         if(this->moveInDirection(this->getBoard()->cntrlItm.dir))
         {
+            this->setFacing(this->getDirection());
             this->animPh++;
-    //        soundManager::getInstance()->registerSound(this->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),"Walk","Walk On");
         }
         break;
 
     case 1:
-        this->setDirection(this->getBoard()->cntrlItm.dir);
+        this->setFacing(this->getBoard()->cntrlItm.dir);
         if(this->shootGun())
         {
-
             this->animPh+=(this->getCntr()%2);
         }
         break;
     case 2:
         if (this->getElementInDirection(this->getBoard()->cntrlItm.dir)==nullptr)
             return false;
-        this->setDirection(this->getBoard()->cntrlItm.dir);
+        this->setFacing(this->getBoard()->cntrlItm.dir);
         if (this->getElementInDirection(this->getBoard()->cntrlItm.dir)->interact(shared_from_this()))
             this->animPh++;
         break;
@@ -232,8 +232,15 @@ bool player::mechanics()
         break;
     case 4:
         if(this->dragInDirection(this->getBoard()->cntrlItm.dir))
+        {
+            this->setFacing((direction)(((int)this->getDirection()+2)%4)); /* we face backwards while dragging */
             this->animPh++;
-        else if(this->moveInDirection(this->getBoard()->cntrlItm.dir)) this->animPh++;
+        }
+        else if(this->moveInDirection(this->getBoard()->cntrlItm.dir))
+        {
+            this->setFacing(this->getDirection());
+            this->animPh++;
+        }
         break;
     case 8:
         if (this->getInventory()->getUsable()!=nullptr)

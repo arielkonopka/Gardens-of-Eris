@@ -17,8 +17,9 @@ soundManager::soundManager()
         {
             alcMakeContextCurrent(this->sndContext); // set active context
         }
-
-        alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
+        alDopplerFactor(5.0);
+        alDopplerVelocity(20);
+        alDistanceModel(AL_EXPONENT_DISTANCE_CLAMPED);
         /* create the queue for sndefx and music */
         for(int c=0; c<configManager::getInstance()->getConfig()->sndFifoSize; c++)
         {
@@ -81,7 +82,7 @@ void soundManager::stopSoundsByElementId(int elId)
 /* validates sounds in the queue, we do not have to do it often, only on new sound requests, just to control which samples are already not playing */
 void soundManager::checkQueue()
 {
-   std::lock_guard<std::mutex> guard(this->snd_mutex);
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
 
     int nm=this->findNearestMusic();
     if(nm>=0 && nm!=this->currentMusic)
@@ -112,8 +113,13 @@ void soundManager::checkQueue()
         }
         if (n->isRegistered && !n->started)
         {
-            n->started=true;
-            alSourcePlay(n->source);
+            if(n->delayed<0)
+            {
+                n->started=true;
+                alSourcePlay(n->source);
+            }
+            else
+                n->delayed--;
             continue;
         }
         if(n->isRegistered && this->isSndPlaying(n->source)==false)
@@ -121,12 +127,7 @@ void soundManager::checkQueue()
             n->isRegistered=false;
             this->sndRegister[n->elId][n->eventType][n->event].r=false;
         }
-        if (this->isSndPlaying(n->source)==true)
-        {
-            float newVolume = 32.0/this->calcDistance(n->position,this->listenerPos);
 
-            alSourcef(n->source, AL_GAIN, (newVolume>1)?1.0:newVolume);
-        }
     }
 }
 void soundManager::enableSound()
@@ -206,7 +207,7 @@ int soundManager::findNearestMusic()
 {
     int dst=65535;
     int no=-1;
-    for(unsigned int c=0;c<this->registeredMusic.size();c++)
+    for(unsigned int c=0; c<this->registeredMusic.size(); c++)
     {
         if(this->registeredMusic[c].chamberId==this->currSoundSpace && (no<0 || (no>=0 && dst>this->calcDistance(this->listenerPos,this->registeredMusic[c].position))))
         {
@@ -379,7 +380,7 @@ bool soundManager::stopSnd(std::shared_ptr<stNode> n)
 
 const bool soundManager::isSongConfigured(int songNo, coords3d position, int chamberId)
 {
-    for(unsigned int c=0;c<this->registeredMusic.size();c++)
+    for(unsigned int c=0; c<this->registeredMusic.size(); c++)
     {
         if(this->registeredMusic[c].isRegistered && this->registeredMusic[c].position==position && this->registeredMusic[c].songNo==songNo && this->registeredMusic[c].chamberId==chamberId)
             return true;
@@ -442,7 +443,7 @@ void soundManager::setupSong(int songNo,coords3d position,int chamberId,bool vai
         alSourceQueueBuffers(muNd.source,buffersNum,&muNd.Abuffers[0]);
         muNd.isRegistered=true;
         muNd.variableVol=vaiableVolume;
-       // alSourcePlay(muNd.source);
+        // alSourcePlay(muNd.source);
         alSourcef(muNd.source, AL_GAIN, 0.20f);
         std::lock_guard<std::mutex> guard(this->snd_mutex);
         this->registeredMusic.push_back(muNd);

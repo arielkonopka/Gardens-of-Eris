@@ -26,6 +26,7 @@ bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_m
 
     this->eConfig.instance = bElem::instances++;
     this->state.myDirection = UP;
+    this->state.facing=UP;
     if (!bElem::randomNumberGeneratorInitialized)
     {
         std::random_device rd;
@@ -80,6 +81,18 @@ int bElem::getWait() const
     int res = (this->state.waiting > 0) ? this->state.waiting - (int)this->getCntr() : 0;
     return res;
 }
+
+bool bElem::setFacing(direction dir)
+{
+    this->state.facing = dir;
+    return true;
+}
+
+direction bElem::getFacing()
+{
+    return this->state.facing;
+}
+
 
 bool bElem::setDirection(direction dir)
 {
