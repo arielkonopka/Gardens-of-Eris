@@ -51,13 +51,10 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
            this->playSound("Move","BlockedMove");
             return false;
         }
-        stepOn->stepOnElement(stepOn2); //move next object in direction
+        stepOn->moveInDirectionSpeed(dir,speed+1); //move next object in direction
         this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
         this->setMoved(speed+1);
-        stepOn->setMoved(speed+1);
-        stepOn->setDirection(dir);
-        this->playSound("Move","Push");
-
+        this->playSound("Move","StepOn");
         return true;
     }
     if (this->canCollect()==true && this->getInventory().get()!=nullptr && stepOn->isCollectible()==true)
@@ -118,9 +115,13 @@ int movableElements::getMoved()
         this->_me_moved=0;
     return (this->_me_moved<this->getCntr())?0:this->_me_moved-this->getCntr();
 }
-
-
 bool movableElements::dragInDirection(direction dragIntoDirection)
+{
+   return this->dragInDirectionSpeed(dragIntoDirection,_mov_delay*2);
+}
+
+
+bool movableElements::dragInDirectionSpeed(direction dragIntoDirection, int speed)
 {
     direction objFromDir=(direction)((((int)dragIntoDirection)+2)%4);
     direction d2=dragIntoDirection;
@@ -136,8 +137,8 @@ bool movableElements::dragInDirection(direction dragIntoDirection)
             return false;
     }
 
-    this->moveInDirection(dragIntoDirection);
-    return draggedObj->moveInDirection(d2);
+    this->moveInDirectionSpeed(dragIntoDirection,speed);
+    return draggedObj->moveInDirectionSpeed(d2,speed);
 
 }
 

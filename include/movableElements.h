@@ -26,6 +26,7 @@ class movableElements :   virtual public audibleElement
         virtual void setMoved(int time);
         virtual int getMoved();
         virtual bool dragInDirection(direction dragIntoDirection);
+        virtual bool dragInDirectionSpeed(direction dragIntoDirection,int speed);
         virtual coords getOffset();
         void setMovable(bool m);
         void setCanPush(bool sp);
