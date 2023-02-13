@@ -50,6 +50,7 @@ struct _eStatus
     int taterCounter=0; //Internal counter
     coords myPosition=NOCOORDS;
     direction myDirection=NODIRECTION;
+    direction facing=NODIRECTION; /* This is the direction used for selecting the icon */
     int killed=0;
 };
 class bElem: public virtual std::enable_shared_from_this<bElem>
@@ -118,7 +119,9 @@ public:
     };
     virtual coords getAbsCoords(direction dir);
     virtual direction getDirection();
+    virtual direction getFacing();
     virtual bool setDirection(direction dir);
+    virtual bool setFacing(direction dir);
     virtual constexpr int getType()
     {
         return _belemType;

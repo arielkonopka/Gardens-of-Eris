@@ -24,8 +24,9 @@ std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
     std::shared_ptr<bElem> pm=elementFactory::generateAnElement<plainMissile>(who->getBoard());
     pm->setStatsOwner(who);
     who->lockThisObject(pm);
-    pm->setDirection(who->getDirection());
-    pm->stepOnElement(who->getElementInDirection(who->getDirection()));
+    pm->setDirection(who->getFacing());
+    pm->setFacing(who->getFacing());
+    pm->stepOnElement(who->getElementInDirection(who->getFacing()));
     pm->setEnergy(this->getEnergy());
     return pm;
 }
@@ -72,7 +73,7 @@ bool plainGun::use(std::shared_ptr<bElem> who)
     this->shot=this->getCntr()+_plainGunCharge;
     if (this->ammo<=0 && (this->getSubtype()%2)==0) //odd subtypes have infinite shots
         return false;
-    myel=who->getElementInDirection(who->getDirection());
+    myel=who->getElementInDirection(who->getFacing());
     if(myel!=nullptr)
     {
         if (this->ammo>0 || this->getSubtype()%2==1)
@@ -89,10 +90,6 @@ bool plainGun::use(std::shared_ptr<bElem> who)
             {
                 this->createProjectible(who);
             }
-           /* else if ( myel->getType()==_plainMissile && myel->getDirection()==who->getDirection())
-            {
-                myel->setEnergy(myel->getEnergy()+this->getEnergy()); // if somehow you hit a missile going in the same direction, the show would be boosted;
-            }*/
             else if (myel->canBeKilled() )
             {
                 if(who->getStats()!=nullptr)

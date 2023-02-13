@@ -71,23 +71,27 @@
  ]
  },
  {
- "Type": 8,
- "Name": "BrickCluster",
- "AnimDef": [
- [
- [
- [
- 6,
- 0
- ],
- [
- 8,
- 1
- ]
- ]
- ]
- ]
- },
+    "Type": 8,
+    "Name": "BrickCluster",
+    "AnimDef": [ [ [ [ 6, 0 ], [ 8, 1 ] ] ] ] ,
+ "Samples": [ {
+     "SubType": 0,
+     "stEvents": [
+	{
+	    "EventType": "Move",
+	    "eventData": [ {
+		    "Event": "StepOn",
+		    "fname": "data/sounds/stone_sliding.ogg",
+		    "name": "Step sounds of a player",
+		    "description": "This is a test sound, now it will be used for sound test",
+		    "allowMulti": true,
+		    "modeOfAction": 0
+		}]
+	}
+	]
+    } ]
+
+},
  {
     "Dying": [ [ 0, 7 ], [ 1, 7 ], [ 2, 7 ], [ 3, 7 ], [ 4, 7 ] ],
     "Destroying": [ [ 0, 7 ], [ 1, 7 ], [ 0, 7 ], [ 1, 7 ] ],
@@ -167,26 +171,23 @@
  ]
  ]
  ],
- "Samples": [
- {
- "SubType": 0,
- "stEvents": [
- {
- "EventType": "Move",
- "eventData": [
- {
- "Event": "StepOn",
- "fname": "data/sounds/step.ogg",
- "name": "Step sounds of a player",
- "description": "This is a test sound, now it will be used for sound test",
- "allowMulti": false,
- "modeOfAction": 0
- }
- ]
- }
- ]
- }
- ]
+ "Samples": [ {
+     "SubType": 0,
+     "stEvents": [
+	{
+	    "EventType": "Move",
+	    "eventData": [ {
+		    "Event": "StepOn",
+		    "fname": "data/sounds/step.ogg",
+		    "name": "Step sounds of a player",
+		    "description": "This is a test sound, now it will be used for sound test",
+		    "allowMulti": false,
+		    "modeOfAction": 0
+		}]
+	}
+	]
+    } ]
+
  },
  {
  "Type": 7,
@@ -240,6 +241,7 @@
  "name": "Collect GOlden Apple sound",
  "description": "This is a test sound, now it will be used for sound test",
  "allowMulti": false,
+ "stacking":true,
  "modeOfAction": 0
  }
  ]
@@ -705,7 +707,7 @@
 		"name": "Machinery sound",
 		"description": "This is a test sound, now it will be used for sound test",
 		"allowMulti": false,
-		"modeOfAction": 1
+		"modeOfAction": 0
 	    }
 	]
 	}
@@ -904,11 +906,25 @@
  "Type": 602,
  "Name": "simple bomb",
  "AnimDef": [ [ [ [ 8, 0 ] ] ] ],
- "Samples": [    
+ "Samples": [ {
+     "SubType": 0,
+     "stEvents": [
+	{
+	    "EventType": "Move",
+	    "eventData": [ {
+		    "Event": "StepOn",
+		    "fname": "data/sounds/stone_sliding.ogg",
+		    "name": "Step sounds of a player",
+		    "description": "This is a test sound, now it will be used for sound test",
+		    "allowMulti": true,
+		    "modeOfAction": 0
+		}]
+	}
+	]
+    },
     {
     "SubType": 0,
-    "stEvents": [
-    {
+    "stEvents": [{
 	"EventType": "Explosives",
 	"eventData": [
 	    {
@@ -920,10 +936,8 @@
 		"modeOfAction": 0
 	    }
 	]
-    }
-    ]
-    }
- ]
+    } ]
+    } ]
  }
  ]
 }

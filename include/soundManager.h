@@ -33,6 +33,7 @@ using muNode=struct _mudNode
 {
     bool isRegistered=false;
     int songNo=-1;
+    int delayed=-1;
     ALuint source=0;
     ALuint Abuffers[5];
     std::vector<std::vector<short>> dataStuff;
@@ -47,6 +48,7 @@ using muNode=struct _mudNode
 using stNode=struct sndNode
 {
     bool isRegistered=false;
+    int delayed=-1;
     bool started=false;
     ALuint source;
     int mode;

@@ -80,8 +80,7 @@ bool monster::checkNeigh()
                         ((e->getType()==_player &&  e->isActive()) ||
                          (e->getType()==_patrollingDrone && e->isLiveElement())))
                 {
-                    direction td=this->getDirection();
-                    this->setDirection(d);
+                    this->setFacing(d);
                     if(this->weapon!=nullptr)
                     {
                         this->weapon->use(shared_from_this());
@@ -90,7 +89,6 @@ bool monster::checkNeigh()
                     {
                         this->getInventory()->getActiveWeapon()->use(shared_from_this());
                     }
-                    this->setDirection(td);
                     this->setWait(_mov_delay);
                     break;
                 }
@@ -135,9 +133,11 @@ bool monster::mechanics()
     {
         if(this->isSteppableDirection(oldDir))
         {
+            this->setFacing(oldDir);
             return this->moveInDirection(oldDir);
         }
         this->setDirection((direction)((((int)oldDir)+rotB)%4));
+        this->setFacing(this->getDirection());
         oldDir=this->getDirection();
         this->inited=true;
     }
@@ -149,6 +149,7 @@ bool monster::mechanics()
         newDir=(direction)((((int)oldDir)+rotA)%4);
         if(this->isSteppableDirection(newDir))
         {
+            this->setFacing(newDir);
             this->moveInDirection(newDir);
             return true;
         }

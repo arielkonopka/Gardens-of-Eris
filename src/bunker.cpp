@@ -39,7 +39,7 @@ bool bunker::isMovable()
 bool bunker::mechanics()
 {
     bool res=mechanical::mechanics();
-    if(!res)
+    if(!res || this->getMoved()>0 || this->getWait()>0)
         return false;
     if(this->help>0)
     {
@@ -120,7 +120,7 @@ direction bunker::findLongestShot()
 bool bunker::selfAlign()
 {
     if(this->getBoard())
-        this->setDirection(this->findLongestShot());
+        this->setFacing(this->findLongestShot());
     return true;
 }
 

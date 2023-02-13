@@ -134,7 +134,7 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
 
 
     int sType=elem->getSubtype()%elem->getVideoElementDef()->defArray.size();
-    int sDir=((int)elem->getDirection())%elem->getVideoElementDef()->defArray[sType].size();
+    int sDir=((int)elem->getFacing())%elem->getVideoElementDef()->defArray[sType].size();
     int sPh=elem->getAnimPh()%elem->getVideoElementDef()->defArray[sType][sDir].size();
 
 
@@ -267,7 +267,7 @@ void presenter::showGameField()
     this->previousPosition.y=this->positionOnScreen.y/this->sHeight;
     offX=(this->positionOnScreen.x % this->sWidth);
     offY=(this->positionOnScreen.y % this->sHeight);
-
+    soundManager::getInstance()->setListenerVelocity({dx*32,0,dy*32});
     this->prepareStatsThing();
     al_set_target_bitmap(this->internalBitmap);
     colour c=this->_cp_attachedBoard->getChColour();

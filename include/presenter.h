@@ -15,6 +15,7 @@
 #include "inputManager.h"
 #include "objectTypes.h"
 #include "configManager.h"
+#include "soundManager.h"
 /*
  This class is responsible for menu, settings, designer and game presenter.
 

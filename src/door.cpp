@@ -62,7 +62,7 @@ void door::unstomp()
     {
         this->locked=true;
         this->open=false;
-        this->setDirection((!this->open)?UP:LEFT);
+        this->setFacing((!this->open)?UP:LEFT);
     }
     bElem::unstomp();
 }
@@ -79,7 +79,7 @@ bool door::interact(std::shared_ptr<bElem> who)
     {
         this->interacted=this->getCntr()+10;
         this->open=!this->open;
-        this->setDirection((!this->open)?UP:LEFT);
+        this->setFacing((!this->open)?UP:LEFT);
         this->playSound("Door",(this->open)?"Unlock":"Lock");
 
         return true;
@@ -103,7 +103,7 @@ bool door::interact(std::shared_ptr<bElem> who)
         this->playSound("Door","Open");
         this->open=true;
         this->locked=false;
-        this->setDirection((!this->open)?UP:LEFT);
+        this->setFacing((!this->open)?UP:LEFT);
     }
     else
     {

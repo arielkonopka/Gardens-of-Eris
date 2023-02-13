@@ -69,6 +69,7 @@
 		<Unit filename="data/graph/icons64.png" />
 		<Unit filename="data/graph/icons64.xcf" />
 		<Unit filename="data/skins.json" />
+		<Unit filename="include/audibleElement.h" />
 		<Unit filename="include/bElem.h" />
 		<Unit filename="include/bunker.h" />
 		<Unit filename="include/chamber.h" />
@@ -110,6 +111,7 @@
 		<Unit filename="include/wall.h" />
 		<Unit filename="include/world.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/audibleElement.cpp" />
 		<Unit filename="src/bElem.cpp" />
 		<Unit filename="src/bunker.cpp" />
 		<Unit filename="src/chamber.cpp" />

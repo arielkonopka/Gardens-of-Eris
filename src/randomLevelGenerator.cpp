@@ -436,10 +436,13 @@ bool randomLevelGenerator::generateLevel(int holes)
                 if(chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock==false)
                 {
                     int dice=this->gen()%100;
-                    int keyType=this->gen()%5;
-                    if(dice<(50/holes))
+                    int keyType=this->gen()%10;
+                    if(dice<(75/holes))
                     {
-                        this->placeDoors({_door,keyType,1,0,9},chamberArea::foundAreas[selectedChamberNo]);
+                        if(keyType>=5)
+                            this->placeDoors({_brickClusterType,0,0,9},chamberArea::foundAreas[selectedChamberNo]);
+                        else
+                            this->placeDoors({_door,keyType,1,0,9},chamberArea::foundAreas[selectedChamberNo]);
                         elementCollection.push_back({_key,keyType,1,0,9}); // place key for the door and store it somewhere - warning, the door placed at the end might never receive the key
                         chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock=true;
 
