@@ -12,7 +12,7 @@ jobs:
     steps:
      - uses: awalsh128/cache-apt-pkgs-action@latest
        with:
-          packages: libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr libopenal-dev libalut-dev libsndfile1-dev
+          packages: libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr libopenal-dev libalut-dev libsndfile1-dev libboost-test-dev
           version: 1.0
      - uses: actions/checkout@v3
      - name: build game
