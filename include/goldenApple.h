@@ -13,6 +13,7 @@ public:
     static  int getAppleNumber();
     int getType() final;
     bool kill() final;
+    bool destroy() final;
     bool hurt(int points);
     explicit goldenApple(std::shared_ptr<chamber> board);
     bool mechanics();

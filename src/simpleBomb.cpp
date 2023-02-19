@@ -40,7 +40,7 @@ bool simpleBomb::mechanics()
     bElem::mechanics();
     if (this->getWait() > 1)
         return false;
-    this->explode();
+    this->explode(1.5);
     return true;
 }
 

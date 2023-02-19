@@ -13,6 +13,7 @@ public:
     virtual ~explosives();
 
     virtual bool explode();
+    virtual bool explode(float radius);
 
 };
 
