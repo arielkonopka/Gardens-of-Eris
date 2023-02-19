@@ -30,9 +30,12 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
 
 bool presenter::initializeDisplay()
 {
-    al_set_new_display_flags(ALLEGRO_WINDOWED);
+    ALLEGRO_MONITOR_INFO info;
+    al_set_new_display_flags(ALLEGRO_FULLSCREEN);
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
-    this->display = al_create_display(this->scrWidth, this->scrHeight);
+    al_get_monitor_info(0, &info);
+    this->display = al_create_display(info.x2-info.x1, info.y2-info.y1);
+    al_hide_mouse_cursor(this->display);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
     this->internalBitmap=al_create_bitmap(this->scrWidth+64,this->scrHeight+64);
     this->statsStripe=al_create_bitmap(this->scrWidth,this->scrHeight/3);
@@ -267,7 +270,7 @@ void presenter::showGameField()
     this->previousPosition.y=this->positionOnScreen.y/this->sHeight;
     offX=(this->positionOnScreen.x % this->sWidth);
     offY=(this->positionOnScreen.y % this->sHeight);
-    soundManager::getInstance()->setListenerVelocity({dx*32,0,dy*32});
+    soundManager::getInstance()->setListenerVelocity({dx*555,0,dy*555});
     this->prepareStatsThing();
     al_set_target_bitmap(this->internalBitmap);
     colour c=this->_cp_attachedBoard->getChColour();

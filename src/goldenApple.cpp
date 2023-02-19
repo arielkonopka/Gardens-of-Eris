@@ -35,6 +35,16 @@ bool goldenApple::hurt(int points)
     return killableElements::hurt(points);
 }
 
+
+bool goldenApple::destroy()
+{
+    bool res=killableElements::destroy();
+    if(res)
+        this->explode(2.5);
+    return res;
+}
+
+
 goldenApple::goldenApple(std::shared_ptr<chamber> board) : collectible(board), nonSteppable(board), killableElements(board), explosives(board)
 {
     this->setSubtype(0);
@@ -89,7 +99,7 @@ bool goldenApple::kill()
     if (killableElements::kill())
     {
 
-        this->explode();
+        this->explode(2.5);
         return true;
     }
     return false;

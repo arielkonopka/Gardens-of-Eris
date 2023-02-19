@@ -17,8 +17,9 @@ soundManager::soundManager()
         {
             alcMakeContextCurrent(this->sndContext); // set active context
         }
-        alDopplerFactor(5.0);
+        alDopplerFactor(15.0);
         alDopplerVelocity(20);
+        alSpeedOfSound(300.0);
         alDistanceModel(AL_EXPONENT_DISTANCE_CLAMPED);
         /* create the queue for sndefx and music */
         for(int c=0; c<configManager::getInstance()->getConfig()->sndFifoSize; c++)
@@ -30,7 +31,7 @@ soundManager::soundManager()
             srcNode->source=source;
             srcNode->isRegistered=false;
             alSourcei(srcNode->source, AL_SOURCE_RELATIVE, AL_TRUE);
-            alSourcef(srcNode->source, AL_MAX_DISTANCE, 1000.f); // we want to hear from the distance 100 elements 100*32=3200
+            alSourcef(srcNode->source, AL_MAX_DISTANCE, 3200.0f); // we want to hear from the distance 100 elements 100*32=3200
             alSourcef(srcNode->source, AL_REFERENCE_DISTANCE, 0.5f);
             alSourcef(srcNode->source, AL_PITCH, 1.0f);
             alSourcef(srcNode->source, AL_GAIN, 1.0f);
@@ -444,7 +445,7 @@ void soundManager::setupSong(int songNo,coords3d position,int chamberId,bool vai
         muNd.isRegistered=true;
         muNd.variableVol=vaiableVolume;
         // alSourcePlay(muNd.source);
-        alSourcef(muNd.source, AL_GAIN, 0.20f);
+        alSourcef(muNd.source, AL_GAIN, 0.10f);
         std::lock_guard<std::mutex> guard(this->snd_mutex);
         this->registeredMusic.push_back(muNd);
 
