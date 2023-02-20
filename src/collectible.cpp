@@ -21,8 +21,9 @@ videoElement::videoElementDef* collectible::getVideoElementDef()
 
 void collectible::setCollected(std::shared_ptr<bElem> who)
 {
+    std::shared_ptr<bElem> wo=this->getCollector();
     bElem::setCollected(who);
-    if(who.get()!=nullptr && who->getBoard().get()!=nullptr && (who->getType()==_player || this->getType()==_goldenAppleType))
+    if(who.get()!=nullptr && who->getBoard().get()!=nullptr && (who->getType()==_player || this->getType()==_goldenAppleType) && wo.get()!=who.get())
     {
         this->playSound("Found","Collect");
     }

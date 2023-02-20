@@ -23,7 +23,7 @@ using sndHolder=struct sampleS
     bool loaded=false; // By default it is not loaded
     ALuint buffer;
     int mode;
-    bool allowMulti=false;
+  //  bool allowMulti=false;
 
 
 };
@@ -52,9 +52,9 @@ using stNode=struct sndNode
     bool started=false;
     ALuint source;
     int mode;
-    bool allowMulti=false;
     int soundSpace;
     int elId=0;
+    int elType=0;
     std::string eventType;
     std::string event;
     coords3d position;
@@ -108,7 +108,7 @@ private:
     std::map<int, std::map< int, std::map<std::string,std::map<std::string, std::shared_ptr<sndHolder>>>>> samplesLoaded;
     std::map<std::string,ALuint> sampleBuffers; // Refactor me! - we need to load each file only once.
     std::vector<std::shared_ptr<stNode>> registeredSounds; // the whole sample data, used to register sounds
-    std::map<int,std::map<std::string,std::map<std::string,regNode>>> sndRegister;
+    std::map<int,std::map<int,std::map<std::string,std::map<std::string,regNode>>>> sndRegister;
     std::vector<muNode> registeredMusic;
     std::map<std::string,regSmpFileBuf> sampleFile;
     int currSoundSpace=-1;

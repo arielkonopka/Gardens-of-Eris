@@ -112,7 +112,10 @@ void configManager::configReload()
                         sd.name = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["name"].GetString();
                         if(sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3].HasMember("description"))
                             sd.description = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["description"].GetString();
-                        sd.allowMulti = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["allowMulti"].GetBool();
+                        if(sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3].HasMember("allowMulti"))
+                            sd.allowMulti = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["allowMulti"].GetBool();
+                        if(sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3].HasMember("stacking"))
+                            sd.stacking = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["stacking"].GetBool();
                         sd.modeOfAction = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["modeOfAction"].GetInt();
                         sd.configured=true;
                         this->gConfObj->samples[sdata.eType][st][eventType][evname] = sd;
