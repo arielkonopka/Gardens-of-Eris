@@ -35,6 +35,7 @@ using sampleData= struct sampleData
     std::string fname="";
     std::string name="UNKNOWN";
     std::string description="This sampleData is empty";
+    bool stacking=false;
     bool allowMulti=false;
     int modeOfAction=-1; /* 0 - normal - play and forget, 1 - looped until stopped, or lost view, 2 - backwards, 3 - pingloop -forward and backward until stopped, or lost view */
 } ;

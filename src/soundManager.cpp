@@ -73,7 +73,7 @@ void soundManager::stopSoundsByElementId(int elId)
         {
             this->stopSnd(n);
             n->isRegistered=false;
-            this->sndRegister[n->elId][n->eventType][n->event].r=false;
+            this->sndRegister[n->elId][n->elType][n->eventType][n->event].r=false;
         }
     }
 }
@@ -84,8 +84,12 @@ void soundManager::stopSoundsByElementId(int elId)
 void soundManager::checkQueue()
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
-
+    if (this->cnt!=bElem::getCntr())
+    {
+        this->cnt=bElem::getCntr();
+    }
     int nm=this->findNearestMusic();
+
     if(nm>=0 && nm!=this->currentMusic)
     {
         //this->currentMusic=this->currentMusic%his->registeredMusic.size()
@@ -109,7 +113,7 @@ void soundManager::checkQueue()
         {
             this->stopSnd(n);
             n->isRegistered=false;
-            this->sndRegister[n->elId][n->eventType][n->event].r=false;
+            this->sndRegister[n->elId][n->elType][n->eventType][n->event].r=false;
             continue;
         }
         if (n->isRegistered && !n->started)
@@ -120,14 +124,19 @@ void soundManager::checkQueue()
                 alSourcePlay(n->source);
             }
             else
+            {
                 n->delayed--;
-            continue;
+                continue;
+            }
         }
         if(n->isRegistered && this->isSndPlaying(n->source)==false)
         {
             n->isRegistered=false;
-            this->sndRegister[n->elId][n->eventType][n->event].r=false;
+            this->sndRegister[n->elId][n->elType][n->eventType][n->event].r=false;
+            continue;
         }
+        float newVolume = 32.0/this->calcDistance(n->position,this->listenerPos);
+        alSourcef(n->source, AL_GAIN, (newVolume>1)?1.0:newVolume);
 
     }
 }
@@ -146,21 +155,18 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
 
     alGetError();
     std::lock_guard<std::mutex> guard(this->snd_mutex);
-    /*
-    That is a "parasite" kind of activity. That will change when sound manager gets its very own thread.
-    It should be called periodically, but not too fast. we don't care for stale samples so much
-    */
-    if (this->cnt!=bElem::getCntr())
-    {
-        this->cnt=bElem::getCntr();
-    }
+
+
     /*************************************************************/
     if (!this->active || chamberId!=this->currSoundSpace
             || this->calcDistance(this->listenerPos,position)>this->gc->soundDistance
             || !this->gc->samples[typeId][subtypeId][eventType][event].configured
-            || (this->sndRegister[elId][eventType][event].r && this->gc->samples[typeId][subtypeId][eventType][event].allowMulti==false)
+            || (this->sndRegister[elId][typeId][eventType][event].r && this->gc->samples[typeId][subtypeId][eventType][event].allowMulti==false)
        )
+    {
         return;
+    }
+
     if(this->samplesLoaded[typeId][subtypeId][eventType][event].get()==nullptr )
         this->samplesLoaded[typeId][subtypeId][eventType][event]=std::make_shared<sndHolder>();
     if (this->samplesLoaded[typeId][subtypeId][eventType][event]->loaded==false)
@@ -177,24 +183,45 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
         this->samplesLoaded[typeId][subtypeId][eventType][event]->buffer=this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].buffer;
         this->samplesLoaded[typeId][subtypeId][eventType][event]->loaded=true;
         this->samplesLoaded[typeId][subtypeId][eventType][event]->mode=this->gc->samples[typeId][subtypeId][eventType][event].modeOfAction;
-        this->samplesLoaded[typeId][subtypeId][eventType][event]->allowMulti=this->gc->samples[typeId][subtypeId][eventType][event].allowMulti;
+        //      this->samplesLoaded[typeId][subtypeId][eventType][event]->allowMulti=this->gc->samples[typeId][subtypeId][eventType][event].allowMulti;
     }
     std::shared_ptr<stNode> srcNode=this->getSndNode();
+    if(this->sndRegister[elId][typeId][eventType][event].r)
+    {
+        if(this->gc->samples[typeId][subtypeId][eventType][event].stacking==false)
+        {
+
+            this->stopSnd(this->sndRegister[elId][typeId][eventType][event].stn);
+            this->sndRegister[elId][typeId][eventType][event].stn->isRegistered=false;
+        }
+        else
+        {
+            if(!this->sndRegister[elId][typeId][eventType][event].stn->started)
+            {
+                srcNode->delayed=this->sndRegister[elId][typeId][eventType][event].stn->delayed+5;
+            }
+            else
+            {
+                srcNode->delayed=-1;
+            }
+        }
+    }
     alSourcei(srcNode->source, AL_BUFFER, (ALint)(this->samplesLoaded[typeId][subtypeId][eventType][event]->buffer));
     srcNode->isRegistered=true;
     srcNode->started=false;
+    srcNode->elType=typeId;
     srcNode->position=position;
     srcNode->mode=this->samplesLoaded[typeId][subtypeId][eventType][event]->mode;
-    srcNode->allowMulti=this->samplesLoaded[typeId][subtypeId][eventType][event]->allowMulti;
     srcNode->elId=elId;
     srcNode->eventType=eventType;
     srcNode->event=event;
     srcNode->soundSpace=chamberId;
     float newVolume = 32.0/this->calcDistance(position,this->listenerPos);
+
     alSourcef(srcNode->source, AL_GAIN, (newVolume>1)?1.0:newVolume);
     alSourcei(srcNode->source,AL_LOOPING,(srcNode->mode==0)?AL_FALSE:AL_TRUE);
-    this->sndRegister[elId][eventType][event].r=true;
-    this->sndRegister[elId][eventType][event].stn=srcNode;
+    this->sndRegister[elId][typeId][eventType][event].r=true;
+    this->sndRegister[elId][typeId][eventType][event].stn=srcNode;
     return;
 };
 
@@ -238,7 +265,9 @@ std::shared_ptr<stNode> soundManager::getSndNode()
     {
         if ((!this->isSndPlaying(n->source)) || (n->mode>0 && c>this->registeredSounds.size()) || (c>this->registeredSounds.size()*2))
         {
-            this->sndRegister[n->elId][n->eventType][n->event].r=false;
+            this->sndRegister[n->elId][n->elType][n->eventType][n->event].r=false;
+            if(this->isSndPlaying(n->source))
+                this->stopSnd(n);
             n->isRegistered=false;
             break;
         };

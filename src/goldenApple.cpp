@@ -124,9 +124,13 @@ bool goldenApple::mechanics()
 }
 void goldenApple::setCollected(std::shared_ptr<bElem> who)
 {
-    if(this->isLiveElement()==false)
+    collectible::setCollected(who);
+    if(this->isLiveElement()==false && this->getSubtype()!=0)
     {
         this->registerLiveElement(shared_from_this());
     }
-    collectible::setCollected(who);
 }
+
+
+
+
