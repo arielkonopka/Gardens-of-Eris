@@ -112,28 +112,26 @@ bool presenter::loadCofiguredData()
 
 */
 
-void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shared_ptr<bElem> elem,bool ignoreOffset,int mode)
+bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shared_ptr<bElem> elem,bool ignoreOffset,int mode)
 {
     coords coords,offset= {0,0};
     int sx,sy;
-    if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem==nullptr) return;
+    bool res=false;
+    if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem.get()==nullptr || elem->getVideoElementDef()==nullptr ) return false;
     if(!ignoreOffset)
     {
-        if(elem!=nullptr)
+        if(elem.get()!=nullptr)
             offset=elem->getOffset();
         offsetX=offset.x;
         offsetY=offset.y;
     }
-    /* We check, if the object is standing on anything, to draw it first, we also make sure, we were called the right way */
-    if (elem->getSteppingOnElement()!=nullptr && (mode==_mode_all || mode==_mode_onlyFloor))
-        this->showObjectTile(x,y,offsetX,offsetY,elem->getSteppingOnElement(),ignoreOffset,_mode_all);
-    /*
-        No video object definition? ignore This way we can have "invisible" objects if we want to.
-        mode==_mode_onlyFLoor means, only object that are being stepped on, are drawn
-    */
-    if (elem->getVideoElementDef()==nullptr || (mode==_mode_onlyFloor))
-        return;
+    if(mode==1 && elem->getMoved()<=0)
+        return false;
 
+    if (elem->getSteppingOnElement().get()!=nullptr && mode!=_mode_onlyTop)
+        res=this->showObjectTile(x,y,offsetX,offsetY,elem->getSteppingOnElement(),ignoreOffset,mode);
+     if((mode==0 && elem->getMoved()>0 ))
+        return true;
 
 
     int sType=elem->getSubtype()%elem->getVideoElementDef()->defArray.size();
@@ -189,6 +187,8 @@ void presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
         //finally draw that
         al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
     }
+
+    return res;
 }
 
 
@@ -225,11 +225,11 @@ void presenter::prepareStatsThing()
         if(key!=nullptr)
         {
             tokens=aPlayer->getInventory()->countTokens(key->getType(),key->getSubtype());
-            this->showObjectTile(7+(cnt*2),0,0,0,key,true,_mode_onlyTop);
+            this->showObjectTile(7+(cnt*2),0,0,0,key,true,0);
             this->showText(8+(cnt*2),0,0,16,std::to_string(tokens));
         }
     }
-    this->showObjectTile(18,0,0,0,goldenApple::getApple(1),true,_mode_onlyTop);
+    this->showObjectTile(18,0,0,0,goldenApple::getApple(1),true,1);
     this->showText(19,0,0,0,std::to_string(goldenApple::getAppleNumber()));
     this->showText(19,0,0,32,std::to_string(aPlayer->getInventory()->countTokens(_goldenAppleType,0)));
     this->showText(21,0,6,0,"Stats");
@@ -248,14 +248,11 @@ void presenter::prepareStatsThing()
 void presenter::showGameField()
 {
     std::shared_ptr<bElem> player=player::getActivePlayer();
-    coords b=player->getCoords()-(coords)
-    {
-        (this->scrTilesX)/2,(this->scrTilesY)/2
-    };
+    coords b=player->getCoords()-(coords){(this->scrTilesX)/2,(this->scrTilesY)/2};
     std::vector<movingSprite> mSprites;
     mSprites.clear();
     int x,y;
-    int bx,by;
+    int bx,by; /* middle of the screen calculated based on the player position - destination */
     int dx,dy;
     int offX=0,offY=0;
     bx=(b.x>0)?((b.x>player->getBoard()->width-(this->scrTilesX))?player->getBoard()->width-(this->scrTilesX):b.x):0;
@@ -279,20 +276,28 @@ void presenter::showGameField()
         for(y=0; y<this->scrTilesY+1; y++)
         {
             std::shared_ptr<bElem> elemToDisplay=player->getBoard()->getElement(x+(this->previousPosition.x),y+(this->previousPosition.y));
-            if(elemToDisplay!=nullptr && elemToDisplay->getMoved()>0)
+
+            if(elemToDisplay.get()!=nullptr)
             {
-                mSprites.push_back({x,y,elemToDisplay});
-                this->showObjectTile(x,y,0,0,elemToDisplay,false,_mode_onlyFloor);
+                if (this->showObjectTile(x,y,0,0,elemToDisplay,false,0))
+                    mSprites.push_back({x,y,elemToDisplay});
                 continue;
             }
-            this->showObjectTile(x,y,0,0,elemToDisplay,false,_mode_all);
         }
+    int px=0,py=0;
     for(unsigned int cnt=0; cnt<mSprites.size(); cnt++)
     {
         movingSprite ms=mSprites.at(cnt);
-        this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false,_mode_onlyTop);
+        if(ms.elem->getInstanceid()==player->getInstanceid())
+        {
+            px=ms.x;
+            py=ms.y;
 
+        } else
+            this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false,1);
     }
+    if(player->getMoved()>0)
+        this->showObjectTile(px,py,0,0,player->getBoard()->getElement(player->getCoords()),false,1);
 
     al_set_target_bitmap(al_get_backbuffer(display));
     al_clear_to_color(al_map_rgba(15,25,45,255));

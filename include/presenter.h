@@ -30,9 +30,9 @@ obiekt ginie (animacja)
 #define _offsetX 64
 #define _offsetY 64
 
-#define _mode_onlyFloor 1
-#define _mode_onlyTop   2
-#define _mode_all       3
+#define _mode_onlyFloor 4
+#define _mode_onlyTop   5
+#define _mode_all       6
 
 
 
@@ -56,7 +56,7 @@ public:
     bool presentAChamber(presenterMode mod);
     bool loadCofiguredData();
     void showSplash();
-    void showObjectTile(int x,int y,int offsetX,int offsetY,std::shared_ptr<bElem> elem,bool ignoreOffset,int mode);
+    bool showObjectTile(int x,int y,int offsetX,int offsetY,std::shared_ptr<bElem> elem,bool ignoreOffset,int mode);
     void showText(int x,int y,int offsetX,int offsetY,std::string text);
     //relX and relY are coordinates on a board, that indicate where the player is
     void showGameField();
