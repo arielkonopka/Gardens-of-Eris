@@ -58,7 +58,8 @@ To build the game, you need following libraries:
 
 The repository is equipped with build.sh shell script (Bash):
 
-`./build.sh --help
+```
+./build.sh --help
 Garden of Erif or Obnoxious Labirynth build script for GNU Linux
 usage:
 ./build.sh [-sq] [-m moduleName] [-g] [-a] [-t]
@@ -76,7 +77,8 @@ examples:
 # Build unit tests for bElem
 ./build.sh -t -m bElem-test`
 # Build bElem, soundManager, presenter, bElem-tests
-./build.sh -m bElem -m soundManager -m presenter -t -m bElem-test`
+./build.sh -m bElem -m soundManager -m presenter -t -m bElem-test
+```
 
 ## Main assumptions
 
