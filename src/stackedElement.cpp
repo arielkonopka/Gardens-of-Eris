@@ -21,13 +21,17 @@ void stackedElement::setController(std::shared_ptr<stackedElement> controller)
 
 bool stackedElement::stepOnElement(std::shared_ptr<bElem> step)
 {
-    bool res=false;
+    bool res=true;
     if(getSubtype()==0)
     {
-
         for(unsigned int c=this->topDownConstruct.size(); c>0; c--)
         {
-            res=this->topDownConstruct[c-1]->stepOnElement(step);
+            if(this->topDownConstruct[c-1]->getInstanceid()==this->getInstanceid())
+            {
+                res=movableElements::stepOnElement(step->getBoard()->getElement(step->getCoords()));
+                continue;
+            }
+            res=this->topDownConstruct[c-1]->stepOnElement(step->getBoard()->getElement(step->getCoords()));
             if(!res) // this should actually happen with the first element, the rest must be composed so the whole object can be created
                 return res;
         }
@@ -50,7 +54,7 @@ std::shared_ptr<bElem> stackedElement::removeElement()
         {
             if(this->getInstanceid()==this->topDownConstruct[c]->getInstanceid())
                 {
-                    cnt=audibleElement::removeElement();
+                    cnt=movableElements::removeElement();
                     continue;
                 }
             this->topDownConstruct[c]->removeElement();
@@ -59,7 +63,7 @@ std::shared_ptr<bElem> stackedElement::removeElement()
 
     }
     else
-        return audibleElement::removeElement();
+        return movableElements::removeElement();
 }
 
 void stackedElement::linkAnElement(std::shared_ptr<stackedElement> newBottom)
