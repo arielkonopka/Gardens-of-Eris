@@ -68,7 +68,7 @@ usage:
 -a - build all
 -g - build only the game elements and link the game
 -t - build only the tests
--m moduleName - build only one cpp file, if combinet with -t, then the test cse file is build.
+-m moduleName - build only one cpp file, if combined with -t, then the test case file is build.
 -sq - build and run the tests just for the sonar qube analysis.
 examples:
 # all of these examples will also link all the changes to the binaries
