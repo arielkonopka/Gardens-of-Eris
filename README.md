@@ -189,7 +189,16 @@ We handle the sounds by having the pool of sources (openAL), which we keep in a 
 
 Now every object can have its own animations of death, teleport, destruction and fadingOut, the last one is not supported yet
 
+
+
+- changed the way tiles are shown on the screen. Now in the first phase we draw only still tiles. Because they are either on the floor standing still, of they are the floor. Then all the moving elements are being displayed in second round, and at the end active player is drawn. 
+  The sequence may seem weird, but since I implemented the animateion of progressing between the tiles, some situations got weird. Like when we drag an object with but turning in circles. Sometimes the object obscures player, sometimes it is the opposite.
+  We do not have an isometric view, and that looks awkward.
+
 - changed pointers from raw to managed
 - removed Garbage collector, as it is not necessary anymore
 - enabled first sounds, stumbled upon first issue, there is a limited amount of sources, available, so I cannot really have as many as I want... Still have plenty
     I will have to sort them by the distance to the player and remove the farthest ones.
+
+
+
