@@ -12,7 +12,7 @@ mkdir -p ${objPath}/{src,unitTests}
 while [ $# -gt 0 ] ; do
     case "${1}" in
     "--help")
-	echo "Garden of Erif or Obnoxious Labirynth build script for GNU Linux
+	echo "Garden of Eris or Obnoxious Labirynth build script for GNU Linux
 usage:
 ./build.sh [-sq] [-m moduleName] [-g] [-a] [-t]
 -gh - for github build system - install necessary packages for Ubuntu
