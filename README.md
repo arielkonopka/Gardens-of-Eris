@@ -60,7 +60,7 @@ The repository is equipped with build.sh shell script (Bash):
 
 ```
 ./build.sh --help
-Garden of Erif or Obnoxious Labirynth build script for GNU Linux
+Garden of Eris or Obnoxious Labirynth build script for GNU Linux
 usage:
 ./build.sh [-sq] [-m moduleName] [-g] [-a] [-t]
 -gh - install necessary packages for Ubuntu
