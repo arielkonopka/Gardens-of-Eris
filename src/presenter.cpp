@@ -24,6 +24,12 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
     al_get_monitor_info(0, &info);
     this->scrWidth = info.x2-50; /* Assume this is 1366 */
     this->scrHeight= info.y2-50; /* Assume this is 768 */
+   // this->chaosGameTops.push_back((coords){0,0});
+    this->chaosGameTops.push_back({this->scrWidth,0});
+    this->chaosGameTops.push_back({this->scrWidth,this->scrHeight});
+    this->chaosGameTops.push_back({0,this->scrHeight});
+    this->chaosGamelastPoint={1+this->scrWidth/2,1-this->scrHeight/2};
+
     this->inpMngr=std::make_shared<inputManager>();
 }
 
@@ -130,7 +136,7 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
 
     if (elem->getSteppingOnElement().get()!=nullptr && mode!=_mode_onlyTop)
         res=this->showObjectTile(x,y,offsetX,offsetY,elem->getSteppingOnElement(),ignoreOffset,mode);
-     if((mode==0 && elem->getMoved()>0 ))
+    if((mode==0 && elem->getMoved()>0 ))
         return true;
 
 
@@ -205,6 +211,7 @@ void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  tex
 
 void presenter::prepareStatsThing()
 {
+
     std::shared_ptr<bElem> aPlayer=player::getActivePlayer();
     al_set_target_bitmap(this->statsStripe);
     al_clear_to_color(al_map_rgba(0,0,0,255));
@@ -213,6 +220,9 @@ void presenter::prepareStatsThing()
     this->showText(2,0,0,0,std::to_string(player::countVisitedPlayers()));
     this->showText(2,0,0,32,std::to_string(aPlayer->getEnergy()));
     this->showObjectTile(4,0,0,0,aPlayer->getInventory()->getActiveWeapon(),true,_mode_onlyTop);
+
+
+
     if( aPlayer->getInventory()->getActiveWeapon()!=nullptr)
     {
         this->showText(5,0,0,32,std::to_string(aPlayer->getInventory()->getActiveWeapon()->getEnergy()));
@@ -240,15 +250,34 @@ void presenter::prepareStatsThing()
         this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getGlobalPoints()));
         this->showText(22,1,5,0,std::to_string(aPlayer->getStats()->getDexterity()));
     }
-}
+
+ }
 
 
 /* We kinda move a window in a big screen, that is whole board.We track the upper left point, which is placed in previousPosition
  */
 void presenter::showGameField()
 {
+    //int top;
+    coords np;
+ /*   this->chaosGamePoints.clear();
+    for(int c=0;c<500;c++)
+    {
+        top=bElem::randomNumberGenerator()%this->chaosGameTops.size();
+        np={(this->chaosGameTops[top].x+this->chaosGamelastPoint.x)/2,(this->chaosGameTops[top].y+this->chaosGamelastPoint.y)/2};
+        this->chaosGamePoints.push_back(np);
+        this->chaosGamelastPoint=np;
+        if (this->chaosGamePoints.size()>5000)
+            this->chaosGamePoints.erase(this->chaosGamePoints.begin());
+
+    }
+*/
+
     std::shared_ptr<bElem> player=player::getActivePlayer();
-    coords b=player->getCoords()-(coords){(this->scrTilesX)/2,(this->scrTilesY)/2};
+    coords b=player->getCoords()-(coords)
+    {
+        (this->scrTilesX)/2,(this->scrTilesY)/2
+    };
     std::vector<movingSprite> mSprites;
     mSprites.clear();
     int x,y;
@@ -272,6 +301,8 @@ void presenter::showGameField()
     al_set_target_bitmap(this->internalBitmap);
     colour c=this->_cp_attachedBoard->getChColour();
     al_clear_to_color(al_map_rgba(c.r,c.g,c.b,c.a));
+
+
     for(x=0; x<this->scrTilesX+1; x++)
         for(y=0; y<this->scrTilesY+1; y++)
         {
@@ -293,7 +324,8 @@ void presenter::showGameField()
             px=ms.x;
             py=ms.y;
 
-        } else
+        }
+        else
             this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false,1);
     }
     if(player->getMoved()>0)
@@ -301,8 +333,19 @@ void presenter::showGameField()
 
     al_set_target_bitmap(al_get_backbuffer(display));
     al_clear_to_color(al_map_rgba(15,25,45,255));
+
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
     al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
+ /*   for(int c=0;c<this->chaosGameTops.size();c++)
+    {
+        al_draw_pixel(this->chaosGameTops[c].x,this->chaosGameTops[c].y,al_map_rgba(255,0,255,22));
+    }
+    for(int c=0;c<this->chaosGamePoints.size();c++)
+    {
+        al_draw_pixel(this->chaosGamePoints[c].x,this->chaosGamePoints[c].y,al_map_rgba(255,255,255,22));
+    }
+    */
+
     al_wait_for_vsync();
     al_flip_display();
 }
