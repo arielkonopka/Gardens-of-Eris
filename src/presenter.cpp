@@ -24,11 +24,13 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
     al_get_monitor_info(0, &info);
     this->scrWidth = info.x2-50; /* Assume this is 1366 */
     this->scrHeight= info.y2-50; /* Assume this is 768 */
-   // this->chaosGameTops.push_back((coords){0,0});
+    // this->chaosGameTops.push_back((coords){0,0});
+    this->chaosGameTops.push_back({0,0});
+    this->chaosGameTops.push_back({this->scrWidth/2,this->scrHeight/2});
     this->chaosGameTops.push_back({this->scrWidth,0});
     this->chaosGameTops.push_back({this->scrWidth,this->scrHeight});
     this->chaosGameTops.push_back({0,this->scrHeight});
-    this->chaosGamelastPoint={1+this->scrWidth/2,1-this->scrHeight/2};
+    this->chaosGamelastPoint= {1+this->scrWidth/2,1-this->scrHeight/2};
 
     this->inpMngr=std::make_shared<inputManager>();
 }
@@ -239,7 +241,7 @@ void presenter::prepareStatsThing()
             this->showText(8+(cnt*2),0,0,16,std::to_string(tokens));
         }
     }
-    this->showObjectTile(18,0,0,0,goldenApple::getApple(1),true,1);
+    this->showObjectTile(18,0,0,0,goldenApple::getApple(1),true,_mode_onlyTop);
     this->showText(19,0,0,0,std::to_string(goldenApple::getAppleNumber()));
     this->showText(19,0,0,32,std::to_string(aPlayer->getInventory()->countTokens(_goldenAppleType,0)));
     this->showText(21,0,6,0,"Stats");
@@ -251,27 +253,14 @@ void presenter::prepareStatsThing()
         this->showText(22,1,5,0,std::to_string(aPlayer->getStats()->getDexterity()));
     }
 
- }
+}
 
 
 /* We kinda move a window in a big screen, that is whole board.We track the upper left point, which is placed in previousPosition
  */
 void presenter::showGameField()
 {
-    //int top;
-    coords np;
- /*   this->chaosGamePoints.clear();
-    for(int c=0;c<500;c++)
-    {
-        top=bElem::randomNumberGenerator()%this->chaosGameTops.size();
-        np={(this->chaosGameTops[top].x+this->chaosGamelastPoint.x)/2,(this->chaosGameTops[top].y+this->chaosGamelastPoint.y)/2};
-        this->chaosGamePoints.push_back(np);
-        this->chaosGamelastPoint=np;
-        if (this->chaosGamePoints.size()>5000)
-            this->chaosGamePoints.erase(this->chaosGamePoints.begin());
 
-    }
-*/
 
     std::shared_ptr<bElem> player=player::getActivePlayer();
     coords b=player->getCoords()-(coords)
@@ -333,21 +322,50 @@ void presenter::showGameField()
 
     al_set_target_bitmap(al_get_backbuffer(display));
     al_clear_to_color(al_map_rgba(15,25,45,255));
-
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
     al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
- /*   for(int c=0;c<this->chaosGameTops.size();c++)
-    {
-        al_draw_pixel(this->chaosGameTops[c].x,this->chaosGameTops[c].y,al_map_rgba(255,0,255,22));
-    }
-    for(int c=0;c<this->chaosGamePoints.size();c++)
-    {
-        al_draw_pixel(this->chaosGamePoints[c].x,this->chaosGamePoints[c].y,al_map_rgba(255,255,255,22));
-    }
-    */
+    this->eyeCandy(player->getBoard()->getInstanceId());
+
 
     al_wait_for_vsync();
     al_flip_display();
+}
+void presenter::eyeCandy(int flavour)
+{
+    int top;
+    coords np;
+    if(flavour==0)
+    {
+        for(int x=0; x<1000; x++)
+        {
+            np={bElem::randomNumberGenerator()%this->scrWidth,bElem::randomNumberGenerator()%this->scrHeight};
+            al_draw_pixel(np.x,np.y,al_map_rgba(255,0,255,bElem::randomNumberGenerator()%10));
+        }
+    }
+    if(flavour==2)
+    {
+        for(int c=0; c<1000; c++)
+        {
+            top=bElem::randomNumberGenerator()%this->chaosGameTops.size();
+            np= {(this->chaosGameTops[top].x+this->chaosGamelastPoint.x)/2,(this->chaosGameTops[top].y+this->chaosGamelastPoint.y)/2};
+            this->chaosGamePoints.push_back(np);
+            this->chaosGamelastPoint=np;
+            if (this->chaosGamePoints.size()>2000)
+                this->chaosGamePoints.erase(this->chaosGamePoints.begin());
+
+        }
+
+        for(unsigned int c=0; c<this->chaosGameTops.size(); c++)
+        {
+            al_draw_pixel(this->chaosGameTops[c].x,this->chaosGameTops[c].y,al_map_rgba(255,0,255,10));
+        }
+
+        for(unsigned int c=0; c<this->chaosGamePoints.size(); c++)
+        {
+            al_draw_pixel(this->chaosGamePoints[c].x,this->chaosGamePoints[c].y,al_map_rgba(255,255,255,5));
+        }
+        return;
+    }
 }
 
 
