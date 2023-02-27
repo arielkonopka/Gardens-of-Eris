@@ -16,6 +16,7 @@
 #include "objectTypes.h"
 #include "configManager.h"
 #include "soundManager.h"
+#include "commons.h"
 /*
  This class is responsible for menu, settings, designer and game presenter.
 
@@ -66,7 +67,9 @@ public:
 
 
 private:
-
+    std::vector<coords> chaosGamePoints;
+    std::vector<coords> chaosGameTops;
+    coords chaosGamelastPoint;
     ALLEGRO_FONT* myfont;
     std::string splashFname;
     std::shared_ptr<inputManager> inpMngr;
