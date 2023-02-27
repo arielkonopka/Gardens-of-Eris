@@ -324,7 +324,7 @@ void presenter::showGameField()
     al_clear_to_color(al_map_rgba(15,25,45,255));
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
     al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
-    this->eyeCandy(player->getBoard()->getInstanceId());
+//    this->eyeCandy(player->getBoard()->getInstanceId());
 
 
     al_wait_for_vsync();
@@ -338,7 +338,7 @@ void presenter::eyeCandy(int flavour)
     {
         for(int x=0; x<1000; x++)
         {
-            np={bElem::randomNumberGenerator()%this->scrWidth,bElem::randomNumberGenerator()%this->scrHeight};
+            np={(int)(bElem::randomNumberGenerator()%this->scrWidth),(int)(bElem::randomNumberGenerator()%this->scrHeight)};
             al_draw_pixel(np.x,np.y,al_map_rgba(255,0,255,bElem::randomNumberGenerator()%10));
         }
     }
