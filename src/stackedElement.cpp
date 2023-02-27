@@ -14,7 +14,7 @@ stackedElement::~stackedElement()
     //dtor
 }
 
-void stackedElement::setController(std::shared_ptr<stackedElement> controller)
+void stackedElement::setController(std::shared_ptr<bElem> controller)
 {
     this->controlUnit=controller;
 }
@@ -22,25 +22,24 @@ void stackedElement::setController(std::shared_ptr<stackedElement> controller)
 bool stackedElement::stepOnElement(std::shared_ptr<bElem> step)
 {
     bool res=true;
-    if(getSubtype()==0)
+    if(this->getController().get()==nullptr)
     {
+        this->removeElement();
         for(unsigned int c=this->topDownConstruct.size(); c>0; c--)
         {
-            if(this->topDownConstruct[c-1]->getInstanceid()==this->getInstanceid())
+            if(this->topDownConstruct[c-1]->getInstanceid()!=this->getInstanceid())
             {
-                res=movableElements::stepOnElement(step->getBoard()->getElement(step->getCoords()));
-                continue;
+                res=this->topDownConstruct[c-1]->stepOnElement(step->getBoard()->getElement(step->getCoords()));
             }
-            res=this->topDownConstruct[c-1]->stepOnElement(step->getBoard()->getElement(step->getCoords()));
-            if(!res) // this should actually happen with the first element, the rest must be composed so the whole object can be created
-                return res;
+            if(!res) // this should actually happen only with the first element, the rest must be composed so the whole object can be created
+                break;
         }
     }
-    else
-        res=audibleElement::stepOnElement(step);
+    std::shared_ptr<bElem> be=step->getBoard()->getElement(step->getCoords());
+    res=movableElements::stepOnElement(be);
     return res;
 }
-std::shared_ptr<stackedElement> stackedElement::getController()
+std::shared_ptr<bElem> stackedElement::getController()
 {
     return this->controlUnit;
 }
@@ -69,4 +68,5 @@ std::shared_ptr<bElem> stackedElement::removeElement()
 void stackedElement::linkAnElement(std::shared_ptr<stackedElement> newBottom)
 {
     this->topDownConstruct.push_back(newBottom);
+    if(this->getInstanceid()!=newBottom->getInstanceid()) newBottom->setController(shared_from_this());
 }

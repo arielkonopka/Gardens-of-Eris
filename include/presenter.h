@@ -67,6 +67,7 @@ public:
 
 
 private:
+    void eyeCandy(int flavour);
     std::vector<coords> chaosGamePoints;
     std::vector<coords> chaosGameTops;
     coords chaosGamelastPoint;

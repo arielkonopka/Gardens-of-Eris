@@ -190,7 +190,8 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
 {
     if (step.get() == nullptr || step->isSteppable() == false || step->getBoard().get() == nullptr || step->isDisposed())
         return false;
-    this->removeElement();
+    if(this->getSteppingOnElement()!=nullptr)
+        this->removeElement();
     this->setCoords(step->getCoords());
     this->setBoard(step->getBoard());
     this->state.steppingOn = step;

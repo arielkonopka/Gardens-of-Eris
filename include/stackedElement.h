@@ -15,12 +15,12 @@ class stackedElement : public movableElements
         stackedElement(std::shared_ptr<chamber> board);
         virtual ~stackedElement();
         void linkAnElement(std::shared_ptr<stackedElement> newBottom);
-        void setController(std::shared_ptr<stackedElement> controller);
-        std::shared_ptr<stackedElement> getController();
+        void setController(std::shared_ptr<bElem> controller);
+        std::shared_ptr<bElem> getController();
     protected:
 
     private:
-        std::shared_ptr<stackedElement> controlUnit=nullptr;
+        std::shared_ptr<bElem> controlUnit=nullptr;
         std::vector<std::shared_ptr<stackedElement>> topDownConstruct;
 };
 
