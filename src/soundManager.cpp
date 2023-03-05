@@ -33,6 +33,7 @@ soundManager::soundManager()
             alSourcei(srcNode->source, AL_SOURCE_RELATIVE, AL_TRUE);
             alSourcef(srcNode->source, AL_MAX_DISTANCE, 3200.0f); // we want to hear from the distance 100 elements 100*32=3200
             alSourcef(srcNode->source, AL_REFERENCE_DISTANCE, 0.5f);
+            alSourcef(srcNode->source,AL_ROLLOFF_FACTOR,4.0f);
             alSourcef(srcNode->source, AL_PITCH, 1.0f);
             alSourcef(srcNode->source, AL_GAIN, 1.0f);
             this->registeredSounds.push_back(srcNode);

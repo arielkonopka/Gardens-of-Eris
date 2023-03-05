@@ -14,13 +14,15 @@ class wall : public nonSteppable
         virtual videoElement::videoElementDef* getVideoElementDef();
         static videoElement::videoElementDef* vd;
         wall();
+        bool stepOnElement(std::shared_ptr<bElem> elem);
+        std::shared_ptr<bElem> removeElement();
         explicit wall(std::shared_ptr<chamber> board);
         explicit wall(std::shared_ptr<chamber> board,int subtype);
         virtual  bool isDying();
         int getType();
         virtual bool canBeKilled();
         virtual bool canBeDestroyed();
-
+        bool additionalProvisioning() ;
 
 };
 

@@ -128,6 +128,13 @@ bool player::getVisited()
 }
 
 
+bool player::stepOnElement(std::shared_ptr<bElem>step)
+{
+    bool r=movableElements::stepOnElement(step);
+    if(this->getBoard().get()!=nullptr && this->isActive())
+        this->getBoard()->visitPosition(this->getCoords()); // we visit the position.
+    return r;
+}
 
 
 videoElement::videoElementDef* player::getVideoElementDef()
@@ -179,36 +186,28 @@ bool player::mechanics()
     case NODIRECTION:
         vel= {0,0,0};
     }
-   /* if (this->getMoved()>0)
-    {
-        soundManager::getInstance()->setListenerVelocity(vel);
-
-    }
-    else
-    {
-
-        soundManager::getInstance()->setListenerVelocity({0,0,0});
-    }
-    */
     soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId());
-    soundManager::getInstance()->setListenerOrientation({0,-1,0});
+    soundManager::getInstance()->setListenerOrientation({0,-10,0});
     soundManager::getInstance()->setListenerPosition(c3d);
     if(!res)
         return false;
 
     if(this->getMoved()>0)
     {
-        if(bElem::getCntr()%4==0) this->animPh++;
+        if(this->getCntr()%3==0) this->animPh++;
         return true;
     }
 
     switch(this->getBoard()->cntrlItm.type)
     {
+    case -1:
+        this->animPh=0;
+        break;
     case 0:
         if(this->moveInDirection(this->getBoard()->cntrlItm.dir))
         {
             this->setFacing(this->getDirection());
-            this->animPh++;
+           //
         }
         break;
 
@@ -234,12 +233,10 @@ bool player::mechanics()
         if(this->dragInDirection(this->getBoard()->cntrlItm.dir))
         {
             this->setFacing((direction)(((int)this->getDirection()+2)%4)); /* we face backwards while dragging */
-            this->animPh++;
         }
         else if(this->moveInDirection(this->getBoard()->cntrlItm.dir))
         {
             this->setFacing(this->getDirection());
-            this->animPh++;
         }
         break;
     case 8:
@@ -250,7 +247,6 @@ bool player::mechanics()
     {
         this->getInventory()->nextGun();
         this->setWait(_mov_delay);
-
         break;
     }
     case 6:

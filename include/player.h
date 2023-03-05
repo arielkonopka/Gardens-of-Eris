@@ -19,6 +19,7 @@ public:
     virtual videoElement::videoElementDef* getVideoElementDef();
     static videoElement::videoElementDef* vd;
     static std::shared_ptr<bElem> getActivePlayer();
+    bool stepOnElement(std::shared_ptr<bElem> step);
     bool mechanics() final;
     bool interact(std::shared_ptr<bElem> who) final;
     bool canPush() final;

@@ -39,11 +39,11 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
 bool presenter::initializeDisplay()
 {
     ALLEGRO_MONITOR_INFO info;
-    al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+    // al_set_new_display_flags(ALLEGRO_FULLSCREEN);
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
     al_get_monitor_info(0, &info);
     this->display = al_create_display(info.x2-info.x1, info.y2-info.y1);
-    al_hide_mouse_cursor(this->display);
+    // al_hide_mouse_cursor(this->display);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
     this->internalBitmap=al_create_bitmap(this->scrWidth+64,this->scrHeight+64);
     this->statsStripe=al_create_bitmap(this->scrWidth,this->scrHeight/3);
@@ -98,6 +98,7 @@ bool presenter::loadCofiguredData()
         std::cout<<"Font assets are not loaded properly, check the configuration.\n";
         return false;
     }
+    this->bluredElement=gcfg->bluredElement;
     this->splashFname=gcfg->splashScr;
     this->sWidth=gcfg->tileWidth;
     this->sHeight=gcfg->tileHeight;
@@ -126,6 +127,7 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
     int sx,sy;
     bool res=false;
     if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem.get()==nullptr || elem->getVideoElementDef()==nullptr ) return false;
+
     if(!ignoreOffset)
     {
         if(elem.get()!=nullptr)
@@ -138,6 +140,15 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
 
     if (elem->getSteppingOnElement().get()!=nullptr && mode!=_mode_onlyTop)
         res=this->showObjectTile(x,y,offsetX,offsetY,elem->getSteppingOnElement(),ignoreOffset,mode);
+
+    /* if( (elem->isMovable() || elem->isSteppable() || elem->isCollectible()) && elem->getStomper().get()==nullptr  && mode==0 && (elem->getBoard().get()!=nullptr) && (!elem->getBoard()->isVisible(elem->getCoords())))
+     {
+         sx=(this->bluredElement.x*this->sWidth)+((this->bluredElement.x+1)*(this->spacing));
+         sy=(this->bluredElement.y*this->sHeight)+((this->bluredElement.y+1)*(this->spacing));
+         al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,(x*this->sWidth),(y*this->sHeight),0);
+         return false;
+     }*/
+
     if((mode==0 && elem->getMoved()>0 ))
         return true;
 
@@ -196,6 +207,7 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
         al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
     }
 
+
     return res;
 }
 
@@ -237,7 +249,7 @@ void presenter::prepareStatsThing()
         if(key!=nullptr)
         {
             tokens=aPlayer->getInventory()->countTokens(key->getType(),key->getSubtype());
-            this->showObjectTile(7+(cnt*2),0,0,0,key,true,0);
+            this->showObjectTile(7+(cnt*2),0,0,0,key,true,_mode_onlyTop);
             this->showText(8+(cnt*2),0,0,16,std::to_string(tokens));
         }
     }
@@ -291,19 +303,20 @@ void presenter::showGameField()
     colour c=this->_cp_attachedBoard->getChColour();
     al_clear_to_color(al_map_rgba(c.r,c.g,c.b,c.a));
 
-
-    for(x=0; x<this->scrTilesX+1; x++)
-        for(y=0; y<this->scrTilesY+1; y++)
-        {
-            std::shared_ptr<bElem> elemToDisplay=player->getBoard()->getElement(x+(this->previousPosition.x),y+(this->previousPosition.y));
-
-            if(elemToDisplay.get()!=nullptr)
+    if(player->getBoard().get()!=nullptr)
+        for(x=0; x<this->scrTilesX+1; x++)
+            for(y=0; y<this->scrTilesY+1; y++)
             {
-                if (this->showObjectTile(x,y,0,0,elemToDisplay,false,0))
-                    mSprites.push_back({x,y,elemToDisplay});
-                continue;
+                std::shared_ptr<bElem> elemToDisplay=player->getBoard()->getElement(x+(this->previousPosition.x),y+(this->previousPosition.y));
+                if(player->getBoard()->isVisible(x+(this->previousPosition.x),y+(this->previousPosition.y))>=255)
+                    continue; // this element is not even discovered yet
+                if(elemToDisplay.get()!=nullptr)
+                {
+                    if (this->showObjectTile(x,y,0,0,elemToDisplay,false,0))
+                        mSprites.push_back({x,y,elemToDisplay});
+                    continue;
+                }
             }
-        }
     int px=0,py=0;
     for(unsigned int cnt=0; cnt<mSprites.size(); cnt++)
     {
@@ -319,6 +332,21 @@ void presenter::showGameField()
     }
     if(player->getMoved()>0)
         this->showObjectTile(px,py,0,0,player->getBoard()->getElement(player->getCoords()),false,1);
+    if(player->getBoard().get()!=nullptr)
+        for(x=0; x<this->scrTilesX+1; x++)
+            for(y=0; y<this->scrTilesY+1; y++)
+            {
+                if(player->getBoard()->isVisible(x+(this->previousPosition.x),y+(this->previousPosition.y))>0)
+                {
+                    std::shared_ptr<bElem> elem=player->getBoard()->getElement(x+(this->previousPosition.x),y+(this->previousPosition.y));
+                    int sx=(this->bluredElement.x*this->sWidth)+((this->bluredElement.x+1)*(this->spacing));
+                    int sy=(this->bluredElement.y*this->sHeight)+((this->bluredElement.y+1)*(this->spacing));
+                    al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,(x*this->sWidth),(y*this->sHeight),0);
+
+                };
+            }
+
+
 
     al_set_target_bitmap(al_get_backbuffer(display));
     al_clear_to_color(al_map_rgba(15,25,45,255));
@@ -338,7 +366,7 @@ void presenter::eyeCandy(int flavour)
     {
         for(int x=0; x<1000; x++)
         {
-            np={(int)(bElem::randomNumberGenerator()%this->scrWidth),(int)(bElem::randomNumberGenerator()%this->scrHeight)};
+            np= {(int)(bElem::randomNumberGenerator()%this->scrWidth),(int)(bElem::randomNumberGenerator()%this->scrHeight)};
             al_draw_pixel(np.x,np.y,al_map_rgba(255,0,255,bElem::randomNumberGenerator()%10));
         }
     }

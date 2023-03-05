@@ -7,13 +7,13 @@ videoElement::videoElementDef* wall::vd=nullptr;
 wall::wall(std::shared_ptr<chamber> board) : nonSteppable(board)
 {
 
-            this->setSubtype(0);
+    this->setSubtype(0);
 }
 
 wall::wall(std::shared_ptr<chamber> board,int subtype) : nonSteppable(board)
 {
 
-            this->setSubtype(subtype);
+    this->setSubtype(subtype);
 
 }
 
@@ -22,6 +22,28 @@ wall::wall():nonSteppable()
 
 }
 
+bool wall::stepOnElement(std::shared_ptr<bElem>elem)
+{
+    bool res=nonSteppable::stepOnElement(elem);
+    if(this->getBoard().get()!=nullptr)
+        this->getBoard()->setVisible(this->getCoords(),0);
+    return res;
+}
+
+std::shared_ptr<bElem> wall::removeElement()
+{
+    if(this->getBoard().get()!=nullptr)
+        this->getBoard()->setVisible(this->getCoords(),255);
+    std::shared_ptr<bElem> res=nonSteppable::removeElement();
+    return res;
+
+}
+
+
+bool wall::additionalProvisioning()
+{
+    return true;
+}
 
 int wall::getType()
 {
@@ -42,7 +64,7 @@ bool wall::isDying()
 }
 bool wall::canBeKilled()
 {
-   return false;
+    return false;
 }
 
 bool wall::canBeDestroyed()
