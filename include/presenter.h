@@ -83,6 +83,7 @@ private:
     int scrTilesY;
     coords previousPosition;
     coords positionOnScreen;
+    coords bluredElement=NOCOORDS;
 
     ALLEGRO_BITMAP* internalBitmap;
     ALLEGRO_BITMAP* statsStripe;

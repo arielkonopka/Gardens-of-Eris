@@ -25,6 +25,9 @@ void chamber::createFloor()
     for (int c = 0; c < this->width; c++)
     {
 
+        std::vector<bool> v2(this->height,false);
+        this->visitedElements.push_back(v2);
+
         std::vector<std::shared_ptr<bElem>> v;
         for (int d = 0; d < this->height; d++)
         {
@@ -57,8 +60,10 @@ void chamber::createFloor()
 
 coords chamber::getSizeOfChamber()
 {
-    return (coords){
-        (int)this->chamberArray.size(), (this->chamberArray.size() > 0) ? (int)this->chamberArray[0].size() : -1};
+    return (coords)
+    {
+        (int)this->chamberArray.size(), (this->chamberArray.size() > 0) ? (int)this->chamberArray[0].size() : -1
+    };
 }
 
 chamber::chamber(int x, int y) : std::enable_shared_from_this<chamber>(), width(x), height(y)
@@ -101,6 +106,38 @@ std::shared_ptr<bElem> chamber::getElement(coords point)
 {
     return this->getElement(point.x, point.y);
 }
+bool chamber::visitPosition(coords point)
+{
+    if(point==NOCOORDS)
+        return false;
+    int x0=((point.x-this->visibilityRadius)<0)?0:((point.x-this->visibilityRadius>=this->width)?this->width-1:point.x-this->visibilityRadius);
+    int y0=((point.y-this->visibilityRadius)<0)?0:((point.y-this->visibilityRadius>=this->width)?this->width-1:point.y-this->visibilityRadius);
+    int x1=((point.x+this->visibilityRadius)<0)?0:((point.x+this->visibilityRadius>=this->width)?this->width-1:point.x+this->visibilityRadius);
+    int y1=((point.y+this->visibilityRadius)<0)?0:((point.y+this->visibilityRadius>=this->width)?this->width-1:point.y+this->visibilityRadius);
+    for(int x=x0;x<=x1;x++)
+    {
+        for(int y=y0;y<=y1;y++)
+            if (std::sqrt((x-point.x)*(x-point.x)+(y-point.y)*(y-point.y))<=this->visibilityRadius)
+                this->visitedElements[x][y]=true;
+    }
+    return true;
+
+}
+bool chamber::isVisible(int x, int y)
+{
+    return this->isVisible((coords){x,y});
+}
+
+bool chamber::isVisible(coords point)
+{
+
+    if(point.x<this->width && point.y<this->height && point.x>=0 && point.y>=0)
+        return this->visitedElements[point.x][point.y];
+    return false;
+
+}
+
+
 
 std::shared_ptr<bElem> chamber::getElement(int x, int y)
 {

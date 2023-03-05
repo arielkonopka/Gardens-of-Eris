@@ -199,8 +199,9 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
     {
         std::shared_ptr<bElem> stmpr = step->getStomper();
         step->unstomp();
-        this->stomp(stmpr);
+        step->stomp(shared_from_this());
         stmpr->state.steppingOn = shared_from_this();
+        this->stomp(stmpr);
     }
     else
     {

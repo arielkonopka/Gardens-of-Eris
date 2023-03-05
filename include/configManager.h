@@ -65,6 +65,7 @@ typedef struct gameConfig
     std::vector<coords> gFadingOut;
     std::vector<coords> gTeleporting;
     std::vector<spriteData> sprites;
+    coords bluredElement=NOCOORDS;
     //samples[ElementType][ElementSubtype][EventType][Event]
     std::map<int,std::map<int,std::map<std::string,std::map<std::string,sampleData>>>> samples;
 

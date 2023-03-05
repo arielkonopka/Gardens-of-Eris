@@ -33,7 +33,7 @@ bool movableElements::moveInDirection(direction dir)
 bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 {
     std::shared_ptr<bElem> stepOn=this->getElementInDirection(dir);
-    if (stepOn.get()==nullptr || this->getMoved()>0 || this->isDying() || this->isTeleporting() || this->isDestroyed() )
+    if (stepOn.get()==nullptr || this->getMoved()>0 || this->isDying() || this->isTeleporting() || this->isDestroyed() || dir==NODIRECTION)
         return false;
     this->setDirection(dir);
     if (stepOn->isSteppable()==true)

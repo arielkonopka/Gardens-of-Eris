@@ -32,6 +32,10 @@ void configManager::configReload()
     this->gConfObj->gTeleporting.clear();
     this->gConfObj->sylables.clear();
     this->gConfObj->sprites.clear();
+    if (this->skinDefJson.HasMember("Blur"))
+    {
+        this->gConfObj->bluredElement=(coords){this->skinDefJson["Blur"][0].GetInt(),this->skinDefJson["Blur"][1].GetInt()};
+    }
     this->gConfObj->soundDistance=this->skinDefJson["MaxSoundDistance"].GetInt();
     this->gConfObj->sndFifoSize=this->skinDefJson["SndFifoSize"].GetInt();
     this->gConfObj->FontFile = this->skinDefJson["FontFile"].GetString();
