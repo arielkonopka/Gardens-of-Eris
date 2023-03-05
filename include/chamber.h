@@ -18,8 +18,9 @@ class chamber: public std::enable_shared_from_this<chamber>
         controlItem cntrlItm;
         bool visitPosition(int x, int y) { return this->visitPosition((coords){x,y}); };
         bool visitPosition(coords point);
-        bool isVisible(int x, int y) ;
-        bool isVisible(coords point);
+        int isVisible(int x, int y) ;
+        int isVisible(coords point);
+        void setVisible(coords point,int v);
 
         int width;
         int height;
@@ -36,8 +37,8 @@ class chamber: public std::enable_shared_from_this<chamber>
         colour getChColour();
         coords getSizeOfChamber();
     private:
-        int visibilityRadius=4;
-        std::vector<std::vector<bool>> visitedElements;
+        float visibilityRadius=3.5;
+        std::vector<std::vector<int>> visitedElements;
         void createFloor();
         std::vector<std::vector<std::shared_ptr<bElem>>> chamberArray;
         colour chamberColour;

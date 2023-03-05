@@ -128,6 +128,13 @@ bool player::getVisited()
 }
 
 
+bool player::stepOnElement(std::shared_ptr<bElem>step)
+{
+    bool r=movableElements::stepOnElement(step);
+    if(this->getBoard().get()!=nullptr && this->isActive())
+        this->getBoard()->visitPosition(this->getCoords()); // we visit the position.
+    return r;
+}
 
 
 videoElement::videoElementDef* player::getVideoElementDef()
@@ -200,7 +207,7 @@ bool player::mechanics()
         if(this->moveInDirection(this->getBoard()->cntrlItm.dir))
         {
             this->setFacing(this->getDirection());
-            this->getBoard()->visitPosition(this->getCoords()); // we visit the position.
+           //
         }
         break;
 

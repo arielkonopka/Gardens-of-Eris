@@ -25,7 +25,7 @@ void chamber::createFloor()
     for (int c = 0; c < this->width; c++)
     {
 
-        std::vector<bool> v2(this->height,false);
+        std::vector<int> v2(this->height,255);
         this->visitedElements.push_back(v2);
 
         std::vector<std::shared_ptr<bElem>> v;
@@ -110,25 +110,43 @@ bool chamber::visitPosition(coords point)
 {
     if(point==NOCOORDS)
         return false;
+    float hradius=this->visibilityRadius/2;
     int x0=((point.x-this->visibilityRadius)<0)?0:((point.x-this->visibilityRadius>=this->width)?this->width-1:point.x-this->visibilityRadius);
     int y0=((point.y-this->visibilityRadius)<0)?0:((point.y-this->visibilityRadius>=this->width)?this->width-1:point.y-this->visibilityRadius);
     int x1=((point.x+this->visibilityRadius)<0)?0:((point.x+this->visibilityRadius>=this->width)?this->width-1:point.x+this->visibilityRadius);
     int y1=((point.y+this->visibilityRadius)<0)?0:((point.y+this->visibilityRadius>=this->width)?this->width-1:point.y+this->visibilityRadius);
-    for(int x=x0;x<=x1;x++)
+    for(int x=x0; x<=x1; x++)
     {
-        for(int y=y0;y<=y1;y++)
-            if (std::sqrt((x-point.x)*(x-point.x)+(y-point.y)*(y-point.y))<=this->visibilityRadius)
-                this->visitedElements[x][y]=true;
+        for(int y=y0; y<=y1; y++)
+        {
+            float distance=std::sqrt((x-point.x)*(x-point.x)+(y-point.y)*(y-point.y));
+
+            if (distance<=hradius)
+                this->visitedElements[x][y]=0;
+            else if (distance<=this->visibilityRadius && this->visitedElements[x][y]>10)
+                this->visitedElements[x][y]=10;
+            if(this->visitedElements[x][y]>255)
+                this->visitedElements[x][y]=255;
+        }
     }
     return true;
 
 }
-bool chamber::isVisible(int x, int y)
+void chamber::setVisible(coords point,int v)
 {
-    return this->isVisible((coords){x,y});
+    this->visitedElements[point.x][point.y]=v;
 }
 
-bool chamber::isVisible(coords point)
+
+int chamber::isVisible(int x, int y)
+{
+    return this->isVisible((coords)
+    {
+        x,y
+    });
+}
+
+int chamber::isVisible(coords point)
 {
 
     if(point.x<this->width && point.y<this->height && point.x>=0 && point.y>=0)
