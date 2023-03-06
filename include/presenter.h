@@ -84,7 +84,9 @@ private:
     coords previousPosition;
     coords positionOnScreen;
     coords bluredElement=NOCOORDS;
-
+    coords bluredElement25=NOCOORDS;
+    coords bluredElement50=NOCOORDS;
+    coords bluredElement75=NOCOORDS;
     ALLEGRO_BITMAP* internalBitmap;
     ALLEGRO_BITMAP* statsStripe;
     int bsHeight,bsWidth;

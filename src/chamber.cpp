@@ -123,8 +123,8 @@ bool chamber::visitPosition(coords point)
 
             if (distance<=hradius)
                 this->visitedElements[x][y]=0;
-            else if (distance<=this->visibilityRadius && this->visitedElements[x][y]>10)
-                this->visitedElements[x][y]=10;
+            else if (distance<=this->visibilityRadius && this->visitedElements[x][y]>(distance-hradius)*64)
+                this->visitedElements[x][y]=(distance-hradius)*64;
             if(this->visitedElements[x][y]>255)
                 this->visitedElements[x][y]=255;
         }

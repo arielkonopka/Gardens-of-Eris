@@ -36,6 +36,21 @@ void configManager::configReload()
     {
         this->gConfObj->bluredElement=(coords){this->skinDefJson["Blur"][0].GetInt(),this->skinDefJson["Blur"][1].GetInt()};
     }
+    if (this->skinDefJson.HasMember("Blur25"))
+    {
+        this->gConfObj->bluredElement25=(coords){this->skinDefJson["Blur25"][0].GetInt(),this->skinDefJson["Blur25"][1].GetInt()};
+    }
+    if (this->skinDefJson.HasMember("Blur50"))
+    {
+        this->gConfObj->bluredElement50=(coords){this->skinDefJson["Blur50"][0].GetInt(),this->skinDefJson["Blur50"][1].GetInt()};
+    }
+    if (this->skinDefJson.HasMember("Blur75"))
+    {
+        this->gConfObj->bluredElement75=(coords){this->skinDefJson["Blur75"][0].GetInt(),this->skinDefJson["Blur75"][1].GetInt()};
+    }
+
+
+
     this->gConfObj->soundDistance=this->skinDefJson["MaxSoundDistance"].GetInt();
     this->gConfObj->sndFifoSize=this->skinDefJson["SndFifoSize"].GetInt();
     this->gConfObj->FontFile = this->skinDefJson["FontFile"].GetString();

@@ -99,6 +99,9 @@ bool presenter::loadCofiguredData()
         return false;
     }
     this->bluredElement=gcfg->bluredElement;
+    this->bluredElement25=gcfg->bluredElement25;
+    this->bluredElement50=gcfg->bluredElement50;
+    this->bluredElement75=gcfg->bluredElement75;
     this->splashFname=gcfg->splashScr;
     this->sWidth=gcfg->tileWidth;
     this->sHeight=gcfg->tileHeight;
@@ -336,11 +339,20 @@ void presenter::showGameField()
         for(x=0; x<this->scrTilesX+1; x++)
             for(y=0; y<this->scrTilesY+1; y++)
             {
-                if(player->getBoard()->isVisible(x+(this->previousPosition.x),y+(this->previousPosition.y))>0)
+                int obscured=player->getBoard()->isVisible(x+(this->previousPosition.x),y+(this->previousPosition.y));
+                if(obscured>0)
                 {
                     std::shared_ptr<bElem> elem=player->getBoard()->getElement(x+(this->previousPosition.x),y+(this->previousPosition.y));
-                    int sx=(this->bluredElement.x*this->sWidth)+((this->bluredElement.x+1)*(this->spacing));
-                    int sy=(this->bluredElement.y*this->sHeight)+((this->bluredElement.y+1)*(this->spacing));
+                    coords be=this->bluredElement;
+                    if(obscured<=196)
+                        be=this->bluredElement75;
+                    if(obscured<=128)
+                        be=this->bluredElement50;
+                    if(obscured<=64)
+                        be=this->bluredElement25;
+
+                    int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing));
+                    int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing));
                     al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,(x*this->sWidth),(y*this->sHeight),0);
 
                 };
