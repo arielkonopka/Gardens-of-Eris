@@ -14,7 +14,7 @@ int main( int argc, char * argv[] )
 {
     bool finish=false;
 
-    randomLevelGenerator* rndl=new randomLevelGenerator(250,250);
+    randomLevelGenerator* rndl=new randomLevelGenerator(100,100);
     presenter::presenter *myPresenter=new presenter::presenter(rndl->mychamber);
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
@@ -34,7 +34,7 @@ int main( int argc, char * argv[] )
     rndl->generateLevel(10);
     for (int cnt=5;cnt>0;cnt--)
     {
-        rndl=new randomLevelGenerator(100+((5-cnt)*50)+(rndl->gen()%10)*5,100+((5-cnt)*50)+(rndl->gen()%10)*5);
+        rndl=new randomLevelGenerator(200+((5-cnt)*50)+(rndl->gen()%10)*5,200+((5-cnt)*50)+(rndl->gen()%10)*5);
         rndl->generateLevel(cnt);
     }
 

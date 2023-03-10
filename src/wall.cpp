@@ -26,7 +26,7 @@ bool wall::stepOnElement(std::shared_ptr<bElem>elem)
 {
     bool res=nonSteppable::stepOnElement(elem);
     if(this->getBoard().get()!=nullptr)
-        this->getBoard()->setVisible(this->getCoords(),0);
+        this->getBoard()->setVisible(this->getCoords(),254);
     return res;
 }
 

@@ -3,6 +3,9 @@
 #include "commons.h"
 #include "randomWordGen.h"
 #include <memory>
+#include <thread>
+#include <mutex>
+
 typedef struct color {
     int r;
     int g;
@@ -46,6 +49,7 @@ class chamber: public std::enable_shared_from_this<chamber>
         void setInstanceId(int id);
         int instanceid;
         static int lastid;
+        std::mutex chmutex;
 };
 
 #endif // CHAMBER_H
