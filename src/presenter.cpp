@@ -99,6 +99,9 @@ bool presenter::loadCofiguredData()
         return false;
     }
     this->bluredElement=gcfg->bluredElement;
+    this->bluredElement25=gcfg->bluredElement25;
+    this->bluredElement50=gcfg->bluredElement50;
+    this->bluredElement75=gcfg->bluredElement75;
     this->splashFname=gcfg->splashScr;
     this->sWidth=gcfg->tileWidth;
     this->sHeight=gcfg->tileHeight;
@@ -291,8 +294,8 @@ void presenter::showGameField()
     dy=(by-this->previousPosition.y);
     if (dx==0 && this->positionOnScreen.x % this->sWidth>0) dx=-1;
     if (dy==0 && this->positionOnScreen.y % this->sHeight>0) dy=-1;
-    this->positionOnScreen.x+=dx*2;
-    this->positionOnScreen.y+=dy*2;
+    this->positionOnScreen.x+=dx*4;
+    this->positionOnScreen.y+=dy*4;
     this->previousPosition.x=this->positionOnScreen.x/this->sWidth;
     this->previousPosition.y=this->positionOnScreen.y/this->sHeight;
     offX=(this->positionOnScreen.x % this->sWidth);
@@ -330,18 +333,38 @@ void presenter::showGameField()
         else
             this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false,1);
     }
-    if(player->getMoved()>0)
+    if(player->getMoved()>0 && player->getBoard()->width>player->getCoords().x && player->getCoords().x>=0 && player->getBoard()->height>player->getCoords().y && player->getCoords().y>=0)
         this->showObjectTile(px,py,0,0,player->getBoard()->getElement(player->getCoords()),false,1);
     if(player->getBoard().get()!=nullptr)
         for(x=0; x<this->scrTilesX+1; x++)
             for(y=0; y<this->scrTilesY+1; y++)
             {
-                if(player->getBoard()->isVisible(x+(this->previousPosition.x),y+(this->previousPosition.y))>0)
+                int obscured;
+                coords point=player->getCoords();
+                int nx=x+this->previousPosition.x;
+                int ny=y+this->previousPosition.y;
+                float distance=std::sqrt((nx-point.x)*(nx-point.x)+(ny-point.y)*(ny-point.y));
+                if(distance<=3.3)
+                    continue;
+                if(distance<=6.6)
                 {
-                    std::shared_ptr<bElem> elem=player->getBoard()->getElement(x+(this->previousPosition.x),y+(this->previousPosition.y));
-                    int sx=(this->bluredElement.x*this->sWidth)+((this->bluredElement.x+1)*(this->spacing));
-                    int sy=(this->bluredElement.y*this->sHeight)+((this->bluredElement.y+1)*(this->spacing));
-                    al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,(x*this->sWidth),(y*this->sHeight),0);
+                    obscured=(distance-3.3)*64;
+                }
+                else obscured=255;
+                if(obscured>0)
+                {
+
+                    coords be=this->bluredElement;
+                    if(obscured<=196)
+                        be=this->bluredElement75;
+                    if(obscured<=128)
+                        be=this->bluredElement50;
+                    if(obscured<=64)
+                        be=this->bluredElement25;
+
+                    int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing));
+                    int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing));
+                    al_draw_bitmap_region(player::getActivePlayer()->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,(x*this->sWidth),(y*this->sHeight),0);
 
                 };
             }
@@ -352,7 +375,7 @@ void presenter::showGameField()
     al_clear_to_color(al_map_rgba(15,25,45,255));
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
     al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
-//    this->eyeCandy(player->getBoard()->getInstanceId());
+ //   this->eyeCandy(player->getBoard()->getInstanceId());
 
 
     al_wait_for_vsync();
@@ -396,51 +419,76 @@ void presenter::eyeCandy(int flavour)
     }
 }
 
+void presenter::mechanicLoop()
+{
+    while(!this->fin)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        {
+            std::lock_guard<std::mutex> guard(this->presenter_mutex);
+            this->showGameField();
+        }
+    }
+}
 
 int presenter::presentEverything()
 {
     std::shared_ptr<bElem> currentPlayer=nullptr;
     ALLEGRO_EVENT event;
     controlItem cItem;
-    bool fin=false;
-
-    bElem::runLiveElements();
+    if(!this->mStarted)
+    {
+        this->mStarted=true;
+        std::thread nt=std::thread(&presenter::mechanicLoop, this);
+        nt.detach();
+    }
     al_start_timer(this->alTimer);
-    while(!fin)
+    while(!this->fin)
     {
         al_wait_for_event(this->evQueue, &event);
-
         if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
         {
-            fin = true;
+            this->fin = true;
             break;
         }
         if(event.type == ALLEGRO_EVENT_TIMER)
         {
+            std::lock_guard<std::mutex> guard(this->presenter_mutex);
+            currentPlayer=player::getActivePlayer();
             this->_cp_attachedBoard->player=NOCOORDS;
-            bElem::runLiveElements();
-            if((currentPlayer=player::getActivePlayer())==nullptr)
+            if(currentPlayer.get()!=nullptr)
             {
+                this->_cp_attachedBoard=player::getActivePlayer()->getBoard();
+                if(currentPlayer->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
+                    this->fin=true;
+            }
+            bElem::runLiveElements();
+        }
+        else
+        {
+            if((currentPlayer=player::getActivePlayer()).get()==nullptr)
+            {
+                this->fin=true;
                 return 2;
             }
-            if(currentPlayer->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
-                fin=true;
-            this->_cp_attachedBoard=currentPlayer->getBoard();
-            this->showGameField();
-        }
-        cItem=this->inpMngr->translateEvent(&event); //We always got a status on what to do. remember, everything must have a timer!
-        // the idea is to serve the keyboard state constantly, we avoid actions that are too fast
-        // by having timers on everything, like: once you shoot, you will be able to shoot in some defined time
-        // same with movement, object cycling, gun cycling, using things, interacting with things.
-        if (cItem.type==7)
-            return 1;
-        if(currentPlayer!=nullptr && currentPlayer->getBoard()!=nullptr)
-        {
+            cItem=this->inpMngr->translateEvent(&event); //We always got a status on what to do. remember, everything must have a timer!
+            // the idea is to serve the keyboard state constantly, we avoid actions that are too fast
+            // by having timers on everything, like: once you shoot, you will be able to shoot in some defined time
+            // same with movement, object cycling, gun cycling, using things, interacting with things.
+            if (cItem.type==7)
+            {
 
-
-            currentPlayer->getBoard()->cntrlItm=cItem;
+                this->fin=true;
+                return 1;
+            }
+            if(currentPlayer->getBoard().get()!=nullptr)
+            {
+                std::lock_guard<std::mutex> guard(this->presenter_mutex);
+                currentPlayer->getBoard()->cntrlItm=cItem;
+            }
         }
     }
+    this->fin=true;
     return 1;
 }
 

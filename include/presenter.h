@@ -17,6 +17,8 @@
 #include "configManager.h"
 #include "soundManager.h"
 #include "commons.h"
+#include <thread>
+#include <mutex>
 /*
  This class is responsible for menu, settings, designer and game presenter.
 
@@ -67,6 +69,8 @@ public:
 
 
 private:
+    bool fin=false;
+    bool mStarted=false;
     void eyeCandy(int flavour);
     std::vector<coords> chaosGamePoints;
     std::vector<coords> chaosGameTops;
@@ -84,14 +88,16 @@ private:
     coords previousPosition;
     coords positionOnScreen;
     coords bluredElement=NOCOORDS;
-
+    coords bluredElement25=NOCOORDS;
+    coords bluredElement50=NOCOORDS;
+    coords bluredElement75=NOCOORDS;
     ALLEGRO_BITMAP* internalBitmap;
     ALLEGRO_BITMAP* statsStripe;
     int bsHeight,bsWidth;
     _cp_gameReasonOut presentGamePlay();
     std::shared_ptr<chamber> _cp_attachedBoard;
     ALLEGRO_TIMER* alTimer;
-    // ALLEGRO_TIMER* scrTimer;
+    void mechanicLoop();
 
     ALLEGRO_DISPLAY* display;
 
@@ -104,7 +110,8 @@ private:
 
     } movingSprite;
 
-
+    std::thread myThread;
+    std::mutex presenter_mutex;
 
 };
 

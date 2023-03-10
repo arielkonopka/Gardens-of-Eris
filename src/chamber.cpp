@@ -82,6 +82,7 @@ chamber::chamber(coords csize) : chamber(csize.x, csize.y)
 
 colour chamber::getChColour()
 {
+  //  std::lock_guard<std::mutex> guard(this->chmutex);
     return this->chamberColour;
 }
 
@@ -99,22 +100,24 @@ chamber::~chamber()
 
 std::string chamber::getName()
 {
+ //   std::lock_guard<std::mutex> guard(this->chmutex);
     return this->chamberName;
 }
 
 std::shared_ptr<bElem> chamber::getElement(coords point)
 {
+  //  std::lock_guard<std::mutex> guard(this->chmutex);
     return this->getElement(point.x, point.y);
 }
 bool chamber::visitPosition(coords point)
 {
     if(point==NOCOORDS)
         return false;
-    float hradius=this->visibilityRadius/2;
+    float hradius=this->visibilityRadius/3;
     int x0=((point.x-this->visibilityRadius)<0)?0:((point.x-this->visibilityRadius>=this->width)?this->width-1:point.x-this->visibilityRadius);
-    int y0=((point.y-this->visibilityRadius)<0)?0:((point.y-this->visibilityRadius>=this->width)?this->width-1:point.y-this->visibilityRadius);
+    int y0=((point.y-this->visibilityRadius)<0)?0:((point.y-this->visibilityRadius>=this->height)?this->height-1:point.y-this->visibilityRadius);
     int x1=((point.x+this->visibilityRadius)<0)?0:((point.x+this->visibilityRadius>=this->width)?this->width-1:point.x+this->visibilityRadius);
-    int y1=((point.y+this->visibilityRadius)<0)?0:((point.y+this->visibilityRadius>=this->width)?this->width-1:point.y+this->visibilityRadius);
+    int y1=((point.y+this->visibilityRadius)<0)?0:((point.y+this->visibilityRadius>=this->height)?this->height-1:point.y+this->visibilityRadius);
     for(int x=x0; x<=x1; x++)
     {
         for(int y=y0; y<=y1; y++)
@@ -123,8 +126,8 @@ bool chamber::visitPosition(coords point)
 
             if (distance<=hradius)
                 this->visitedElements[x][y]=0;
-            else if (distance<=this->visibilityRadius && this->visitedElements[x][y]>10)
-                this->visitedElements[x][y]=10;
+            else if (distance<=this->visibilityRadius && this->visitedElements[x][y]>(distance-hradius)*64)
+                this->visitedElements[x][y]=(distance-hradius)*64;
             if(this->visitedElements[x][y]>255)
                 this->visitedElements[x][y]=255;
         }
@@ -148,7 +151,7 @@ int chamber::isVisible(int x, int y)
 
 int chamber::isVisible(coords point)
 {
-
+   // std::lock_guard<std::mutex> guard(this->chmutex);
     if(point.x<this->width && point.y<this->height && point.x>=0 && point.y>=0)
         return this->visitedElements[point.x][point.y];
     return false;
@@ -159,7 +162,10 @@ int chamber::isVisible(coords point)
 
 std::shared_ptr<bElem> chamber::getElement(int x, int y)
 {
-    if (x < 0 || y < 0 || (unsigned int)x >= this->chamberArray.size() || (unsigned int)y >= this->chamberArray[x].size())
+   // std::lock_guard<std::mutex> guard(this->chmutex);
+    if (x < 0 || y < 0 )
+        return nullptr;
+    if ((unsigned int)x >= this->chamberArray.size() || (unsigned int)y >= this->chamberArray[x].size())
         return nullptr;
     return this->chamberArray[x][y];
 }
@@ -173,11 +179,13 @@ void chamber::setElement(int x, int y, std::shared_ptr<bElem> elem)
 
 void chamber::setElement(coords point, std::shared_ptr<bElem> elem)
 {
+
     this->setElement(point.x, point.y, elem);
 }
 
 int chamber::getInstanceId()
 {
+  //  std::lock_guard<std::mutex> guard(this->chmutex);
     return this->instanceid;
 }
 
