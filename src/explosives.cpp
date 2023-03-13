@@ -24,7 +24,7 @@ bool explosives::explode(float radius)
     int xe=(mc.x+radius>=brd->width)?brd->width-1:mc.x+radius;
     int ys=(mc.y-radius<0)?0:mc.y-radius;
     int ye=(mc.y+radius>=brd->height)?brd->height-1:mc.y+radius;
-    std::cout<<"SE: "<<xs<<" "<<xe<<" "<<ys<<" "<<ye<<"\n:";
+   // std::cout<<"SE: "<<xs<<" "<<xe<<" "<<ys<<" "<<ye<<"\n:";
     this->playSound("Explosives","Explode");
     this->removeElement();
     for (int x=xs;x<=xe;x++)
