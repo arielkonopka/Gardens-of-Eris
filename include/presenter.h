@@ -92,6 +92,7 @@ private:
     coords bluredElement50=NOCOORDS;
     coords bluredElement75=NOCOORDS;
     ALLEGRO_BITMAP* internalBitmap;
+    ALLEGRO_BITMAP* cloakBitmap;
     ALLEGRO_BITMAP* statsStripe;
     int bsHeight,bsWidth;
     _cp_gameReasonOut presentGamePlay();
