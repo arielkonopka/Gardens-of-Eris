@@ -39,13 +39,14 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
 bool presenter::initializeDisplay()
 {
     ALLEGRO_MONITOR_INFO info;
-    // al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+   //  al_set_new_display_flags(ALLEGRO_FULLSCREEN);
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
     al_get_monitor_info(0, &info);
     this->display = al_create_display(info.x2-info.x1, info.y2-info.y1);
     // al_hide_mouse_cursor(this->display);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
     this->internalBitmap=al_create_bitmap(this->scrWidth+64,this->scrHeight+64);
+    this->cloakBitmap=al_create_bitmap(this->scrWidth+128,this->scrHeight+128);
     this->statsStripe=al_create_bitmap(this->scrWidth,this->scrHeight/3);
     return true;
 
@@ -335,9 +336,14 @@ void presenter::showGameField()
     }
     if(player->getMoved()>0 && player->getBoard()->width>player->getCoords().x && player->getCoords().x>=0 && player->getBoard()->height>player->getCoords().y && player->getCoords().y>=0)
         this->showObjectTile(px,py,0,0,player->getBoard()->getElement(player->getCoords()),false,1);
+
     if(player->getBoard().get()!=nullptr)
-        for(x=0; x<this->scrTilesX+1; x++)
-            for(y=0; y<this->scrTilesY+1; y++)
+    {
+    coords offsets=player->getOffset();
+    al_set_target_bitmap(this->cloakBitmap);
+    al_clear_to_color(al_map_rgba(0,0,0,0));
+        for(x=-1; x<this->scrTilesX+2; x++)
+            for(y=-1; y<this->scrTilesY+2; y++)
             {
                 int obscured;
                 coords point=player->getCoords();
@@ -364,16 +370,20 @@ void presenter::showGameField()
 
                     int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing));
                     int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing));
-                    al_draw_bitmap_region(player::getActivePlayer()->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,(x*this->sWidth),(y*this->sHeight),0);
+                    al_draw_bitmap_region(player::getActivePlayer()->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,((x+1)*this->sWidth),((y+1)*this->sHeight),0);
 
                 };
             }
 
-
+        al_set_target_bitmap(this->internalBitmap);
+        al_draw_bitmap_region(this->cloakBitmap,this->sWidth-offsets.x,this->sHeight-offsets.y,this->bsWidth+this->sWidth,this->bsHeight+this->sHeight,0,0,0);
+    }
 
     al_set_target_bitmap(al_get_backbuffer(display));
     al_clear_to_color(al_map_rgba(15,25,45,255));
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
+//    al_draw_bitmap_region(this->internalBitmap,offX+,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
+
     al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
  //   this->eyeCandy(player->getBoard()->getInstanceId());
 
