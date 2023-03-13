@@ -33,7 +33,7 @@ I thought of a random level generator because of two reasons:
 In the meanwhile I got a third reason:
 
    I can test it fairly fast, without even loading and saving the level data. Which by the way I will have to implement eventually.
-[You can check the fairly recent video of the gameplay.](https://youtu.be/H6MmLlQes_0)
+[You can check the fairly recent video of the gameplay.](https://www.youtube.com/watch?v=u8S_trywjaM)
 
 ## The game story
 
@@ -254,19 +254,16 @@ There are controlling switches, that change the sound handling:
 
 ## ChangeLog
 
-Now every object can have its own animations of death, teleport, destruction and fadingOut, the last one is not supported yet
 
-
-
-- changed the way tiles are shown on the screen. Now in the first phase we draw only still tiles. Because they are either on the floor standing still, of they are the floor. Then all the moving elements are being displayed in second round, and at the end active player is drawn. 
-
+* Introduced board cloaking. It works on two levels. First, we only draw those elements, that are or were in the field of view, then we apply a cloaking mask, with a hole cut out for the player. The radius of the hole can be controlled wit a variable.
+* Now every object can have its own animations of death, teleport, destruction and fadingOut, the last one is not supported yet
+* changed the way tiles are shown on the screen. Now in the first phase we draw only still tiles. Because they are either on the floor standing still, of they are the floor. Then all the moving elements are being displayed in second round, and at the end active player is drawn. 
     The sequence may seem weird, but since I implemented the animateion of progressing between the tiles, some situations got weird. Like when we drag an object with but turning in circles. Sometimes the object obscures player, sometimes it is the opposite. We do not have an isometric view, and that looks awkward.    
     We have alse to point out, that in second pass only moved objects are drawn, and in the first one only stills. This has it's cons. Like we now cannot handle a situation like this, we got two fields close to each other, that have a still object, that is stepping on a moved object, that would move under a still object on the other field. So if we'd like to build a tunnel, where for eg. trains could go by, and we could see it obscured by somekind of semitransparent roof, then we would fail.
-    
 
-- changed pointers from raw to managed
-- removed Garbage collector, as it is not necessary anymore
-- enabled first sounds, stumbled upon first issue, there is a limited amount of sources, available, so I cannot really have as many as I want... Still have plenty
+* changed pointers from raw to managed
+* removed Garbage collector, as it is not necessary anymore
+* enabled first sounds, stumbled upon first issue, there is a limited amount of sources, available, so I cannot really have as many as I want... Still have plenty
     I will have to sort them by the distance to the player and remove the farthest ones.
 
 
