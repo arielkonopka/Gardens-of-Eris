@@ -51,10 +51,12 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
            this->playSound("Move","BlockedMove");
             return false;
         }
-        stepOn->moveInDirectionSpeed(dir,speed+1); //move next object in direction
-        this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
-        this->setMoved(speed+1);
-        this->playSound("Move","StepOn");
+        if(stepOn->moveInDirectionSpeed(dir,speed+1)) //move next object in direction
+        {
+            this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
+            this->setMoved(speed+1);
+            this->playSound("Move","StepOn");
+        }
         return true;
     }
     if (this->canCollect()==true && this->getInventory().get()!=nullptr && stepOn->isCollectible()==true)

@@ -350,11 +350,11 @@ void presenter::showGameField()
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
                 float distance=std::sqrt((nx-point.x)*(nx-point.x)+(ny-point.y)*(ny-point.y));
-                if(distance<=3.3)
+                if(distance<=this->viewRadius/2)
                     continue;
-                if(distance<=6.6)
+                if(distance<=this->viewRadius)
                 {
-                    obscured=(distance-3.3)*64;
+                    obscured=(distance*64)-(this->viewRadius*64)/2;
                 }
                 else obscured=255;
                 if(obscured>0)
