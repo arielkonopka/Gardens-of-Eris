@@ -41,6 +41,10 @@ bool teleport::interact(std::shared_ptr<bElem> who)
     this->playSound("Teleport","Teleporting");
     if(this->connectionsMade==false)
         this->createConnectionsWithinSUbtype();
+    for(unsigned int c=0;c<teleport::allTeleporters.size();c++)
+    {
+        teleport::allTeleporters[c]->checked=false;
+    }
     return this->theOtherEnd->teleportIt(who);
 
 }
@@ -82,6 +86,9 @@ int teleport::getType()
 bool teleport::teleportIt(std::shared_ptr<bElem> who)
 {
     int dir=(int)who->getDirection();
+    if (this->checked)
+        return false;
+    this->checked=true;
     who->setTeleporting(_teleportationTime);
     if(who->getSteppingOnElement()!=nullptr)
         who->getSteppingOnElement()->setTeleporting(_teleportationTime);

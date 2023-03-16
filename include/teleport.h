@@ -32,6 +32,7 @@ private:
     static std::vector<teleport*> allTeleporters;
     bool removeFromAllTeleporters();
     bool connectionsMade;
+    bool checked=false;
     teleport *theOtherEnd;
 };
 
