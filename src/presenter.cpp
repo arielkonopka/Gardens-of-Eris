@@ -436,7 +436,13 @@ void presenter::mechanicLoop()
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
         {
             std::lock_guard<std::mutex> guard(this->presenter_mutex);
-            this->showGameField();
+            if (player::getActivePlayer().get()!=nullptr)
+                this->showGameField();
+            else
+                {
+                this->showSplash();
+                this->fin=true;
+                }
         }
     }
 }
