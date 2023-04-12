@@ -349,7 +349,7 @@ void presenter::showGameField()
                 coords point=player->getCoords();
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
-                float distance=std::sqrt((nx-point.x)*(nx-point.x)+(ny-point.y)*(ny-point.y));
+                float distance=point.distance((coords){nx,ny});
                 if(distance<=this->viewRadius/2)
                     continue;
                 if(distance<=this->viewRadius)
