@@ -147,20 +147,16 @@ It also contains the music and sound information.
 **TBD**
 
 # Mechanics
+There exists a vector containing "mechanical" elements. We add elements that possess certain mechanics, such as shooting, walking, or performing actions autonomously. However, the animation phases are managed differently, enabling objects without mechanics to still have animated sprites.
+There are two methods:
 
-There is a vector with "mechanical" elements. We add elements that have some mechanics (like they shoot, walk, do something on their own), but the animation phases are handled differently, so objects without mechanics still can have animated sprites.
-There are methods:
+ 1. void registerLiveElement(bElem* who);
+ 2. void deregisterLiveElement(bElem* who);
 
-  1. void registerLiveElement(bElem* who);
-  2. void deregisterLiveElement(bElem* who);
-
-One is for registering a mechanical object (there has to be implemeted mechanics method), the other one deregisters the object.
+The first method is for registering a mechanical object (which requires an implemented mechanics method), while the second method is for deregistering the object.
 
 ## Apples
-When an apple is intact it is a collectible token, that must be collected. But when it is broken (like shot at), then it becomes a healing device.
-When a player (or any other element, that can collect), collects the item, it will heal the collector.
-But it would deplay its own energy, when energy reaches 0, then the apple explodes in the inventory, killing the collector.
-
+When an apple is unbeschädigt, it acts as a collectible token that must be gathered. However, if it becomes damaged (for example, by being shot at), it transforms into a healing device. When a player (or any other element capable of collecting) acquires the item, it will heal the collector. But be warned: the apple will deplete its own energy. When the energy reaches zero, the apple will explode in the inventory, resulting in the untimely demise of the collector.
 ## Teleporters
 Every new teleporter is added to a vector (in reality, it's a vector of pointers, so it is). As soon as our player interacts with a teleporter, we're checkin' if it has an attached link to its corresponding teleporter mate. We take a gander at the type of the teleporter, and we follow these steps:
 
@@ -189,10 +185,9 @@ When running build.sh, the unit tests would be built as well. You can then run t
 
 # Sound
 
-Our game now has the ability to produce sounds.
-Just inherit after audibleElement, and then you cn use playSound method with two arguments: eventType, and event. These will be used to locate your sound, along with other data, that will be done for you.
-We are using [openAL](https://www.openal.org/documentation/openal-1.1-specification.pdf) as our audiodriver, it is because we can have control over object positions, and just because we can. 
-The configuration of the sound data is contained in "samples" field of the configManager data. It is ordered similarily to the sound configuration in JSON file:
+Our game now possesses the capability to generate sounds. Simply inherit from the audibleElement class, and then you can utilize the playSound method with two arguments: eventType and event. These will be employed to locate your sound, along with additional data that will be processed for you.
+
+We are using openAL as our audio driver, allowing us control over object positions and providing further versatility. The configuration of sound data is stored in the "samples" field of the configManager data. It is organized similarly to the sound configuration in the JSON file:
 
     "Samples": [
         {
@@ -216,22 +211,21 @@ The configuration of the sound data is contained in "samples" field of the confi
         }       
      ]
 
-The sampleData is contained in structure that you can access like configObje->samples[typeId][subtypeId][EventType][Event]
-We got a singleton soundManager class. It has a method register sound. You pass element instance id, element type id, element subtypeid, event type, and event. The method will load the sample - if necessary, we build sample tree like structure (with hashmaps)- and then would play it.
-But there are limitations:
+Sample data is contained in a structure that you can access like configObject->samples[typeId][subtypeId][EventType][Event]. We have a singleton soundManager class. It includes a registerSound method. You pass the element instance ID, element type ID, element subtype ID, event type, and event. The method will load the sample, if necessary, and we construct a sample tree-like structure (with hashmaps).
 
-* the distance must be right, it is in config file _MaxSoundDistance_
-* the sound must come from the same chamber as the listener (player)
-When the element, that generated sound is removed disposed, only looping sounds are stopped, other have the chance to stop playing by themselvs.
+However, there are limitations:
 
-We handle the sounds by having the pool of sources (openAL), which we keep in a circular buffer. That helps us to find oldest samples. When we register the sample (play it) we first seek unregistered samples, if we fail with that, we seek samples that are played in loop (to kill them), and if we fail at that, we kill any first sample we try to overtake.
+ * The distance must be accurate; it is in the config file MaxSoundDistance
+ * The sound must originate from the same chamber as the listener (player)
+When the element that generated the sound is removed or disposed of, only looping sounds are stopped, while others have the opportunity to cease playing by themselves.
 
-There are controlling switches, that change the sound handling:
+We manage sounds by maintaining a pool of sources (openAL) in a circular buffer, which aids in locating the oldest samples. When we register the sample (play it), we first search for unregistered samples; if unsuccessful, we look for samples played in a loop.
 
-* allowMulti - do we allow multiple instances of the sound? If set to false, try to play the sound, while it already plays, will have no effect, good for looping sounds like humming noises activated by proximity or something alike
-* modeOfAction - 0 - regular, 1 - looping
-* stacking - if we allow multiple sounds, do we allow them to play, or should we just kill the sound that is playing, and start over on request (false), or allow all instances to play, but to avoid collisions, apply delay, if the last sound did not have the chance to play - to avoid unnecessary amplicifactions of the sound (true)
+There are control switches that modify sound handling:
 
+ * allowMulti - Do we permit multiple instances of the sound? If set to false, attempting to play the sound while it is already playing will have no effect, suitable for looping sounds like humming noises activated by proximity or similar.
+ * modeOfAction - 0 for regular, 1 for looping
+ * stacking - If we allow multiple sounds, do we let them play, or should we stop the sound currently playing and start anew upon request (false), or permit all instances to play while avoiding collisions by applying a delay if the previous sound did not have the chance to play?
 
 ## TODO
 
