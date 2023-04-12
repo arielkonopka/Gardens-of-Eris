@@ -85,7 +85,7 @@ private:
     int spacing;
     int scrTilesX;
     int scrTilesY;
-    float viewRadius=6.3;
+   // float viewRadius=6.3;
     coords previousPosition;
     coords positionOnScreen;
     coords bluredElement=NOCOORDS;

@@ -350,11 +350,11 @@ void presenter::showGameField()
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
                 float distance=point.distance((coords){nx,ny});
-                if(distance<=this->viewRadius/2)
+                if(distance<=player::getActivePlayer()->getViewRadius()/2)
                     continue;
-                if(distance<=this->viewRadius)
+                if(distance<=player::getActivePlayer()->getViewRadius())
                 {
-                    obscured=(distance*64)-(this->viewRadius*64)/2;
+                    obscured=(distance*64)-(player::getActivePlayer()->getViewRadius()*64)/2;
                 }
                 else obscured=255;
                 if(obscured>0)

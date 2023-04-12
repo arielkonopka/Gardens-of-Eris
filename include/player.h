@@ -31,8 +31,9 @@ public:
     bool shootGun();
     oState disposeElement() final;
     bool additionalProvisioning() final;
-
+    const float getViewRadius() { return this->vRadius; };
 private:
+    float vRadius=5.5;
     static std::shared_ptr<bElem> activePlayer;
     static std::vector<std::shared_ptr<bElem>> allPlayers;
     static std::vector<std::shared_ptr<bElem>> visitedPlayers;

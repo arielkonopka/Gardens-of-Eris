@@ -1,6 +1,6 @@
 #include "chamber.h"
 #include "floorElement.h"
-
+#include "player.h"
 int chamber::lastid = 0;
 
 std::shared_ptr<chamber> chamber::makeNewChamber(coords csize)
@@ -113,18 +113,18 @@ bool chamber::visitPosition(coords point)
 {
     if(point==NOCOORDS)
         return false;
-    float hradius=this->visibilityRadius/3;
-    int x0=((point.x-this->visibilityRadius)<0)?0:((point.x-this->visibilityRadius>=this->width)?this->width-1:point.x-this->visibilityRadius);
-    int y0=((point.y-this->visibilityRadius)<0)?0:((point.y-this->visibilityRadius>=this->height)?this->height-1:point.y-this->visibilityRadius);
-    int x1=((point.x+this->visibilityRadius)<0)?0:((point.x+this->visibilityRadius>=this->width)?this->width-1:point.x+this->visibilityRadius);
-    int y1=((point.y+this->visibilityRadius)<0)?0:((point.y+this->visibilityRadius>=this->height)?this->height-1:point.y+this->visibilityRadius);
+    float vradius=player::getActivePlayer()->getViewRadius();
+    int x0=((point.x-vradius)<0)?0:((point.x-vradius>=this->width)?this->width-1:point.x-vradius);
+    int y0=((point.y-vradius)<0)?0:((point.y-vradius>=this->height)?this->height-1:point.y-vradius);
+    int x1=((point.x+vradius)<0)?0:((point.x+vradius>=this->width)?this->width-1:point.x+vradius);
+    int y1=((point.y+vradius)<0)?0:((point.y+vradius>=this->height)?this->height-1:point.y+vradius);
     for(int x=x0; x<=x1; x++)
     {
         for(int y=y0; y<=y1; y++)
         {
             float distance=point.distance((coords){x,y});
 
-            if (distance<=this->visibilityRadius)
+            if (distance<=vradius)
                 this->visitedElements[x][y]=0;
 
         }
