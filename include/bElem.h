@@ -145,6 +145,7 @@ public:
     {
         return false;
     };
+    virtual const float getViewRadius() { return 0.0; };
     virtual bool canCollect();
     virtual bool collect(std::shared_ptr<bElem> collectible);
     virtual bool canInteract();
