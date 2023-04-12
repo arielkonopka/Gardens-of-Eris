@@ -162,13 +162,15 @@ When a player (or any other element, that can collect), collects the item, it wi
 But it would deplay its own energy, when energy reaches 0, then the apple explodes in the inventory, killing the collector.
 
 ## Teleporters
+Every new teleporter is added to a vector (in reality, it's a vector of pointers, so it is). As soon as our player interacts with a teleporter, we're checkin' if it has an attached link to its corresponding teleporter mate. We take a gander at the type of the teleporter, and we follow these steps:
 
-Every new teleporter is placed in a vector (actually it is a vector of pointers). As soon, as the player interacts with a teleporter it checks if it has attached link to a corresponding teleporter.
-We check the type of a teleporter, if it is even, we:
-    If not, we take randomly chosen teleporter from the list, and we remove the interacted element from the list. We set the chosen teleport as the other end.
-    If other end is established, we check if the teleporter has any steppable fields in it. If so, we take the player from the original location, and place it into the steppable field found in the teleport.
-When it is odd:
-    We find the first teleport of the same type but on different chamber. Then we establish connection, where the counterpart will direct to the first teleport.
+ * If there's no established link, we pick a random teleporter from our list and remove the interacted one. 
+ * We then set the chosen teleporter as the other end of the connection. 
+ * Once the other end is all set up, we inspect the teleporter for any steppable fields. 
+ * If we find one, 
+    - we whisk the object that interacted away from their original location 
+    - and place 'em right into that steppable field we found in the teleporter.
+
 
 ## Shooting guns
 
