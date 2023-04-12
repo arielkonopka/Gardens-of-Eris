@@ -1,11 +1,11 @@
 
 # Garden of Eris or Obnoxious Labyrinth
 
-Welcome to my pet project. I started it in [Python](https://github.com/arielkonopka/pyLurker), but got to the conclusion, that Python would not deliver sufficient speed with the number of elements I plan to have at the same time.
+Greetings and welcome to me little passion project, so. I began this adventure with [Python](https://github.com/arielkonopka/pyLurker), but soon enough I found meself realizin' that Python might not have the swiftness needed for the grand number of elements I'd like to be workin' with simultaneously.
 
-From the beginning, this project is not *product oriented*, but rather it is a way to spend little time on building something. I stopped writing code many years ago, and I simply wanted to feel the joy of coding again. Since my life is rather not that *computer centric*, I spend fairly little time one the project, and therefore it advances slowly.
+Now, from the get-go, this project isn't focused on creating a product, but rather it's about takin' a wee bit of time to build somethin' for the joy of it. I hung up me coding hat a good few years back, and I simply wished to feel that delightful thrill of crafting code once more. Since me life doesn't revolve 'round computers, I can only spare a modest bit of time for the project, which means it's movin' along at a leisurely pace.
 
-**This is work in progress. It usually works, but be warned.**
+So, here we have a work in progress. It tends to function well enough, but consider yerself warned, me friend.
 
 # Recent build status
 
@@ -19,33 +19,34 @@ Sonarcloud static analysis:
 
 ## Why the idea
 
-I thought of writting similar kind of a game, since I was a kid. Few years back, I added some code to [GNU Robbo project](http://gnurobbo.sourceforge.net/), and it was fun, but that was pure C and SDL1.2.
+Ever since I was a young lad, I've dreamt of creating a game of this sort. A few years back, I contributed some code to the [GNU Robbo project](http://gnurobbo.sourceforge.net/), which was a grand bit of fun, but that was purely C and SDL1.2.
 
-Years have passed and I did not write any code. So one day I decided to do some coding, and thought of a game to make. I thought of the game's story, which I yet cought only briefly. 
+Time passed, and I didn't write a single line of code. Then one day, I resolved to do a bit of coding and thought of a game to create. I pondered over the game's story, which I've only just begun to grasp.
 
-In the repo you can find an ubrello5 file with the idea, how the classes in the game should look like. This diagram is far from being finished as well.
+In the repo, you'll find an ubrello5 file that outlines me vision for the game's classes. Mind you, this diagram is far from complete as well.
 
-I thought of a random level generator because of two reasons:
+I considered a random level generator for two reasons:
 
-- I would not have to write level editor
-- I would not have to design the levels
+I wouldn't need to create a level editor
+I wouldn't need to design the levels
+In the meantime, I've discovered a third reason:
 
-In the meanwhile I got a third reason:
-
-   I can test it fairly fast, without even loading and saving the level data. Which by the way I will have to implement eventually.
-[You can check the fairly recent video of the gameplay.](https://www.youtube.com/watch?v=u8S_trywjaM)
+I can test the game quite swiftly, without the need for loading and saving level data. Of course, I'll eventually have to implement that feature.
+[Feel free to check out a relatively recent video of the gameplay.](https://www.youtube.com/watch?v=u8S_trywjaM)
 
 ## The game story
 
-Once upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology)) went to her garden, and to all the shock, she had noticed, that all her golden apples had been gone. She as usual got furious.
+Once upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology))  ventured into her garden, only to be gobsmacked when she discovered that all her golden apples had vanished. As was her nature, she flew into a rage.
 
-Now you, a [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism) have got to recover all the apples lost in different reality. 
+Now, as a [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism), it falls upon you to recover the lost apples scattered throughout various realities.
 
-The Goddes scattered your avatars across the strange world you found yourself in. All the lost apples are there. Collect them, but be extra carefull, they might explode, they can be broken. Then bring them back to the Goddes, you will be rewarded. 
+The Goddess has dispersed your avatars throughout this peculiar world you now find yourself in. The missing apples are hidden here – collect them with great care, for they may explode or break. Return the apples to the Goddess, and she'll reward you handsomely.
 
-Everytime your avatar is killed, you are respawned in first unused and activated avatar on your way. If you did not activate any avatars, you die.
+Every time your avatar perishes, you'll respawn in the first unused and activated avatar on your path. If you haven't activated any avatars, you'll meet your end.
 
-The Labirynth is occupied by various creatures and devices. You can find gun modules, and worker drones, as guarding drones, doors, keys, movable turrets, immobile turrets. Also other nasty things (TBC).
+The labyrinth is inhabited by an assortment of creatures and contraptions. You'll encounter gun modules and worker drones, as well as guard drones, doors, keys, movable turrets, and immobile turrets. Keep an eye out for other malevolent entities (TBC).
+
+
 
 ## Building the game
 
@@ -82,23 +83,21 @@ examples:
 
 ## Main assumptions
 
-1. The game has only random generated levels.
-2. Everything should be randomly placed.
-3. It must be possible to walk from any steppable place on a board [class chamber](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/include/chamber.h) to any other steppable place, if we remove all the doors and teleports.
-4. The game actually should be very very large. 5 different chambers are created with different number of holes in the walls - that is something like the difficulty level. 
-   * The chambers are connected with teleports. 
-   * There are two types of teleports: Internal and inter-chamber
-      Inter-chamber is the same kind of a teleport, but of special subtype 0. There will be one teleporter of that subtype on each chamber.
-      Internal teleporters share common subtype per chamber. These are walk in teleporters. 
-5. Elements on board do not replace each other when they are moved, they instead step on each other. 
-    So we start with a board full of [empty](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/include/floorElement.h) elements. We then create new elements and step on the board empty elements. 
-    
-    With mechanics we deal with a vecotr of live elements (that require their mechanics to be run), then the vecotr is inspected, and each element's mechanics is run. That is how we deal with destruction of inanimate objects, they enable the mechanics by registering a live object.
-    
-    With that the mechanics method will deal with removing the object from the board. If we do not register mechanics, it will only look like it is being destroyed, but will survive.
-    
-6. No code duplications, whenever possible. Now that rule is bent few times, especially with newlly introduced code.
+1. The game features only randomly generated levels, so it does.
 
+2. Everythin' should be placed willy-nilly, with no discernible pattern.
+
+3. In a  chamber, it must be possible to traverse from any steppable spot to another, if we do away with all the doors and teleporters.
+
+4. The game ought to be vast, with five distinct chambers creatin' different levels of challenge, each with a varyin' number of holes in the walls.
+
+5. The chambers connect through teleporters.
+  * Two types of teleporters exist: internal and inter-chamber.
+    - Inter-chamber teleporters are a special subtype 0, with one such teleporter in each chamber.
+    - Internal teleporters share a common subtype within a chamber and are walk-in teleporters.
+  * When elements on the board move, they don't replace each other but step on top of one another. We start with a board chock-full of empty elements, then create new elements that step onto the empty ones. With mechanics, we manage a vector of live elements (those in need of their mechanics to run). The vector is inspected, and each element's mechanics are executed. This is how we tackle the destruction of inanimate objects—they enable the mechanics through registration. The mechanics method takes care of removin' objects from the board. If we don't register the mechanics, the object will appear destroyed but remain intact.
+
+We strive to avoid code duplications whenever we can. That said, this rule has been bent a few times, especially with newly introduced code.
 
 
 ## Random maze generator
