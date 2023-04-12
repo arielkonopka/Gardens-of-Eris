@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 #include "elementFactory.h"
-
+#include <cmath>
 
 #define _belemType -1
 #define _floorType 0
@@ -68,6 +68,9 @@ typedef struct coords
         else
             return false;
     };
+
+
+
     inline bool operator!=(coords a) const
     {
         if (a.x!=x || a.y!=y)
@@ -87,6 +90,14 @@ typedef struct coords
         {
             x-a.x, y-a.y
         };
+    }
+
+
+    float distance(const coords& a) const
+    {
+        coords n=(coords){x,y}-a;
+
+        return ::sqrt(static_cast<float>(n.x * n.x + n.y * n.y));
     }
     inline coords operator%(coords a)
     {

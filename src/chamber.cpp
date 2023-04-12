@@ -122,14 +122,11 @@ bool chamber::visitPosition(coords point)
     {
         for(int y=y0; y<=y1; y++)
         {
-            float distance=std::sqrt((x-point.x)*(x-point.x)+(y-point.y)*(y-point.y));
+            float distance=point.distance((coords){x,y});
 
-            if (distance<=hradius)
+            if (distance<=this->visibilityRadius)
                 this->visitedElements[x][y]=0;
-            else if (distance<=this->visibilityRadius && this->visitedElements[x][y]>(distance-hradius)*64)
-                this->visitedElements[x][y]=(distance-hradius)*64;
-            if(this->visitedElements[x][y]>255)
-                this->visitedElements[x][y]=255;
+
         }
     }
     return true;
