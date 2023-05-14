@@ -856,7 +856,7 @@ void bElem::runLiveElements()
     {
         if(bElem::liveElems[p].get()!=nullptr)
         {
-            if (bElem::liveElems[p]->getCoords() != NOCOORDS)
+            if (bElem::liveElems[p]->getCoords() != NOCOORDS && bElem::liveElems[p]->getBoard()!=nullptr && bElem::liveElems[p]->getBoard()->getInstanceId()==player::getActivePlayer()->getBoard()->getInstanceId())
             {
                 bElem::liveElems[p]->mechanics();
             }

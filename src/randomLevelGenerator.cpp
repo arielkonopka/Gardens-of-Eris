@@ -73,7 +73,7 @@ int randomLevelGenerator::checkWalls(int x, int y)
     return 0;
 }
 
-/* this is recurrent division implementation */
+/* 이것은 순환 분할 구현입니다 */
 
 chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,int holes)
 {
