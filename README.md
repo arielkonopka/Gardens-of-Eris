@@ -249,7 +249,9 @@ There are control switches that modify sound handling:
 
 ## ChangeLog
 
-
+* Introduced object puppetMaster, it is yet missing the graphical hooks, but it compiles. The patrolling drone will have different brains, that will control it.
+* Made some changes to the patrolling drone, now it requests a brain object on interaction
+* Made changes to Inventory, now we can request a cingle token.
 * Introduced board cloaking. It works on two levels. First, we only draw those elements, that are or were in the field of view, then we apply a cloaking mask, with a hole cut out for the player. The radius of the hole can be controlled wit a variable.
 * Now every object can have its own animations of death, teleport, destruction and fadingOut, the last one is not supported yet
 * changed the way tiles are shown on the screen. Now in the first phase we draw only still tiles. Because they are either on the floor standing still, of they are the floor. Then all the moving elements are being displayed in second round, and at the end active player is drawn. 
