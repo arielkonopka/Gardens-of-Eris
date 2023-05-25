@@ -159,17 +159,23 @@ bool patrollingDrone::mechanics()
 
 
 
-
+/*
+    We will request brain on interaction
+*/
 bool patrollingDrone::interact(std::shared_ptr<bElem> who)
 {
     bool res=killableElements::interact(who);
-    if (!res) return false;
-    if(who->getType()!=_player)
-        return false;
-    if(!this->isLiveElement())
-        this->registerLiveElement(shared_from_this());
-    this->setActive(true);
-    return true;
+    if(res && !this->activated && who->getInventory().get()!=nullptr)
+    {
+        std::shared_ptr<bElem> token=who->getInventory()->requestToken(_puppetMasterType,-1);
+        if(token.get()!=nullptr)
+        {
+            this->activated=true;
+            this->getInventory()->addToInventory(token);
+            return true;
+        }
+    }
+    return false;
 
 }
 

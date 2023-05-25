@@ -2,15 +2,16 @@
 #define MONSTERBRAIN_H
 
 
+
 class monsterBrain
 {
-    public:
-        monsterBrain();
-        ~monsterBrain();
+public:
+    monsterBrain();
+    ~monsterBrain();
 
-    protected:
+protected:
 
-    private:
+private:
 };
 
 #endif // MONSTERBRAIN_H

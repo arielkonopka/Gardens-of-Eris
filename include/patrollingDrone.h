@@ -21,6 +21,7 @@ class patrollingDrone : public killableElements, public nonSteppable, public mec
 
 
     private:
+        bool activated=false;
         void setVisited(int x, int y);
         bool wasVisited(int x, int y);
         void clearVisited();

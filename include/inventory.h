@@ -49,6 +49,7 @@ public:
     virtual bool nextGun();
     virtual bool addToInventory(std::shared_ptr<bElem> what);  // this will qualify the category of the object, that will be collected, if object could not be collected, return false
     virtual int requestTokens(int number,int type,int subType); // this will "burn" number of tokens, that are of a type and a subType, if there are less tokens, it will return number of tokens remaining, otherwise 0
+    virtual std::shared_ptr<bElem> requestToken(int type,int subType); // this will take one collectible from the inventory, and return it, can be used to transfer elements
     virtual bool removeActiveWeapon();
     virtual bool mergeInventory(std::shared_ptr<inventory> theOtherInventory);
     virtual bool removeToken(int position);
