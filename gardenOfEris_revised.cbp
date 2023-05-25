@@ -54,8 +54,8 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add option="-march=skylake" />
 			<Add option="-std=gnu++20" />
+			<Add option="-march=skylake" />
 			<Add directory="include" />
 		</Compiler>
 		<Linker>
@@ -65,6 +65,9 @@
 			<Add library="allegro_font" />
 			<Add library="allegro_ttf" />
 			<Add library="boost_unit_test_framework" />
+			<Add library="openal" />
+			<Add library="sndfile" />
+			<Add library="pthread" />
 		</Linker>
 		<Unit filename="data/graph/icons64.png" />
 		<Unit filename="data/graph/icons64.xcf" />
@@ -83,7 +86,6 @@
 		<Unit filename="include/elements.h" />
 		<Unit filename="include/explosives.h" />
 		<Unit filename="include/floorElement.h" />
-		<Unit filename="include/gCollect.h" />
 		<Unit filename="include/goldenApple.h" />
 		<Unit filename="include/inputManager.h" />
 		<Unit filename="include/inventory.h" />
@@ -105,14 +107,18 @@
 		<Unit filename="include/rubbish.h" />
 		<Unit filename="include/simpleBomb.h" />
 		<Unit filename="include/soundManager.h" />
+		<Unit filename="include/stackedElement.h" />
 		<Unit filename="include/teleport.h" />
 		<Unit filename="include/usable.h" />
 		<Unit filename="include/videoElementDef.h" />
 		<Unit filename="include/wall.h" />
-		<Unit filename="include/world.h" />
-		<Unit filename="main.cpp" />
+		<Unit filename="main.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/audibleElement.cpp" />
 		<Unit filename="src/bElem.cpp" />
+		<Unit filename="src/brickCluster.cpp" />
 		<Unit filename="src/bunker.cpp" />
 		<Unit filename="src/chamber.cpp" />
 		<Unit filename="src/chamberArea.cpp" />
@@ -122,8 +128,7 @@
 		<Unit filename="src/elemStats.cpp" />
 		<Unit filename="src/elementFactory.cpp" />
 		<Unit filename="src/explosives.cpp" />
-		<Unit filename="src/floor.cpp" />
-		<Unit filename="src/gCollect.cpp" />
+		<Unit filename="src/floorElement.cpp" />
 		<Unit filename="src/goldenApple.cpp" />
 		<Unit filename="src/inputManager.cpp" />
 		<Unit filename="src/inventory.cpp" />
@@ -133,6 +138,7 @@
 		<Unit filename="src/mechanical.cpp" />
 		<Unit filename="src/monster.cpp" />
 		<Unit filename="src/movableElements.cpp" />
+		<Unit filename="src/musicElement.cpp" />
 		<Unit filename="src/nonSteppable.cpp" />
 		<Unit filename="src/patrollingDrone.cpp" />
 		<Unit filename="src/plainGun.cpp" />
@@ -144,16 +150,23 @@
 		<Unit filename="src/rubbish.cpp" />
 		<Unit filename="src/simpleBomb.cpp" />
 		<Unit filename="src/soundManager.cpp" />
+		<Unit filename="src/stackedElement.cpp" />
 		<Unit filename="src/teleport.cpp" />
 		<Unit filename="src/usable.cpp" />
 		<Unit filename="src/videoElementDef.cpp" />
 		<Unit filename="src/wall.cpp" />
-		<Unit filename="src/world.cpp" />
-		<Unit filename="unitTests/bElem-test.cpp" />
+		<Unit filename="unitTests/bElem-test.cpp">
+			<Option target="Tests" />
+		</Unit>
 		<Unit filename="unitTests/chamberArea-test.cpp">
 			<Option target="Tests" />
 		</Unit>
-		<Unit filename="unitTests/player-test.cpp" />
+		<Unit filename="unitTests/player-test.cpp">
+			<Option target="Tests" />
+		</Unit>
+		<Unit filename="unitTests/stackedElement-test.cpp">
+			<Option target="Tests" />
+		</Unit>
 		<Unit filename="unitTests/teleport-test.cpp">
 			<Option target="Tests" />
 		</Unit>

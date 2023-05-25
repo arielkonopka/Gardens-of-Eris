@@ -47,7 +47,7 @@ bool inventory::removeCollectibleFromInventory(int instance)
 {
 #ifdef _VerbousMode_
     std::cout<<"Remove from Inventory: "<<instance<<"\n";
- //   std::cout<<"[w";
+//   std::cout<<"[w";
 #endif
     for(unsigned int c=0; c<this->weapons.size();)
     {
@@ -66,7 +66,7 @@ bool inventory::removeCollectibleFromInventory(int instance)
         }
 
     }
-  //  std::cout<<"u";
+    //  std::cout<<"u";
     for(unsigned int c=0; c<this->usables.size();)
     {
         if(this->usables.at(c)->getInstanceid()==instance)
@@ -122,7 +122,7 @@ bool inventory::removeCollectibleFromInventory(int instance)
     {
         if(this->mods.at(c)->getInstanceid()==instance)
         {
-             this->decrementTokenNumber({this->mods.at(c)->getType(),this->mods.at(c)->getSubtype()});
+            this->decrementTokenNumber({this->mods.at(c)->getType(),this->mods.at(c)->getSubtype()});
 #ifdef _VerbousMode_
             std::cout<<".";
 #endif
@@ -196,10 +196,10 @@ here we care about the sequence, so we move the other elements. that would be a 
 */
 bool inventory::removeActiveWeapon()
 {
-     if((unsigned int)this->wPos>=this->weapons.size())
-     {
-         return false;
-     }
+    if((unsigned int)this->wPos>=this->weapons.size())
+    {
+        return false;
+    }
     this->decrementTokenNumber({this->weapons.at(this->wPos)->getType(),this->weapons.at(this->wPos)->getSubtype()});
     this->weapons.at(this->wPos)->disposeElement();
     return true;
@@ -233,8 +233,8 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
     bool res=false;
     if(what==nullptr)
         return false;
-   // if(what->isDying() || what->isTeleporting() || what->isDestroyed())
-   //     return false;
+    // if(what->isDying() || what->isTeleporting() || what->isDestroyed())
+    //     return false;
 
     what->setCollected(this->owner);
 
@@ -281,6 +281,22 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
 
     return res;
 }
+
+std::shared_ptr<bElem> inventory::requestToken(int type, int subType)
+{
+    for(size_t c=0; c<this->tokens.size(); c++)
+    {
+        if(this->tokens[c]->getType()==type && this->tokens[c]->getSubtype()==subType)
+        {
+            std::shared_ptr<bElem> token;
+            this->decrementTokenNumber( {type,subType});
+            this->tokens.erase(this->tokens.begin()+c);
+            return token;
+        }
+    }
+    return nullptr;
+}
+
 
 int inventory::requestTokens(int number, int type, int subType)
 {
