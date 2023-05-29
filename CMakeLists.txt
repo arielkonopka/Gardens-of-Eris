@@ -1,21 +1,77 @@
-cmake_minimum_required(VERSION 3.25.0)
-project(GoEoOL CXX)
-find_package(PkgConfig REQUIRED)
+cmake_minimum_required(VERSION 3.12)
+project(GardenOfEris LANGUAGES CXX)
+
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED 20)
-set(CMAKE_CXX_FLAGS -O3 )
-set(DataDir "GoEoOL/data")
-include_directories("./include")
-file(GLOB bElems CONFIGURE_DEPENDS "./include/*.h" "./src/*.cpp")
-add_executable(GoEoOL ./main.cpp ${bElems} )
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Boost COMPONENTS system filesystem REQUIRED)
-pkg_check_modules(ALLEGRO5 REQUIRED allegro-5 allegro_image-5 allegro_ttf-5 allegro_font-5)
-target_link_libraries(GoEoOL ${ALLEGRO5_LIBRARIES} ${Boost_LIBRARIES})
+# Set the compiler flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -O3 -Og -pthread")
 
-link_directories(${Boost_LIBRARY_DIR} ${ALLEGRO5_LIBRARY_DIR} )
-include_directories(${ALLEGRO5_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
-#[[ copy the data files when creating a package ]]
-file(COPY ${DataDir} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-#add_dependencies(GoEoOL Boost ALLEGRO5)
+# Set the source files for the game elements using wildcard
+file(GLOB SOURCE_FILES src/*.cpp)
 
+# Build a library from the src files
+add_library(GardenOfErisLib OBJECT ${SOURCE_FILES})
+
+# Set the source file for the main game executable
+set(MAIN_FILE main.cpp)
+
+# Add the executable target for the game
+add_executable(GardenOfEris ${MAIN_FILE} $<TARGET_OBJECTS:GardenOfErisLib>)
+
+# Include directory for header files
+target_include_directories(GardenOfEris PRIVATE include)
+
+# Specify the required libraries
+target_link_libraries(GardenOfEris
+    stdc++
+    allegro
+    allegro_image
+    allegro_font
+    allegro_ttf
+    m
+    openal
+    sndfile
+    pthread
+)
+
+# Set the source files for the unit tests using wildcard
+file(GLOB TEST_SOURCE_FILES unitTests/*.cpp)
+
+# Include directory for header files in tests
+include_directories(${Boost_INCLUDE_DIRS})
+
+# Find Boost Test Framework
+find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+
+# Include the src directory
+include_directories(include)
+
+# Build a library from the src files
+#add_library(GardenOfErisLib OBJECT ${SOURCE_FILES})
+
+# Loop over each test source file and create an executable
+foreach(TEST_SOURCE_FILE ${TEST_SOURCE_FILES})
+    # Get the name of the test from the source file
+    get_filename_component(TEST_NAME ${TEST_SOURCE_FILE} NAME_WE)
+
+    # Add the executable target for each test
+    add_executable(${TEST_NAME} ${TEST_SOURCE_FILE} $<TARGET_OBJECTS:GardenOfErisLib>)
+
+    # Include directory for header files
+    target_include_directories(${TEST_NAME} PRIVATE include)
+
+    # Specify the required libraries
+    target_link_libraries(${TEST_NAME}
+        stdc++
+        allegro
+        allegro_image
+        allegro_font
+        allegro_ttf
+        m
+        openal
+        sndfile
+        pthread
+        ${Boost_LIBRARIES}
+    )
+endforeach(TEST_SOURCE_FILE)
