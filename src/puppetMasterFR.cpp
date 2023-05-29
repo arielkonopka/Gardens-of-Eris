@@ -1,6 +1,15 @@
 #include "puppetMasterFR.h"
 
-puppetMasterFR::puppetMasterFR(std::shared_ptr<chamber> board): collectible(board), mechanical(board,false), killableElements(board)
+
+videoElement::videoElementDef* puppetMasterFR::vd=nullptr;
+
+videoElement::videoElementDef* puppetMasterFR::getVideoElementDef()
+{
+    return puppetMasterFR::vd;
+}
+
+
+puppetMasterFR::puppetMasterFR(std::shared_ptr<chamber> board): collectible(board), mechanical(board,false), killableElements(board),nonSteppable(board)
 {
     //ctor
 }
@@ -9,7 +18,7 @@ puppetMasterFR::~puppetMasterFR()
 {
     //dtor
 }
-puppetMasterFR::puppetMasterFR():collectible(),mechanical(),killableElements()
+puppetMasterFR::puppetMasterFR():collectible(),mechanical(),killableElements(), nonSteppable()
 {
 
 }
@@ -49,4 +58,7 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
 }
 
 
-
+int puppetMasterFR::getType()
+{
+    return _puppetMasterType;
+}

@@ -164,6 +164,9 @@ void videoElementDef::initializeDriver()
         case _brickClusterType:
             ::brickCluster::vd=ved;
             break;
+        case _puppetMasterType:
+            ::puppetMasterFR::vd=ved;
+            break;
         default: // This can happen with invalid json configuration, let's dispose the driver instance
             delete ved;
             break;

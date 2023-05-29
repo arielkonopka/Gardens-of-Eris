@@ -53,8 +53,8 @@ BOOST_AUTO_TEST_CASE( StackedCompositeObjectMoveElement)
     std::shared_ptr<stackedElement> se2=std::make_shared<stackedElement>(board);
     std::shared_ptr<stackedElement> se3=std::make_shared<stackedElement>(board);
     std::shared_ptr<bElem> b0=board->getElement(point);
-    std::shared_ptr<bElem> b1;
     std::shared_ptr<bElem> b2;
+    std::shared_ptr<bElem> b1;
     coords np=board->getElement(point)->getAbsCoords(d);
 
     se->linkAnElement(se);
@@ -70,7 +70,10 @@ BOOST_AUTO_TEST_CASE( StackedCompositeObjectMoveElement)
     b2=board->getElement(np);
     BOOST_CHECK(b1->getInstanceid()==b0->getInstanceid());
     BOOST_CHECK(b2->getInstanceid()==se->getInstanceid());
-
+    BOOST_CHECK(b2->getSteppingOnElement().get()!=nullptr);
+    BOOST_CHECK(b2->getSteppingOnElement()->getInstanceid()==se1->getInstanceid());
+    BOOST_CHECK(b2->getSteppingOnElement()->getSteppingOnElement().get()!=nullptr);
+    BOOST_CHECK(b2->getSteppingOnElement()->getSteppingOnElement()->getInstanceid()==se2->getInstanceid());
 
 }
 
