@@ -286,7 +286,7 @@ std::shared_ptr<bElem> inventory::requestToken(int type, int subType)
 {
     for(size_t c=0; c<this->tokens.size(); c++)
     {
-        if(this->tokens[c]->getType()==type && (subtype<0 || this->tokens[c]->getSubtype()==subType)) // negative value of subtype will be ignored
+        if(this->tokens[c]->getType()==type && (subType<0 || this->tokens[c]->getSubtype()==subType)) // negative value of subtype will be ignored
         {
             std::shared_ptr<bElem> token;
             this->decrementTokenNumber( {type,subType});

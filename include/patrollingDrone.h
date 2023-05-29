@@ -5,7 +5,7 @@
 #include "commons.h"
 #include "videoElementDef.h"
 
-class patrollingDrone : public killableElements, public nonSteppable, public mechanical, public movableElements
+class patrollingDrone : public killableElements, public nonSteppable, public movableElements
 {
     public:
         virtual videoElement::videoElementDef* getVideoElementDef();
@@ -13,20 +13,14 @@ class patrollingDrone : public killableElements, public nonSteppable, public mec
         patrollingDrone();
         explicit patrollingDrone(std::shared_ptr<chamber> board);
         virtual ~patrollingDrone();
-        virtual bool mechanics();
-        virtual int findSomething(std::shared_ptr<bElem> elem,int n,int denyDir);
         virtual bool interact(std::shared_ptr<bElem> who);
         int getType();
 
 
 
     private:
-        bool activated=false;
-        void setVisited(int x, int y);
-        bool wasVisited(int x, int y);
-        void clearVisited();
-    coords boardSize;
-        std::vector<std::vector<bool>> steppables;
+        bool brained=false;
+        std::shared_ptr<bElem> brainModule;
 };
 
 #endif // PATROLLINGDRONE_H

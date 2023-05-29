@@ -29,4 +29,5 @@
 #include "floorElement.h"
 #include "simpleBomb.h"
 #include "brickCluster.h"
+#include "puppetMasterFR.h"
 #endif // ELEMENTS_H_INCLUDED

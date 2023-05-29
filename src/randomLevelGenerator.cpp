@@ -327,7 +327,7 @@ bool randomLevelGenerator::generateLevel(int holes)
 
         elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,3});
         elementsToChooseFrom.push_back({_simpleBombType,0,1,0,3});
-
+elementsToChooseFrom.push_back({_puppetMasterType,0,1,0,3});
 
     }
     for(int cnt=0; cnt<holes*5; cnt++)
@@ -353,6 +353,8 @@ bool randomLevelGenerator::generateLevel(int holes)
     elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
     //
     elementsToChooseFrom.push_back({_patrollingDrone,1,1,0,3});
+    elementsToChooseFrom.push_back({_puppetMasterType,0,1,0,3});
+
 
     //first find area for the player and stuff for it
 
@@ -556,6 +558,8 @@ std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace elemen
         return elementFactory::generateAnElement<patrollingDrone>(this->mychamber);
     case _brickClusterType:
         return elementFactory::generateAnElement<brickCluster>(this->mychamber);
+    case _puppetMasterType:
+        return elementFactory::generateAnElement<puppetMasterFR>(this->mychamber);
     }
     return nullptr;
 }
