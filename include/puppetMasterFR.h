@@ -4,6 +4,7 @@
 #include <collectible.h>
 
 
+
 class puppetMasterFR : public collectible, public mechanical, public killableElements, public nonSteppable
 {
     public:

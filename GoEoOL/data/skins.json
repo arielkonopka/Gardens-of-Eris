@@ -185,21 +185,41 @@
  {
  "Type": 7,
  "Name": "Patrolling drone",
- "AnimDef": [
- [
- [
- [
- 1,
- 1
- ],
- [
- 2,
- 1
- ]
- ]
- ]
- ]
- },
+ "AnimDef": [ [ [ 
+		[ 1, 1 ], [ 2, 1 ] 
+	] ] ] ,
+	"Samples": [
+		{
+			"SubType": 0,
+			"stEvents": [
+				{
+					"EventType": "Boot",
+					"eventData": [ 
+						{
+							"Event": "Success",
+							"fname": "data/sounds/firmwareSuccess.ogg",
+							"name": "Firmware loaded sound",
+							"description": "maori language message",
+							"allowMulti":false,
+							"stacking":false,
+							"modeOfAction":0
+						},
+						{
+							"Event": "Failure",
+							"fname": "data/sounds/brainNotFound.ogg",
+							"name": "Firmware loaded sound",
+							"description": "maori language message",
+							"allowMulti":false,
+							"stacking":false,
+							"modeOfAction":0
+						}
+				]
+				}
+			]
+	}
+
+]
+},
  {
  "Type": 900,
  "Name": "goldenApple",
@@ -924,8 +944,24 @@
 {
 	"Type": 77,
 	"Name": "puppet master",
-	"AnimDef": [ [ [ [ 0, 12 ], [1,12],[3,12] ,[2,12] ] ] ]
-
+	"AnimDef": [ [ [ [ 0, 12 ], [1,12],[3,12] ,[2,12] ] ] ],
+	"Samples": [ {
+    	    "SubType": 0,
+    	    "stEvents": [
+	    {
+		"EventType": "Collect",
+		"eventData": [ {
+		    "Event": "Player",
+		    "fname": "data/sounds/brainCollect.ogg",
+		    "name": "Brain Collect",
+		    "description": "This is a test sound, now it will be used for sound test",
+		    "allowMulti": true,
+		    "modeOfAction": 0
+	    }]
+	    
+	    }
+	]
+    }]
 }
 
 
