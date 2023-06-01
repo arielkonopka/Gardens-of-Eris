@@ -286,10 +286,12 @@ std::shared_ptr<bElem> inventory::requestToken(int type, int subType)
 {
     for(size_t c=0; c<this->tokens.size(); c++)
     {
-        if(this->tokens[c]->getType()==type && (subType<0 || this->tokens[c]->getSubtype()==subType)) // negative value of subtype will be ignored
+        std::cout<<"  ** "<<this->tokens[c]->getType()<<"\n";
+        if(this->tokens[c]->getType()==type && (subType==-1 || this->tokens[c]->getSubtype()==subType)) // negative value of subtype will be ignored
         {
-            std::shared_ptr<bElem> token;
-            this->decrementTokenNumber( {type,subType});
+            std::cout<<" *** accepted\n";
+            std::shared_ptr<bElem> token=this->tokens[c];
+            this->decrementTokenNumber( {type,token->getSubtype()});
             this->tokens.erase(this->tokens.begin()+c);
             return token;
         }

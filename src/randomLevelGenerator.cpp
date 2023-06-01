@@ -328,6 +328,8 @@ bool randomLevelGenerator::generateLevel(int holes)
         elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,3});
         elementsToChooseFrom.push_back({_simpleBombType,0,1,0,3});
 elementsToChooseFrom.push_back({_puppetMasterType,0,1,0,3});
+    elementsToChooseFrom.push_back({_patrollingDrone,1,1,0,3});
+
 
     }
     for(int cnt=0; cnt<holes*5; cnt++)
