@@ -197,7 +197,7 @@
 					"eventData": [ 
 						{
 							"Event": "Success",
-							"fname": "data/sounds/firmwareSuccess.ogg",
+							"fname": "data/sounds/controllerFound.ogg",
 							"name": "Firmware loaded sound",
 							"description": "maori language message",
 							"allowMulti":false,
