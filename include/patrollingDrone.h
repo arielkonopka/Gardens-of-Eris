@@ -15,7 +15,7 @@ class patrollingDrone : public killableElements, public nonSteppable, public mov
         virtual ~patrollingDrone();
         virtual bool interact(std::shared_ptr<bElem> who);
         int getType();
-
+        bool canBeKilled();
 
 
     private:

@@ -6,14 +6,25 @@ patrollingDrone::patrollingDrone(std::shared_ptr<chamber> board) : killableEleme
 {
     this->setSubtype(0);
     this->setInventory(std::make_shared<inventory>());
+    this->setStats(std::make_shared<elemStats>(((1024*bElem::randomNumberGenerator())%155)+1));
 }
 
 patrollingDrone::patrollingDrone() : killableElements(), nonSteppable(), movableElements()
 {
+    this->setStats(std::make_shared<elemStats>(((1024*bElem::randomNumberGenerator())%155)+1));
+    this->setSubtype(0);
+    this->setInventory(std::make_shared<inventory>());
+
 }
 
 patrollingDrone::~patrollingDrone()
 {
+    this->brainModule=nullptr;
+}
+
+bool patrollingDrone::canBeKilled()
+{
+    return true;
 }
 
 /*
@@ -21,7 +32,7 @@ patrollingDrone::~patrollingDrone()
 */
 bool patrollingDrone::interact(std::shared_ptr<bElem> who)
 {
-    bool res = killableElements::interact(who);
+    bool res = movableElements::interact(who);
     if (!res)
         return res;
     if (res && !this->brained && this->getSubtype() == 0 && who->getInventory().get() != nullptr)

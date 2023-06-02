@@ -700,7 +700,9 @@ bool bElem::kill()
         return false;
     }
     if (!isLiveElement())
+    {
         this->registerLiveElement(shared_from_this());
+    }
     this->state.killTimeBeg = this->getCntr();
     this->state.killTimeReq = _defaultKillTime;
     this->state.killed = _defaultKillTime + this->getCntr();
