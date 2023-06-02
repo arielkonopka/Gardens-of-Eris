@@ -28,8 +28,8 @@ void puppetMasterFR::setCollected(std::shared_ptr<bElem> who)
         {
             if (this->getSubtype() == 0) // if subtype not set, set one randomly
             {
-                this->setSubtype(1);
-                //   this->setSubtype(1+(this->randomNumberGenerator()%50));
+                this->setSubtype(2);
+                this->setSubtype(this->randomNumberGenerator()%2);
             }
             this->registerLiveElement(shared_from_this());
         }
@@ -45,18 +45,57 @@ bool puppetMasterFR::mechanics()
     bool res = mechanical::mechanics();
 
     std::shared_ptr<bElem> clc = this->getCollector();
-    if (res && clc.get() != nullptr && clc->getType() == _patrollingDrone && clc->getMoved() == 0)
+    if (res && clc.get() != nullptr && clc->getType() == _patrollingDrone && clc->getMoved() == 0 && !clc->isWaiting())
     {
         switch (this->getSubtype()) // here we will route all the mechanics, when we are in the monster
         {
-        case 1:
+        case 0:
             return this->mechanicsPatrollingDrone();
             break;
+        case 1:
+            if(!this->collectorMechanics())
+                return this->mechanicsPatrollingDrone();
+            return true;
         default:
             return false;
         }
     }
     return res;
+}
+
+bool puppetMasterFR::collectorMechanics()
+{
+    for(int c=0;c<4;c++)
+    {
+        direction d=this->getCollector()->getDirection();
+        d=(direction)(((int)d+c)%4);
+        std::shared_ptr<bElem> check=this->findObjectInDirection(d);
+        if(check && check->isCollectible())
+        {
+            if(this->getCollector()->getDirection()!=d)
+            {
+                this->getCollector()->setDirection(d);
+                getCollector()->setFacing(d);
+                this->setWait(5);
+                return true;        
+
+            } 
+            return this->getCollector()->moveInDirection(d);
+        }
+    }    
+
+return false;
+}
+
+std::shared_ptr<bElem> puppetMasterFR::findObjectInDirection(direction dir)
+{
+    std::shared_ptr<bElem> b = getCollector();
+    b=b->getElementInDirection(dir);
+    while(b!=nullptr && b->isSteppable()) 
+    {
+        b=b->getElementInDirection(dir);
+    }
+    return b;
 }
 
 bool puppetMasterFR::mechanicsPatrollingDrone()

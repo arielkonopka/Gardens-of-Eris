@@ -19,8 +19,9 @@ class puppetMasterFR : public collectible, public mechanical, public killableEle
     protected:
 
     private:
-
+        bool collectorMechanics();
         bool mechanicsPatrollingDrone();
+        std::shared_ptr<bElem> findObjectInDirection(direction dir);
 
 
 };
