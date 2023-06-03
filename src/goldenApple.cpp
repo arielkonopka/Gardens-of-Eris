@@ -35,22 +35,23 @@ bool goldenApple::hurt(int points)
     return killableElements::hurt(points);
 }
 
-
 bool goldenApple::destroy()
 {
-    bool res=killableElements::destroy();
-    if(res)
+    bool res = killableElements::destroy();
+    if (res)
         this->explode(2.5);
     return res;
 }
 
-
-goldenApple::goldenApple(std::shared_ptr<chamber> board) : collectible(board), nonSteppable(board), killableElements(board), explosives(board)
+goldenApple::goldenApple(std::shared_ptr<chamber> board) : goldenApple()
+{
+    this->setBoard(board);
+}
+goldenApple::goldenApple() : collectible(), nonSteppable(), killableElements(), explosives()
 {
     this->setSubtype(0);
-    this->setStats(std::make_shared<elemStats>(555));
+    this->setEnergy(555);
 }
-
 bool goldenApple::additionalProvisioning()
 {
     if (bElem::additionalProvisioning() == true)
@@ -58,10 +59,6 @@ bool goldenApple::additionalProvisioning()
     goldenApple::appleNumber++;
     goldenApple::apples.push_back(shared_from_this());
     return false;
-}
-
-goldenApple::goldenApple() : collectible(), nonSteppable(), killableElements(), explosives()
-{
 }
 
 oState goldenApple::disposeElement()
@@ -125,12 +122,8 @@ bool goldenApple::mechanics()
 void goldenApple::setCollected(std::shared_ptr<bElem> who)
 {
     collectible::setCollected(who);
-    if(this->isLiveElement()==false && this->getSubtype()!=0)
+    if (this->isLiveElement() == false && this->getSubtype() != 0)
     {
         this->registerLiveElement(shared_from_this());
     }
 }
-
-
-
-

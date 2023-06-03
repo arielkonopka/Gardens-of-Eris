@@ -1,44 +1,38 @@
 #include "wall.h"
 
+videoElement::videoElementDef *wall::vd = nullptr;
 
-videoElement::videoElementDef* wall::vd=nullptr;
-
-
-wall::wall(std::shared_ptr<chamber> board) : nonSteppable(board)
+wall::wall(std::shared_ptr<chamber> board) : wall()
 {
-
-    this->setSubtype(0);
+    this->setBoard(board);
 }
 
-wall::wall(std::shared_ptr<chamber> board,int subtype) : nonSteppable(board)
+wall::wall(std::shared_ptr<chamber> board, int subtype) : wall(board)
 {
 
     this->setSubtype(subtype);
-
 }
 
-wall::wall():nonSteppable()
+wall::wall() : nonSteppable()
 {
-
+    this->setSubtype(0);
 }
 
-bool wall::stepOnElement(std::shared_ptr<bElem>elem)
+bool wall::stepOnElement(std::shared_ptr<bElem> elem)
 {
-    bool res=nonSteppable::stepOnElement(elem);
-    if(this->getBoard().get()!=nullptr)
-        this->getBoard()->setVisible(this->getCoords(),254);
+    bool res = nonSteppable::stepOnElement(elem);
+    if (this->getBoard().get() != nullptr)
+        this->getBoard()->setVisible(this->getCoords(), 254);
     return res;
 }
 
 std::shared_ptr<bElem> wall::removeElement()
 {
-    if(this->getBoard().get()!=nullptr)
-        this->getBoard()->setVisible(this->getCoords(),255);
-    std::shared_ptr<bElem> res=nonSteppable::removeElement();
+    if (this->getBoard().get() != nullptr)
+        this->getBoard()->setVisible(this->getCoords(), 255);
+    std::shared_ptr<bElem> res = nonSteppable::removeElement();
     return res;
-
 }
-
 
 bool wall::additionalProvisioning()
 {
@@ -50,13 +44,11 @@ int wall::getType()
     return _wallType;
 }
 
-
-//Return video element definition object, this will come in handy when drawing the object
-videoElement::videoElementDef* wall::getVideoElementDef()
+// Return video element definition object, this will come in handy when drawing the object
+videoElement::videoElementDef *wall::getVideoElementDef()
 {
     return wall::vd;
 }
-
 
 bool wall::isDying()
 {
@@ -71,4 +63,3 @@ bool wall::canBeDestroyed()
 {
     return false;
 }
-

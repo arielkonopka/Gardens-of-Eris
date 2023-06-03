@@ -1,8 +1,8 @@
 #include "explosives.h"
 
-explosives::explosives(std::shared_ptr<chamber> board) : audibleElement(board)
+explosives::explosives(std::shared_ptr<chamber> board) : explosives()
 {
-    // ctor
+    this->setBoard(board);
 }
 
 explosives::explosives() : audibleElement()

@@ -1,8 +1,9 @@
 #include "collectible.h"
 videoElement::videoElementDef* collectible::vd=nullptr;
 
-collectible::collectible(std::shared_ptr<chamber> board):audibleElement(board)
+collectible::collectible(std::shared_ptr<chamber> board):collectible()
 {
+    this->setBoard(board);
 }
 collectible::collectible():audibleElement()
 {

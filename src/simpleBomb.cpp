@@ -2,9 +2,9 @@
 
 videoElement::videoElementDef *simpleBomb::vd = nullptr;
 
-simpleBomb::simpleBomb(std::shared_ptr<chamber> board) : explosives(board), nonSteppable(board), killableElements(board), movableElements(board)
+simpleBomb::simpleBomb(std::shared_ptr<chamber> board) : simpleBomb()
 {
-    this->setSubtype(0);
+    this->setBoard(board);
 }
 
 simpleBomb::simpleBomb() : explosives(), nonSteppable(), killableElements(), movableElements()

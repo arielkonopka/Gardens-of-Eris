@@ -8,14 +8,13 @@ videoElement::videoElementDef* plainGun::getVideoElementDef()
     return plainGun::vd;
 }
 //public usable, public mechanical, public collectible, public nonSteppable
-plainGun::plainGun(std::shared_ptr<chamber> board): usable(board), mechanical(board), collectible(board), nonSteppable(board)
+plainGun::plainGun(std::shared_ptr<chamber> board): plainGun()
 {
-    this->setStats(std::make_shared<elemStats>(((bElem::randomNumberGenerator()%4)+1)*25));
+    this->setBoard(board);
 }
 
-plainGun::plainGun(std::shared_ptr<chamber>  board, int newSubtype): usable(board), mechanical(board), collectible(board), nonSteppable(board)
+plainGun::plainGun(std::shared_ptr<chamber>  board, int newSubtype): plainGun(board)
 {
-    this->setStats(std::make_shared<elemStats>(((bElem::randomNumberGenerator()%4)+1)*25));
     this->setSubtype(newSubtype);
 }
 
@@ -33,6 +32,7 @@ std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
 
 plainGun::plainGun():usable(),mechanical(),collectible(),nonSteppable()
 {
+    this->setStats(std::make_shared<elemStats>(((bElem::randomNumberGenerator()%4)+1)*25));
 
 }
 

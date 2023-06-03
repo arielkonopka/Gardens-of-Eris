@@ -6,12 +6,12 @@ patrollingDrone::patrollingDrone(std::shared_ptr<chamber> board) : killableEleme
 {
     this->setSubtype(0);
     this->setInventory(std::make_shared<inventory>());
-    this->setStats(std::make_shared<elemStats>(((1024*bElem::randomNumberGenerator())%155)+1));
+    this->setEnergy((1024*bElem::randomNumberGenerator())%155);
 }
 
 patrollingDrone::patrollingDrone() : killableElements(), nonSteppable(), movableElements()
 {
-    this->setStats(std::make_shared<elemStats>(((1024*bElem::randomNumberGenerator())%155)+1));
+    this->setEnergy((1024*bElem::randomNumberGenerator())%155);
     this->setSubtype(0);
     this->setInventory(std::make_shared<inventory>());
 
