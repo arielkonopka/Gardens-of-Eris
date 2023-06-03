@@ -2,32 +2,25 @@
 
 
 videoElement::videoElementDef* plainMissile::vd=nullptr;
-plainMissile::plainMissile(std::shared_ptr<chamber> mychamber) : killableElements(mychamber), movableElements(mychamber), mechanical(mychamber)
+plainMissile::plainMissile(std::shared_ptr<chamber> mychamber) : plainMissile()
 {
-    this->statsOwner=nullptr;
-    this->setStats(std::make_shared<elemStats>(_plainMissileEnergy));
-    this->setEnergy(_plainMissileEnergy);
-    this->setMoved(0);
-    this->setWait(_plainMissileSpeed);
-    this->setDirection(UP);
-    this->setMoved(0);
-    this->setSubtype(0);
+    this->setBoard(mychamber);
 }
-plainMissile::plainMissile(std::shared_ptr<chamber> mychamber, int energy) : killableElements(mychamber),  movableElements(mychamber), mechanical(mychamber)
+
+plainMissile::plainMissile(std::shared_ptr<chamber> mychamber, int energy) : plainMissile(mychamber)
 {
-    this->statsOwner=nullptr;
-    this->setStats(std::make_shared<elemStats>(energy));
     this->setEnergy(energy);
-    this->setMoved(0);
-    this->setWait(_plainMissileSpeed);
-    this->setDirection(UP);
-    this->setMoved(0);
-    this->setSubtype(0);
 }
 plainMissile::plainMissile():killableElements(),movableElements(),mechanical()
 {
-
+    this->statsOwner=nullptr;
+    this->setEnergy(_plainMissileEnergy);
+    this->setWait(_plainMissileSpeed);
+    this->setDirection(UP);
+    this->setMoved(0);
+    this->setSubtype(0);
 }
+
 
 plainMissile::~plainMissile()
 {

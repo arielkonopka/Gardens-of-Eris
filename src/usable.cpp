@@ -17,9 +17,9 @@ bool usable::use(std::shared_ptr<bElem> who, direction dir)
     return true;
 }
 
-usable::usable(std::shared_ptr<chamber> board):audibleElement(board)
+usable::usable(std::shared_ptr<chamber> board):usable()
 {
-
+    this->setBoard(board);
 }
 usable::usable():audibleElement()
 {

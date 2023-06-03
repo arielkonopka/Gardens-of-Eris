@@ -4,9 +4,9 @@ stackedElement::stackedElement():movableElements()
 {
     //ctor
 }
-stackedElement::stackedElement(std::shared_ptr<chamber> board):movableElements(board)
+stackedElement::stackedElement(std::shared_ptr<chamber> board):stackedElement()
 {
-
+    this->setBoard(board);
 }
 
 stackedElement::~stackedElement()

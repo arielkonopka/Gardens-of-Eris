@@ -8,9 +8,9 @@ rubbish::rubbish():collectible()
     this->setEnergy(1);
 }
 
-rubbish::rubbish(std::shared_ptr<chamber> board):collectible(board)
+rubbish::rubbish(std::shared_ptr<chamber> board):collectible()
 {
-    this->setEnergy(1);
+    this->setBoard(board);
 }
 
 

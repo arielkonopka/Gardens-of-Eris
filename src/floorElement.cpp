@@ -5,9 +5,9 @@ floorElement::floorElement(): bElem()
     //ctor
 }
 
-floorElement::floorElement(std::shared_ptr<chamber> board) : bElem(board)
+floorElement::floorElement(std::shared_ptr<chamber> board) : floorElement()
 {
-
+    this->setBoard(board);
 }
 
 

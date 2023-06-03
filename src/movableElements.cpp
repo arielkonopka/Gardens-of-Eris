@@ -9,9 +9,9 @@ movableElements::movableElements():audibleElement()
 
 }
 
-movableElements::movableElements(std::shared_ptr<chamber> board) : audibleElement(board)
+movableElements::movableElements(std::shared_ptr<chamber> board) : movableElements()
 {
-
+    this->setBoard(board);
 }
 
 

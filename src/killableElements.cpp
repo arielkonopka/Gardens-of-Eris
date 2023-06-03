@@ -2,15 +2,16 @@
 
 killableElements::killableElements(std::shared_ptr<chamber> board) :bElem(board)
 {
-
+    this->setStats(std::make_shared<elemStats>(555));
 }
 
 
 
 killableElements::killableElements():bElem()
 {
-
+    this->setStats(std::make_shared<elemStats>(555));
 }
+
 
 
 

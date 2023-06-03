@@ -22,7 +22,7 @@ class monster : public killableElements, public nonSteppable, public mechanical,
 
 
     private:
-        plainGun* weapon=nullptr;
+        std::unique_ptr<plainGun> weapon=nullptr;
         bool inited=false;
         int rotA=3;
         int rotB=1;
