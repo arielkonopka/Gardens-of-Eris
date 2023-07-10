@@ -5,33 +5,48 @@ videoElement::videoElementDef* rubbish::vd=nullptr;
 
 rubbish::rubbish():collectible()
 {
-    this->setEnergy(1);
-}
 
+}
 rubbish::rubbish(std::shared_ptr<chamber> board):collectible()
 {
     this->setBoard(board);
 }
 
 
+int rubbish::getType() const
+{
+    return _rubishType;
+}
 
 videoElement::videoElementDef* rubbish::getVideoElementDef()
 {
     return rubbish::vd;
 }
-void rubbish::stomp(std::shared_ptr<bElem> who)
-{
-    bElem::stomp(who);
-    if(who->canCollect())
-        this->registerLiveElement(shared_from_this());
 
-}
 
 bool rubbish::mechanics()
 {
     std::shared_ptr<bElem> t=shared_from_this();
-    this->deregisterLiveElement(this->getInstanceid());
-    if( this->getStomper().get()!=nullptr && this->getStomper()->canCollect())
-        this->getStomper()->collect(t);
+    this->deregisterLiveElement(this->status->getInstanceId());
+    if( this->status->hasParent() && this->status->getStandingOn().lock()->attrs->canCollect())
+        this->status->getStandingOn().lock()->collect(t);
     return false;
 }
+bool rubbish::additionalProvisioning()
+{
+    return this->additionalProvisioning(0,this->getType());
+}
+
+bool rubbish::additionalProvisioning(int subtype,int typeId)
+{
+    bool res=bElem::additionalProvisioning(subtype,typeId);
+    this->attrs->setEnergy(1);
+
+    return res;
+}
+
+bool rubbish::additionalProvisioning(int subtype, std::shared_ptr<rubbish>sbe)
+{
+    return this->additionalProvisioning(subtype,sbe->getType());
+}
+

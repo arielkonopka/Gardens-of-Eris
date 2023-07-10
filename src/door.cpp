@@ -19,51 +19,25 @@ door::door(std::shared_ptr<chamber> board) : door()
 {
 
     this->setBoard(board);
+
 }
 
-door::door(std::shared_ptr<chamber> board, int subtype) : door(board)
+bool door::additionalProvisioning(int subtype, std::shared_ptr<door>sbe)
 {
-    this->setSubtype(subtype);
+    return this->additionalProvisioning(subtype,sbe->getType());
 }
 
-bool door::isSteppable()
+bool door::additionalProvisioning()
 {
-    return this->open;
+    return this->additionalProvisioning(0,this->getType());
 }
-bool door::isOpen()
+
+bool door::additionalProvisioning(int subtype, int typeId)
 {
-    return this->open;
+    return bElem::additionalProvisioning(subtype,typeId);
 }
-void door::stomp(std::shared_ptr<bElem> who)
-{
-    std::shared_ptr<bElem> key = nullptr;
-    if (this->getSubtype() % 2 == 1)
-    {
-        if (who->getInventory() != nullptr)
-        {
-            key = who->getInventory()->getKey(_key, this->getSubtype(), true); // take the key on your way out. you don't have a key? Kill, could be used as tricky traps for monsters
-            if (key == nullptr)
-            {
-                who->kill();
-            }
-        }
-        else
-        {
-            who->kill();
-        }
-    }
-    return; // True means you can safely continue
-}
-void door::unstomp()
-{
-    if (this->getSubtype() % 2 == 1)
-    {
-        this->locked = true;
-        this->open = false;
-        this->setFacing((!this->open) ? UP : LEFT);
-    }
-    bElem::unstomp();
-}
+
+
 
 /* open the door if you can */
 bool door::interact(std::shared_ptr<bElem> who)
@@ -72,56 +46,49 @@ bool door::interact(std::shared_ptr<bElem> who)
     std::shared_ptr<bElem> key = nullptr;
     if (!bres)
         return false;
-    if (this->locked == false)
+    if (!this->attrs->isLocked())
     {
-        this->interacted = this->getCntr() + 10;
-        this->open = !this->open;
-        this->setFacing((!this->open) ? UP : LEFT);
+        this->status->setInteracted(10);
+        this->attrs->setOpen(!this->attrs->isOpen());
+        this->attrs->setSteppable(this->attrs->isOpen());
+        this->status->setFacing((!this->open) ? UP : LEFT);
         this->playSound("Door", (this->open) ? "Unlock" : "Lock");
 
         return true;
     }
     // If it cannot collect, it cannot hold a key.
-    if (who->canCollect() == false)
+    if (!who->attrs->canCollect())
     {
         return false;
     }
     // if Door is unlocked, only open/close thing
-    if (this->getSubtype() % 2 == 0)
+    if (this->attrs->getSubtype() % 2 == 0)
     {
-        key = who->getInventory()->getKey(_key, this->getSubtype(), true);
+        key = who->attrs->getInventory()->getKey(_key, this->attrs->getSubtype(), true);
     }
     else
     {
-        key = who->getInventory()->getKey(_key, this->getSubtype(), false);
+        key = who->attrs->getInventory()->getKey(_key, this->attrs->getSubtype(), false);
     }
     if (key != nullptr)
     {
         this->playSound("Door", "Open");
-        this->open = true;
-        this->locked = false;
-        this->setFacing((!this->open) ? UP : LEFT);
+        this->attrs->setOpen(true);
+        this->attrs->setLocked(false);
+        this->status->setFacing((!this->open) ? UP : LEFT);
+        this->attrs->setSteppable(true);
     }
     else
     {
         return false;
     }
-    if (this->getSubtype() % 2 == 0)
+    if (this->attrs->getSubtype() % 2 == 0)
     {
         key->disposeElement();
     }
     return true;
 }
 
-bool door::canBeKilled()
-{
-    return false;
-}
-
-bool door::canBeDestroyed()
-{
-    return true;
-}
 
 door::~door()
 {

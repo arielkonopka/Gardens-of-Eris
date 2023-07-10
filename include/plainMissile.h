@@ -15,8 +15,9 @@ public:
     void setStatsOwner(std::shared_ptr<bElem> owner);
     virtual ~plainMissile();
     virtual bool mechanics();
-    virtual void stomp(std::shared_ptr<bElem> who);
-    virtual bool setEnergy(int points);
+    virtual bool additionalProvisioning(int subtype,std::shared_ptr<plainMissile> sbe);
+    virtual bool additionalProvisioning();
+    virtual bool additionalProvisioning(int subtype,int typeId);
 
 private:
     std::shared_ptr<bElem> statsOwner;

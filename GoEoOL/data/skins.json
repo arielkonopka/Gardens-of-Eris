@@ -55,12 +55,58 @@
  {
  "Type": 0,
  "Name": "Empty",
- "AnimDef": [ [ [ [ 0, 21 ] ] ], [[ [ 1, 21 ] ] ], [ [ [ 2, 21 ] ] ] ] 
+ "AnimDef": [ [ [ [ 0, 21 ] ] ], [[ [ 1, 21 ] ] ], [ [ [ 2, 21 ] ] ] ],
+ "Attributes": [
+    {
+	"SubType":-1,
+	"Killable":false,
+	"Destroyable":false,
+        "Steppable":true,
+        "isMovable":false,
+        "isInteractive":false,
+        "isCollectible":false,
+        "canPush":false,
+        "canBePushed":false,
+        "canCollect":false,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":55,
+	"maxEnergy":555,
+	"ammo":0,
+	"maxAmmo":0
+    }
+]
+
+
+
 },
  {
  "Type": 4,
  "Name": "Wall",
- "AnimDef": [ [ [ [ 1, 20 ] ] ] ] 
+ "AnimDef": [ [ [ [ 1, 20 ] ] ] ] ,
+ "Attributes": [
+    {
+	"SubType":-1,
+	"Killable":false,
+	"Destroyable":false,
+        "Steppable":false,
+        "isMovable":false,
+        "isInteractive":false,
+        "isCollectible":false,
+        "canPush":false,
+        "canBePushed":false,
+        "canCollect":false,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":100,
+	"maxEnergy":100,
+	"ammo":0,
+	"maxAmmo":0
+    }
+]
+
 },
  {
     "Type": 8,
@@ -77,12 +123,35 @@
 		    "name": "Step sounds of a player",
 		    "description": "This is a test sound, now it will be used for sound test",
 		    "allowMulti": true,
-		    "stacking":false,	    
+		    "stacking":false,
 		    "modeOfAction": 0
 		}]
 	}
 	]
     } ]
+    ,"Attributes": [
+    {
+        "SubType":-1,
+        "Killable":false,
+        "Destroyable":true,
+        "Steppable":false,
+        "isMovable":true,
+        "isInteractive":false,
+        "isCollectible":false,
+        "canPush":false,
+        "canBePushed":true,
+        "canCollect":false,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":100,
+        "maxEnergy":100,
+        "ammo":0,
+        "maxAmmo":0
+
+    }
+
+]
 
 },
  {
@@ -92,11 +161,11 @@
     "Teleporting": [ [ 1, 2 ], [ 2, 2 ], [ 3, 2 ], [ 4, 2 ] ],
     "Type": 100,
     "Name": "Player",
-    "AnimDef": [ 
+    "AnimDef": [
 	[ [ [0,18],[1,18], [ 2, 18 ], [ 3, 18 ], [ 4, 18 ], [ 5, 18 ], [ 6, 18 ], [ 7, 18 ] ],
 	[ [ 0, 16 ], [ 1, 16 ], [ 2, 16 ], [ 3, 16 ], [ 4, 16 ], [ 5, 16 ], [ 6, 16 ], [ 7, 16 ] ],
-	[ [ 0, 19 ], [ 1, 19 ], [ 2, 19 ], [ 3, 19 ], [ 4, 19 ], [ 5, 19 ], [ 6, 19 ], [ 7, 19 ] ], 
-	[ [ 0, 17 ], [ 1, 17 ], [ 2, 17 ], [ 3, 17 ], [ 4, 17 ], [ 5, 17 ], [ 6, 17 ], [ 7, 17 ] ] ] 
+	[ [ 0, 19 ], [ 1, 19 ], [ 2, 19 ], [ 3, 19 ], [ 4, 19 ], [ 5, 19 ], [ 6, 19 ], [ 7, 19 ] ],
+	[ [ 0, 17 ], [ 1, 17 ], [ 2, 17 ], [ 3, 17 ], [ 4, 17 ], [ 5, 17 ], [ 6, 17 ], [ 7, 17 ] ] ]
 	],
     "Samples": [
 	{
@@ -145,25 +214,34 @@
 
 		]
 	}
-	]
+	],"Attributes": [
+    {
+        "SubType":-1,
+        "Killable":true,
+        "Destroyable":true,
+        "Steppable":false,
+        "isMovable":true,
+        "isInteractive":false,
+        "isCollectible":false,
+        "canPush":true,
+        "canBePushed":true,
+        "canCollect":true,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":100,
+        "maxEnergy":125,
+        "ammo":0,
+        "maxAmmo":0
+
+    }
+
+]
  },
  {
  "Type": 6,
  "Name": "Monster",
- "AnimDef": [
- [
- [
- [
- 6,
- 2
- ],
- [
- 7,
- 2
- ]
- ]
- ]
- ],
+ "AnimDef": [ [ [ [ 6, 2 ], [ 7, 2 ] ] ] ],
  "Samples": [ {
      "SubType": 0,
      "stEvents": [
@@ -180,13 +258,34 @@
 	}
 	]
     } ]
+    ,"Attributes": [
+    {
+        "SubType":-1,
+        "Killable":true,
+        "Destroyable":true,
+        "Steppable":false,
+        "isMovable":true,
+        "isInteractive":false,
+        "isCollectible":false,
+        "canPush":true,
+        "canBePushed":true,
+        "canCollect":true,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":100,
+        "maxEnergy":125,
+        "ammo":0,
+        "maxAmmo":0
+
+    }]
 
  },
  {
  "Type": 7,
  "Name": "Patrolling drone",
- "AnimDef": [ [ [ 
-		[ 1, 1 ], [ 2, 1 ] 
+ "AnimDef": [ [ [
+		[ 1, 1 ], [ 2, 1 ]
 	] ] ] ,
 	"Samples": [
 		{
@@ -194,7 +293,7 @@
 			"stEvents": [
 				{
 					"EventType": "Boot",
-					"eventData": [ 
+					"eventData": [
 						{
 							"Event": "Success",
 							"fname": "data/sounds/controllerFound.ogg",
@@ -218,7 +317,28 @@
 			]
 	}
 
-]
+],"Attributes": [
+    {
+        "SubType":-1,
+        "Killable":true,
+        "Destroyable":true,
+        "Steppable":false,
+        "isMovable":true,
+        "isInteractive":true,
+        "isCollectible":false,
+        "canPush":true,
+        "canBePushed":true,
+        "canCollect":true,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":100,
+        "maxEnergy":125,
+        "ammo":0,
+        "maxAmmo":0
+
+    }]
+
 },
  {
  "Type": 900,
@@ -244,17 +364,59 @@
 	    }
 	]
     }
-    ]
+    ],"Attributes": [
+    {
+        "SubType":-1,
+        "Killable":true,
+        "Destroyable":true,
+        "Steppable":true,
+        "isMovable":false,
+        "isInteractive":false,
+        "isCollectible":true,
+        "canPush":false,
+        "canBePushed":false,
+        "canCollect":false,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":5555,
+        "maxEnergy":5555,
+        "ammo":0,
+        "maxAmmo":0
+
+    }]
+
  },
  {
  "Type": 51,
  "Name": "key",
- "AnimDef": [ 
-    [ [ [ 0,10 ] ] ], 
-    [ [ [ 1,10 ] ] ], 
+"Attributes": [
+    {
+        "SubType":-1,
+        "Killable":true,
+        "Destroyable":true,
+        "Steppable":true,
+        "isMovable":false,
+        "isInteractive":false,
+        "isCollectible":true,
+        "canPush":false,
+        "canBePushed":false,
+        "canCollect":false,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":25,
+        "maxEnergy":25,
+        "ammo":0,
+        "maxAmmo":0
+
+    }],
+ "AnimDef": [
+    [ [ [ 0,10 ] ] ],
+    [ [ [ 1,10 ] ] ],
     [ [ [ 2,10 ] ] ],
-    [ [ [ 3,10 ] ] ], 
-    [ [ [ 4, 10 ] ] ] 
+    [ [ [ 3,10 ] ] ],
+    [ [ [ 4, 10 ] ] ]
     ],
      "Samples": [
 	{
@@ -364,7 +526,7 @@
  "name": "Collect GOlden Apple sound",
  "description": "This is a test sound, now it will be used for sound test",
  "allowMulti": true,
- "stacking":false, 
+ "stacking":false,
 "modeOfAction": 0
  }
  ]
@@ -373,7 +535,7 @@
  }
 
  ]
- 
+
 
  },
  {
@@ -381,19 +543,64 @@
  "Name": "rubbish",
  "AnimDef": [
     [ [ [0,1] ] ]
-    ] 
+    ]
+    ,"Attributes": [
+    {
+        "SubType":-1,
+        "Killable":true,
+        "Destroyable":true,
+        "Steppable":true,
+        "isMovable":true,
+        "isInteractive":false,
+        "isCollectible":true,
+        "canPush":false,
+        "canBePushed":true,
+        "canCollect":false,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":100,
+        "maxEnergy":100,
+        "ammo":0,
+        "maxAmmo":0
+
+    }
+
+]
+
  },
  {
  "Type": 52,
  "Name": "door",
  "AnimDef": [
-    [ [ [ 0, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ] ], 
+    [ [ [ 0, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ] ],
     [ [ [ 1, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ] ],
-    [ [ [ 2, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ] ], 
+    [ [ [ 2, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ] ],
     [ [ [ 3, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ] ],
-    [ [ [ 4, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ] ] 
+    [ [ [ 4, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ], [ [ 5, 11 ], [ 5, 11 ] ] ]
     ],
-"Samples": [    
+    "Attributes": [
+    {
+	"SubType":-1,
+	"Killable":false,
+	"Destroyable":false,
+        "Steppable":true,
+        "isMovable":false,
+        "isInteractive":false,
+        "isCollectible":false,
+        "canPush":false,
+        "canBePushed":false,
+        "canCollect":false,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":55,
+	"maxEnergy":555,
+	"ammo":0,
+	"maxAmmo":0
+    }
+],
+"Samples": [
     {
     "SubType": 0,
     "stEvents": [
@@ -492,35 +699,46 @@
  }, {
  "Type": 200,
  "Name": "plainGun",
- "AnimDef": [
- [
- [
- [
- 5,
- 0
- ]
- ]
- ]
- ],
+ "AnimDef": [ [ [ [ 5, 0 ] ] ] ],
+ "Attributes": [
+    {
+	"SubType":-1,
+	"Killable":true,
+	"Destroyable":true,
+        "Steppable":true,
+        "isMovable":false,
+        "isInteractive":false,
+        "isCollectible":true,
+        "canPush":false,
+        "canBePushed":false,
+        "canCollect":false,
+        "isWeapon":true,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":55,
+	"maxEnergy":555,
+	"ammo":0,
+	"maxAmmo":0
+    }
+],
  "Samples": [
  {
  "SubType": 0,
- "stEvents": [
- {
- "EventType": "Shoot",
- "eventData": [
- {
- "Event": "Shoot",
- "fname": "data/sounds/nioseThing_shoot.ogg",
- "allowMulti": true,
- "stacking":true,
- "name": "Shoot sound",
- "description": "(cc)Ariel Konopka",
- "modeOfAction": 0
- }
- ]
- }
- ]
+ "stEvents": [ {
+    "EventType": "Shoot",
+    "eventData": [
+        {
+            "Event": "Shoot",
+            "fname": "data/sounds/nioseThing_shoot.ogg",
+            "allowMulti": true,
+            "stacking":true,
+            "name": "Shoot sound",
+            "description": "(cc)Ariel Konopka",
+            "modeOfAction": 0
+        }
+        ]
+    }
+    ]
  },
  {
  "SubType": 1,
@@ -563,82 +781,66 @@
  {
  "Type": 201,
  "Name": "plainMissile",
- "AnimDef": [
- [
- [
- [
- 2,
- 3
- ],
- [
- 3,
- 3
- ]
- ],
- [
- [
- 1,
- 3
- ],
- [
- 0,
- 3
- ]
- ],
- [
- [
- 3,
- 3
- ],
- [
- 2,
- 3
- ]
- ],
- [
- [
- 0,
- 3
- ],
- [
- 1,
- 3
- ]
- ]
- ]
- ]
+ "AnimDef": [ [
+            [ [ 2, 3 ], [ 3, 3 ] ],
+            [ [ 1, 3 ], [ 0, 3 ] ],
+            [ [ 3, 3 ], [ 2, 3 ] ],
+            [ [ 0, 3 ], [ 1, 3 ] ]
+            ] ],
+  "Attributes": [
+        {
+        "SubType":-1,
+        "Killable":true,
+        "Destroyable":true,
+        "Steppable":true,
+        "isMovable":true,
+        "isInteractive":false,
+        "isCollectible":false,
+        "canPush":false,
+        "canBePushed":false,
+        "canCollect":false,
+        "isWeapon":true,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":55,
+        "maxEnergy":555,
+        "ammo":0,
+        "maxAmmo":0
+        }
+    ]
+
  },
  {
  "Type": 250,
  "Name": "bunker",
- "AnimDef": [
- [
- [
- [
- 8,
- 4
- ]
- ],
- [
- [
- 7,
- 4
- ]
- ],
- [
- [
- 6,
- 4
- ]
- ],
- [
- [
- 5,
- 4
- ]
- ]
- ]
- ],
+ "AnimDef": [ [
+        [ [ 8, 4 ] ],
+        [ [ 7, 4 ] ],
+        [ [ 6, 4 ] ],
+        [ [ 5, 4 ] ]
+        ] ],
+  "Attributes": [
+        {
+        "SubType":-1,
+        "Killable":false,
+        "Destroyable":false,
+        "Steppable":true,
+        "isMovable":false,
+        "isInteractive":false,
+        "isCollectible":false,
+        "canPush":false,
+        "canBePushed":false,
+        "canCollect":false,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":55,
+        "maxEnergy":555,
+        "ammo":0,
+        "maxAmmo":0
+        }
+    ],
+
  "SamplesX": [
     {
 	"SubType": 0,
@@ -663,33 +865,55 @@
  {
  "Type": 400,
  "Name": "teleport",
- "AnimDef": [ 
-    [ [ [ 0, 4 ], [ 1, 4 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
+ "AnimDef": [
+    [ [ [ 0, 4 ], [ 1, 4 ] ] ],
     [ [ [ 0, 14 ], [ 1, 14 ] ] ],
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
     [ [ [ 0, 14 ], [ 1, 14 ] ] ],
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
     [ [ [ 0, 14 ], [ 1, 14 ] ] ],
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
-    [ [ [ 0, 14 ], [ 1, 14 ] ] ], 
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
+    [ [ [ 0, 14 ], [ 1, 14 ] ] ],
     [ [ [ 0, 14 ], [ 1, 14 ] ] ]
  ],
+   "Attributes": [
+        {
+        "SubType":-1,
+        "Killable":false,
+        "Destroyable":false,
+        "Steppable":true,
+        "isMovable":false,
+        "isInteractive":false,
+        "isCollectible":false,
+        "canPush":false,
+        "canBePushed":false,
+        "canCollect":false,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":55,
+        "maxEnergy":555,
+        "ammo":0,
+        "maxAmmo":0
+        }
+    ] ,
+
 "Samples": [
     {
 	"SubType": 0,
@@ -902,7 +1126,7 @@
 	]
 	}
 	]
-    }	
+    }
     ]
 
  },
@@ -910,6 +1134,28 @@
  "Type": 602,
  "Name": "simple bomb",
  "AnimDef": [ [ [ [ 8, 0 ] ] ] ],
+   "Attributes": [
+        {
+        "SubType":-1,
+        "Killable":false,
+        "Destroyable":false,
+        "Steppable":false,
+        "isMovable":false,
+        "isInteractive":false,
+        "isCollectible":false,
+        "canPush":false,
+        "canBePushed":true,
+        "canCollect":false,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":55,
+        "maxEnergy":555,
+        "ammo":0,
+        "maxAmmo":0
+        }
+    ],
+
  "Samples": [ {
      "SubType": 0,
      "stEvents": [
@@ -924,7 +1170,7 @@
 		    "modeOfAction": 0
 		}]
 	},
-	{		
+	{
 	"EventType": "Explosives",
 	"eventData": [
 	    {
@@ -945,7 +1191,28 @@
 	"Type": 77,
 	"Name": "puppet master",
 	"AnimDef": [ [ [ [ 0, 12 ], [1,12],[3,12] ,[2,12] ] ] ],
-	"Samples": [ {
+	  "Attributes": [
+        {
+        "SubType":-1,
+        "Killable":false,
+        "Destroyable":false,
+        "Steppable":true,
+        "isMovable":true,
+        "isInteractive":true,
+        "isCollectible":true,
+        "canPush":false,
+        "canBePushed":false,
+        "canCollect":false,
+        "isWeapon":false,
+        "isOpen":false,
+        "isLocked":false,
+        "energy":55,
+        "maxEnergy":555,
+        "ammo":0,
+        "maxAmmo":0
+        }
+    ],
+    "Samples": [ {
     	    "SubType": 0,
     	    "stEvents": [
 	    {
@@ -958,7 +1225,7 @@
 		    "allowMulti": true,
 		    "modeOfAction": 0
 	    }]
-	    
+
 	    }
 	]
     }]

@@ -43,24 +43,24 @@ void elemStats::countHit(std::shared_ptr<bElem> what)
 {
     if(what==nullptr) return;
 
-    if(what->canBeKilled())
+    if(what->attrs->isKillable())
     {
         this->globalPoints++;
-        if(what->isCollectible())
+        if(what->attrs->isCollectible())
         {
             this->_dPoints++;
             this->updateDexterity();
             return;
         }
-        if(what->isMovable())
+        if(what->attrs->isMovable())
         {
             this->_dPoints++;
 
-            if(what->isLiveElement())
+            if(what->status->hasActivatedMechanics())
             {
                 this->_dPoints+=3;
             }
-            if(what->isDestroyed())
+            if(what->status->isDestroying())
             {
                 this->_dPoints+=2;
 

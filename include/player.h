@@ -22,16 +22,16 @@ public:
     bool stepOnElement(std::shared_ptr<bElem> step);
     bool mechanics() final;
     bool interact(std::shared_ptr<bElem> who) final;
-    bool canPush() final;
     bool getVisited();
-    int getType() final;
-    void setActive(bool act) final;
-    bool isActive() final;
+    int getType() const;
     int getAnimPh() final;
     bool shootGun();
     oState disposeElement() final;
     bool additionalProvisioning() final;
+    bool additionalProvisioning(int subtype,int typeId) ;
     const float getViewRadius() { return this->vRadius; };
+    virtual bool additionalProvisioning(int subtype,std::shared_ptr<player> sbe);
+
 private:
     float vRadius=5.5;
     static std::shared_ptr<bElem> activePlayer;

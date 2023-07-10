@@ -1,29 +1,33 @@
 #ifndef ELEMENTFACTORY_H
 #define ELEMENTFACTORY_H
 #include <memory>
-class chamber;
+#include <iostream>
 
+class chamber;
 class elementFactory
 {
-    public:
-        elementFactory() = default;
-        virtual ~elementFactory() = default;
-            template <class T>
+public:
+    elementFactory() = default;
+    virtual ~elementFactory() = default;
+
+/*    template <class T>
     static std::shared_ptr<T> generateAnElement(std::shared_ptr<chamber> board)
     {
         std::shared_ptr<T> l=std::make_shared<T>(board);
         l->additionalProvisioning();
         return l;
     }
+*/
     template <class T>
     static std::shared_ptr<T> generateAnElement(std::shared_ptr<chamber> board,int subtype)
     {
         std::shared_ptr<T> l=std::make_shared<T>(board);
-        l->setSubtype(subtype);
-        l->additionalProvisioning();
+        l->additionalProvisioning(subtype,l);
+     //   std::cout<<"CR."<<l->getType();
         return l;
     }
 
+/*
     template <class T>
     static std::shared_ptr<T> generateAnElement()
     {
@@ -32,9 +36,11 @@ class elementFactory
         return l;
 
     }
-    protected:
 
-    private:
+    */
+protected:
+
+private:
 };
 
 #endif // ELEMENTFACTORY_H

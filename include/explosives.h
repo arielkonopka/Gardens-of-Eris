@@ -14,7 +14,9 @@ public:
 
     virtual bool explode();
     virtual bool explode(float radius);
-
+    virtual bool additionalProvisioning(int subtype,std::shared_ptr<explosives> sbe);
+    virtual bool additionalProvisioning();
+    virtual bool additionalProvisioning(int subtype,int typeId);
 };
 
 #endif // EXPLOSIVES_H

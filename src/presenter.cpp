@@ -81,6 +81,7 @@ _cp_gameReasonOut presenter::presentGamePlay()
 
 void presenter::showSplash()
 {
+    std::cout<<"Splash"<<this->splashFname.c_str()<<"\n";
     ALLEGRO_BITMAP *splash=al_load_bitmap(this->splashFname.c_str());
     al_clear_to_color(al_map_rgba(15,15,25,255));
     al_draw_bitmap(splash,450,0,0);
@@ -139,13 +140,13 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
         offsetX=offset.x;
         offsetY=offset.y;
     }
-    if(mode==1 && elem->getMoved()<=0)
+    if(mode==1 && !elem->status->isMoving())
         return false;
 
-    if (elem->getSteppingOnElement().get()!=nullptr && mode!=_mode_onlyTop)
-        res=this->showObjectTile(x,y,offsetX,offsetY,elem->getSteppingOnElement(),ignoreOffset,mode);
+    if (elem->status->getSteppingOn() && mode!=_mode_onlyTop)
+        res=this->showObjectTile(x,y,offsetX,offsetY,elem->status->getSteppingOn(),ignoreOffset,mode);
 
-    /* if( (elem->isMovable() || elem->isSteppable() || elem->isCollectible()) && elem->getStomper().get()==nullptr  && mode==0 && (elem->getBoard().get()!=nullptr) && (!elem->getBoard()->isVisible(elem->getCoords())))
+    /* if( (elem->isMovable() || elem->isSteppable() || elem->isCollectible()) && elem->status->getStandingOn().get()==nullptr  && mode==0 && (elem->getBoard().get()!=nullptr) && (!elem->getBoard()->isVisible(elem->status->getMyPosition()))
      {
          sx=(this->bluredElement.x*this->sWidth)+((this->bluredElement.x+1)*(this->spacing));
          sy=(this->bluredElement.y*this->sHeight)+((this->bluredElement.y+1)*(this->spacing));
@@ -153,16 +154,16 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
          return false;
      }*/
 
-    if((mode==0 && elem->getMoved()>0 ))
+    if((mode==0 && elem->status->isMoving() ))
         return true;
 
 
-    int sType=elem->getSubtype()%elem->getVideoElementDef()->defArray.size();
-    int sDir=((int)elem->getFacing())%elem->getVideoElementDef()->defArray[sType].size();
+    int sType=elem->attrs->getSubtype()%elem->getVideoElementDef()->defArray.size();
+    int sDir=((int)elem->status->getFacing())%elem->getVideoElementDef()->defArray[sType].size();
     int sPh=elem->getAnimPh()%elem->getVideoElementDef()->defArray[sType][sDir].size();
 
 
-    if( elem->getType()==_belemType || elem->isSteppable()==true || elem->canBeDestroyed()==false || (!elem->isDying() && !elem->isDestroyed() && !elem->isTeleporting()) )
+    if( elem->getType()==_belemType || elem->attrs->isSteppable() || !elem->attrs->isDestroyable() || (!elem->status->isDying() && !elem->status->isDestroying() && !elem->status->isTeleporting()) )
     {
         coords=elem->getVideoElementDef()->defArray[sType][sDir][sPh];
         //now calculate the position on the sprites surface
@@ -174,7 +175,7 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
 
 
 
-    if (elem->isDying())
+    if (elem->status->isDying())
     {
         coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->dying.size())];
         sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
@@ -182,7 +183,7 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
         //finally draw that
         al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
     }
-    if (elem->isDestroyed())
+    if (elem->status->isDestroying())
     {
         coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->destroying.size())];
         sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
@@ -191,7 +192,7 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
         al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
     }
 
-    if(elem->isFading())
+    if(elem->status->isFading())
     {
         coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->fadingOut.size())];
         sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
@@ -202,7 +203,7 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
     }
 
 
-    if (elem->isTeleporting())
+    if (elem->status->isTeleporting())
     {
         coords=elem->getVideoElementDef()->teleporting[elem->getAnimPh()%(elem->getVideoElementDef()->teleporting.size())];
         sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
@@ -236,38 +237,39 @@ void presenter::prepareStatsThing()
     this->showText(1,1,0,5,"Garden: "+aPlayer->getBoard()->getName());
     this->showObjectTile(1,0,0,0,aPlayer,true,_mode_onlyTop);
     this->showText(2,0,0,0,std::to_string(player::countVisitedPlayers()));
-    this->showText(2,0,0,32,std::to_string(aPlayer->getEnergy()));
-    this->showObjectTile(4,0,0,0,aPlayer->getInventory()->getActiveWeapon(),true,_mode_onlyTop);
+    this->showText(2,0,0,32,std::to_string(aPlayer->attrs->getEnergy()));
+    this->showObjectTile(4,0,0,0,aPlayer->attrs->getInventory()->getActiveWeapon(),true,_mode_onlyTop);
 
 
 
-    if( aPlayer->getInventory()->getActiveWeapon()!=nullptr)
+    if( aPlayer->attrs->getInventory()->getActiveWeapon()!=nullptr)
     {
-        this->showText(5,0,0,32,std::to_string(aPlayer->getInventory()->getActiveWeapon()->getEnergy()));
-        this->showText(5,0,0,0,std::to_string(aPlayer->getInventory()->getActiveWeapon()->getAmmo()));
+        this->showText(5,0,0,32,std::to_string(aPlayer->attrs->getInventory()->getActiveWeapon()->attrs->getEnergy()));
+        this->showText(5,0,0,0,std::to_string(aPlayer->attrs->getInventory()->getActiveWeapon()->attrs->getAmmo()));
     }
     for (int cnt=0; cnt<5; cnt++)
     {
         int tokens;
-        std::shared_ptr<bElem> key=aPlayer->getInventory()->getKey(_key,cnt,false);
+        std::shared_ptr<bElem> key=aPlayer->attrs->getInventory()->getKey(_key,cnt,false);
         if(key!=nullptr)
         {
-            tokens=aPlayer->getInventory()->countTokens(key->getType(),key->getSubtype());
+            tokens=aPlayer->attrs->getInventory()->countTokens(key->getType(),key->attrs->getSubtype());
             this->showObjectTile(7+(cnt*2),0,0,0,key,true,_mode_onlyTop);
             this->showText(8+(cnt*2),0,0,16,std::to_string(tokens));
         }
     }
     this->showObjectTile(18,0,0,0,goldenApple::getApple(1),true,_mode_onlyTop);
     this->showText(19,0,0,0,std::to_string(goldenApple::getAppleNumber()));
-    this->showText(19,0,0,32,std::to_string(aPlayer->getInventory()->countTokens(_goldenAppleType,0)));
+    this->showText(19,0,0,32,std::to_string(aPlayer->attrs->getInventory()->countTokens(_goldenAppleType,0)));
     this->showText(21,0,6,0,"Stats");
     this->showText(21,0,5,32,"P:");
     this->showText(21,1,5,0,"Dex:");
-    if(aPlayer->getStats()!=nullptr)
+ /*   if(aPlayer->getStats()!=nullptr)
     {
         this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getGlobalPoints()));
         this->showText(22,1,5,0,std::to_string(aPlayer->getStats()->getDexterity()));
     }
+    */
 
 }
 
@@ -279,7 +281,7 @@ void presenter::showGameField()
 
 
     std::shared_ptr<bElem> player=player::getActivePlayer();
-    coords b=player->getCoords()-(coords)
+    coords b=player->status->getMyPosition()-(coords)
     {
         (this->scrTilesX)/2,(this->scrTilesY)/2
     };
@@ -325,7 +327,7 @@ void presenter::showGameField()
     for(unsigned int cnt=0; cnt<mSprites.size(); cnt++)
     {
         movingSprite ms=mSprites.at(cnt);
-        if(ms.elem->getInstanceid()==player->getInstanceid())
+        if(ms.elem->status->getInstanceId()==player->status->getInstanceId())
         {
             px=ms.x;
             py=ms.y;
@@ -334,8 +336,8 @@ void presenter::showGameField()
         else
             this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false,1);
     }
-    if(player->getMoved()>0 && player->getBoard()->width>player->getCoords().x && player->getCoords().x>=0 && player->getBoard()->height>player->getCoords().y && player->getCoords().y>=0)
-        this->showObjectTile(px,py,0,0,player->getBoard()->getElement(player->getCoords()),false,1);
+    if(player->status->isMoving() && player->getBoard()->width>player->status->getMyPosition().x && player->status->getMyPosition().x>=0 && player->getBoard()->height>player->status->getMyPosition().y && player->status->getMyPosition().y>=0)
+        this->showObjectTile(px,py,0,0,player->getBoard()->getElement(player->status->getMyPosition()),false,1);
 
     if(player->getBoard().get()!=nullptr)
     {
@@ -346,7 +348,7 @@ void presenter::showGameField()
             for(y=-1; y<this->scrTilesY+2; y++)
             {
                 int obscured;
-                coords point=player->getCoords();
+                coords point=player->status->getMyPosition();
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
                 float distance=point.distance((coords){nx,ny});
@@ -440,7 +442,8 @@ void presenter::mechanicLoop()
                 this->showGameField();
             else
                 {
-                this->showSplash();
+                std::cout<<"Player not created!\n";
+                //this->showSplash();
                 this->fin=true;
                 }
         }
@@ -475,7 +478,7 @@ int presenter::presentEverything()
             if(currentPlayer.get()!=nullptr)
             {
                 this->_cp_attachedBoard=player::getActivePlayer()->getBoard();
-                if(currentPlayer->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
+                if(currentPlayer->attrs->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
                     this->fin=true;
             }
             bElem::runLiveElements();

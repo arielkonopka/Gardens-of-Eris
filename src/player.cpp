@@ -13,44 +13,56 @@ player::player(std::shared_ptr<chamber> board) : player()
 
 player::player() : killableElements(), movableElements(), nonSteppable(), mechanical()
 {
-    this->setInventory(std::make_shared<inventory>());
-    this->setEnergy(125);
 }
 
-bool player::additionalProvisioning()
+bool player::additionalProvisioning(int subtype,int typeId)
 {
-    if (bElem::additionalProvisioning() == true)
-        return true;
+  //  this->provisioned = true;
+    this->attrs=std::make_unique<bElemAttr>(shared_from_this(),typeId,subtype);
+    this->attrs->setCollect(true);
+    this->attrs->setEnergy(125);
     this->provisioned = true;
-    player::allPlayers.push_back(shared_from_this());
-    this->getInventory()->changeOwner(shared_from_this());
     this->registerLiveElement(shared_from_this());
-    if ( this->getBoard() && player::allPlayers.size() <= 1)
+    if ( this->getBoard() && player::allPlayers.size() <= 0)
     {
-        this->activated = true;
+        this->status->setActive(true);
     }
     else
     {
-        this->activated = false;
+        this->status->setActive(false);
     }
-    return false;
+    player::allPlayers.push_back(shared_from_this());
+    return true;
+}
+
+
+bool player::additionalProvisioning()
+{
+    return this->additionalProvisioning(0,this->getType());
+}
+bool player::additionalProvisioning(int subtype, std::shared_ptr<player>sbe)
+{
+    return this->additionalProvisioning(subtype,sbe->getType());
 }
 
 std::shared_ptr<bElem> player::getActivePlayer()
 {
-    if (player::activePlayer == nullptr)
+    if (player::activePlayer == nullptr || (player::activePlayer && player::activePlayer->status->isDisposed()))
     {
         /* find active player, because it is nullptr */
         for (auto p : player::allPlayers)
         {
-            if (p->isActive())
+            if (p && p->status->isActive() && !p->status->isDisposed())
             {
                 player::activePlayer = p;
-                soundManager::getInstance()->setListenerChamber(p->getBoard()->getInstanceId());
+                if(p->getBoard())
+                    soundManager::getInstance()->setListenerChamber(p->getBoard()->getInstanceId());
             }
         }
     }
     /* return value can be nullptr, then no active player found*/
+
+
     return player::activePlayer;
 }
 
@@ -61,17 +73,17 @@ unsigned int player::countVisitedPlayers()
 
 oState player::disposeElement()
 {
-    if (this->isActive())
+    if (this->status->isActive())
     {
-        this->setActive(false);
+        this->status->setActive(false);
         player::activePlayer = nullptr;
         this->getBoard()->player = NOCOORDS;
         if (player::visitedPlayers.size() > 0)
         {
             // Activate next inactive player avatar
             std::shared_ptr<bElem> p = player::visitedPlayers[0];
-            p->setActive(true);
-            p->getBoard()->player = p->getCoords();
+            p->status->setActive(true);
+            p->getBoard()->player = p->status->getMyPosition();
             player::visitedPlayers.erase(player::visitedPlayers.begin());
         }
     }
@@ -100,7 +112,7 @@ bool player::interact(std::shared_ptr<bElem> who)
 {
     if (who == nullptr || this->getBoard() == nullptr)
         return false;
-    if (this->isActive())
+    if (this->status->isActive())
         return false;
     if (killableElements::interact(who) == false)
         return false;
@@ -125,8 +137,8 @@ bool player::getVisited()
 bool player::stepOnElement(std::shared_ptr<bElem> step)
 {
     bool r = movableElements::stepOnElement(step);
-    if (this->getBoard().get() != nullptr && this->isActive())
-        this->getBoard()->visitPosition(this->getCoords()); // we visit the position.
+    if (this->getBoard().get() != nullptr && this->status->isActive())
+        this->getBoard()->visitPosition(this->status->getMyPosition()); // we visit the position.
     return r;
 }
 
@@ -138,29 +150,16 @@ videoElement::videoElementDef *player::getVideoElementDef()
 bool player::mechanics()
 {
 
-    bool res = killableElements::mechanics();
-    if (this->isActive() == true)
-    {
-        this->getBoard()->player.x = this->getCoords().x;
-        this->getBoard()->player.y = this->getCoords().y;
-        if (this->isTeleporting())
-            this->playSound("Teleport", "Teleporting");
-    }
-    else
-    {
-        return true; // Inactive player, not very useful;
-    }
-
-    if (this->getWait() > 0)
-    {
-        return false;
-    }
+    bool res = bElem::mechanics();
+    if(!res || !this->status->isActive()) return res;
+    this->getBoard()->player.x = this->status->getMyPosition().x;
+    this->getBoard()->player.y = this->status->getMyPosition().y;
     coords3d c3d;
-    c3d.x = this->getCoords().x * 32 + this->getOffset().x;
-    c3d.z = this->getCoords().y * 32 + this->getOffset().y;
+    c3d.x = this->status->getMyPosition().x * 32 + this->getOffset().x;
+    c3d.z = this->status->getMyPosition().y * 32 + this->getOffset().y;
     c3d.y = 50;
     coords3d vel;
-    switch (this->getDirection())
+    switch (this->status->getMyDirection())
     {
     case UP:
         vel = {0, 0, -1};
@@ -183,7 +182,7 @@ bool player::mechanics()
     if (!res)
         return false;
 
-    if (this->getMoved() > 0)
+    if (this->status->getMoved() > 0)
     {
         if (this->getCntr() % 3 == 0)
             this->animPh++;
@@ -198,13 +197,13 @@ bool player::mechanics()
     case 0:
         if (this->moveInDirection(this->getBoard()->cntrlItm.dir))
         {
-            this->setFacing(this->getDirection());
+            this->status->setFacing(this->status->getMyDirection());
             //
         }
         break;
 
     case 1:
-        this->setFacing(this->getBoard()->cntrlItm.dir);
+        this->status->setFacing(this->getBoard()->cntrlItm.dir);
         if (this->shootGun())
         {
             this->animPh += (this->getCntr() % 2);
@@ -213,32 +212,32 @@ bool player::mechanics()
     case 2:
         if (this->getElementInDirection(this->getBoard()->cntrlItm.dir) == nullptr)
             return false;
-        this->setFacing(this->getBoard()->cntrlItm.dir);
+        this->status->setFacing(this->getBoard()->cntrlItm.dir);
         if (this->getElementInDirection(this->getBoard()->cntrlItm.dir)->interact(shared_from_this()))
             this->animPh++;
         break;
     case 3:
-        this->getInventory()->nextUsable();
-        this->setWait(_mov_delay);
+        this->attrs->getInventory()->nextUsable();
+        this->status->setWaiting(_mov_delay);
         break;
     case 4:
         if (this->dragInDirection(this->getBoard()->cntrlItm.dir))
         {
-            this->setFacing((direction)(((int)this->getDirection() + 2) % 4)); /* we face backwards while dragging */
+            this->status->setFacing((direction)(((int)this->status->getMyDirection() + 2) % 4)); /* we face backwards while dragging */
         }
         else if (this->moveInDirection(this->getBoard()->cntrlItm.dir))
         {
-            this->setFacing(this->getDirection());
+            this->status->setFacing(this->status->getMyDirection());
         }
         break;
     case 8:
-        if (this->getInventory()->getUsable() != nullptr)
-            this->getInventory()->getUsable()->use(this->getElementInDirection(this->getBoard()->cntrlItm.dir));
+        if (this->attrs->getInventory()->getUsable() != nullptr)
+            this->attrs->getInventory()->getUsable()->use(this->getElementInDirection(this->getBoard()->cntrlItm.dir));
         break;
     case 5:
     {
-        this->getInventory()->nextGun();
-        this->setWait(_mov_delay);
+        this->attrs->getInventory()->nextGun();
+        this->status->setWaiting(_mov_delay);
         break;
     }
     case 6:
@@ -250,45 +249,32 @@ bool player::mechanics()
 // shoots any suitable gun
 bool player::shootGun()
 {
-    std::shared_ptr<bElem> gun = this->getInventory()->getActiveWeapon();
+    std::shared_ptr<bElem> gun = this->attrs->getInventory()->getActiveWeapon();
     if (gun != nullptr)
     {
         if (gun->use(shared_from_this()))
         {
-            this->setWait(_interactedTime * 2);
+            this->status->setWaiting(_interactedTime * 2);
         };
         return true;
     }
-    this->setWait(_interactedTime);
+    this->status->setWaiting(_interactedTime);
     return false;
 }
 
-bool player::canPush()
-{
-    return true;
-}
 
-void player::setActive(bool act)
-{
-    if (this->getBoard() == nullptr)
-        return;
-    this->activated = act;
-    this->setTeleporting(_teleportationTime);
-}
 
-bool player::isActive()
-{
-    return this->activated; // temporary, in the future only one player should be active in the whole chamber array
-}
 
-int player::getType()
+
+
+int player::getType() const
 {
     return _player;
 }
 
 int player::getAnimPh()
 {
-    if (this->isTeleporting() || this->isDying() || this->isDestroyed() || !this->isActive())
+    if (this->status->isTeleporting() || this->status->isDying() || this->status->isDestroying() || !this->status->isActive())
         return bElem::getAnimPh();
     return this->animPh;
 }

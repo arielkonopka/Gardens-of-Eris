@@ -19,7 +19,7 @@ std::shared_ptr<chamber> chamber::makeNewChamber(coords csize)
 void chamber::createFloor()
 {
 #ifdef _VerbousMode_
-    std::cout << "Create floor instance [" << this->getInstanceId() << "]\n";
+    std::cout << "Create floor instance [" << this->status->getInstanceId() << "]\n";
     std::cout << " cfsize [";
 #endif
     for (int c = 0; c < this->width; c++)
@@ -31,20 +31,27 @@ void chamber::createFloor()
         std::vector<std::shared_ptr<bElem>> v;
         for (int d = 0; d < this->height; d++)
         {
+
+            int subtype=0;
+            if (bElem::randomNumberGenerator() % 10 == 0)
+                subtype=1;
+            if (bElem::randomNumberGenerator() % 100 == 0)
+                subtype=2;
+
 #ifdef _VerbousMode_
             std::cout << "Create an object to place\n";
 #endif
-            std::shared_ptr<bElem> b = elementFactory::generateAnElement<floorElement>(shared_from_this());
+            std::shared_ptr<bElem> b = elementFactory::generateAnElement<floorElement>(shared_from_this(),subtype);
+            b->status->setMyPosition((coords)
+            {
+                c, d
+            });
 #ifdef _VerbousMode_
-            std::cout << "created id " << b->getInstanceid() << "\n";
+            std::cout << "created id " << b->status->getInstanceId() << "\n";
 #endif
-            if (bElem::randomNumberGenerator() % 10 == 0)
-                b->setSubtype(1);
-            if (bElem::randomNumberGenerator() % 100 == 0)
-                b->setSubtype(2);
-            b->setCoords(c, d);
+
 #ifdef _VerbousMode_
-            std::cout << "Push object into column vector id " << b->getInstanceid() << "\n";
+            std::cout << "Push object into column vector id " << b->status->getInstanceId() << "\n";
 #endif
             v.push_back(b);
         }
@@ -75,6 +82,7 @@ chamber::chamber(int x, int y) : std::enable_shared_from_this<chamber>(), width(
     this->chamberColour.r = 30 + rwg->randomNumberGenerator() % 50;
     this->chamberColour.g = 30 + rwg->randomNumberGenerator() % 50;
     this->chamberColour.b = 50 + rwg->randomNumberGenerator() % 70;
+    //this->createFloor();
 }
 chamber::chamber(coords csize) : chamber(csize.x, csize.y)
 {
@@ -82,13 +90,13 @@ chamber::chamber(coords csize) : chamber(csize.x, csize.y)
 
 colour chamber::getChColour()
 {
-  //  std::lock_guard<std::mutex> guard(this->chmutex);
+    //  std::lock_guard<std::mutex> guard(this->chmutex);
     return this->chamberColour;
 }
 
 chamber::~chamber()
 {
-    /*    std::cout<<"Destroy chamber: "<<this->getInstanceId()<<"\n";
+    /*    std::cout<<"Destroy chamber: "<<this->status->getInstanceId()<<"\n";
         for (unsigned int cX=0; cX<this->chamberArray.size(); cX++)
         {
            this->chamberArray[cX].clear();
@@ -100,13 +108,13 @@ chamber::~chamber()
 
 std::string chamber::getName()
 {
- //   std::lock_guard<std::mutex> guard(this->chmutex);
+//   std::lock_guard<std::mutex> guard(this->chmutex);
     return this->chamberName;
 }
 
 std::shared_ptr<bElem> chamber::getElement(coords point)
 {
-  //  std::lock_guard<std::mutex> guard(this->chmutex);
+    //  std::lock_guard<std::mutex> guard(this->chmutex);
     return this->getElement(point.x, point.y);
 }
 bool chamber::visitPosition(coords point)
@@ -122,7 +130,10 @@ bool chamber::visitPosition(coords point)
     {
         for(int y=y0; y<=y1; y++)
         {
-            float distance=point.distance((coords){x,y});
+            float distance=point.distance((coords)
+            {
+                x,y
+            });
 
             if (distance<=vradius)
                 this->visitedElements[x][y]=0;
@@ -148,7 +159,7 @@ int chamber::isVisible(int x, int y)
 
 int chamber::isVisible(coords point)
 {
-   // std::lock_guard<std::mutex> guard(this->chmutex);
+    // std::lock_guard<std::mutex> guard(this->chmutex);
     if(point.x<this->width && point.y<this->height && point.x>=0 && point.y>=0)
         return this->visitedElements[point.x][point.y];
     return false;
@@ -159,7 +170,7 @@ int chamber::isVisible(coords point)
 
 std::shared_ptr<bElem> chamber::getElement(int x, int y)
 {
-   // std::lock_guard<std::mutex> guard(this->chmutex);
+    // std::lock_guard<std::mutex> guard(this->chmutex);
     if (x < 0 || y < 0 )
         return nullptr;
     if ((unsigned int)x >= this->chamberArray.size() || (unsigned int)y >= this->chamberArray[x].size())
@@ -182,7 +193,7 @@ void chamber::setElement(coords point, std::shared_ptr<bElem> elem)
 
 int chamber::getInstanceId()
 {
-  //  std::lock_guard<std::mutex> guard(this->chmutex);
+    //  std::lock_guard<std::mutex> guard(this->chmutex);
     return this->instanceid;
 }
 

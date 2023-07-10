@@ -247,8 +247,33 @@ There are control switches that modify sound handling:
 - multiStacked object, like a tank with a turret, that would rotate on it's own. The presenter class should already be able to handle to some point such an object.
 
 
+## bElem attributes
+The config file now will have entries to configure elements attributes, like being steppable, being movable and so on. 
+    int subType=-1;
+    bool killable=false;
+    bool destroyable=false;
+    bool steppable=false;
+    bool isMovable=false;
+    bool isInteractive=false;
+    bool isCollectible=false;
+    bool canPush=false;
+    bool canBePushed=false;
+    bool canCollect=false;
+    bool isWeapon=false;
+    bool isOpen=false;
+    bool isLocked=false;
+    int energy=100;
+    int maxEnergy=100;
+    int ammo=0;
+    int maxAmmo=0;
+
+
+
 ## ChangeLog
 
+
+* Started major refactoring, which resulted in two new classes: bElemStats and bElemAttrs - that will probably in the future flatten the structure of bElems, as I plan do the mechanics, and other hooks with hashmaps of lambdas :)
+* started creating configrable element attributes. 
 * Introduced object puppetMaster, it is yet missing the graphical hooks, but it compiles. The patrolling drone will have different brains, that will control it.
 * Made some changes to the patrolling drone, now it requests a brain object on interaction
 * Made changes to Inventory, now we can request a cingle token.

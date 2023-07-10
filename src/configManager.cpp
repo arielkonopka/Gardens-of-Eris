@@ -10,7 +10,7 @@ configManager::configManager() : std::enable_shared_from_this<configManager>()
 
 std::shared_ptr<configManager> configManager::getInstance()
 {
-    configManager cm = configManager();
+ //   configManager cm = configManager();
     if (configManager::instance == nullptr)
     {
         configManager::instance = std::make_shared<configManager>();
@@ -114,6 +114,43 @@ void configManager::configReload()
         spriteData sdata;
         sdata.name = sprlist[c]["Name"].GetString();
         sdata.eType = sprlist[c]["Type"].GetInt();
+     //   std::cout<<"cfg:type "<<sdata.eType<<"\n";
+        if(sprlist[c].HasMember("Attributes"))
+        {
+            for(unsigned int i =0;i<sprlist[c]["Attributes"].Size();i++)
+            {
+                /*
+                Here read the player's attributes
+
+                */
+                attributeData ad;
+                ad.subType=(sprlist[c]["Attributes"][i].HasMember("Subtype"))?sprlist[c]["Attributes"][i]["Subtype"].GetInt():-1;
+                ad.killable=(sprlist[c]["Attributes"][i].HasMember("Killable"))?sprlist[c]["Attributes"][i]["Killable"].GetBool():false;
+                ad.destroyable=(sprlist[c]["Attributes"][i].HasMember("Destroyable"))?sprlist[c]["Attributes"][i]["Destroyable"].GetBool():false;
+                ad.steppable=(sprlist[c]["Attributes"][i].HasMember("Steppable"))?sprlist[c]["Attributes"][i]["Steppable"].GetBool():false;
+                ad.isMovable=(sprlist[c]["Attributes"][i].HasMember("isMovable"))?sprlist[c]["Attributes"][i]["isMovable"].GetBool():false;
+                ad.isInteractive=(sprlist[c]["Attributes"][i].HasMember("isInteractive"))?sprlist[c]["Attributes"][i]["isInteractive"].GetBool():false;
+                ad.isCollectible=(sprlist[c]["Attributes"][i].HasMember("isCollectible"))?sprlist[c]["Attributes"][i]["isCollectible"].GetBool():false;
+                ad.canPush=(sprlist[c]["Attributes"][i].HasMember("canPush"))?sprlist[c]["Attributes"][i]["canPush"].GetBool():false;
+                ad.canBePushed=(sprlist[c]["Attributes"][i].HasMember("canBePushed"))?sprlist[c]["Attributes"][i]["canBePushed"].GetBool():false;
+                ad.isWeapon=(sprlist[c]["Attributes"][i].HasMember("isWeapon"))?sprlist[c]["Attributes"][i]["isWeapon"].GetBool():false;
+                ad.isOpen=(sprlist[c]["Attributes"][i].HasMember("isOpen"))?sprlist[c]["Attributes"][i]["isOpen"].GetBool():false;
+                ad.isLocked=(sprlist[c]["Attributes"][i].HasMember("isLocked"))?sprlist[c]["Attributes"][i]["isLocked"].GetBool():false;
+                ad.energy=(sprlist[c]["Attributes"][i].HasMember("energy"))?sprlist[c]["Attributes"][i]["energy"].GetInt():1;
+                ad.maxEnergy=(sprlist[c]["Attributes"][i].HasMember("maxEnergy"))?sprlist[c]["Attributes"][i]["maxEnergy"].GetInt():1;
+                ad.ammo=(sprlist[c]["Attributes"][i].HasMember("ammo"))?sprlist[c]["Attributes"][i]["ammo"].GetInt():0;
+                ad.maxAmmo=(sprlist[c]["Attributes"][i].HasMember("maxAmmo"))?sprlist[c]["Attributes"][i]["maxAmmo"].GetInt():0;
+           //     std::cout<<"  cfgread: s"<<ad.subType<<" k"<<ad.killable<<" w"<<ad.isCollectible<<"\n";
+
+                sdata.attributes.push_back(ad);
+            }
+
+
+        }
+
+
+
+
         if (sprlist[c].HasMember("Samples"))
         {
             for (unsigned int i = 0; i < sprlist[c]["Samples"].Size(); i++)

@@ -12,6 +12,20 @@ bunker::bunker():mechanical(),nonSteppable(),movableElements(), myGun(nullptr)
 {
 
 }
+bool bunker::additionalProvisioning()
+{
+    return this->additionalProvisioning(0,this->getType());
+}
+
+bool bunker::additionalProvisioning(int subtype, int typeId)
+{
+    return bElem::additionalProvisioning(subtype,typeId);;
+}
+
+bool bunker::additionalProvisioning(int subtype, std::shared_ptr<bunker>sbe)
+{
+    return this->additionalProvisioning(subtype,sbe->getType());
+}
 
 
 
@@ -24,22 +38,17 @@ bunker::~bunker()
 {
     if(this->activatedBy!=nullptr)
     {
-        this->setStats(this->backUp);
+      //  this->setStats(this->backUp);
         //    this->activatedBy->unlockThisObject(shared_from_this());
         this->activatedBy=nullptr;
     }
-}
-
-bool bunker::isMovable()
-{
-    return true;
 }
 
 
 bool bunker::mechanics()
 {
     bool res=mechanical::mechanics();
-    if(!res || this->getMoved()>0 || this->getWait()>0)
+    if(!res || this->status->isMoving() || this->status->isWaiting())
         return false;
     if(this->help>0)
     {
@@ -48,7 +57,7 @@ bool bunker::mechanics()
         {
             if(this->activatedBy!=nullptr)
             {
-                this->setStats(this->backUp);
+              //  this->setStats(this->backUp);
                 this->activatedBy->unlockThisObject(shared_from_this());
                 this->activatedBy=nullptr;
             }
@@ -72,13 +81,14 @@ bool bunker::interact(std::shared_ptr<bElem> Who)
     if(mechanical::interact(Who)==false)
         return false;
     this->help=5555;
-    if(Who->getStats().get()!=nullptr && this->activatedBy.get()==nullptr)
+/*    if(Who->getStats().get()!=nullptr && this->activatedBy.get()==nullptr)
     {
         this->activatedBy=Who;
         this->backUp=this->getStats();
-        this->setStats(Who->getStats());
+      //  this->setStats(Who->getStats());
         Who->lockThisObject(shared_from_this());
     }
+    */
     return true;
 }
 
@@ -93,16 +103,16 @@ direction bunker::findLongestShot()
     {
         element=this->getElementInDirection((direction)(dir));
         if(element.get()==nullptr) continue;
-        while(element->isSteppable()==true)
+        while(element->attrs->isSteppable()==true)
         {
             routes[dir]++;
             element=element->getElementInDirection((direction)(dir));
             if (element.get()==nullptr)
                 break;
         }
-        if (element.get()!=nullptr)
+        if (element)
         {
-            if (element->canBeKilled()==true)
+            if (element->attrs->isKillable()==true)
             {
                 routes[dir]=655350; // We shoot here, the place, where something to be killed stands at
             }
@@ -120,7 +130,7 @@ direction bunker::findLongestShot()
 bool bunker::selfAlign()
 {
     if(this->getBoard())
-        this->setFacing(this->findLongestShot());
+        this->status->setFacing(this->findLongestShot());
     return true;
 }
 

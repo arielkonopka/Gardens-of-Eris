@@ -10,23 +10,22 @@ collectible::collectible():audibleElement()
 
 }
 
-
-bool collectible::isCollectible()
-{
-    return true;
-}
 videoElement::videoElementDef* collectible::getVideoElementDef()
 {
     return collectible::vd;
 }
-
-void collectible::setCollected(std::shared_ptr<bElem> who)
+bool collectible::additionalProvisioning(int subtype, std::shared_ptr<collectible> sbe)
 {
-    std::shared_ptr<bElem> wo=this->getCollector();
-    bElem::setCollected(who);
-    if(who.get()!=nullptr && who->getBoard().get()!=nullptr && (who->getType()==_player || this->getType()==_goldenAppleType) && wo.get()!=who.get())
-    {
-        this->playSound("Found","Collect");
-    }
+    return this->additionalProvisioning(subtype,sbe->getType());
+}
 
+
+bool collectible::additionalProvisioning()
+{
+    return this->additionalProvisioning(0,this->getType());
+}
+
+bool collectible::additionalProvisioning(int subtype, int typeId)
+{
+    return bElem::additionalProvisioning(subtype,typeId);
 }

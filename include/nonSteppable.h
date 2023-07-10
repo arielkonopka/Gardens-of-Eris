@@ -11,14 +11,14 @@
 
 class nonSteppable : virtual public bElem
 {
-    public:
-        virtual videoElement::videoElementDef* getVideoElementDef();
-        static videoElement::videoElementDef* vd;
-        nonSteppable();
-        explicit nonSteppable(std::shared_ptr<chamber> board);
-        explicit nonSteppable(std::shared_ptr<chamber> board,int x, int y);
-        bool isSteppable();
-
+public:
+    virtual videoElement::videoElementDef* getVideoElementDef();
+    static videoElement::videoElementDef* vd;
+    nonSteppable();
+    explicit nonSteppable(std::shared_ptr<chamber> board);
+    virtual bool additionalProvisioning(int subtype,std::shared_ptr<nonSteppable> sbe);
+    virtual bool additionalProvisioning();
+    virtual bool additionalProvisioning(int subtype,int typeId);
 
 };
 

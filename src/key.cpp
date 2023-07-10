@@ -19,10 +19,21 @@ key::key(std::shared_ptr<chamber> board) : key()
 key::key(std::shared_ptr<chamber> board, int subtype) : key(board)
 {
 
-    this->setSubtype(subtype);
 }
 
 key::key() : collectible(), nonSteppable()
 {
-    this->setDirection(UP);
+}
+bool key::additionalProvisioning(int subtype, std::shared_ptr<key>key)
+{
+    return this->additionalProvisioning(subtype,key->getType());
+}
+bool key::additionalProvisioning(int subtype, int typeId)
+{
+    return bElem::additionalProvisioning(subtype,typeId);
+}
+
+bool key::additionalProvisioning()
+{
+    return this->additionalProvisioning(0,this->getType());
 }

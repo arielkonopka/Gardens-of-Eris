@@ -11,8 +11,9 @@ public:
     virtual videoElement::videoElementDef* getVideoElementDef();
     collectible();
     explicit collectible(std::shared_ptr<chamber> board);
-    virtual bool isCollectible();
-    virtual void setCollected(std::shared_ptr<bElem> who);
+    virtual bool additionalProvisioning(int subtype,std::shared_ptr<collectible> sbe);
+    virtual bool additionalProvisioning();
+    virtual bool additionalProvisioning(int subtype,int typeId);
 
 };
 

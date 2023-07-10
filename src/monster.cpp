@@ -10,12 +10,30 @@ monster::monster(std::shared_ptr<chamber> board) : monster()
 
 monster::monster(std::shared_ptr<chamber> board, int newSubtype) : monster(board)
 {
-    this->setSubtype(newSubtype);
 }
 monster::monster() : killableElements(), nonSteppable(), mechanical(), movableElements()
 {
-    this->setEnergy(_defaultEnergy);
-    this->setInventory(std::make_shared<inventory>());
+
+}
+
+bool monster::additionalProvisioning(int subtype, std::shared_ptr<monster>sbe)
+{
+    return bElem::additionalProvisioning(subtype,sbe->getType());
+}
+
+
+
+
+
+
+
+
+
+bool monster::additionalProvisioning(int subtype, int typeId)
+{
+    bool res1= bElem::additionalProvisioning(subtype,typeId);
+//  this->attrs->setEnergy(_defaultEnergy);
+//   this->setInventory(std::make_shared<inventory>()); // setCollect should be true
     if (bElem::randomNumberGenerator() % 2 == 0)
     {
         this->rotA = 1;
@@ -23,16 +41,24 @@ monster::monster() : killableElements(), nonSteppable(), mechanical(), movableEl
     }
     if (bElem::randomNumberGenerator() % 5 == 0)
     {
-        this->weapon = std::make_unique<plainGun>();
-        this->weapon->setEnergy(((bElem::randomNumberGenerator()*555)%5)*5);
-        this->weapon->setAmmo(5 * (5 + bElem::randomNumberGenerator() % 55));
-        this->weapon->setMaxEnergy(5 * this->weapon->getEnergy());
+        this->weapon = elementFactory::generateAnElement<plainGun>(this->getBoard(),0);
+        this->weapon->attrs->setEnergy(((bElem::randomNumberGenerator()*555)%5)*5);
+        this->weapon->attrs->setAmmo(5 * (5 + bElem::randomNumberGenerator() % 55));
+        this->weapon->attrs->setMaxEnergy(5*5*5);
     }
+    return res1;
 }
+
+bool monster::additionalProvisioning()
+{
+    return this->additionalProvisioning(0,this->getType());
+}
+
+
 
 monster::~monster()
 {
- 
+
 }
 videoElement::videoElementDef *monster::getVideoElementDef()
 {
@@ -53,60 +79,89 @@ bool monster::checkNeigh()
         ;
         if (e == nullptr)
             continue;
-        if (e->isCollectible())
+#ifdef _VerbousMode_
+        std::cout<<"  ** CHK isCollectible\n";
+#endif
+        if (e->attrs->isCollectible())
         {
             this->collect(e);
-            this->setWait(_mov_delay);
+            this->status->setWaiting(_mov_delay);
             r = true;
             continue;
         }
+#ifdef _VerbousMode_
+        std::cout<<"  ** CHK isCollectible done\n";
+        std::cout<<"  ** CHK getType\n";
+#endif
         if (e->getType() == _player)
         {
+#ifdef _VerbousMode_
+            std::cout<<"  *** Hurt \n";
+#endif
             e->hurt(5);
+#ifdef _VerbousMode_
+            std::cout<<"  *** Done\n";
+#endif
             r = true;
             continue;
         }
-
-        if (this->weapon != nullptr || this->getInventory()->getActiveWeapon() != nullptr)
+#ifdef _VerbousMode_
+        std::cout<<"  ** CHK getType Done\n";
+#endif
+        if (this->weapon.get()!=nullptr  || this->attrs->canCollect()) //
         {
-            while (e != nullptr)
+            while (e != nullptr) // this is the "mostervision"
             {
-                if ((this->getInventory()->getActiveWeapon() != nullptr || this->weapon != nullptr) &&
-                    ((e->getType() == _player && e->isActive()) ||
-                     (e->getType() == _patrollingDrone && e->isLiveElement())))
+
+                if (e->getType() == _stash || e->getType() == _rubishType || (e->getType()==_goldenAppleType && e->attrs->getSubtype()!=0) || e->attrs->isWeapon()) // take the direction towards remainings from other objects, broken apples or guns
                 {
-                    this->setFacing(d);
+                    this->status->setMyDirection(d);
+                    this->status->setFacing(d);
+                    this->inited = false;
+                    this->status->setWaiting(_mov_delay); // will wait...
+                    return true;
+                }
+
+                if (
+                    ((e->getType() == _player && e->status->isActive()) || (e->getType() == _patrollingDrone && e->status->hasActivatedMechanics()))
+                    &&
+                    ((this->attrs->canCollect() && this->attrs->getInventory()->getActiveWeapon() != nullptr ) || this->weapon != nullptr)
+                )
+                {
+                    this->status->setFacing(d);
                     if (this->weapon != nullptr)
                     {
-                        this->weapon->use(shared_from_this());
+                        this->weapon->use(shared_from_this()); // shoot an object with native gun
                     }
                     else
                     {
-                        this->getInventory()->getActiveWeapon()->use(shared_from_this());
+                        this->attrs->getInventory()->getActiveWeapon()->use(shared_from_this()); // shoot with the one from the inventory - surprise thing:)
                     }
-                    this->setWait(_mov_delay);
+                    this->status->setWaiting(_mov_delay); // will wait next couple times
                     break;
                 }
-
-                if (e->getType() == _stash || e->getType() == _rubishType || e->isWeapon()) // Take remainings, and guns
+                // if it is something interesting, go and fetch it
+                if (e->getType() == _stash || e->getType() == _rubishType || (e->getType()==_goldenAppleType && e->attrs->getSubtype()!=0) || e->attrs->isWeapon()) // take the direction towards remainings from other objects, broken apples or guns
                 {
-                    this->setDirection(d);
+                    this->status->setMyDirection(d);
+                    this->status->setFacing(d);
                     this->inited = false;
-                    this->setWait(_mov_delay);
+                    this->status->setWaiting(_mov_delay); // will wait...
                     return true;
                 }
-                // closed door?
-                if (e->getType() == _door && !e->isSteppable())
+
+                // closed door? and we got a key?
+                if ((e->getType() == _door && !e->attrs->isSteppable()) && (this->attrs->getInventory()->countTokens(_door, e->attrs->getSubtype()) > 0))
                 {
-                    if (this->getInventory()->countTokens(_door, e->getSubtype()) > 0) // we got the key? Go for it
-                    {
-                        this->setDirection(d);
-                        this->inited = false;
-                        this->setWait(_mov_delay);
-                        return true;
-                    }
+
+                    this->status->setMyDirection(d);
+                    this->inited = false;
+                    this->status->setWaiting(_mov_delay);
+                    return true;
+
                 }
-                if (!e->isSteppable() || e->getElementInDirection(d) == nullptr)
+                // we do not see behind non steppable objects
+                if (!e->attrs->isSteppable() || e->getElementInDirection(d) == nullptr)
                     break;
                 e = e->getElementInDirection(d);
             }
@@ -118,33 +173,35 @@ bool monster::mechanics()
 {
 
     direction newDir = NODIRECTION;
-    direction oldDir = (direction)(((int)this->getDirection()) % 4);
-    if (!movableElements::mechanics() || this->getMoved() > 0)
+    direction oldDir = (direction)(((int)this->status->getMyDirection()) % 4);
+    if (!movableElements::mechanics() || this->status->getMoved() > 0)
         return false;
-
+//    std::cout<<"   * CHK seppableNeigh\n";
     if (this->steppableNeigh())
         this->inited = false;
+//    std::cout<<"   * CHK seppableNeigh done\n";
+
     if (!this->inited)
     {
         if (this->isSteppableDirection(oldDir))
         {
-            this->setFacing(oldDir);
+            this->status->setFacing(oldDir);
             return this->moveInDirection(oldDir);
         }
-        this->setDirection((direction)((((int)oldDir) + rotB) % 4));
-        this->setFacing(this->getDirection());
-        oldDir = this->getDirection();
+        this->status->setMyDirection((direction)((((int)oldDir) + rotB) % 4));
+        this->status->setFacing(this->status->getMyDirection());
+        oldDir = this->status->getMyDirection();
         this->inited = true;
     }
     this->checkNeigh();
-    if (this->isWaiting())
+    if (this->status->isWaiting())
         return true;
     for (int c = 0; c < 4; c++)
     {
         newDir = (direction)((((int)oldDir) + rotA) % 4);
         if (this->isSteppableDirection(newDir))
         {
-            this->setFacing(newDir);
+            this->status->setFacing(newDir);
             this->moveInDirection(newDir);
             return true;
         }
