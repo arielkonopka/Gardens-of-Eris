@@ -50,7 +50,7 @@ bool plainGun::additionalProvisioning(int subtype,int typeId)
 }
 
 
-int plainGun::getType()
+int plainGun::getType() const
 {
     return _plainGun;
 }

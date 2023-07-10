@@ -144,8 +144,11 @@ std::shared_ptr<bElem> inventory::getActiveWeapon()
         return nullptr;
 
     this->wPos=this->wPos%this->weapons.size();
+ //   std::cout<<" * Wpos: "<<this->wPos<<"\n";
     if (this->weapons[this->wPos]->attrs->getAmmo()<=0)
     {
+  //      std::cout<<" * Wpos: removing weapon - empty"<<this->wPos<<"\n";
+
         this->removeActiveWeapon();
         return nullptr; // We will remove empty Weapons recursively, if it is necessary
     }
@@ -174,6 +177,7 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
 
     if (what->attrs->isWeapon()==true)
     {
+    std::cout<<"* collect Weapon\n";
         this->weapons.push_back(what);
         return true;
     }

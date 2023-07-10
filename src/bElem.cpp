@@ -533,11 +533,11 @@ bool bElem::collect(std::shared_ptr<bElem> collectible)
         return false;
     }
 #ifdef _VerbousMode_
-    std::cout << "Collect " << collected->getType() << " st: " << collected->getSubtype() << "\n";
+    std::cout << "Collect " << collected->getType() << " st: " << collected->attrs->getSubtype() << "\n";
 #endif
     collectible->status->setCollector(shared_from_this());
 #ifdef _VerbousMode_
-    std::cout << "Collected set? " << (collectible->getCollector() == shared_from_this()) << "\n";
+    std::cout << "Collected set? " << (collectible->status->isCollected()) << "\n";
 #endif
     this->attrs->getInventory()->addToInventory(collectible);
     return true;

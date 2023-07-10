@@ -33,8 +33,8 @@ bool explosives::explode(float radius)
 {
 
     std::shared_ptr<bElem> step=(this->status->isCollected())?this->status->getCollector().lock()->status->getSteppingOn():this->status->getSteppingOn();
-    coords mc=(!this->status->isCollected())?this->status->getCollector().lock()->status->getMyPosition():this->status->getMyPosition();
-    std::shared_ptr<chamber> brd = (!this->status->getCollector().expired())?this->status->getCollector().lock()->getBoard():this->getBoard();
+    coords mc=(this->status->isCollected())?this->status->getCollector().lock()->status->getMyPosition():this->status->getMyPosition();
+    std::shared_ptr<chamber> brd = (this->status->isCollected())?this->status->getCollector().lock()->getBoard():this->getBoard();
     int xs=(mc.x-radius<0)?0:mc.x-radius;
     int xe=(mc.x+radius>=brd->width)?brd->width-1:mc.x+radius;
     int ys=(mc.y-radius<0)?0:mc.y-radius;

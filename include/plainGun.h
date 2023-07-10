@@ -11,7 +11,7 @@ class plainGun : public usable, public mechanical, public collectible, public no
 public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
-    virtual int getType();
+    virtual int getType() const;
     virtual bool use(std::shared_ptr<bElem> who);
     plainGun();
     explicit plainGun(std::shared_ptr<chamber> board);

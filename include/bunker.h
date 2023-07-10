@@ -18,7 +18,7 @@ public:
     virtual bool mechanics();
     direction findLongestShot();
     virtual bool selfAlign();
-    int getType();
+    int getType() const;
     bool interact(std::shared_ptr<bElem> Who) final;
     virtual bool additionalProvisioning();
     virtual bool additionalProvisioning(int subtype,int typeId);

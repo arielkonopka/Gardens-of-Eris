@@ -135,7 +135,7 @@ bool bunker::selfAlign()
 }
 
 
-int bunker::getType()
+int bunker::getType() const
 {
     return _bunker;
 }
