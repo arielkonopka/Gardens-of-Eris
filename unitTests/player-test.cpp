@@ -9,23 +9,43 @@
 
 BOOST_AUTO_TEST_SUITE(PlayerTests)
 
+BOOST_AUTO_TEST_CASE(GetActivePlayerTest)
+{
+    coords point={3,3};
+    std::shared_ptr<chamber> mc = chamber::makeNewChamber({5, 5});
+    std::shared_ptr<player> plr = elementFactory::generateAnElement<player>(mc,0);
+    plr->stepOnElement(mc->getElement(point));
+    plr->status->setActive(true);
+    BOOST_CHECK(player::getActivePlayer());
+    BOOST_CHECK(plr->status->getInstanceId()==player::getActivePlayer()->status->getInstanceId());
+}
+
+/**
+ * @brief Unit test o' the `shootGun` function in the `player` class, as if written by a dwarf.
+ *
+ * This unit test be checkin' whether the player can properly collect a gun, use it for firin',
+ * and then if the gun is rightly removed from the player's inventory once all the bullets have been spent.
+ * It also checks whether, after disposing the player from the board, the location o' the player is properly replaced with rubbish.
+ * Proper management of firearms is crucial for any self-respectin' dwarf, ain't it?
+ */
 BOOST_AUTO_TEST_CASE(PlayerShootsGun)
 {
     //    bool gunDisposed=false;
     std::shared_ptr<chamber> mc = chamber::makeNewChamber({5, 5});
-    std::shared_ptr<player> plr = elementFactory::generateAnElement<player>(mc);
+    std::shared_ptr<player> plr = elementFactory::generateAnElement<player>(mc,0);
+    BOOST_CHECK(plr->attrs->canCollect());
     plr->stepOnElement(mc->getElement(2, 2));
-    std::shared_ptr<plainGun> pGun = elementFactory::generateAnElement<plainGun>(mc);
-    pGun->setSubtype(0);
+    std::shared_ptr<plainGun> pGun = elementFactory::generateAnElement<plainGun>(mc,0);
     pGun->stepOnElement(mc->getElement(3, 2));
-    plr->setActive(true);
+    plr->status->setActive(true);
     plr->collect(pGun);
-    BOOST_CHECK(plr->getInventory()->getActiveWeapon() != nullptr);
-    BOOST_CHECK(plr->getInventory()->getActiveWeapon()->getInstanceid() == pGun->getInstanceid());
-    plr->setDirection(UP);
-    for (int c = 0; c < 50; c++)
+    BOOST_CHECK(pGun->attrs->isCollectible());
+    BOOST_CHECK(plr->attrs->getInventory()->getActiveWeapon() != nullptr);
+    BOOST_CHECK(plr->attrs->getInventory()->getActiveWeapon()->status->getInstanceId() == pGun->status->getInstanceId());
+    plr->status->setMyDirection(UP);
+    for (int c = 0; c < 555; c++)
     {
-        std::shared_ptr<bElem> wep = plr->getInventory()->getActiveWeapon();
+        std::shared_ptr<bElem> wep = plr->attrs->getInventory()->getActiveWeapon();
         if (wep != nullptr)
         {
             plr->shootGun();
@@ -33,30 +53,34 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
         for (int d = 0; d < 100; d++)
             bElem::tick();
     }
-    BOOST_CHECK(plr->getInventory()->getActiveWeapon() == nullptr);
+    BOOST_CHECK(plr->attrs->getInventory()->getActiveWeapon() == nullptr);
 
-    pGun = elementFactory::generateAnElement<plainGun>(mc);
-    pGun->setSubtype(0);
+    pGun = elementFactory::generateAnElement<plainGun>(mc,0);
+    pGun->attrs->setSubtype(0);
     pGun->stepOnElement(mc->getElement(3, 2));
     plr->collect(pGun);
-    pGun = elementFactory::generateAnElement<plainGun>(mc);
-    pGun->setSubtype(0);
+    pGun = elementFactory::generateAnElement<plainGun>(mc,0);
+    pGun->attrs->setSubtype(0);
     pGun->stepOnElement(mc->getElement(3, 2));
     plr->collect(pGun);
-    //    for(int c=0;c<pGun->getAmmo();c++)
-    //    {
-
-    //    }
-    plr->disposeElement();
-
-    BOOST_CHECK(mc->getElement(2, 2)->getType() == _rubishType);
+    plr->disposeElement(); // here we should have the player to be removed from the board
+    BOOST_CHECK(mc->getElement(2, 2)->status->getInstanceId()!= plr->status->getInstanceId());
+    BOOST_CHECK(mc->getElement(2, 2)->getType()!= plr->getType());
+    BOOST_CHECK(mc->getElement(2, 2)->getType()==_rubishType);
 }
 
+/**
+ * @brief Unit test fer the 'stepOnElement' an' 'disposeElement' functions in the 'player' class, given a touch o' the Welsh Valleys, isn't it?
+ *
+ * This test makes sure a player's stepping right onto an element, which is then disposed of, but it doesn't blow the player to smithereens, no siree.
+ * Tests to see if the player is rightly removed from the original location and then placed in a new location, it does.
+ * It also ensures the player ain't appearing in more than one place at the same time, because that'd be more magic than even Merlin could handle!
+ */
 BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
 {
     std::shared_ptr<chamber> mc = chamber::makeNewChamber({10, 10});
     std::shared_ptr<player> p = nullptr;
-    p = elementFactory::generateAnElement<player>(mc);
+    p = elementFactory::generateAnElement<player>(mc,0);
     std::shared_ptr<bElem> e = nullptr;
     for (int cnt = 0; cnt < 10000; cnt++)
     {
@@ -65,7 +89,7 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
         BOOST_CHECK(e != p);
         p->stepOnElement(e);
         e->disposeElement();
-        p->setActive(true);
+        p->status->setActive(true);
         // p->moveInDirection(RIGHT);
         BOOST_CHECK(p->removeElement() != nullptr);
 
@@ -82,15 +106,25 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
                 BOOST_ASSERT(e != nullptr);
                 while (e != nullptr)
                 {
-                    if (e->getInstanceid() == p->getInstanceid())
+                    if (e->status->getInstanceId() == p->status->getInstanceId())
                         instances++;
-                    e = e->getSteppingOnElement();
+                    e = e->status->getSteppingOn();
                 }
             }
         }
         BOOST_CHECK(instances == 1);
     }
 }
+
+/**
+ * @brief Bejaysus, 'tis a unit test for the activation and disposal o' player elements, top o' the mornin' to ya!
+ *
+ * This dandy test ensures a player can only step onto an element once, and cannot be stepping onto nothing at all, by the saints!
+ * Interaction between players is also tested, so it is.
+ * We be making sure that after a player interacts with another, they can't be doing it again.
+ * Then we're checking that only one player can be active at a time, and that when a player meets their end, another steps up to the plate.
+ * At the end of the day, when all players have been disposed of, the chamber is emptied and ready for another round, so it is!
+ */
 
 BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
 {
@@ -99,17 +133,17 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
     std::shared_ptr<player> p1;
     std::shared_ptr<player> p0;
     std::shared_ptr<bElem> tp, tp1;
-    int iid;
+    unsigned long int iid;
     for (int c = 0; c < 10; c++)
         m.push_back(chamber::makeNewChamber({105, 10}));
 
-    p0 = elementFactory::generateAnElement<player>(m[0]);
+    p0 = elementFactory::generateAnElement<player>(m[0],0);
     p0->stepOnElement(m[1]->getElement(0, 0));
-    p0->setActive(true);
+    p0->status->setActive(true);
     for (int a = 0; a < 100; a++)
     {
         // std::cout<<a<<"\n";
-        p = elementFactory::generateAnElement<player>();
+        p = elementFactory::generateAnElement<player>(m[0],0);
         BOOST_CHECK(p->stepOnElement(nullptr) == false);
         BOOST_CHECK(p->stepOnElement(m[a % m.size()]->getElement(a, a % 10)) == true);
         BOOST_CHECK(p->stepOnElement(m[a % m.size()]->getElement(a, a % 10)) == false);
@@ -123,27 +157,35 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
     tp = player::getActivePlayer();
     while (tp != nullptr)
     {
-        iid = tp->getInstanceid();
+        iid = tp->status->getInstanceId();
         tp->disposeElement();
         tp1 = player::getActivePlayer();
         if (p1 != nullptr)
-            BOOST_CHECK(iid != p1->getInstanceid());
+            BOOST_CHECK(iid != p1->status->getInstanceId());
         tp = tp1;
     }
     m.clear();
 }
 
+/**
+ * @brief Test case to check the interaction of a player with apples and bombs.
+ *
+ * In this test, a chamber is created and a player, along with golden apples and simple bombs, are generated. The player
+ * collects the apples and then gets destroyed by a bomb. After the player is destroyed, the stash where the apples
+ * were collected is also destroyed by a bomb. The test verifies the correct number of apples at different stages and
+ * ensures the objects' types are updated correctly as they interact and get destroyed.
+ */
 BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestroyedWithBomb)
 {
     std::shared_ptr<chamber> mc = chamber::makeNewChamber({10, 10});
-    std::shared_ptr<goldenApple> gc = elementFactory::generateAnElement<goldenApple>(mc);
-    std::shared_ptr<player> p = elementFactory::generateAnElement<player>(mc);
-    std::shared_ptr<simpleBomb> sb = elementFactory::generateAnElement<simpleBomb>(mc);
+    std::shared_ptr<goldenApple> gc = elementFactory::generateAnElement<goldenApple>(mc,0);
+    std::shared_ptr<player> p = elementFactory::generateAnElement<player>(mc,0);
+    std::shared_ptr<simpleBomb> sb = elementFactory::generateAnElement<simpleBomb>(mc,0);
 
     p->stepOnElement(mc->getElement(2, 1));
     sb->stepOnElement(mc->getElement(2, 0));
     gc->stepOnElement(mc->getElement(1, 1));
-    gc = elementFactory::generateAnElement<goldenApple>(mc);
+    gc = elementFactory::generateAnElement<goldenApple>(mc,0);
     gc->stepOnElement(mc->getElement(1, 2));
     p->collect(mc->getElement(1, 1));
     p->collect(mc->getElement(1, 2));
@@ -160,7 +202,7 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
     }
     BOOST_CHECK(goldenApple::getAppleNumber() == 2);
     BOOST_CHECK(mc->getElement(2, 1)->getType() == _rubishType);
-    sb = elementFactory::generateAnElement<simpleBomb>(mc);
+    sb = elementFactory::generateAnElement<simpleBomb>(mc,0);
     sb->stepOnElement(mc->getElement(2, 2));
     sb->kill();
     // We take time for the exploded bomb to finish
@@ -174,16 +216,38 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
     BOOST_CHECK(goldenApple::getAppleNumber() == 0);
 }
 
+/**
+ * @brief Here we are with the function 'controlPlayer'. Sounds pretty straightforward, isn't it? Let's dive in.
+ *
+ * Our function here takes a chamber 'mc' and a Control Item 'cntrlItm' as its inputs. Now, what's happening in the function?
+ *
+ * Firstly, we are getting the active player using the 'getActivePlayer' function, and then we're making sure it's not a nullptr, right?
+ *
+ * If it's not, then we proceed to animate all the elements for 100 clock ticks, and then we check the player's position once it's stabilised.
+ *
+ * We then set the control command that the player will intercept. Next, we animate the game for another 100 clock ticks, giving the player a chance to move, isn't it?
+ *
+ * After this, we set the control item type to -1, indicating no movement, and the direction to NODIRECTION, meaning it's undetermined.
+ *
+ * We then animate for another 100 clock ticks, and then check the player's final position.
+ *
+ * If the control item type is either 0 or 4, we check to make sure the player's initial and final positions are not the same. Otherwise, they should be the same.
+ *
+ * Let's move on to the control item structure, which has an integer 'type' and a 'direction'.
+ * The 'type' can be anything from -1 to 7, each indicating a specific command for the player, such as move, shoot, interact, etc.
+ * The 'direction' indicates the direction of the player's movement.
+ */
+
 void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
 {
     std::shared_ptr<bElem> p = player::getActivePlayer();
     BOOST_CHECK(p.get() != nullptr);
-    if (p.get() == nullptr)
+    if (!p)
         return;
     coords c0, c1;
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
-    c0 = p->getCoords();
+    c0 = p->status->getMyPosition();
     mc->cntrlItm = cntrlItm;
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
@@ -191,53 +255,67 @@ void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
     mc->cntrlItm.dir = NODIRECTION;
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
-    c1 = p->getCoords();
+    c1 = p->status->getMyPosition();
     if (cntrlItm.type == 0 || cntrlItm.type == 4)
         BOOST_CHECK(c0 != c1);
     else
         BOOST_CHECK(c0 == c1);
 }
 
+/**
+ * @brief Check to see if our player has taken a spill, eh?
+ *
+ * So, this function here is all about checking if our player has, you know, kicked the bucket.
+ * First thing we do is get a hold of the active player and stash their instance ID. Then, we
+ * let things tick along for about 100 cycles. Afterwards, we take another gander at our active player.
+ * If they're still hanging in there, we print a friendly little note to show they're still with us.
+ * Finally, we make sure either the player is now null (they've croaked) or their instance ID has
+ * changed (they've respawned, good on them!).
+ */
 void checkplayerKilled()
 {
     std::shared_ptr<bElem> p = player::getActivePlayer();
-    int iid1 = p->getInstanceid();
+    unsigned long int iid1 = p->status->getInstanceId();
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
     p = player::getActivePlayer();
-    if (p != nullptr)
-    {
-        std::cout << "Player żyje: " << iid1 << " " << p->getInstanceid();
-    }
-    BOOST_CHECK(p == nullptr || iid1 != p->getInstanceid());
+    BOOST_CHECK(p == nullptr || iid1 != p->status->getInstanceId());
 }
 
+/**
+ * @brief Y'all, we're gonna be testing the movement of our player in all four directions: up, down, left, and right.
+ *
+ * This test case starts with creating a new chamber, and in case there are any active players, we'll be disposing of 'em.
+ * We then create a player and a plainGun. The player steps onto a specific element and collects the plainGun. The player's
+ * status is then set to active. The player is controlled to move in all four directions. If the loop counter hits 6, we're
+ * gonna check if our player is killed. If so, a new player is generated, collects the plainGun, steps onto a specific
+ * element, and then its status is set to active.
+ */
 BOOST_AUTO_TEST_CASE(MovePlayer)
 {
     std::shared_ptr<chamber> mc = chamber::makeNewChamber({100, 100});
     coords c0, c1;
     controlItem ci;
-    while (player::getActivePlayer() != nullptr)
+    while (player::getActivePlayer())
     {
-        player::getActivePlayer();
         player::getActivePlayer()->disposeElement();
     }
-    std::shared_ptr<player> p = elementFactory::generateAnElement<player>(mc);
-    std::shared_ptr<plainGun> pg = elementFactory::generateAnElement<plainGun>(mc);
+    std::shared_ptr<player> p = elementFactory::generateAnElement<player>(mc,0);
+    std::shared_ptr<plainGun> pg = elementFactory::generateAnElement<plainGun>(mc,0);
     p->stepOnElement(mc->getElement(50, 50));
     p->collect(pg);
-    p->setActive(true);
+    p->status->setActive(true);
     for (int c = 0; c < 8; c++)
     {
         if (c == 6)
         {
             mc->cntrlItm.type = 6;
             checkplayerKilled();
-            p = elementFactory::generateAnElement<player>(mc);
-            pg = elementFactory::generateAnElement<plainGun>(mc);
+            p = elementFactory::generateAnElement<player>(mc,0);
+            pg = elementFactory::generateAnElement<plainGun>(mc,0);
             p->collect(pg);
             p->stepOnElement(mc->getElement(50, 50));
-            p->setActive(true);
+            p->status->setActive(true);
             continue;
         }
         ci.type = c;

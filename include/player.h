@@ -22,7 +22,6 @@ public:
     bool stepOnElement(std::shared_ptr<bElem> step);
     bool mechanics() final;
     bool interact(std::shared_ptr<bElem> who) final;
-    bool getVisited();
     int getType() const;
     int getAnimPh() final;
     bool shootGun();
@@ -37,7 +36,7 @@ private:
     static std::shared_ptr<bElem> activePlayer;
     static std::vector<std::shared_ptr<bElem>> allPlayers;
     static std::vector<std::shared_ptr<bElem>> visitedPlayers;
-    bool visited=false;
+//    bool visited=false;
     int animPh=0;
 //    int moved=0;
 //    int shot=0;

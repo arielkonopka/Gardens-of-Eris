@@ -174,6 +174,11 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
     what->status->setCollector(this->owner.lock());
 
     this->incrementTokenNumber({what->getType(),what->attrs->getSubtype()});
+    if(what->getType()==_key)
+    {
+        this->keys.push_back(what);
+        return true;
+    }
 
     if (what->attrs->isWeapon()==true)
     {
@@ -189,14 +194,6 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
     if(what->attrs->isMod()==true)
     {
         this->mods.push_back(what);
-        return true;
-    }
-    if(what->getType()==_key)
-    {
-        this->keys.push_back(what);
-
-
-
         return true;
     }
     if(what->attrs->isCollectible()==true && what->getType()!=_rubishType)

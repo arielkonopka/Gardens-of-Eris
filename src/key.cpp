@@ -7,7 +7,7 @@ videoElement::videoElementDef *key::getVideoElementDef()
     return key::vd;
 }
 
-int key::getType()
+int key::getType() const
 {
     return _key;
 }

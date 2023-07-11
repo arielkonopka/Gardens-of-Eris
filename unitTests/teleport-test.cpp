@@ -24,11 +24,11 @@ BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
     BOOST_CHECK(tel1->interact(transportedE)==true);
     // bElem::tick();
     std::cout<<"teleporting1:"<<mc->getElement(2,3)->isTeleporting();
-    BOOST_CHECK(mc->getElement(2,3)->getInstanceid()!=transportedE->getInstanceid());
+    BOOST_CHECK(mc->getElement(2,3)->status->getInstanceId()!=transportedE->status->getInstanceId());
     BOOST_CHECK(mc->getElement(2,3)->isTeleporting()==true);
-    crds=transportedE->getCoords();
+    crds=transportedE->status->getMyPosition();
     //  std::cout<<"x:"<<crds.x<<" y:"<<crds.y<<"\n";
-    BOOST_CHECK(mc->getElement(crds.x,crds.y)->getInstanceid()==transportedE->getInstanceid());
+    BOOST_CHECK(mc->getElement(crds.x,crds.y)->status->getInstanceId()==transportedE->status->getInstanceId());
     BOOST_CHECK(mc->getElement(crds.x,crds.y)->isTeleporting()==true);
     for(int a=0; a<_teleportationTime; a++)
     {
@@ -55,16 +55,16 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
     tel1->stepOnElement(mc->getElement(2,2));
     tel2->stepOnElement(mc->getElement(4,4));
     tel1->interact(transportEl);
-    crds=transportEl->getCoords();
+    crds=transportEl->status->getMyPosition();
     BOOST_CHECK( crds==nc );
-    BOOST_CHECK(transportEl->getInstanceid()==mc->getElement(5,4)->getInstanceid());
+    BOOST_CHECK(transportEl->status->getInstanceId()==mc->getElement(5,4)->status->getInstanceId());
     BOOST_CHECK(transportEl->isTeleporting()==true);
     for(int c=0; c<_teleportationTime+1; c++)
         bElem::tick();
     BOOST_CHECK(transportEl->isTeleporting()==false);
     transportEl->setDirection(LEFT);
     BOOST_CHECK(tel2->interact(transportEl)==true);
-    BOOST_CHECK(transportEl->getInstanceid()==mc->getElement(1,2)->getInstanceid());
+    BOOST_CHECK(transportEl->status->getInstanceId()==mc->getElement(1,2)->status->getInstanceId());
     BOOST_CHECK(transportEl->isTeleporting()==true);
 }
 
@@ -87,9 +87,9 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
     _tr2->setDirection(LEFT);
     tel1->interact(_tr1);
     tel2->interact(_tr2);
-    coords tr1c=_tr1->getCoords();
+    coords tr1c=_tr1->status->getMyPosition();
     BOOST_CHECK(tr1c==t1crds);
-    coords tr2c=_tr2->getCoords();
+    coords tr2c=_tr2->status->getMyPosition();
     BOOST_CHECK(tr2c==t2crds);
 }
 
@@ -114,8 +114,8 @@ BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
     //ok now step on that teleport
     transported->stepOnElement(tel1);
     BOOST_CHECK(tel1->isLiveElement()==true);
-    BOOST_CHECK(transported->getCoords()==pointA);
-    BOOST_CHECK(mc->getElement(pointA)->getInstanceid()==transported->getInstanceid());
+    BOOST_CHECK(transported->status->getMyPosition()==pointA);
+    BOOST_CHECK(mc->getElement(pointA)->status->getInstanceId()==transported->status->getInstanceId());
     for(int c=0;c<_teleportStandTime;c++)
     {
         BOOST_CHECK(transported->isTeleporting()==false);

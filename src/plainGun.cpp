@@ -66,27 +66,23 @@ bool plainGun::use(std::shared_ptr<bElem> who)
 #ifdef _VerbousMode_
     if (who==nullptr)
     {
-
         std::cout<<"Who is nullptr for plain gun!";
         return false;
-
     }
     if(who->getType()==_player)
     {
-
         std::cout<<"Shoot: "<<this->readyToShoot()<<" s "<<this->shot<<" Energy "<<this->attrs->getEnergy()<<"\n";
-
     }
 #endif
-    if (this->readyToShoot()==false)
-        return false; //The gun is fine, not ready to shoot though
-    this->shot=this->getCntr()+_plainGunCharge;
-    if (this->ammo<=0 && (this->attrs->getSubtype()%2)==0) //odd subtypes have infinite shots
+   if (this->status->isWaiting())
+        return false;
+    this->status->setWaiting(_plainGunCharge);
+    if (this->attrs->getAmmo()<=0 && (this->attrs->getSubtype()%2)==0) //odd subtypes have infinite shots
         return false;
     myel=who->getElementInDirection(who->status->getFacing());
     if(myel!=nullptr)
     {
-        if (this->ammo>0 || this->attrs->getSubtype()%2==1)
+        if (this->attrs->getAmmo()>0 || this->attrs->getSubtype()%2==1)
         {
 
             coords3d c3d;
@@ -111,7 +107,7 @@ bool plainGun::use(std::shared_ptr<bElem> who)
             }
             if (this->attrs->getSubtype()%2==0)
             {
-                this->ammo--;
+                this->attrs->setAmmo(this->attrs->getAmmo()-1);
                 this->attrs->setEnergy(this->attrs->getEnergy()-(this->attrs->getEnergy()*0.2));
 
             }
@@ -130,7 +126,7 @@ void plainGun::setMaxEnergy(int me)
 */
 bool plainGun::readyToShoot()
 {
-    return (this->shot<this->getCntr()); // the gun will jam on counter reset, but only this instance
+    return (this->shot<bElem::getCntr()); // the gun will jam on counter reset, but only this instance
 }
 
 

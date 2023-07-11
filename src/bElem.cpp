@@ -182,90 +182,38 @@ oState bElem::disposeElement()
 {
     std::shared_ptr<bElem> t = shared_from_this();
     std::shared_ptr<bElem> stash = nullptr;
+    std::shared_ptr<chamber> _myBoard=this->getBoard();
     coords oCoords = this->status->getMyPosition();
     if (this->status->isDisposed() )
     {
-        //std::cout << "Tried to dispose the same element another time!\n";
         return ERROR;
     }
-    //we moved this from a destructor
+    this->removeElement();
     if (this->status->hasActivatedMechanics())
     {
         this->deregisterLiveElement(this->status->getInstanceId());
     }
-
-
-    if (this->getType() == _rubishType && this->attrs->canCollect())
+    if(this->attrs->canCollect())
     {
-        //  std::cout << "Remove rubbish\n";
-        std::shared_ptr<bElem> r = this->removeElement();
-        r->attrs->getInventory()->changeOwner(nullptr);
-        for (auto c : r->attrs->getInventory()->weapons)
-            c->disposeElement();
-        r->attrs->getInventory()->weapons.clear();
-        for(auto c:r->attrs->getInventory()->keys)
-            c->disposeElement();
-        r->attrs->getInventory()->keys.clear();
-        for (auto c : r->attrs->getInventory()->tokens)
+        if (this->getType() == _rubishType )
         {
-            c->disposeElement();
+            this->attrs->getInventory()->weapons.clear();
+            this->attrs->getInventory()->keys.clear();
+            this->attrs->getInventory()->tokens.clear();
         }
-        r->attrs->getInventory()->tokens.clear();
-
-        return DISPOSED;
-    }
-
-
-    /*   if (!this->status->getCollector().expired())
-       {
-    #ifdef _VerbousMode_
-           std::cout << "The element is collected!\n";
-    #endif
-           std::shared_ptr<bElem> clc=this->status->getCollector().lock();
-           std::shared_ptr<inventory> cInv = clc->attrs->getInventory();
-           if (cInv.get() != nullptr)
-               cInv->removeCollectibleFromInventory(this->status->getInstanceId());
-           this->status->setCollected(false);
-           this->status->setDisposed(true);
-           this->attachedBoard = nullptr;
-           this->status->setMyPosition(NOCOORDS);
-           return DISPOSED;
-       }
-       */
-    //  std::cout<<"removing."<<this->getType()<<".";
-    if (this->attrs && this->attrs->canCollect() && oCoords != NOCOORDS)
-    {
-        if (this->attrs->getInventory()->isEmpty() == false)
+        else if ( oCoords != NOCOORDS && !this->attrs->getInventory()->isEmpty() && _myBoard)
         {
             /*
                 Create a rubbish element on the board, so the inventory would not be lost
              */
             stash = elementFactory::generateAnElement<rubbish>(this->getBoard(),0);
-            stash->attrs->setInventory(this->attrs->getInventory());
-            stash->attrs->getInventory()->changeOwner(stash);
-            this->attrs->setInventory(nullptr);
-            //            if(this->status->getStandingOn().lock().get()!=nullptr)
-            //                stash->stomp(this->status->getStandingOn().lock());
-            if (this->status->getSteppingOn().get() != nullptr)
-                stash->status->setSteppingOn(this->status->getSteppingOn());
-            else
-            {
-                /*
-                   These situations might happen, when we would like to have the floor destructable, so let's support that situation:
-                   In case, that we want to dispose the element, that stands on nullptr, we will create a floor element, place it underneath disposed element,
-                   and then finally we will make a stash object, and place it on the floor we just had created.
-                  */
-                std::shared_ptr<floorElement> nF = elementFactory::generateAnElement<floorElement>(this->getBoard(),0);
-                nF->status->setMyPosition(oCoords);
-                this->status->setSteppingOn(nF);
-                nF->status->setStandingOn(shared_from_this());
-                stash->stepOnElement(this->status->getSteppingOn());
-            }
+            stash->attrs->setCollect(true);
+            stash->attrs->getInventory()->mergeInventory(this->attrs->getInventory());
+            stash->stepOnElement(_myBoard->getElement(oCoords));
         }
     }
-    this->removeElement();
     this->status->setDisposed(true);
-    this->attachedBoard = nullptr;
+    this->setBoard(nullptr);
     this->status->setMyPosition(NOCOORDS);
     return DISPOSED;
 }
@@ -356,10 +304,10 @@ bool bElem::interact(std::shared_ptr<bElem> who)
 
 bool bElem::destroy()
 {
-    std::cout<<" * Destroy:"<<this->getType()<<"\n";
+//   std::cout<<" * Destroy:"<<this->getType()<<"\n";
     if (this->attrs->isDestroyable() || this->attrs->isSteppable() || this->status->isDestroying() || this->status->isDying())
     {
-        std::cout<<"  ** yup.\n";
+        //  std::cout<<"  ** yup.\n";
         if (this->status->isDying())
         {
             this->status->setKilled(0);
@@ -377,18 +325,18 @@ bool bElem::destroy()
 
 int bElem::getAnimPh()
 {
-    int base = (int)this->getCntr();
+    int base = (int)bElem::getCntr();
     if (this->status->isDying())
     {
-        base = (int)(this->getCntr() - this->status->getKillTimeBeg());
+        base = (int)(bElem::getCntr() - this->status->getKillTimeBeg());
     }
     if (this->status->isDestroying())
     {
-        base = (int)(this->getCntr() - this->status->getDestTimeBeg());
+        base = (int)(bElem::getCntr() - this->status->getDestTimeBeg());
     }
     if (this->status->isTeleporting())
     {
-        base = (int)(this->getCntr() - this->status->getTelReqTime());
+        base = (int)(bElem::getCntr() - this->status->getTelReqTime());
     }
     return base >> 3;
 }
@@ -685,7 +633,7 @@ void bElem::runLiveElements()
     {
         for (unsigned int p = 0; p < bElem::liveElems.size(); p++)
         {
-       //  if(bElem::liveElems[p] && bElem::randomNumberGenerator()%55==5)
+            //  if(bElem::liveElems[p] && bElem::randomNumberGenerator()%55==5)
             bElem::liveElems[p]->mechanics();
 
         }

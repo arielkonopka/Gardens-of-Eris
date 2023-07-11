@@ -117,22 +117,19 @@ bool player::interact(std::shared_ptr<bElem> who)
     if (killableElements::interact(who) == false)
         return false;
 
-    if (who->getType() == this->getType() && !this->visited)
+    if (who->getType() == this->getType() && !this->status->isActive())
     {
 #ifdef _VerbousMode_
         std::cout << "Adding new avatar\n";
 #endif
         player::visitedPlayers.push_back(shared_from_this());
-        this->visited = true;
         this->playSound("Player", "ActivateAvatar");
+        this->status->setActive(true);
     }
     return true;
 }
 
-bool player::getVisited()
-{
-    return this->visited;
-}
+
 
 bool player::stepOnElement(std::shared_ptr<bElem> step)
 {
@@ -182,9 +179,9 @@ bool player::mechanics()
     if (!res)
         return false;
 
-    if (this->status->getMoved() > 0)
+    if (this->status->isMoving())
     {
-        if (this->getCntr() % 3 == 0)
+        if (bElem::getCntr() % 3 == 0)
             this->animPh++;
         return true;
     }
@@ -206,7 +203,7 @@ bool player::mechanics()
         this->status->setFacing(this->getBoard()->cntrlItm.dir);
         if (this->shootGun())
         {
-            this->animPh += (this->getCntr() % 2);
+            this->animPh += (bElem::getCntr() % 2);
         }
         break;
     case 2:
