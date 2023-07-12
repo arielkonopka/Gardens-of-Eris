@@ -16,7 +16,7 @@ void bElemStats::createInstanceId()
 
 bElemStats::bElemStats()
 {
-   this->createInstanceId();
+    this->createInstanceId();
 }
 
 bElemStats::~bElemStats()
@@ -267,7 +267,7 @@ void bElemStats::setDestroyed(int value)
 
 bool bElemStats::isInteracting() const
 {
-  return this->getInteracted()>0;
+    return this->getInteracted()>0;
 }
 
 
@@ -403,6 +403,48 @@ bool bElemStats::isFading() const
     return this->getFading()>0;
 }
 
+bool bElemStats::isMarked() const
+{
+    return this->marked;
+}
+
+void bElemStats::setMarked(bool value)
+{
+    this->marked=value;
+}
+
+
+/**
+ * @brief Retrieves the statistic value for a given pointsType key.
+ *
+ * This method returns the statistic value for the provided pointsType key.
+ * The key corresponds to one of the enum values defined in pointsType (TOTAL, SHOOT, STEPS, COLLECTS).
+ * If the key does not exist in the map, it returns 0.
+ *
+ * @param t The pointsType key whose associated value is to be returned.
+ * @return The value to which the specified pointsType key is mapped, or 0 if this map contains no mapping for the key.
+ */
+int bElemStats::getStats(pointsType t)
+{
+    if(this->statistics.find(t)!=this->statistics.end())
+        return this->statistics[t];
+    return 1;
+}
+
+/**
+ * @brief Sets the statistic value for a given pointsType key.
+ *
+ * This method sets the statistic value for the provided pointsType key in the map.
+ * The key corresponds to one of the enum values defined in pointsType (TOTAL, SHOOT, STEPS, COLLECTS).
+ * If the key does not exist in the map, it is created.
+ *
+ * @param t The pointsType key whose associated value is to be set.
+ * @param value The value to be set.
+ */
+void bElemStats::setStats(pointsType t, int value)
+{
+    this->statistics[t]=value;
+}
 
 
 

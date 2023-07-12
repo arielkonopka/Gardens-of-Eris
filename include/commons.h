@@ -271,6 +271,19 @@ using coords3d=struct crd3d
 
 };
 
+/**
+ * @brief Enum used as key for the statistics map in bElemStats.
+ *
+ * This enum defines various types of statistics that can be stored
+ * in a bElemStats object. Each enum value is a key that can be used
+ * to set and retrieve values from the statistics map.
+ */
+using pointsType = enum pt {
+    TOTAL = 0,    ///< Represents the total score.
+    SHOOT = 1,    ///< Represents the shooting score.
+    STEPS = 2,    ///< Represents the steps score.
+    COLLECTS = 3  ///< Represents the collections score.
+};
 
 
 #endif

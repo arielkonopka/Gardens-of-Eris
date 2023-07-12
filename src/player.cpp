@@ -17,7 +17,7 @@ player::player() : killableElements(), movableElements(), nonSteppable(), mechan
 
 bool player::additionalProvisioning(int subtype,int typeId)
 {
-  //  this->provisioned = true;
+    //  this->provisioned = true;
     this->attrs=std::make_unique<bElemAttr>(shared_from_this(),typeId,subtype);
     this->attrs->setCollect(true);
     this->attrs->setEnergy(125);
@@ -26,6 +26,7 @@ bool player::additionalProvisioning(int subtype,int typeId)
     if ( this->getBoard() && player::allPlayers.size() <= 0)
     {
         this->status->setActive(true);
+        this->status->setMarked(true);
     }
     else
     {
@@ -52,9 +53,10 @@ std::shared_ptr<bElem> player::getActivePlayer()
         /* find active player, because it is nullptr */
         for (auto p : player::allPlayers)
         {
-            if (p && p->status->isActive() && !p->status->isDisposed())
+            if (p && p->status->isMarked() && !p->status->isDisposed())
             {
                 player::activePlayer = p;
+                p->status->setActive(true);
                 if(p->getBoard())
                     soundManager::getInstance()->setListenerChamber(p->getBoard()->getInstanceId());
             }
@@ -110,21 +112,17 @@ oState player::disposeElement()
 
 bool player::interact(std::shared_ptr<bElem> who)
 {
-    if (who == nullptr || this->getBoard() == nullptr)
-        return false;
-    if (this->status->isActive())
-        return false;
-    if (killableElements::interact(who) == false)
+    if (who == nullptr || this->getBoard() == nullptr || this->status->isActive() || this->status->isMarked() || killableElements::interact(who) == false)
         return false;
 
-    if (who->getType() == this->getType() && !this->status->isActive())
+    if (who->getType() == this->getType() && !this->status->isActive() && !this->status->isMarked())
     {
 #ifdef _VerbousMode_
         std::cout << "Adding new avatar\n";
 #endif
         player::visitedPlayers.push_back(shared_from_this());
         this->playSound("Player", "ActivateAvatar");
-        this->status->setActive(true);
+        this->status->setMarked(true);
     }
     return true;
 }
@@ -134,8 +132,16 @@ bool player::interact(std::shared_ptr<bElem> who)
 bool player::stepOnElement(std::shared_ptr<bElem> step)
 {
     bool r = movableElements::stepOnElement(step);
+    bool st=false;
     if (this->getBoard().get() != nullptr && this->status->isActive())
-        this->getBoard()->visitPosition(this->status->getMyPosition()); // we visit the position.
+        st=this->getBoard()->visitPosition(this->status->getMyPosition()); // we visit the position.
+    if(st)
+    {
+        this->status->setStats(STEPS,this->status->getStats(STEPS)+(bElem::randomNumberGenerator()%2));
+
+        this->vRadius=2+(std::log(this->status->getStats(STEPS))/5);
+    }
+
     return r;
 }
 
@@ -148,6 +154,12 @@ bool player::mechanics()
 {
 
     bool res = bElem::mechanics();
+    if (this->status->isMoving())
+    {
+        if (bElem::getCntr() % 3 == 0)
+            this->animPh++;
+        return true;
+    }
     if(!res || !this->status->isActive()) return res;
     this->getBoard()->player.x = this->status->getMyPosition().x;
     this->getBoard()->player.y = this->status->getMyPosition().y;
@@ -179,12 +191,7 @@ bool player::mechanics()
     if (!res)
         return false;
 
-    if (this->status->isMoving())
-    {
-        if (bElem::getCntr() % 3 == 0)
-            this->animPh++;
-        return true;
-    }
+
 
     switch (this->getBoard()->cntrlItm.type)
     {
@@ -261,6 +268,12 @@ bool player::shootGun()
 
 
 
+float player::getViewRadius() const
+{
+    return this->vRadius;
+}
+
+
 
 
 
@@ -269,9 +282,10 @@ int player::getType() const
     return _player;
 }
 
-int player::getAnimPh()
+int player::getAnimPh() const
 {
     if (this->status->isTeleporting() || this->status->isDying() || this->status->isDestroying() || !this->status->isActive())
         return bElem::getAnimPh();
     return this->animPh;
 }
+

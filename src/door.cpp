@@ -34,7 +34,11 @@ bool door::additionalProvisioning()
 
 bool door::additionalProvisioning(int subtype, int typeId)
 {
-    return bElem::additionalProvisioning(subtype,typeId);
+    bool res=bElem::additionalProvisioning(subtype,typeId);
+    this->attrs->setSteppable(false);
+    this->attrs->setLocked(true);
+    this->attrs->setOpen(false);
+    return res;
 }
 
 
@@ -62,14 +66,7 @@ bool door::interact(std::shared_ptr<bElem> who)
         return false;
     }
     // if Door is unlocked, only open/close thing
-    if (this->attrs->getSubtype() % 2 == 0)
-    {
-        key = who->attrs->getInventory()->getKey(_key, this->attrs->getSubtype(), true);
-    }
-    else
-    {
-        key = who->attrs->getInventory()->getKey(_key, this->attrs->getSubtype(), false);
-    }
+    key = who->attrs->getInventory()->getKey(_key, this->attrs->getSubtype(), true);
     if (key != nullptr)
     {
         this->playSound("Door", "Open");
@@ -82,10 +79,7 @@ bool door::interact(std::shared_ptr<bElem> who)
     {
         return false;
     }
-    if (this->attrs->getSubtype() % 2 == 0)
-    {
-        key->disposeElement();
-    }
+    key->disposeElement();
     return true;
 }
 

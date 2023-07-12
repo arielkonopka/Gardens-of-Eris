@@ -119,6 +119,7 @@ std::shared_ptr<bElem> chamber::getElement(coords point)
 }
 bool chamber::visitPosition(coords point)
 {
+    bool res=false;
     if(point==NOCOORDS)
         return false;
     float vradius=player::getActivePlayer()->getViewRadius();
@@ -130,17 +131,16 @@ bool chamber::visitPosition(coords point)
     {
         for(int y=y0; y<=y1; y++)
         {
-            float distance=point.distance((coords)
+            float distance=point.distance((coords){x,y});
+            if (distance<=vradius && this->visitedElements[x][y]!=0)
             {
-                x,y
-            });
-
-            if (distance<=vradius)
+                res=true;
                 this->visitedElements[x][y]=0;
+            }
 
         }
     }
-    return true;
+    return res;
 
 }
 void chamber::setVisible(coords point,int v)

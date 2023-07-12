@@ -15,7 +15,7 @@ public:
     player();
     explicit player(std::shared_ptr<chamber> board);
     ~player() final=default;
-    static unsigned int countVisitedPlayers();
+    static unsigned int countVisitedPlayers() ;
     virtual videoElement::videoElementDef* getVideoElementDef();
     static videoElement::videoElementDef* vd;
     static std::shared_ptr<bElem> getActivePlayer();
@@ -23,13 +23,14 @@ public:
     bool mechanics() final;
     bool interact(std::shared_ptr<bElem> who) final;
     int getType() const;
-    int getAnimPh() final;
+    int getAnimPh() const;
     bool shootGun();
     oState disposeElement() final;
     bool additionalProvisioning() final;
     bool additionalProvisioning(int subtype,int typeId) ;
-    const float getViewRadius() { return this->vRadius; };
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<player> sbe);
+//    const float getViewRadius() { return this->vRadius; };
+    float getViewRadius() const;
+    bool additionalProvisioning(int subtype,std::shared_ptr<player> sbe) ;
 
 private:
     float vRadius=5.5;

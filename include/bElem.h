@@ -56,10 +56,8 @@ public:
     virtual videoElement::videoElementDef *getVideoElementDef();
     virtual void setBoard(std::shared_ptr<chamber> board);
     virtual std::shared_ptr<chamber> getBoard();
-    virtual constexpr bool selfAlign()
-    {
-        return false;
-    };
+    virtual bool selfAlign();
+
     virtual bool stepOnElement(std::shared_ptr<bElem> step);
     // virtual bool isLiveElement();
 
@@ -81,19 +79,17 @@ public:
     virtual coords getAbsCoords(direction dir);
     virtual  int getType() const;
 
-    virtual int getAnimPh();
+    virtual int getAnimPh() const;
 
 
 
-    virtual const float getViewRadius()
-    {
-        return 0.0;
-    };
+    virtual  float getViewRadius() const;
+
     virtual bool collect(std::shared_ptr<bElem> collectible);
     //virtual bool isSwitchOn();
 
-    std::shared_ptr<elemStats> getStats();
-    void setStats(std::shared_ptr<elemStats> stat); // warning, unsafe method
+   // std::shared_ptr<elemStats> getStats();
+   // void setStats(std::shared_ptr<elemStats> stat); // warning, unsafe method
 
 
     virtual std::shared_ptr<bElem> removeElement(); // removes element from the board, and returns it for further processing, usefull for eg. for collecting stuff

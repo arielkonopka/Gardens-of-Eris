@@ -323,7 +323,13 @@ bool bElem::destroy()
     return false;
 }
 
-int bElem::getAnimPh()
+
+bool bElem::selfAlign()
+{
+    return false;
+}
+
+int bElem::getAnimPh() const
 {
     int base = (int)bElem::getCntr();
     if (this->status->isDying())
@@ -340,6 +346,14 @@ int bElem::getAnimPh()
     }
     return base >> 3;
 }
+
+float bElem::getViewRadius() const
+{
+
+    return 2.5;
+
+}
+
 
 
 bool bElem::mechanics()

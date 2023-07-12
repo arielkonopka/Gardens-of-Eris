@@ -2,7 +2,10 @@
 #define BELEMSTATS_H
 #include "../include/commons.h"
 #include <memory>
+#include <unordered_map>
 class bElem;
+
+
 
 class bElemStats
 {
@@ -35,6 +38,9 @@ public:
     int getWaiting() const;
     int getFading() const;
     int getMovingTotalTime() const;
+    int getStats(pointsType t);
+
+    void setStats(pointsType t,int value );
     // set methods
     void setAmmo(int value);
     void setAnimPhase(int value);
@@ -62,6 +68,7 @@ public:
     // has methods
     bool hasActivatedMechanics() const;
     bool hasParent() const;
+    bool isMarked() const;
 
     // is methods
     bool isActive() const;
@@ -89,12 +96,14 @@ public:
     void setHasParent(bool value);
     void setCollected(bool value);
     void setActive(bool value);
+    void setMarked(bool value);
 
 private:
     static unsigned long int currentInstance;
     unsigned long int instanceId;
     bool disposed = false;
     bool active = false;
+    bool marked=false;
     bool activatedMechanics = false;
     bool parent = false;
     bool collected = false;
@@ -107,6 +116,7 @@ private:
     unsigned int destTimeBeg = 0;
     unsigned int telInProgress = 0;
     unsigned int interacted = 0;
+    std::unordered_map<pointsType,int> statistics;
     int movingTotalTime=-1;
     int fading =-1;
     int waiting = -1;
