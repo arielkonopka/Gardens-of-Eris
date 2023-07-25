@@ -15,7 +15,7 @@ public:
     explicit monster(std::shared_ptr<chamber> board);
     explicit monster(std::shared_ptr<chamber> board,int newSubtype);
     ~monster();
-    int getType();
+    int getType() const;
     virtual bool mechanics();
     virtual bool checkNeigh();
     virtual bool steppableNeigh();

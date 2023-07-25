@@ -10,7 +10,7 @@ class door : public audibleElement
 public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
-    virtual int getType();
+    virtual int getType() const;
     door();
     explicit door(std::shared_ptr<chamber>  board);
 
@@ -21,9 +21,7 @@ public:
     virtual bool additionalProvisioning();
     virtual bool additionalProvisioning(int subtype,int typeId);
 private:
-    int interacted=-1;
-    bool open=false;
-    bool locked=true;
+ //   int interacted=-1;
 
 };
 

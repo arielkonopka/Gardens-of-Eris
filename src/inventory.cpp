@@ -48,27 +48,35 @@ void inventory::changeOwner(std::shared_ptr<bElem> who)
 
 bool inventory::removeCollectibleFromInventory(unsigned long  int instance)
 {
-    auto removeFromColl=[&](std::vector<std::shared_ptr<bElem>>& _vect,unsigned long int _inst )
+    return (this->retrieveCollectibleFromInventory(instance)==nullptr);
+}
+
+std::shared_ptr<bElem> inventory::retrieveCollectibleFromInventory(unsigned long int instanceId)
+{
+   auto removeFromColl=[&](std::vector<std::shared_ptr<bElem>>& _vect,unsigned long int _inst )
     {
+        std::shared_ptr<bElem> clc;
         for(unsigned int c=0; c<_vect.size();)
         {
             if(_vect[c]->status->getInstanceId()==_inst)
             {
                 _vect[c]->status->setCollected(false);
+                if(!clc)
+                    clc=_vect[c];
                 this->decrementTokenNumber({_vect[c]->getType(),_vect[c]->attrs->getSubtype()});
                 _vect.erase(_vect.begin()+c);
                 continue;
             }
             c++;
         }
+        return clc;
     };
-    removeFromColl(this->weapons,instance);
-    removeFromColl(this->usables,instance);
-    removeFromColl(this->tokens,instance);
-    removeFromColl(this->keys,instance);
-    removeFromColl(this->mods,instance);
-    return true;
-
+    std::shared_ptr<bElem> e=removeFromColl(this->weapons,instanceId);
+    if(!e) e= removeFromColl(this->usables,instanceId);
+    if(!e) e= removeFromColl(this->tokens,instanceId);
+    if(!e) e= removeFromColl(this->keys,instanceId);
+    if(!e) e= removeFromColl(this->mods,instanceId);
+    return e;
 }
 
 
@@ -222,7 +230,7 @@ std::shared_ptr<bElem> inventory::requestToken(int type, int subType)
         std::cout<<"  ** "<<this->tokens[c]->getType()<<"\n";
         if(this->tokens[c]->getType()==type && (subType==-1 || this->tokens[c]->attrs->getSubtype()==subType)) // negative value of subtype will be ignored
         {
-            std::cout<<" *** accepted\n";
+     //       std::cout<<" *** accepted\n";
             std::shared_ptr<bElem> token=this->tokens[c];
             this->decrementTokenNumber( {type,token->attrs->getSubtype()});
             this->tokens.erase(this->tokens.begin()+c);
@@ -300,6 +308,7 @@ bool inventory::mergeInventory(std::shared_ptr<inventory> theOtherInventory)
         {
             this->incrementTokenNumber({item->getType(),item->attrs->getSubtype()});
             item->status->setCollected(false);
+            item->collectOnAction(false,nullptr); // we let the element to react on dropping.
             item->status->setCollector(this->owner.lock());
             _vect2.push_back(item);
         };

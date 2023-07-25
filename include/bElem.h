@@ -55,60 +55,42 @@ public:
     virtual ~bElem();
     virtual videoElement::videoElementDef *getVideoElementDef();
     virtual void setBoard(std::shared_ptr<chamber> board);
-    virtual std::shared_ptr<chamber> getBoard();
+    virtual std::shared_ptr<chamber> getBoard() const;
     virtual bool selfAlign();
-
     virtual bool stepOnElement(std::shared_ptr<bElem> step);
-    // virtual bool isLiveElement();
-
-    // virtual void setDropped();                             // notify it got dropped
-
     virtual bool moveInDirection(direction d);
     virtual bool moveInDirectionSpeed(direction d, int speed);
-    virtual bool use(std::shared_ptr<bElem> use);
-
-    virtual bool interact(std::shared_ptr<bElem> who);
     virtual bool destroy();
     virtual bool kill();
-    virtual constexpr bool hurt(int points)
-    {
-        return false;
-    };
-    virtual bool isSteppableDirection(direction di);
+    virtual bool hurt(int points);
+    virtual bool isSteppableDirection(direction di) const;
     virtual std::shared_ptr<bElem> getElementInDirection(direction di);
-    virtual coords getAbsCoords(direction dir);
+    virtual coords getAbsCoords(direction dir) const;
     virtual  int getType() const;
-
     virtual int getAnimPh() const;
-
-
-
     virtual  float getViewRadius() const;
-
     virtual bool collect(std::shared_ptr<bElem> collectible);
-    //virtual bool isSwitchOn();
-
-   // std::shared_ptr<elemStats> getStats();
-   // void setStats(std::shared_ptr<elemStats> stat); // warning, unsafe method
-
-
+    virtual bool dropItem(unsigned long int  instanceId);
     virtual std::shared_ptr<bElem> removeElement(); // removes element from the board, and returns it for further processing, usefull for eg. for collecting stuff
     virtual oState disposeElement();
     virtual oState disposeElementUnsafe();
-    virtual coords getOffset();
-
-    virtual constexpr bool readyToShoot()
-    {
-        return false;
-    };
-
+    virtual coords getOffset() const;
+    virtual bool readyToShoot() const;
     static std::mt19937 randomNumberGenerator;
     static bool randomNumberGeneratorInitialized;
+
     virtual bool mechanics();
+    virtual bool stepOnAction(bool step,std::shared_ptr<bElem> who);
+    virtual bool collectOnAction(bool collected,std::shared_ptr<bElem> who);
+    virtual bool use(std::shared_ptr<bElem> use);
+    virtual bool interact(std::shared_ptr<bElem> who);
+
+
+
     static std::vector<std::shared_ptr<bElem>> liveElems;
 
     static void tick();
-    static unsigned int getCntr();
+    static unsigned int getCntr() ;
 
 
     virtual bool isLocked();

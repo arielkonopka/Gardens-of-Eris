@@ -7,7 +7,7 @@ videoElement::videoElementDef *door::getVideoElementDef()
     return door::vd;
 }
 
-int door::getType()
+int door::getType() const
 {
     return _door;
 }
@@ -50,13 +50,15 @@ bool door::interact(std::shared_ptr<bElem> who)
     std::shared_ptr<bElem> key = nullptr;
     if (!bres)
         return false;
+
     if (!this->attrs->isLocked())
     {
         this->status->setInteracted(10);
+        who->status->setWaiting(1);
         this->attrs->setOpen(!this->attrs->isOpen());
         this->attrs->setSteppable(this->attrs->isOpen());
-        this->status->setFacing((!this->open) ? UP : LEFT);
-        this->playSound("Door", (this->open) ? "Unlock" : "Lock");
+        this->status->setFacing((!this->attrs->isOpen()) ? UP : LEFT);
+        this->playSound("Door", (this->attrs->isOpen()) ? "Unlock" : "Lock");
 
         return true;
     }
@@ -72,14 +74,14 @@ bool door::interact(std::shared_ptr<bElem> who)
         this->playSound("Door", "Open");
         this->attrs->setOpen(true);
         this->attrs->setLocked(false);
-        this->status->setFacing((!this->open) ? UP : LEFT);
+        this->status->setFacing((!this->attrs->isOpen()) ? UP : LEFT);
         this->attrs->setSteppable(true);
     }
     else
     {
         return false;
     }
-    key->disposeElement();
+    if(key) key->disposeElement();
     return true;
 }
 

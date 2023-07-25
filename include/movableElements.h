@@ -20,11 +20,11 @@ public:
     virtual ~movableElements();
     virtual bool moveInDirection(direction dir);
     virtual bool moveInDirectionSpeed(direction dir,int speed);
-    virtual int getType();
+    virtual int getType() const;
 
     virtual bool dragInDirection(direction dragIntoDirection);
     virtual bool dragInDirectionSpeed(direction dragIntoDirection,int speed);
-    virtual coords getOffset();
+    virtual coords getOffset() const;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<movableElements> sbe);
 
     virtual bool additionalProvisioning();

@@ -139,7 +139,7 @@ bool player::stepOnElement(std::shared_ptr<bElem> step)
     {
         this->status->setStats(STEPS,this->status->getStats(STEPS)+(bElem::randomNumberGenerator()%2));
 
-        this->vRadius=2+(std::log(this->status->getStats(STEPS))/5);
+        this->vRadius=2+(std::log(this->status->getStats(STEPS)));
     }
 
     return r;

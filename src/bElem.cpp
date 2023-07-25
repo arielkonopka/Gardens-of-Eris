@@ -38,17 +38,21 @@ bElem::bElem(std::shared_ptr<chamber> board) : bElem()
 
 
 
-coords bElem::getOffset()
+coords bElem::getOffset() const
 {
     return {0, 0};
 }
 
 
+bool bElem::collectOnAction(bool collected, std::shared_ptr<bElem>who)
+{
+    return false;
+}
 
 
 
 
-std::shared_ptr<chamber> bElem::getBoard()
+std::shared_ptr<chamber> bElem::getBoard() const
 {
     return this->attachedBoard;
 }
@@ -62,6 +66,24 @@ void bElem::setBoard(std::shared_ptr<chamber> board)
     }
 }
 
+bool bElem::dropItem(unsigned long int  instanceId)
+{
+    if(!this->attrs->canCollect())
+        return false;
+    std::shared_ptr<bElem> item=this->attrs->getInventory()->retrieveCollectibleFromInventory(instanceId);
+    if(!item)
+        return false;
+    item->collectOnAction(false,shared_from_this());
+    for(int c=0;c<4;c++)
+    {
+        if(this->isSteppableDirection((direction)(c)))
+            {
+                item->stepOnElement(this->getElementInDirection((direction)(c)));
+                return true;
+            }
+    }
+    return this->collect(item); // re-collect, since there was no place to drop it.
+}
 
 
 
@@ -100,7 +122,12 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
     };
     std::shared_ptr<bElem> myself=shared_from_this();
     if(this->status->getSteppingOn() || this->status->hasParent() || this->status->isCollected())
+    {
+        std::shared_ptr<bElem> st=this->status->getSteppingOn();
         myself=this->removeElement();
+        if(st)
+            st->stepOnAction(false,myself);
+    }
     std::shared_ptr<bElem> s0;
     bool hp=step->status->hasParent();
     this->setBoard(step->getBoard());
@@ -118,6 +145,7 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
         //std::cout<<"   ** no\n";
         this->getBoard()->setElement(this->status->getMyPosition(),shared_from_this());
     }
+    step->stepOnAction(true,shared_from_this());
     return true;
 }
 
@@ -222,7 +250,7 @@ oState bElem::disposeElement()
  * This method returns absolute coordinates, when asked for coordinates of the next cell in a direction from the elements's standpoint, should be resistant for non-provisioned units
  * better use those on a board though
  */
-coords bElem::getAbsCoords(direction dir)
+coords bElem::getAbsCoords(direction dir) const
 {
     coords res = this->status->getMyPosition();
     if (this->attachedBoard.get() == nullptr)
@@ -353,7 +381,17 @@ float bElem::getViewRadius() const
     return 2.5;
 
 }
+bool bElem::hurt(int points)
+{
 
+    return false;
+
+}
+
+bool bElem::readyToShoot() const
+{
+    return false;
+}
 
 
 bool bElem::mechanics()
@@ -379,7 +417,7 @@ bool bElem::mechanics()
 
 
 
-bool bElem::isSteppableDirection(direction di)
+bool bElem::isSteppableDirection(direction di) const
 {
     coords tmpcoords;
     tmpcoords = this->getAbsCoords(di);
@@ -454,6 +492,7 @@ std::shared_ptr<bElem> bElem::removeElement()
 #endif
         std::shared_ptr<bElem> _Stp=this->status->getSteppingOn();
         this->getBoard()->setElement(this->status->getMyPosition(),_Stp);
+        //_Stp->stepOnAction(false,nullptr);
         if(_Stp)
             _Stp->status->setHasParent(false); /// this is how we do "unstomp" now.
     }
@@ -498,6 +537,7 @@ bool bElem::collect(std::shared_ptr<bElem> collectible)
     std::cout << "Collect " << collected->getType() << " st: " << collected->attrs->getSubtype() << "\n";
 #endif
     collectible->status->setCollector(shared_from_this());
+    collectible->collectOnAction(true,shared_from_this());
 #ifdef _VerbousMode_
     std::cout << "Collected set? " << (collectible->status->isCollected()) << "\n";
 #endif
@@ -675,6 +715,21 @@ void bElem::runLiveElements()
     //      gCollect::getInstance()->purgeGarbage();
 }
 
+/**
+ * @brief performs the action, when an element steps on this
+ *
+ * This method is just a stub, at this type does absolutely nothing
+ * @param step
+ * true - stepping on, false - unstepping
+ * @param who
+ * who steps/unsteps
+ *
+ * @note This should be used in stepOn methods.
+ */
+bool bElem::stepOnAction(bool step, std::shared_ptr<bElem>who)
+{
+    return false;
+}
 
 
 

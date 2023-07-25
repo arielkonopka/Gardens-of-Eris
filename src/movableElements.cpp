@@ -77,7 +77,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 }
 
 
-int movableElements::getType()
+int movableElements::getType() const
 {
     return _movableType;
 }
@@ -127,7 +127,7 @@ bool movableElements::dragInDirectionSpeed(direction dragIntoDirection, int spee
 
 }
 
-coords movableElements::getOffset()
+coords movableElements::getOffset() const
 {
     coords res= {0,0};
     if(this->status->isMoving() && this->status->getMovingTotalTime()>0)

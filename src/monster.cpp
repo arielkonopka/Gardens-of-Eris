@@ -64,7 +64,7 @@ videoElement::videoElementDef *monster::getVideoElementDef()
 {
     return monster::vd;
 }
-int monster::getType()
+int monster::getType() const
 {
     return _monster;
 }
