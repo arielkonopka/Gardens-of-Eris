@@ -174,7 +174,7 @@ bool monster::mechanics()
 
     direction newDir = NODIRECTION;
     direction oldDir = (direction)(((int)this->status->getMyDirection()) % 4);
-    if (!movableElements::mechanics() || this->status->getMoved() > 0)
+    if (!movableElements::mechanics())
         return false;
 //    std::cout<<"   * CHK seppableNeigh\n";
     if (this->steppableNeigh())

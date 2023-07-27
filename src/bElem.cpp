@@ -322,7 +322,7 @@ bool bElem::use(std::shared_ptr<bElem> who)
 
 bool bElem::interact(std::shared_ptr<bElem> who)
 {
-    if (this->attrs->canInteract()) /* penalty for getting into counter overflow */
+    if (this->attrs->canInteract() && !this->status->isInteracting()) /* penalty for getting into counter overflow */
     {
         this->status->setInteracted( _interactedTime);
         return true;
@@ -652,6 +652,7 @@ void bElem::registerLiveElement(std::shared_ptr<bElem> who)
 #endif
     if (this->status->hasActivatedMechanics())
         return;
+    std::cout << "Register mechanics by: " << who->getType() << " " << who->status->getInstanceId() << "RL\n";
     this->status->setActivatedMechanics(true);
     bElem::liveElems.push_back(who);
 }
@@ -711,8 +712,6 @@ void bElem::runLiveElements()
         }
     }
 
-    //  if (gCollect::getInstance()->garbageQsize()>0) //clean up, when there is garbage to be cleared
-    //      gCollect::getInstance()->purgeGarbage();
 }
 
 /**

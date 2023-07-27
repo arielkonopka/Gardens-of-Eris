@@ -13,6 +13,7 @@ public:
     virtual int getType() const;
     door();
     explicit door(std::shared_ptr<chamber>  board);
+    virtual bool stepOnAction(bool step,std::shared_ptr<bElem> who);
 
     virtual bool interact(std::shared_ptr<bElem> who);
 
@@ -21,7 +22,8 @@ public:
     virtual bool additionalProvisioning();
     virtual bool additionalProvisioning(int subtype,int typeId);
 private:
- //   int interacted=-1;
+    void _alignWithOpen();
+//   int interacted=-1;
 
 };
 

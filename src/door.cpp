@@ -41,47 +41,87 @@ bool door::additionalProvisioning(int subtype, int typeId)
     return res;
 }
 
+bool door::stepOnAction(bool step, std::shared_ptr<bElem>who)
+{
+    if(who==nullptr)
+        return false;
+    if(step==true)
+    {
+        if(this->attrs->getSubtype()%2==1 )
+        {
+            std::shared_ptr<bElem> k;
+            if( who->attrs->canCollect())
+            {
+                k=who->attrs->getInventory()->getKey(_key,this->attrs->getSubtype(),true);
+            }
+            if(!k)
+            {
+                who->kill();
+            }
+            else
+                this->playSound("Door","CollectKey");
+        }
+    }
+    else
+    {
+        if(this->attrs->getSubtype()%2==1 )
+        {
+            this->attrs->setOpen(false);
+            this->attrs->setSteppable(this->attrs->isOpen());
+            this->attrs->setLocked(true);
+            this->playSound("Door", (this->attrs->isOpen()) ? "Unlock" : "Lock");
+            this->status->setFacing((!this->attrs->isOpen()) ? UP : LEFT);
+        }
+    }
+    return true;
+}
 
+
+void door::_alignWithOpen()
+{
+        this->status->setFacing((!this->attrs->isOpen()) ? UP : LEFT);
+        this->attrs->setSteppable(this->attrs->isOpen());
+
+}
 
 /* open the door if you can */
 bool door::interact(std::shared_ptr<bElem> who)
 {
+
     bool bres = bElem::interact(who);
     std::shared_ptr<bElem> key = nullptr;
     if (!bres)
         return false;
-
     if (!this->attrs->isLocked())
     {
         this->status->setInteracted(10);
         who->status->setWaiting(1);
         this->attrs->setOpen(!this->attrs->isOpen());
-        this->attrs->setSteppable(this->attrs->isOpen());
-        this->status->setFacing((!this->attrs->isOpen()) ? UP : LEFT);
+        this->_alignWithOpen();
         this->playSound("Door", (this->attrs->isOpen()) ? "Unlock" : "Lock");
-
         return true;
     }
-    // If it cannot collect, it cannot hold a key.
     if (!who->attrs->canCollect())
     {
         return false;
     }
-    // if Door is unlocked, only open/close thing
-    key = who->attrs->getInventory()->getKey(_key, this->attrs->getSubtype(), true);
+    key = who->attrs->getInventory()->getKey(_key, this->attrs->getSubtype(), this->attrs->getSubtype()%2!=1);
     if (key != nullptr)
     {
         this->playSound("Door", "Open");
         this->attrs->setOpen(true);
         this->attrs->setLocked(false);
-        this->status->setFacing((!this->attrs->isOpen()) ? UP : LEFT);
-        this->attrs->setSteppable(true);
+        this->_alignWithOpen();
     }
     else
     {
         return false;
     }
-    if(key) key->disposeElement();
+    if(key &&  this->attrs->getSubtype()%2!=1)
+    {
+        this->playSound("Door","CollectKey");
+        key->disposeElement();
+    }
     return true;
 }
 

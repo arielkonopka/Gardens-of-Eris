@@ -200,10 +200,10 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
         for (int a=x1; a<=x2; a++)
         {
             if(!this->mychamber->getElement(a,d))
-                {
+            {
                 std::cout<<"Nulls on board!\n";
                 continue;
-                }
+            }
 
             if (a!=c && this->mychamber->getElement(a,d)->attrs->isSteppable()==true && this->mychamber->getElement(a,d+2)->attrs->isSteppable()==true)
             {
@@ -330,11 +330,12 @@ bool randomLevelGenerator::generateLevel(int holes)
     }
     for(int c=0; c<holes*15; c++)
     {
+        elementsToChooseFrom.push_back({_bunker,0,1,0,3});
 
         elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,3});
         elementsToChooseFrom.push_back({_simpleBombType,0,1,0,3});
-elementsToChooseFrom.push_back({_puppetMasterType,0,1,0,3});
-    elementsToChooseFrom.push_back({_patrollingDrone,1,1,0,3});
+        elementsToChooseFrom.push_back({_puppetMasterType,0,1,0,3});
+        elementsToChooseFrom.push_back({_patrollingDrone,1,1,0,3});
 
 
     }

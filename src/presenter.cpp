@@ -40,10 +40,12 @@ bool presenter::initializeDisplay()
 {
     ALLEGRO_MONITOR_INFO info;
    //  al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+   al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 | ALLEGRO_FULLSCREEN);
+
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
     al_get_monitor_info(0, &info);
     this->display = al_create_display(info.x2-info.x1, info.y2-info.y1);
-    // al_hide_mouse_cursor(this->display);
+    al_hide_mouse_cursor(this->display);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
     this->internalBitmap=al_create_bitmap(this->scrWidth+64,this->scrHeight+64);
     this->cloakBitmap=al_create_bitmap(this->scrWidth+128,this->scrHeight+128);
@@ -390,7 +392,7 @@ void presenter::showGameField()
  //   this->eyeCandy(player->getBoard()->getInstanceId());
 
 
-    al_wait_for_vsync();
+   // al_wait_for_vsync();
     al_flip_display();
 }
 void presenter::eyeCandy(int flavour)
