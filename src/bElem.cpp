@@ -74,13 +74,13 @@ bool bElem::dropItem(unsigned long int  instanceId)
     if(!item)
         return false;
     item->collectOnAction(false,shared_from_this());
-    for(int c=0;c<4;c++)
+    for(int c=0; c<4; c++)
     {
         if(this->isSteppableDirection((direction)(c)))
-            {
-                item->stepOnElement(this->getElementInDirection((direction)(c)));
-                return true;
-            }
+        {
+            item->stepOnElement(this->getElementInDirection((direction)(c)));
+            return true;
+        }
     }
     return this->collect(item); // re-collect, since there was no place to drop it.
 }
@@ -290,6 +290,7 @@ std::shared_ptr<bElem> bElem::getElementInDirection(direction di)
 bElem::~bElem()
 {
     al_destroy_mutex(this->elementMutex);
+    soundManager::getInstance()->stopSoundsByElementId(this->status->getInstanceId());
 }
 
 ALLEGRO_MUTEX *bElem::getMyMutex()
@@ -775,3 +776,45 @@ bool bElem::unlockThisObject(std::shared_ptr<bElem> who)
 void bElem::setStatsOwner(std::shared_ptr<bElem> owner)
 {
 }
+
+
+void bElem::playSound(std::string eventType, std::string event)
+{
+    if (!this->status->getCollector().expired())
+    {
+        this->ps(this->status->getCollector().lock(),eventType,event);
+    }
+    else if(this->getBoard())
+    {
+        this->ps(shared_from_this(),eventType,event);
+    }
+    else if (this->status->hasParent())
+    {
+        this->ps(this->status->getStandingOn().lock(),eventType,event);
+    }
+    else if (this->status->getSteppingOn())
+    {
+        this->ps(this->status->getSteppingOn(),eventType,event);
+    }
+}
+
+void bElem::ps(std::shared_ptr<bElem>who, std::string eventType, std::string event)
+{
+    coords3d c3d;
+    c3d.x=who->status->getMyPosition().x*32+who->getOffset().x;
+    c3d.z=who->status->getMyPosition().y*32+who->getOffset().y;
+    c3d.y=0;
+    coords3d vel= {(who->getOffset().x)?32:0, 0,(who->getOffset().y>0)?32:0};
+
+    soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,who->status->getInstanceId(),this->getType(),this->attrs->getSubtype(),eventType,event);
+
+}
+
+
+
+
+
+
+
+
+

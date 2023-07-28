@@ -2,10 +2,9 @@
 #define SIMPLEBOMB_H
 #include "bElem.h"
 #include "explosives.h"
-#include "nonSteppable.h"
 #include "killableElements.h"
 
-class simpleBomb: public explosives, public nonSteppable, public killableElements, public movableElements
+class simpleBomb: public explosives,  public killableElements, public movableElements
 {
 public:
     static videoElement::videoElementDef* vd;

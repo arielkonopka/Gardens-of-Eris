@@ -4,7 +4,7 @@
 videoElement::videoElementDef* movableElements::vd=nullptr;
 
 
-movableElements::movableElements():audibleElement()
+movableElements::movableElements() :bElem()
 {
 
 }

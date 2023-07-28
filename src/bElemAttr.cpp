@@ -58,11 +58,13 @@ void bElemAttr::getDefaultValues(int typeId, int subtypeId)
                 this->setAmmo(attr.ammo);
                 this->setMaxAmmo(attr.maxAmmo);
                 this->provisioned = true; // this way we do not have to setup attributes for the walls.
+                this->chStats=std::make_unique<characterStats>(typeId);
             }
         }
     }
 
 }
+
 
 bool bElemAttr::isMod() const
 {

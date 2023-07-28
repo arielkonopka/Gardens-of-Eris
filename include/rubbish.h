@@ -1,11 +1,9 @@
 #ifndef RUBBISH_
 #define RUBBISH_
-
+#include "bElem.h"
 #include "objectTypes.h"
-#include "nonSteppable.h"
-#include "collectible.h"
 
-class rubbish:  public collectible
+class rubbish:  public bElem
 {
 public:
     virtual videoElement::videoElementDef* getVideoElementDef();

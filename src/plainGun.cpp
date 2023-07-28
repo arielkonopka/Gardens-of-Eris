@@ -29,7 +29,7 @@ std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
     return pm;
 }
 
-plainGun::plainGun():usable(),mechanical(),collectible(),nonSteppable()
+plainGun::plainGun():mechanical()
 {
     //this->setStats(std::make_shared<elemStats>(((bElem::randomNumberGenerator()%4)+1)*25));
 
@@ -132,7 +132,7 @@ bool plainGun::readyToShoot()
 
 bool plainGun::mechanics()
 {
-    bool res=usable::mechanics();
+    bool res=mechanical::mechanics();
     if(this->attrs->getEnergy()<this->maxEnergy)
     {
         if (bElem::getCntr()%5==0)

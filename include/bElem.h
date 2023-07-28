@@ -10,7 +10,7 @@
 #include "inventory.h"
 #include "chamber.h"
 #include "videoElementDef.h"
-#include "elemStats.h"
+//
 #include "soundManager.h"
 #include "bElemStats.h"
 #include "bElemAttr.h"
@@ -19,22 +19,12 @@ namespace videoElement
 class videoElementDef;
 }
 class chamber;
-class nonSteppable;
 
 using oState = enum ost { DISPOSED = 0,
                           nullptrREACHED = 1,
                           ERROR = 2
                         };
-/*struct _cfg
-{
-    bool amIUsable = false;
-    int subtype = 0;
-    std::shared_ptr<elemStats> myStats = nullptr;
-    std::shared_ptr<inventory> myInventory = nullptr;
-    int instance;
-    bool provisioned = false;
-};
-*/
+
 
 class bElem : public virtual std::enable_shared_from_this<bElem>
 {
@@ -105,7 +95,10 @@ public:
     virtual bool additionalProvisioning(int subtype,int typeId);
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<bElem> sbe);
 
+
+    void playSound(std::string eventType,std::string event);
 private:
+    void ps(std::shared_ptr<bElem> who,std::string eventType,std::string event);
     bool provisioned=false;
     bElem(const bElem &) = delete;
     std::shared_ptr<chamber> attachedBoard = nullptr;

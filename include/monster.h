@@ -6,7 +6,7 @@
 #include "killableElements.h"
 #include "plainGun.h"
 
-class monster : public killableElements, public nonSteppable, public mechanical, public movableElements
+class monster : public killableElements,  public mechanical, public movableElements
 {
 public:
     virtual videoElement::videoElementDef* getVideoElementDef();

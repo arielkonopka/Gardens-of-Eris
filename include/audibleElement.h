@@ -1,4 +1,4 @@
-#ifndef AUDIBLEELEMENT_H
+#ifdef AUDIBLEELEMENT_H
 #define AUDIBLEELEMENT_H
 #include <memory>
 #include "bElem.h"

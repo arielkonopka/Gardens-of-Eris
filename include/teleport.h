@@ -2,11 +2,10 @@
 #define TELEPORT_H
 
 #include "commons.h"
-#include <nonSteppable.h>
 #include "videoElementDef.h"
 #include "randomLevelGenerator.h"
-#include "audibleElement.h"
-class teleport : public nonSteppable,public audibleElement
+#include "bElem.h"
+class teleport : public bElem
 {
 public:
     static videoElement::videoElementDef* vd;

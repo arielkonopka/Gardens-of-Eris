@@ -12,7 +12,7 @@ int door::getType() const
     return _door;
 }
 
-door::door() : audibleElement()
+door::door() : bElem()
 {
 }
 door::door(std::shared_ptr<chamber> board) : door()

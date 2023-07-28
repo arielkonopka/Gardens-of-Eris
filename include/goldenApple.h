@@ -3,7 +3,7 @@
 #include "elements.h"
 #include <vector>
 #include "soundManager.h"
-class goldenApple : public collectible,public nonSteppable,public killableElements,public explosives
+class goldenApple : public killableElements,public explosives
 {
 public:
     static videoElement::videoElementDef* vd;

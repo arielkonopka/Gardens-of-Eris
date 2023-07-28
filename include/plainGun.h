@@ -1,12 +1,10 @@
 #ifndef PLAINGUN_H
 #define PLAINGUN_H
 //#include "commons.h"
-#include "usable.h"
 #include "videoElementDef.h"
 #include "plainMissile.h"
 #include "soundManager.h"
-#include "collectible.h"
-class plainGun : public usable, public mechanical, public collectible, public nonSteppable
+class plainGun : public mechanical
 {
 public:
     static videoElement::videoElementDef* vd;

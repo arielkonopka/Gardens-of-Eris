@@ -1,11 +1,12 @@
 #ifndef PUPPETMASTERFR_H
 #define PUPPETMASTERFR_H
 
-#include <collectible.h>
+#include <bElem.h>
+#include <killableElements.h>
+#include <mechanical.h>
 
 
-
-class puppetMasterFR : public collectible, public mechanical, public killableElements, public nonSteppable
+class puppetMasterFR :  public mechanical, public killableElements
 {
 public:
     puppetMasterFR();

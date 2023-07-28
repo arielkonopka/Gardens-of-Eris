@@ -119,9 +119,7 @@ void videoElementDef::initializeDriver()
         case _rubishType:
             ::rubbish::vd=ved;
             break;
-        case _nonSteppableType:
-            ::nonSteppable::vd=ved;
-            break;
+
         case _movableType:
             ::movableElements::vd=ved;
             break;
@@ -131,9 +129,7 @@ void videoElementDef::initializeDriver()
         case _player:
             ::player::vd=ved;
             break;
-        case _collectible:
-            ::collectible::vd=ved;
-            break;
+
         case _door:
             ::door::vd=ved;
             break;

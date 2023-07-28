@@ -1,10 +1,10 @@
 #include "musicElement.h"
 
-musicElement::musicElement():audibleElement(),mechanical()
+musicElement::musicElement():mechanical()
 {
     //ctor
 }
-musicElement::musicElement(std::shared_ptr<chamber>board):audibleElement(board),mechanical(board,true)
+musicElement::musicElement(std::shared_ptr<chamber>board):mechanical(board,true)
 {
 
 }

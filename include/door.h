@@ -1,11 +1,11 @@
 #ifndef DOOR_H
 #define DOOR_H
 
-#include <audibleElement.h>
+#include <bElem.h>
 #include "videoElementDef.h"
 #include "commons.h"
 
-class door : public audibleElement
+class door : public bElem
 {
 public:
     static videoElement::videoElementDef* vd;

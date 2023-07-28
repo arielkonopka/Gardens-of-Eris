@@ -1,16 +1,15 @@
 #ifndef MOVABLEELEMENTS_H
 #define MOVABLEELEMENTS_H
 
-#include "nonSteppable.h"
 #include "commons.h"
 #include "objectTypes.h"
 #include "videoElementDef.h"
 
 #include "chamber.h"
 //#include "objectTypes.h"
-#include "audibleElement.h"
+#include "bElem.h"
 
-class movableElements :   virtual public audibleElement
+class movableElements : virtual public bElem
 {
 public:
     virtual videoElement::videoElementDef* getVideoElementDef();

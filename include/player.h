@@ -9,7 +9,7 @@
 #include "soundManager.h"
 
 
-class player : public killableElements,public movableElements,public nonSteppable,public mechanical
+class player : public killableElements,public movableElements,public mechanical
 {
 public:
     player();

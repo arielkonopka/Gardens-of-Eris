@@ -7,16 +7,16 @@ videoElement::videoElementDef *puppetMasterFR::getVideoElementDef()
     return puppetMasterFR::vd;
 }
 
-puppetMasterFR::puppetMasterFR(std::shared_ptr<chamber> board) : collectible(board), mechanical(board, false), killableElements(board), nonSteppable(board)
+puppetMasterFR::puppetMasterFR(std::shared_ptr<chamber> board) :  puppetMasterFR()
 {
-    // ctor
+    this->setBoard(board);
 }
 
 puppetMasterFR::~puppetMasterFR()
 {
     // dtor
 }
-puppetMasterFR::puppetMasterFR() : collectible(), mechanical(), killableElements(), nonSteppable()
+puppetMasterFR::puppetMasterFR() :  mechanical(), killableElements()
 {
 }
 /*

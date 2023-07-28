@@ -7,7 +7,7 @@
 #include "chamber.h"
 #include "memory.h"
 #include "movableElements.h"
-class brickCluster: public movableElements, nonSteppable
+class brickCluster: public movableElements
 {
 public:
     static videoElement::videoElementDef* vd;

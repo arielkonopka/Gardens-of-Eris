@@ -1,6 +1,6 @@
 #ifndef bELEMATTR_H
 #define bELEMATTR_H
-
+#include "characterStats.h"
 #include <memory>
 #include "../include/configManager.h"
 
@@ -59,7 +59,7 @@ public:
     bool canBePushed() const;
     bool canCollect() const;
     bool canInteract() const ;
-
+    std::unique_ptr<characterStats> chStats;
 private:
 
     void getDefaultValues(int typeId, int subtypeId);

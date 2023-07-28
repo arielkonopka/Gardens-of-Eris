@@ -11,7 +11,7 @@ monster::monster(std::shared_ptr<chamber> board) : monster()
 monster::monster(std::shared_ptr<chamber> board, int newSubtype) : monster(board)
 {
 }
-monster::monster() : killableElements(), nonSteppable(), mechanical(), movableElements()
+monster::monster() : killableElements(), mechanical(), movableElements()
 {
 
 }

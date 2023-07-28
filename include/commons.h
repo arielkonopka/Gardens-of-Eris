@@ -10,7 +10,6 @@
 #define _floorType 0
 #define _stillElemType 1
 #define _rubishType 2
-#define _nonSteppableType 3
 #define _wallType       4
 #define _movableType    5
 #define _monster 6

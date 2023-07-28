@@ -1,12 +1,11 @@
 #ifndef KEY_H
 #define KEY_H
 
-#include "collectible.h"
 #include "commons.h"
 #include "objectTypes.h"
 #include "videoElementDef.h"
-
-class key : public collectible, public nonSteppable
+#include "bElem.h"
+class key : public bElem
 {
 
 public:

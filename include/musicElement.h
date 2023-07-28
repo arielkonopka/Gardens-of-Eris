@@ -5,7 +5,7 @@
 #include "mechanical.h"
 
 
-class musicElement : public audibleElement, public mechanical
+class musicElement : public mechanical
 {
 public:
     musicElement();

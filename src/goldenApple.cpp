@@ -47,7 +47,7 @@ goldenApple::goldenApple(std::shared_ptr<chamber> board) : goldenApple()
 {
     this->setBoard(board);
 }
-goldenApple::goldenApple() : collectible(), nonSteppable(), killableElements(), explosives()
+goldenApple::goldenApple() : killableElements(), explosives()
 {
 }
 

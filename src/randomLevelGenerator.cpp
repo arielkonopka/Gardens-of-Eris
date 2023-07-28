@@ -541,8 +541,7 @@ std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace elemen
 {
     switch(element.eType)
     {
-    case _collectible:
-        return elementFactory::generateAnElement<collectible>(this->mychamber,0);
+
     case _goldenAppleType:
         return elementFactory::generateAnElement<goldenApple>(this->mychamber,0);
     case _player:

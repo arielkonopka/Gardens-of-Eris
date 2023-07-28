@@ -5,7 +5,7 @@
 #include "commons.h"
 #include "videoElementDef.h"
 
-class patrollingDrone : public killableElements, public nonSteppable, public movableElements
+class patrollingDrone : public killableElements, public movableElements
 {
 public:
     virtual videoElement::videoElementDef* getVideoElementDef();

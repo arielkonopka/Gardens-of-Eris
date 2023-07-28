@@ -1,45 +1,37 @@
-#include "elemStats.h"
+#include "characterStats.h"
 #include "bElem.h"
 
-elemStats::elemStats(int energy): strength(energy),energy(energy)
+characterStats::characterStats(int typeId)
 {
+    this->strength=5+(bElem::randomNumberGenerator()%555);
     this->updateDexterity();
 }
 
-elemStats::~elemStats()
+characterStats::~characterStats()
 {
 
 }
-unsigned int elemStats::getEnergy()
-{
-    return this->energy;
-}
 
-void elemStats::setEnergy(int en)
-{
-    this->energy=(unsigned int)(en>0)?en:0; //if energy is negative, we set 0;
-}
-
-unsigned int elemStats::getStrength()
+unsigned int characterStats::getStrength()
 {
     return this->strength;
 }
 
-unsigned int elemStats::getGlobalPoints()
+unsigned int characterStats::getGlobalPoints()
 {
     return this->globalPoints;
 }
 
-unsigned int elemStats::getDexterity()
+unsigned int characterStats::getDexterity()
 {
     return this->dexterity;
 }
-void elemStats::updateDexterity()
+void characterStats::updateDexterity()
 {
     this->dexterity=log2(this->_dPoints)+_initialDexterity;
 }
 
-void elemStats::countHit(std::shared_ptr<bElem> what)
+void characterStats::countHit(std::shared_ptr<bElem> what)
 {
     if(what==nullptr) return;
 
@@ -71,7 +63,7 @@ void elemStats::countHit(std::shared_ptr<bElem> what)
     }
 }
 
-void elemStats::countCollect(std::shared_ptr<bElem> what)
+void characterStats::countCollect(std::shared_ptr<bElem> what)
 {
     this->globalPoints++;
     if(what->getType()==_goldenAppleType)
@@ -79,7 +71,7 @@ void elemStats::countCollect(std::shared_ptr<bElem> what)
 
 }
 
-void elemStats::countKill(std::shared_ptr<bElem> what)
+void characterStats::countKill(std::shared_ptr<bElem> what)
 {
     this->_dPoints+=5;
     this->globalPoints++;

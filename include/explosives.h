@@ -1,10 +1,10 @@
 #ifndef EXPLOSIVES_H
 #define EXPLOSIVES_H
 
-#include <audibleElement.h>
+#include <bElem.h>
 
 
-class explosives : virtual public audibleElement
+class explosives : virtual public bElem
 {
 public:
 

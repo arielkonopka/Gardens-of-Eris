@@ -3,11 +3,11 @@
 
 videoElement::videoElementDef* rubbish::vd=nullptr;
 
-rubbish::rubbish():collectible()
+rubbish::rubbish():bElem()
 {
 
 }
-rubbish::rubbish(std::shared_ptr<chamber> board):collectible()
+rubbish::rubbish(std::shared_ptr<chamber> board):bElem()
 {
     this->setBoard(board);
 }

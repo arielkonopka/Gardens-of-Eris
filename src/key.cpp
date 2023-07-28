@@ -21,7 +21,7 @@ key::key(std::shared_ptr<chamber> board, int subtype) : key(board)
 
 }
 
-key::key() : collectible(), nonSteppable()
+key::key() : bElem()
 {
 }
 bool key::additionalProvisioning(int subtype, std::shared_ptr<key>key)

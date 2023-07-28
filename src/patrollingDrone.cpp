@@ -2,11 +2,9 @@
 
 videoElement::videoElementDef *patrollingDrone::vd = nullptr;
 
-patrollingDrone::patrollingDrone(std::shared_ptr<chamber> board) : killableElements(board), nonSteppable(board), movableElements(board)
+patrollingDrone::patrollingDrone(std::shared_ptr<chamber> board) : patrollingDrone()
 {
-   // this->attrs->setSubtype(0);
-   // this->setInventory(std::make_shared<inventory>());
-   // this->attrs->setEnergy((1024*bElem::randomNumberGenerator())%155);
+    this->setBoard(board);
 }
 bool patrollingDrone::additionalProvisioning(int subtype,int typeId)
 {
@@ -20,11 +18,11 @@ bool patrollingDrone::additionalProvisioning()
     return this->additionalProvisioning(0,this->getType());
 }
 
-patrollingDrone::patrollingDrone() : killableElements(), nonSteppable(), movableElements()
+patrollingDrone::patrollingDrone() : killableElements(), movableElements()
 {
 
-  //  this->attrs->setSubtype(0);
-   // this->setInventory(std::make_shared<inventory>());
+    //  this->attrs->setSubtype(0);
+    // this->setInventory(std::make_shared<inventory>());
 
 }
 
@@ -34,7 +32,7 @@ patrollingDrone::~patrollingDrone()
 }
 bool patrollingDrone::additionalProvisioning(int subtype, std::shared_ptr<patrollingDrone>sbe)
 {
-     return this->additionalProvisioning(subtype,sbe->getType());
+    return this->additionalProvisioning(subtype,sbe->getType());
 }
 
 

@@ -12,7 +12,7 @@ teleport::teleport(std::shared_ptr<chamber> board, int newSubtype) : teleport(bo
 
 }
 
-teleport::teleport() : nonSteppable(), audibleElement()
+teleport::teleport() : bElem()
 {
 
 }
@@ -165,7 +165,7 @@ bool teleport::mechanics()
         }
     };
     this->playSound("Teleport", "HummingSound");
-    return nonSteppable::mechanics();
+    return bElem::mechanics();
 }
 
 bool teleport::removeFromAllTeleporters()
@@ -196,13 +196,13 @@ bool teleport::removeFromAllTeleporters()
 oState teleport::disposeElement()
 {
     this->removeFromAllTeleporters();
-    return nonSteppable::disposeElement();
+    return bElem::disposeElement();
 }
 
 oState teleport::disposeElementUnsafe()
 {
     this->removeFromAllTeleporters();
-    return nonSteppable::disposeElementUnsafe();
+    return bElem::disposeElementUnsafe();
 }
 
 

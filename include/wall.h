@@ -1,14 +1,13 @@
 #ifndef WALL_H
 #define WALL_H
 
-#include "nonSteppable.h"
 #include "videoElementDef.h"
 
 #include "objectTypes.h"
+#include "bElem.h"
 
 
-
-class wall : public nonSteppable
+class wall : public bElem
 {
 public:
     virtual videoElement::videoElementDef* getVideoElementDef();
