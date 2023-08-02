@@ -271,7 +271,7 @@ The config file now will have entries to configure elements attributes, like bei
 
 ## ChangeLog
 
-
+* Refactored bunker, added sounds on collecting collectibles
 * Started major refactoring, which resulted in two new classes: bElemStats and bElemAttrs - that will probably in the future flatten the structure of bElems, as I plan do the mechanics, and other hooks with hashmaps of lambdas :)
 * started creating configrable element attributes. 
 * Introduced object puppetMaster, it is yet missing the graphical hooks, but it compiles. The patrolling drone will have different brains, that will control it.
