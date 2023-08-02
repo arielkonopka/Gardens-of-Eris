@@ -10,19 +10,19 @@ videoElement::videoElementDef *goldenApple::getVideoElementDef()
     return goldenApple::vd;
 }
 
-int goldenApple::getType()
+int goldenApple::getType() const
 {
     return _goldenAppleType;
 }
 
 bool goldenApple::hurt(int points)
 {
-    if (this->getSubtype() != 1)
+    if (this->attrs->getSubtype() != 1)
     {
-        this->setSubtype(1);
+        this->attrs->setSubtype(1);
         for (unsigned int cnt = 0; cnt < goldenApple::apples.size();)
         {
-            if (goldenApple::apples[cnt]->getInstanceid() == this->getInstanceid())
+            if (goldenApple::apples[cnt]->status->getInstanceId() == this->status->getInstanceId())
             {
                 goldenApple::apples.erase(goldenApple::apples.begin() + cnt);
                 goldenApple::appleNumber--;
@@ -47,25 +47,35 @@ goldenApple::goldenApple(std::shared_ptr<chamber> board) : goldenApple()
 {
     this->setBoard(board);
 }
-goldenApple::goldenApple() : collectible(), nonSteppable(), killableElements(), explosives()
+goldenApple::goldenApple() : killableElements(), explosives()
 {
-    this->setSubtype(0);
-    this->setEnergy(555);
 }
+
 bool goldenApple::additionalProvisioning()
 {
-    if (bElem::additionalProvisioning() == true)
-        return true;
-    goldenApple::appleNumber++;
-    goldenApple::apples.push_back(shared_from_this());
-    return false;
+  return this->additionalProvisioning(0,this->getType());
 }
+bool goldenApple::additionalProvisioning(int subtype, int typeId)
+{
+    bElem::additionalProvisioning(subtype,typeId);
+    if(subtype==0)
+    {
+        goldenApple::appleNumber++;
+        goldenApple::apples.push_back(shared_from_this());
+    }
+    return true;
+}
+bool goldenApple::additionalProvisioning(int subtype, std::shared_ptr<goldenApple>sbe)
+{
+    return this->additionalProvisioning(subtype,sbe->getType());
+}
+
 
 oState goldenApple::disposeElement()
 {
     for (unsigned int cnt = 0; cnt < goldenApple::apples.size();)
     {
-        if (goldenApple::apples[cnt]->getInstanceid() == this->getInstanceid())
+        if (goldenApple::apples[cnt]->status->getInstanceId() == this->status->getInstanceId())
         {
             goldenApple::apples.erase(goldenApple::apples.begin() + cnt);
             goldenApple::appleNumber--;
@@ -105,25 +115,26 @@ bool goldenApple::mechanics()
 {
     bool r = explosives::mechanics();
 
-    if (this->getSubtype() == 0 || this->getCollector().get() == nullptr || this->isWaiting())
+    if (this->attrs->getSubtype() == 0 || this->status->getCollector().expired() || this->status->isWaiting())
     {
         return r;
     }
-    int e = this->getCollector()->getEnergy();
+    int e = this->status->getCollector().lock()->attrs->getEnergy();
     if (e < 100)
     {
-        this->setWait(25);
-        this->getCollector()->setEnergy(e + 1);
+        this->status->setWaiting(25);
+        this->status->getCollector().lock()->attrs->setEnergy(e + 1);
         this->hurt(1);
     }
 
     return true;
 }
+/*
 void goldenApple::setCollected(std::shared_ptr<bElem> who)
 {
     collectible::setCollected(who);
-    if (this->isLiveElement() == false && this->getSubtype() != 0)
+    if (this->isLiveElement() == false && this->attrs->getSubtype() != 0)
     {
         this->registerLiveElement(shared_from_this());
     }
-}
+}*/

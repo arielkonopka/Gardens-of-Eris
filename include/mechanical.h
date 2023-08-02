@@ -13,8 +13,11 @@ public:
     explicit mechanical(std::shared_ptr<chamber> board,bool rEl);
     virtual ~mechanical();
     virtual bool additionalProvisioning() ;
+    virtual bool additionalProvisioning(int subtype,int typeId) ;
+    virtual bool additionalProvisioning(int subtype,std::shared_ptr<mechanical> sbe);
+
 private:
-   bool registerEl=true;
+    bool registerEl=true;
 
 };
 

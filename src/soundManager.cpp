@@ -80,9 +80,17 @@ void soundManager::stopSoundsByElementId(int elId)
 }
 
 
-
-/* validates sounds in the queue, we do not have to do it often, only on new sound requests, just to control which samples are already not playing */
-void soundManager::checkQueue()
+/**
+ * @brief Examines the queue of registered sounds, ensuring that only relevant sound samples are played.
+ *
+ * This function is executed on receiving new sound requests. It checks if the total count of sounds
+ * has changed and accordingly updates the local counter. It also locates the nearest music and changes
+ * the current music if necessary. For each registered sound, the function checks its status and updates
+ * it based on certain conditions, including the distance from the listener and whether it is in the current sound space.
+ * Finally, the volume of the sound is adjusted based on its distance from the listener.
+ *
+ * @note This function is thread-safe due to the usage of std::lock_guard.
+ */void soundManager::checkQueue()
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     if (this->cnt!=bElem::getCntr())
@@ -110,8 +118,8 @@ void soundManager::checkQueue()
         std::shared_ptr<stNode> n=this->registeredSounds[c];
 
         /* stop sounds from different board */
-        if (n->isRegistered && this->isSndPlaying(n->source) && (n->soundSpace!=this->currSoundSpace || this->calcDistance(this->listenerPos,n->position)>this->gc->soundDistance))
-        {
+        if (n->isRegistered && this->isSndPlaying(n->source) && (n->soundSpace!=this->currSoundSpace || this->listenerPos.distance(n->position)>this->gc->soundDistance))
+                {
             this->stopSnd(n);
             n->isRegistered=false;
             this->sndRegister[n->elId][n->elType][n->eventType][n->event].r=false;
@@ -136,7 +144,7 @@ void soundManager::checkQueue()
             this->sndRegister[n->elId][n->elType][n->eventType][n->event].r=false;
             continue;
         }
-        float newVolume = 32.0/this->calcDistance(n->position,this->listenerPos);
+        float newVolume = 32.0/n->position.distance(this->listenerPos);
         alSourcef(n->source, AL_GAIN, (newVolume>1)?1.0:newVolume);
 
     }
@@ -160,7 +168,7 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
 
     /*************************************************************/
     if (!this->active || chamberId!=this->currSoundSpace
-            || this->calcDistance(this->listenerPos,position)>this->gc->soundDistance
+            || this->listenerPos.distance(position)>this->gc->soundDistance
             || !this->gc->samples[typeId][subtypeId][eventType][event].configured
             || (this->sndRegister[elId][typeId][eventType][event].r && this->gc->samples[typeId][subtypeId][eventType][event].allowMulti==false)
        )
@@ -217,7 +225,7 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
     srcNode->eventType=eventType;
     srcNode->event=event;
     srcNode->soundSpace=chamberId;
-    float newVolume = 32.0/this->calcDistance(position,this->listenerPos);
+    float newVolume = 32.0/position.distance(this->listenerPos);
 
     alSourcef(srcNode->source, AL_GAIN, (newVolume>1)?1.0:newVolume);
     alSourcei(srcNode->source,AL_LOOPING,(srcNode->mode==0)?AL_FALSE:AL_TRUE);
@@ -228,20 +236,27 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
 
 
 
-int soundManager::calcDistance(coords3d a, coords3d b)
-{
-    return (int)sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y)+(a.z-b.z)*(a.z-b.z));
-}
+
+
+/**
+ * @brief Determines the nearest music source in the same sound space as the listener.
+ *
+ * This function iterates over all registered music sources. For each music source, it checks if it is
+ * located in the same sound space as the listener's current sound space. If so, it calculates the distance
+ * from the listener. The function keeps track of the nearest music source and its distance from the listener.
+ *
+ * @return The index of the nearest music source. If no music source is found in the same sound space, returns -1.
+ */
 int soundManager::findNearestMusic()
 {
     int dst=65535;
     int no=-1;
     for(unsigned int c=0; c<this->registeredMusic.size(); c++)
     {
-        if(this->registeredMusic[c].chamberId==this->currSoundSpace && (no<0 || (no>=0 && dst>this->calcDistance(this->listenerPos,this->registeredMusic[c].position))))
+        if(this->registeredMusic[c].chamberId==this->currSoundSpace && (no<0 || dst>this->listenerPos.distance(this->registeredMusic[c].position)))
         {
             no=c;
-            dst=this->calcDistance(this->listenerPos,this->registeredMusic[c].position);
+            dst=this->listenerPos.distance(this->registeredMusic[c].position);
         }
     }
     return no;
@@ -413,21 +428,21 @@ const bool soundManager::isSongConfigured(int songNo, coords3d position, int cha
 {
     for(unsigned int c=0; c<this->registeredMusic.size(); c++)
     {
-        if(this->registeredMusic[c].isRegistered && this->registeredMusic[c].position==position && this->registeredMusic[c].songNo==songNo && this->registeredMusic[c].chamberId==chamberId)
+        if(this->registeredMusic[c].songNo==songNo && this->registeredMusic[c].isRegistered && this->registeredMusic[c].position==position &&  this->registeredMusic[c].chamberId==chamberId)
             return true;
     }
     return false;
 }
 
 
-void soundManager::setupSong(int songNo,coords3d position,int chamberId,bool vaiableVolume)
+int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d position,int chamberId,bool vaiableVolume)
 {
     // std::lock_guard<std::mutex> guard(this->snd_mutex);
     /* no music configured? */
     if (this->gc->music.size()<=0 || this->isSongConfigured(songNo,position,chamberId))
     {
         std::cout<<"No music configured!\n";
-        return;
+        return -1;
     }
     /* we deal with the problem of code and configuration mismatch */
     if (songNo<0 || this->gc->music.size()<(unsigned int)songNo)
@@ -440,18 +455,18 @@ void soundManager::setupSong(int songNo,coords3d position,int chamberId,bool vai
         {
 
             std::cout<<"Music file cannot be open "<<this->gc->music[songNo].filename<<"!\n";
-            return;
+            return -1;
         }
         if(muNd.musFileinfo.frames < 1 || muNd.musFileinfo.frames > (sf_count_t)(INT_MAX/sizeof(short))/muNd.musFileinfo.channels)
         {
             sf_close(muNd.musicFile); /* file contains no data */
-            return;
+            return -1;
         }
         muNd.format = this->determineFormat(muNd.musFileinfo,muNd.musicFile);
         if(!muNd.format)
         {
             sf_close(muNd.musicFile);
-            return;
+            return -1;
         }
         ALuint source;
         source = 0;
@@ -459,6 +474,7 @@ void soundManager::setupSong(int songNo,coords3d position,int chamberId,bool vai
         muNd.source=source;
         muNd.position=position;
         muNd.chamberId=chamberId;
+        muNd.bElemInstanceId=bElemInstanceId;
         alSource3f(source,AL_POSITION,(float)position.x,(float)position.y,(float)position.z);
 
         const int buffersNum=3;
@@ -477,7 +493,9 @@ void soundManager::setupSong(int songNo,coords3d position,int chamberId,bool vai
         // alSourcePlay(muNd.source);
         alSourcef(muNd.source, AL_GAIN, 0.10f);
         std::lock_guard<std::mutex> guard(this->snd_mutex);
+
         this->registeredMusic.push_back(muNd);
+        return this->registeredMusic.size()-1;
 
     }
 }
@@ -486,7 +504,7 @@ void soundManager::setupSong(int songNo,coords3d position,int chamberId,bool vai
 void soundManager::playSong(int songNo)
 {
     ALint buffersProcessed = 0;
-    float newVol=32.0/((float)this->calcDistance(this->listenerPos,this->registeredMusic[songNo].position));
+    float newVol=32.0/((float)this->listenerPos.distance(this->registeredMusic[songNo].position));
     newVol=(newVol>0.5|| !this->registeredMusic[songNo].variableVol)?0.5:newVol;
     alGetSourcei(this->registeredMusic[songNo].source, AL_BUFFERS_PROCESSED, &buffersProcessed);
     alSourcef(this->registeredMusic[songNo].source, AL_GAIN, newVol);
@@ -516,6 +534,31 @@ void soundManager::playSong(int songNo)
 
 }
 
+/**
+ * @brief Adjust the playback position for a specified song.
+ *
+ * This method affords the luxury of altering the spatial positioning of a particular song's playback, thus endowing the sound with the capacity for movement during its performance. It represents a somewhat more advanced feature in audio management, providing an aural environment that can adapt dynamically according to the requirements of the listener.
+ *
+ * @param songNo The specific designation, or number, attributed to the song that is due for relocation. This should correspond to a valid index within the registeredMusic vector.
+ * @param newPosition The intended three-dimensional coordinates where the song shall henceforth be situated, creating an auditory illusion of spatial displacement.
+ * @param newChamber The board, that would be our sound chamber.
+ * @return Void as the main purpose of this function is to produce side effects, namely the adjustment of audio position, rather than a data return.
+ *
+ * @note This method employs a thread-safe design, utilising the class's mutex for synchronisation purposes. Therefore, it is perfectly suited to an environment where multiple threads are in operation, ensuring no untoward clashes or conflicts arise in the process of adjusting the song's position.
+ */
+void soundManager::moveSong( int songNo, coords3d newPosition,int newChamber)
+{
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
+
+
+    // Sprawdź czy songNo jest prawidłowe
+    if (songNo < 0 || (unsigned int )songNo >= this->registeredMusic.size())
+        return;
+    this->registeredMusic[songNo].position = newPosition;
+    this->registeredMusic[songNo].chamberId=newChamber;
+    alSource3f(this->registeredMusic[songNo].source, AL_POSITION,
+               (float)newPosition.x, (float)newPosition.y, (float)newPosition.z);
+}
 
 void soundManager::threadLoop()
 {

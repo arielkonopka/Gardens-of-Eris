@@ -6,16 +6,16 @@
 
 class floorElement : public bElem
 {
-    public:
-        virtual videoElement::videoElementDef* getVideoElementDef();
-        static videoElement::videoElementDef* vd;
-        floorElement();
-        explicit floorElement(std::shared_ptr<chamber> board);
-        virtual ~floorElement();
-        virtual constexpr int getType() { return _floorType; };
-        virtual constexpr bool canBeDestroyed() { return false; };
-        virtual constexpr bool canBeKilled() { return false; };
-
+public:
+    virtual videoElement::videoElementDef* getVideoElementDef();
+    static videoElement::videoElementDef* vd;
+    floorElement();
+    explicit floorElement(std::shared_ptr<chamber> board);
+    virtual ~floorElement();
+    virtual  int getType() const;
+    virtual bool additionalProvisioning(int subtype,std::shared_ptr<floorElement> sbe);
+    virtual bool additionalProvisioning();
+    virtual bool additionalProvisioning(int subtype,int typeId);
 };
 
 #endif // FLOOR_H

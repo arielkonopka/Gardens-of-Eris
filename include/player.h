@@ -9,35 +9,35 @@
 #include "soundManager.h"
 
 
-class player : public killableElements,public movableElements,public nonSteppable,public mechanical
+class player : public killableElements,public movableElements,public mechanical
 {
 public:
     player();
     explicit player(std::shared_ptr<chamber> board);
     ~player() final=default;
-    static unsigned int countVisitedPlayers();
+    static unsigned int countVisitedPlayers() ;
     virtual videoElement::videoElementDef* getVideoElementDef();
     static videoElement::videoElementDef* vd;
     static std::shared_ptr<bElem> getActivePlayer();
     bool stepOnElement(std::shared_ptr<bElem> step);
     bool mechanics() final;
     bool interact(std::shared_ptr<bElem> who) final;
-    bool canPush() final;
-    bool getVisited();
-    int getType() final;
-    void setActive(bool act) final;
-    bool isActive() final;
-    int getAnimPh() final;
+    int getType() const;
+    int getAnimPh() const;
     bool shootGun();
     oState disposeElement() final;
     bool additionalProvisioning() final;
-    const float getViewRadius() { return this->vRadius; };
+    bool additionalProvisioning(int subtype,int typeId) ;
+//    const float getViewRadius() { return this->vRadius; };
+    float getViewRadius() const;
+    bool additionalProvisioning(int subtype,std::shared_ptr<player> sbe) ;
+
 private:
     float vRadius=5.5;
     static std::shared_ptr<bElem> activePlayer;
     static std::vector<std::shared_ptr<bElem>> allPlayers;
     static std::vector<std::shared_ptr<bElem>> visitedPlayers;
-    bool visited=false;
+//    bool visited=false;
     int animPh=0;
 //    int moved=0;
 //    int shot=0;

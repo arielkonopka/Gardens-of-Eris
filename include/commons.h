@@ -10,7 +10,6 @@
 #define _floorType 0
 #define _stillElemType 1
 #define _rubishType 2
-#define _nonSteppableType 3
 #define _wallType       4
 #define _movableType    5
 #define _monster 6
@@ -59,6 +58,44 @@
 #define NOCOORDS   ((coords){-1,-1})
 #define NOSTATS ((stats){-1,-1,-1,-1})
 
+
+/**
+ * @struct coords
+ *
+ * @brief A structure representing two-dimensional coordinates on a game board.
+ *
+ * This structure contains two integers: `x` and `y` to represent horizontal (x-axis) and vertical (y-axis) positions on a board.
+ * It also includes several operator overloads and a function to allow for intuitive manipulation of the coordinates.
+ *
+ * @var int x
+ * Horizontal position.
+ *
+ * @var int y
+ * Vertical position.
+ *
+ * @fn bool operator==(coords a) const
+ * Check if two coordinates are equal. Returns `true` if both `x` and `y` values are equal.
+ *
+ * @fn bool operator!=(coords a) const
+ * Check if two coordinates are not equal. Returns `true` if `x` or `y` values are different.
+ *
+ * @fn coords operator+(coords a)
+ * Add two coordinates. Returns a new `coords` object with `x` and `y` values being the sum of `x` and `y` values of the operands.
+ *
+ * @fn coords operator-(coords a)
+ * Subtract a coordinate from another. Returns a new `coords` object with `x` and `y` values being the difference of `x` and `y` values of the operands.
+ *
+ * @fn float distance(const coords& a) const
+ * Calculate the Euclidean distance between two points represented by `coords` objects.
+ * Returns the square root of the sum of squares of differences in `x` and `y` coordinates.
+ *
+ * @fn coords operator%(coords a)
+ * Perform element-wise modulus operation on coordinates. Returns a new `coords` object with `x` and `y` values being the modulus of the `x` and `y` values of the operands.
+ *
+ * @fn coords operator*(int a)
+ * Multiply a coordinate by an integer. Returns a new `coords` object with `x` and `y` values multiplied by the integer `a`.
+ */
+
 typedef struct coords
 {
     int x=-1,y=-1;
@@ -96,7 +133,11 @@ typedef struct coords
 
     float distance(const coords& a) const
     {
-        coords n=(coords){x,y}-a;
+        coords n=(coords)
+        {
+            x,y
+        }
+        -a;
 
         return ::sqrt(static_cast<float>(n.x * n.x + n.y * n.y));
     }
@@ -118,7 +159,28 @@ typedef struct coords
 
 } coords;
 
+/**
+ * @enum direction
+ *
+ * @brief An enumeration representing cardinal directions.
+ * This is used in various operations, including movement and interaction.
+ */
 typedef enum { UP=0,LEFT=1,DOWN=2,RIGHT=3,NODIRECTION=5} direction;
+
+/**
+ * @struct controlItem
+ *
+ * @brief A structure representing an action to be performed by a game entity.
+ *
+ * @var int type
+ * This variable signifies the type of command, where -1 indicates no command,
+ * 0 is for movement, 1 is for shooting, 2 is for interaction, 3 is for gun cycling,
+ * 4 is for using an item in inventory, 5 is for cycling through inventory,
+ * 6 is for dying and 7 is for exiting.
+ *
+ * @var direction dir
+ * This variable specifies the direction for the action. It uses the direction enumeration.
+ */
 typedef struct controlItem
 {
     int type; /*-1 - nocommand, 0-move,1-shoot,2-interact,3-gun cycle,4-use element in inventory,5 - cycle inventory,6 - die, 7 - exit */
@@ -126,12 +188,39 @@ typedef struct controlItem
 
 } controlItem;
 
+/**
+ * @enum modType
+ *
+ * @brief An enumeration representing the type of modifier.
+ * This includes NONE (no modifier), GUN, AMMO, ARMOR, and POWERUP.
+ */
 typedef enum { NONE=0,GUN=1,AMMO=2,ARMOR=3,POWERUP=4} modType;
 
-/* when the element mechanics is run, we need the result of what happened to be passable further down the inheritance hierarchy, that is why we need more status types */
+/**
+ * @enum mechanicResult
+ *
+ * @brief An enumeration representing the result of a mechanic operation.
+ * The values can be CHANGED, UNCHANGED, ELEMENTOUT, and ELEMENTIN.
+ */
 typedef enum { CHANGED=0,UNCHANGED=1,ELEMENTOUT=2,ELEMENTIN=3 } mechanicResult;
 
-
+/**
+ * @struct sNeighboorhood
+ *
+ * @brief A structure representing the properties of a game entity's neighborhood.
+ *
+ * @var bool steppableClose[4]
+ * An array representing whether the immediately adjacent directions are steppable (UP, LEFT, DOWN, RIGHT).
+ *
+ * @var bool steppableOther[4]
+ * An array representing whether the diagonally adjacent directions are steppable (UP-LEFT, DOWN-LEFT, DOWN-RIGHT, UP-RIGHT).
+ *
+ * @var bool steppable[8]
+ * An array representing whether the entire neighborhood is steppable, starting from UP, then UP-LEFT, LEFT, DOWN-LEFT, DOWN, DOWN-RIGHT, RIGHT, UP-RIGHT.
+ *
+ * @var int nTypes[8]
+ * An array representing the types of entities in the entire neighborhood, following the same order as the steppable array.
+ */
 typedef struct neighboorhood
 {
     bool steppableClose[4]; //up,left,down,right
@@ -140,6 +229,26 @@ typedef struct neighboorhood
     int  nTypes[8];
 } sNeighboorhood;
 
+/**
+ * @struct crd3d
+ *
+ * A structure representing three-dimensional coordinates in space.
+ * Each coordinate (x, y, z) is an integer and defaults to -1.
+ *
+ * @var crd3d::x
+ * The X-axis coordinate.
+ * @var crd3d::y
+ * The Y-axis coordinate.
+ * @var crd3d::z
+ * The Z-axis coordinate.
+ *
+ * @function operator==
+ * Equality operator. Returns true if the coordinates (x, y, z) of both structures are equal.
+ *
+ * @function distance
+ * Calculates the Euclidean distance between the current coordinates and another point in three-dimensional space.
+ * It uses the standard formula for distance in Euclidean space sqrt((x2-x1)^2 + (y2-y1)^2 + (z2-z1)^2).
+ */
 
 using coords3d=struct crd3d
 {
@@ -153,8 +262,27 @@ using coords3d=struct crd3d
         else
             return false;
     };
+    inline float distance(const crd3d& a) const
+    {
+        crd3d n = {x - a.x, y - a.y, z - a.z};
+        return ::sqrt(static_cast<float>(n.x * n.x + n.y * n.y + n.z * n.z));
+    };
+
 };
 
+/**
+ * @brief Enum used as key for the statistics map in bElemStats.
+ *
+ * This enum defines various types of statistics that can be stored
+ * in a bElemStats object. Each enum value is a key that can be used
+ * to set and retrieve values from the statistics map.
+ */
+using pointsType = enum pt {
+    TOTAL = 0,    ///< Represents the total score.
+    SHOOT = 1,    ///< Represents the shooting score.
+    STEPS = 2,    ///< Represents the steps score.
+    COLLECTS = 3  ///< Represents the collections score.
+};
 
 
 #endif

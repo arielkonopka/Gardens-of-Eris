@@ -15,29 +15,42 @@ plainGun::plainGun(std::shared_ptr<chamber> board): plainGun()
 
 plainGun::plainGun(std::shared_ptr<chamber>  board, int newSubtype): plainGun(board)
 {
-    this->setSubtype(newSubtype);
 }
 
 std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
 {
-    std::shared_ptr<bElem> pm=elementFactory::generateAnElement<plainMissile>(who->getBoard());
+    std::shared_ptr<bElem> pm=elementFactory::generateAnElement<plainMissile>(who->getBoard(),0);
     pm->setStatsOwner(who);
     who->lockThisObject(pm);
-    pm->setDirection(who->getFacing());
-    pm->setFacing(who->getFacing());
-    pm->stepOnElement(who->getElementInDirection(who->getFacing()));
-    pm->setEnergy(this->getEnergy());
+    pm->status->setMyDirection(who->status->getFacing());
+    pm->status->setFacing(who->status->getFacing());
+    pm->stepOnElement(who->getElementInDirection(who->status->getFacing()));
+    pm->attrs->setEnergy(this->attrs->getEnergy());
     return pm;
 }
 
-plainGun::plainGun():usable(),mechanical(),collectible(),nonSteppable()
+plainGun::plainGun():mechanical()
 {
-    this->setStats(std::make_shared<elemStats>(((bElem::randomNumberGenerator()%4)+1)*25));
+    //this->setStats(std::make_shared<elemStats>(((bElem::randomNumberGenerator()%4)+1)*25));
 
+}
+bool plainGun::additionalProvisioning(int subtype, std::shared_ptr<plainGun>sbe)
+{
+    return this->additionalProvisioning(subtype,sbe->getType());
+}
+
+bool plainGun::additionalProvisioning()
+{
+    return this->additionalProvisioning(0,this->getType());
+}
+
+bool plainGun::additionalProvisioning(int subtype,int typeId)
+{
+    return bElem::additionalProvisioning(subtype,typeId);
 }
 
 
-int plainGun::getType()
+int plainGun::getType() const
 {
     return _plainGun;
 }
@@ -46,61 +59,53 @@ plainGun::~plainGun()
 {
 
 }
-bool plainGun::isWeapon()
-{
-    return true;
-}
+
 bool plainGun::use(std::shared_ptr<bElem> who)
 {
     std::shared_ptr<bElem> myel;
 #ifdef _VerbousMode_
     if (who==nullptr)
     {
-
         std::cout<<"Who is nullptr for plain gun!";
         return false;
-
     }
-    if(who->getType()==_player)
-    {
-
-        std::cout<<"Shoot: "<<this->readyToShoot()<<" s "<<this->shot<<" Energy "<<this->getEnergy()<<"\n";
-
-    }
+  ma
 #endif
-    if (this->readyToShoot()==false)
-        return false; //The gun is fine, not ready to shoot though
-    this->shot=this->getCntr()+_plainGunCharge;
-    if (this->ammo<=0 && (this->getSubtype()%2)==0) //odd subtypes have infinite shots
+   if (this->status->isWaiting())
         return false;
-    myel=who->getElementInDirection(who->getFacing());
+    this->status->setWaiting(_plainGunCharge);
+    if (this->attrs->getAmmo()<=0 && (this->attrs->getSubtype()%2)==0) //odd subtypes have infinite shots
+        return false;
+    myel=who->getElementInDirection(who->status->getFacing());
     if(myel!=nullptr)
     {
-        if (this->ammo>0 || this->getSubtype()%2==1)
+        if (this->attrs->getAmmo()>0 || this->attrs->getSubtype()%2==1)
         {
 
             coords3d c3d;
-            c3d.x=who->getCoords().x*32+who->getOffset().x;
-            c3d.z=who->getCoords().y*32+who->getOffset().y;
+            c3d.x=who->status->getMyPosition().x*32+who->getOffset().x;
+            c3d.z=who->status->getMyPosition().y*32+who->getOffset().y;
             c3d.y=50;
             coords3d vel= {who->getOffset().x,0,who->getOffset().y};
-            soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,this->getInstanceid(),this->getType(),this->getSubtype(),"Shoot","Shoot");
+            soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,this->status->getInstanceId(),this->getType(),this->attrs->getSubtype(),"Shoot","Shoot");
 
-            if (myel->isSteppable()==true)
+            if (myel->attrs->isSteppable()==true)
             {
                 this->createProjectible(who);
             }
-            else if (myel->canBeKilled() )
+            else if (myel->attrs->isKillable() )
             {
-                if(who->getStats()!=nullptr)
-                    who->getStats()->countKill(myel);
-                myel->hurt(this->getEnergy());
+                /*   if(who->getStats()!=nullptr)
+                       who->getStats()->countKill(myel);
+                       */
+                myel->hurt(this->attrs->getEnergy());
+
                 // this->disposeElement();
             }
-            if (this->getSubtype()%2==0)
+            if (this->attrs->getSubtype()%2==0)
             {
-                this->ammo--;
-                this->setEnergy(this->getEnergy()-(this->getEnergy()*0.2));
+                this->attrs->setAmmo(this->attrs->getAmmo()-1);
+                this->attrs->setEnergy(this->attrs->getEnergy()-(this->attrs->getEnergy()*0.2));
 
             }
         }
@@ -108,30 +113,28 @@ bool plainGun::use(std::shared_ptr<bElem> who)
     }
     return true;
 }
+/*
 void plainGun::setMaxEnergy(int me)
 {
     this->maxEnergy=me;
-    this->setEnergy(me);
+    this->attrs->setEnergy(me);
 }
 
+*/
 
-bool plainGun::readyToShoot()
-{
-    return (this->shot<this->getCntr()); // the gun will jam on counter reset, but only this instance
-}
 
 
 bool plainGun::mechanics()
 {
-    bool res=usable::mechanics();
-    if(this->getEnergy()<this->maxEnergy)
+    bool res=mechanical::mechanics();
+    if(this->attrs->getEnergy()<this->maxEnergy)
     {
         if (bElem::getCntr()%5==0)
-            this->setEnergy(this->getEnergy()+1);
+            this->attrs->setEnergy(this->attrs->getEnergy()+1);
     }
     return res;
 }
-
+/*
 int plainGun::getAmmo()
 {
     return this->ammo;
@@ -142,5 +145,5 @@ void plainGun::setAmmo(int ammo)
     this->ammo=ammo;
 }
 
-
+*/
 

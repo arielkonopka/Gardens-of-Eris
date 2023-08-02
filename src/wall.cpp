@@ -10,33 +10,46 @@ wall::wall(std::shared_ptr<chamber> board) : wall()
 wall::wall(std::shared_ptr<chamber> board, int subtype) : wall(board)
 {
 
-    this->setSubtype(subtype);
+  //  this->attrs->setSubtype(subtype);
 }
 
-wall::wall() : nonSteppable()
+wall::wall() : bElem()
 {
-    this->setSubtype(0);
 }
+
+
+bool wall::additionalProvisioning(int subtype, std::shared_ptr<wall>sbe)
+{
+    return this->additionalProvisioning(subtype,sbe->getType());
+}
+
+bool wall::additionalProvisioning(int subtype,int typeId)
+{
+    return bElem::additionalProvisioning(subtype,typeId);
+}
+
+
+
 
 bool wall::stepOnElement(std::shared_ptr<bElem> elem)
 {
-    bool res = nonSteppable::stepOnElement(elem);
+    bool res = bElem::stepOnElement(elem);
     if (this->getBoard().get() != nullptr)
-        this->getBoard()->setVisible(this->getCoords(), 254);
+        this->getBoard()->setVisible(this->status->getMyPosition(), 254);
     return res;
 }
 
 std::shared_ptr<bElem> wall::removeElement()
 {
     if (this->getBoard().get() != nullptr)
-        this->getBoard()->setVisible(this->getCoords(), 255);
-    std::shared_ptr<bElem> res = nonSteppable::removeElement();
+        this->getBoard()->setVisible(this->status->getMyPosition(), 255);
+    std::shared_ptr<bElem> res = bElem::removeElement();
     return res;
 }
 
 bool wall::additionalProvisioning()
 {
-    return true;
+    return this->additionalProvisioning(0,this->getType());
 }
 
 int wall::getType()
@@ -49,7 +62,7 @@ videoElement::videoElementDef *wall::getVideoElementDef()
 {
     return wall::vd;
 }
-
+/*
 bool wall::isDying()
 {
     return false;
@@ -63,3 +76,4 @@ bool wall::canBeDestroyed()
 {
     return false;
 }
+*/

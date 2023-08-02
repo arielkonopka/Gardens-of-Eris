@@ -8,7 +8,7 @@ mechanical::mechanical(std::shared_ptr<chamber> board) : mechanical()
 mechanical::~mechanical()
 {
 
-    this->deregisterLiveElement(this->getInstanceid());
+    this->deregisterLiveElement(this->status->getInstanceId());
 }
 mechanical::mechanical(std::shared_ptr<chamber> board, bool rEl) : mechanical(board)
 {
@@ -21,9 +21,16 @@ mechanical::mechanical() : bElem()
 }
 bool mechanical::additionalProvisioning()
 {
-    if (bElem::additionalProvisioning() == true)
-        return true;
+    return this->additionalProvisioning(0,this->getType());
+}
+bool mechanical::additionalProvisioning(int subtype, int typeId)
+{
+    bElem::additionalProvisioning(subtype,typeId);
     if (this->registerEl)
         this->registerLiveElement(shared_from_this());
-    return false;
+    return true;
+}
+bool mechanical::additionalProvisioning(int subtype, std::shared_ptr<mechanical>sbe)
+{
+    return this->additionalProvisioning(subtype,sbe->getType());
 }

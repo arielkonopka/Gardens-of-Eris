@@ -16,7 +16,28 @@
 
 // Singleton pattern, we will not have multiple config files, therefore we do not need multiple instances of config manager
 // this class will read the config json file, and expose gathered information to whatever class needing it
+using attributeData=struct _attDat
+{
+    int subType=-1;
+    bool killable=false;
+    bool destroyable=false;
+    bool steppable=false;
+    bool isMovable=false;
+    bool isInteractive=false;
+    bool isCollectible=false;
+    bool canPush=false;
+    bool canBePushed=false;
+    bool canCollect=false;
+    bool isWeapon=false;
+    bool isOpen=false;
+    bool isLocked=false;
+    int energy=100;
+    int maxEnergy=100;
+    int ammo=0;
+    int maxAmmo=0;
 
+
+};
 
 typedef struct spriteData
 {
@@ -27,6 +48,7 @@ typedef struct spriteData
     std::vector<coords > destroying;
     std::vector<coords> fadingOut;
     std::vector<coords> teleporting;
+    std::vector<attributeData> attributes;
 } spriteData;
 
 using sampleData= struct sampleData

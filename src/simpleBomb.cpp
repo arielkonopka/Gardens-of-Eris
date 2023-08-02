@@ -2,14 +2,24 @@
 
 videoElement::videoElementDef *simpleBomb::vd = nullptr;
 
-simpleBomb::simpleBomb(std::shared_ptr<chamber> board) : simpleBomb()
+simpleBomb::simpleBomb(std::shared_ptr<chamber>board):explosives(board),killableElements(board),movableElements(board)
 {
-    this->setBoard(board);
+
 }
 
-simpleBomb::simpleBomb() : explosives(), nonSteppable(), killableElements(), movableElements()
+bool simpleBomb::additionalProvisioning(int subtype, std::shared_ptr<simpleBomb>sbe)
 {
-    this->setSubtype(0);
+    return this->additionalProvisioning(subtype,sbe->getType());
+}
+
+bool simpleBomb::additionalProvisioning()
+{
+    return this->additionalProvisioning(0,this->getType());
+}
+
+bool simpleBomb::additionalProvisioning(int subtype,int typeId)
+{
+    return bElem::additionalProvisioning(subtype,typeId);
 }
 
 bool simpleBomb::hurt(int points)
@@ -31,14 +41,14 @@ bool simpleBomb::destroy()
     }
     this->registerLiveElement(shared_from_this());
     this->triggered = true;
-    this->setWait(5); /* magic number */
+    this->status->setWaiting(5); /* magic number */
     return true;
 }
 
 bool simpleBomb::mechanics()
 {
     bElem::mechanics();
-    if (this->getWait() > 1)
+    if (this->status->getWaiting() > 1)
         return false;
     this->explode(1.5);
     return true;

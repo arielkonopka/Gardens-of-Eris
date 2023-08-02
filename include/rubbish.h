@@ -1,23 +1,20 @@
 #ifndef RUBBISH_
 #define RUBBISH_
-
+#include "bElem.h"
 #include "objectTypes.h"
-#include "nonSteppable.h"
-#include "collectible.h"
 
-class rubbish:  public collectible
+class rubbish:  public bElem
 {
-    public:
-        virtual videoElement::videoElementDef* getVideoElementDef();
-        static videoElement::videoElementDef* vd;
-        rubbish();
-        explicit rubbish(std::shared_ptr<chamber> board);
-        void stomp(std::shared_ptr<bElem> who) final;
-        bool mechanics() final;
-        constexpr int getType() final { return _rubishType; };
-        constexpr bool isSteppable() final { return true; };
-        constexpr bool canBeKilled() final { return false; };
-        constexpr bool canBeDestroyed() final { return false; };
+public:
+    virtual videoElement::videoElementDef* getVideoElementDef();
+    static videoElement::videoElementDef* vd;
+    rubbish();
+    explicit rubbish(std::shared_ptr<chamber> board);
+    bool mechanics() final;
+    int getType()  const ;
+    virtual bool additionalProvisioning();
+    virtual bool additionalProvisioning(int subtype,int typeId);
+    virtual bool additionalProvisioning(int subtype,std::shared_ptr<rubbish> sbe);
 
 };
 

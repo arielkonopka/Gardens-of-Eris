@@ -1,16 +1,33 @@
 #include "bunker.h"
-
+#include <elementFactory.h>
 videoElement::videoElementDef* bunker::vd=nullptr;
 
-bunker::bunker(std::shared_ptr<chamber> board):mechanical(board), nonSteppable(board),movableElements(board),
-    myGun(elementFactory::generateAnElement<plainGun>(board,1))
+bunker::bunker(std::shared_ptr<chamber> board):bunker()
 {
+    this->setBoard(board);
+    this->myGun->setBoard(board);
+
 
 }
 
-bunker::bunker():mechanical(),nonSteppable(),movableElements(), myGun(nullptr)
+bunker::bunker():mechanical(),movableElements(), myGun(elementFactory::generateAnElement<plainGun>(nullptr,1))
 {
 
+}
+bool bunker::additionalProvisioning()
+{
+    return this->additionalProvisioning(0,this->getType());
+}
+
+bool bunker::additionalProvisioning(int subtype, int typeId)
+{
+    this->registerLiveElement(shared_from_this());
+    return bElem::additionalProvisioning(subtype,typeId);;
+}
+
+bool bunker::additionalProvisioning(int subtype, std::shared_ptr<bunker>sbe)
+{
+    return this->additionalProvisioning(subtype,sbe->getType());
 }
 
 
@@ -24,44 +41,22 @@ bunker::~bunker()
 {
     if(this->activatedBy!=nullptr)
     {
-        this->setStats(this->backUp);
+        //  this->setStats(this->backUp);
         //    this->activatedBy->unlockThisObject(shared_from_this());
         this->activatedBy=nullptr;
     }
 }
 
-bool bunker::isMovable()
-{
-    return true;
-}
-
 
 bool bunker::mechanics()
 {
-    bool res=mechanical::mechanics();
-    if(!res || this->getMoved()>0 || this->getWait()>0)
+    bool res=bElem::mechanics();
+    if(!res || this->status->isMoving() || this->status->isWaiting() || this->myGun->status->isWaiting())
         return false;
-    if(this->help>0)
+    int randomTest=bElem::randomNumberGenerator()%1000;
+    if(randomTest>865)
     {
-        this->help--;
-        if (this->help==0)
-        {
-            if(this->activatedBy!=nullptr)
-            {
-                this->setStats(this->backUp);
-                this->activatedBy->unlockThisObject(shared_from_this());
-                this->activatedBy=nullptr;
-            }
-        }
-
-    }
-
-    int randomTest=bElem::randomNumberGenerator()%1000+this->help;
-
-    if(this->myGun->readyToShoot()==false)
-        return res;
-    if(randomTest>990)
-    {
+        this->help=0;
         this->myGun->use(shared_from_this());
     }
     return res;
@@ -69,16 +64,7 @@ bool bunker::mechanics()
 
 bool bunker::interact(std::shared_ptr<bElem> Who)
 {
-    if(mechanical::interact(Who)==false)
-        return false;
     this->help=5555;
-    if(Who->getStats().get()!=nullptr && this->activatedBy.get()==nullptr)
-    {
-        this->activatedBy=Who;
-        this->backUp=this->getStats();
-        this->setStats(Who->getStats());
-        Who->lockThisObject(shared_from_this());
-    }
     return true;
 }
 
@@ -93,16 +79,16 @@ direction bunker::findLongestShot()
     {
         element=this->getElementInDirection((direction)(dir));
         if(element.get()==nullptr) continue;
-        while(element->isSteppable()==true)
+        while(element->attrs->isSteppable()==true)
         {
             routes[dir]++;
             element=element->getElementInDirection((direction)(dir));
             if (element.get()==nullptr)
                 break;
         }
-        if (element.get()!=nullptr)
+        if (element)
         {
-            if (element->canBeKilled()==true)
+            if (element->attrs->isKillable()==true)
             {
                 routes[dir]=655350; // We shoot here, the place, where something to be killed stands at
             }
@@ -120,12 +106,12 @@ direction bunker::findLongestShot()
 bool bunker::selfAlign()
 {
     if(this->getBoard())
-        this->setFacing(this->findLongestShot());
+        this->status->setFacing(this->findLongestShot());
     return true;
 }
 
 
-int bunker::getType()
+int bunker::getType() const
 {
     return _bunker;
 }
