@@ -2,7 +2,7 @@ name: SonarCloud
 on:
   push:
     branches:
-      - code_cleaning
+      - bElemSplitClasses
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
