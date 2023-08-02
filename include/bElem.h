@@ -109,6 +109,7 @@ private:
     //  struct _eStatus state;
     std::vector<std::shared_ptr<bElem>> lockers;
     static std::vector<int> toDeregister;
+    static std::vector<std::shared_ptr<bElem>> toDispose;
 };
 
 #endif // BELEM_H

@@ -1,11 +1,13 @@
 #include "bunker.h"
-
+#include <elementFactory.h>
 videoElement::videoElementDef* bunker::vd=nullptr;
 
 bunker::bunker(std::shared_ptr<chamber> board):bunker()
 {
     this->setBoard(board);
     this->myGun->setBoard(board);
+
+
 }
 
 bunker::bunker():mechanical(),movableElements(), myGun(elementFactory::generateAnElement<plainGun>(nullptr,1))
@@ -19,6 +21,7 @@ bool bunker::additionalProvisioning()
 
 bool bunker::additionalProvisioning(int subtype, int typeId)
 {
+    this->registerLiveElement(shared_from_this());
     return bElem::additionalProvisioning(subtype,typeId);;
 }
 
@@ -38,7 +41,7 @@ bunker::~bunker()
 {
     if(this->activatedBy!=nullptr)
     {
-      //  this->setStats(this->backUp);
+        //  this->setStats(this->backUp);
         //    this->activatedBy->unlockThisObject(shared_from_this());
         this->activatedBy=nullptr;
     }
@@ -47,48 +50,22 @@ bunker::~bunker()
 
 bool bunker::mechanics()
 {
-    bool res=mechanical::mechanics();
-    if(!res || this->status->isMoving() || this->status->isWaiting())
+    bool res=bElem::mechanics();
+    if(!res || this->status->isMoving() || this->status->isWaiting() || this->myGun->status->isWaiting())
         return false;
-    if(this->help>0)
-    {
-        this->help--;
-        if (this->help==0)
-        {
-            if(this->activatedBy!=nullptr)
-            {
-              //  this->setStats(this->backUp);
-                this->activatedBy->unlockThisObject(shared_from_this());
-                this->activatedBy=nullptr;
-            }
-        }
-
-    }
-
     int randomTest=bElem::randomNumberGenerator()%1000+this->help;
-
-    if(this->myGun->readyToShoot()==false)
-        return res;
-    if(randomTest>990)
+    if(randomTest>765)
     {
+        this->help=0;
         this->myGun->use(shared_from_this());
     }
+    else this->help++;
     return res;
 }
 
 bool bunker::interact(std::shared_ptr<bElem> Who)
 {
-    if(mechanical::interact(Who)==false)
-        return false;
     this->help=5555;
-/*    if(Who->getStats().get()!=nullptr && this->activatedBy.get()==nullptr)
-    {
-        this->activatedBy=Who;
-        this->backUp=this->getStats();
-      //  this->setStats(Who->getStats());
-        Who->lockThisObject(shared_from_this());
-    }
-    */
     return true;
 }
 

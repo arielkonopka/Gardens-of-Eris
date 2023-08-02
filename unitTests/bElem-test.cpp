@@ -14,9 +14,9 @@
 #include "bElemAttr.h"
 
 
-typedef boost::mpl::list<bElem,killableElements,player,mechanical,collectible,door,explosives,movableElements> base_test_types;
+typedef boost::mpl::list<bElem,killableElements,player,mechanical,door,explosives,movableElements> base_test_types;
 
-typedef boost::mpl::list<bElem,bunker,floorElement,door,explosives,goldenApple,key,killableElements,mechanical,monster,movableElements,nonSteppable,patrollingDrone,plainGun,plainMissile,player,rubbish,teleport,usable,wall> all_test_types;
+typedef boost::mpl::list<bElem,bunker,floorElement,door,explosives,goldenApple,key,killableElements,mechanical,monster,movableElements,patrollingDrone,plainGun,plainMissile,player,rubbish,teleport,wall> all_test_types;
 
 
 int countTheStack(std::shared_ptr<bElem> in)

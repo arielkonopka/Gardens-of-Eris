@@ -214,12 +214,18 @@ bool player::mechanics()
         }
         break;
     case 2:
+    {
         if (this->getElementInDirection(this->getBoard()->cntrlItm.dir) == nullptr)
             return false;
         this->status->setFacing(this->getBoard()->cntrlItm.dir);
-        if (this->getElementInDirection(this->getBoard()->cntrlItm.dir)->interact(shared_from_this()))
-            this->animPh++;
+        std::shared_ptr<bElem> be=this->getElementInDirection(this->getBoard()->cntrlItm.dir);
+        if (be->attrs->isInteractive())
+            be->interact(shared_from_this());
+        if(be->attrs->isCollectible())
+            this->collect(be);
+        this->animPh++;
         break;
+    }
     case 3:
         this->attrs->getInventory()->nextUsable();
         this->status->setWaiting(_mov_delay);

@@ -5,6 +5,7 @@
 
 videoElement::videoElementDef *bElem::vd = nullptr;
 std::vector<std::shared_ptr<bElem>> bElem::liveElems;
+std::vector<std::shared_ptr<bElem>> bElem::toDispose;
 std::vector<int> bElem::toDeregister;
 unsigned int bElem::sTaterCounter = 5;
 int bElem::instances = 0;
@@ -46,7 +47,9 @@ coords bElem::getOffset() const
 
 bool bElem::collectOnAction(bool collected, std::shared_ptr<bElem>who)
 {
-    return false;
+    if (who->getType()==_player)
+        this->playSound("Found","Collect");
+    return true;
 }
 
 
@@ -78,6 +81,8 @@ bool bElem::dropItem(unsigned long int  instanceId)
     {
         if(this->isSteppableDirection((direction)(c)))
         {
+            if (this->getType()==_player)
+                item->playSound("Drop","Item");
             item->stepOnElement(this->getElementInDirection((direction)(c)));
             return true;
         }
@@ -344,9 +349,9 @@ bool bElem::destroy()
             this->status->setKillTimeReq(0);
 
         }
-        if (this->attrs->isDestroyable() || this->attrs->isKillable())
-            this->registerLiveElement(shared_from_this());
         this->status->setDestroyed(_defaultDestroyTime);
+        if (this->attrs->isDestroyable() || this->attrs->isKillable())
+            bElem::toDispose.push_back(shared_from_this());
         return true;
     }
     return false;
@@ -400,14 +405,7 @@ bool bElem::mechanics()
     if ((this->getBoard().get() == nullptr || this->status->getMyPosition() == NOCOORDS) && (!this->status->isCollected()))
         return false;
     this->status->setTaterCounter(this->status->getTaterCounter()+1); /// Instances own 'clock'.
-    if ( (this->attrs->isDestroyable() && this->status->getDestroyed()==0) ||
-            (this->attrs->isKillable() && this->status->getKilled()==0))
-        /// isDestroyed returns -1, if the destroying process is in the past, and 0 is the exact time of the object to be gone.
-    {
-        std::cout<<"dispose\n";
-        this->disposeElement();
-        return false;
-    }
+
     if (this->status->isWaiting() || this->status->isTeleporting() || this->status->isDying() || this->status->isDestroying() || this->status->isMoving())
         return false;
 
@@ -556,9 +554,9 @@ bool bElem::kill()
     {
         return false;
     }
-    if (!this->status->hasActivatedMechanics())
+    if(this->attrs->isKillable())
     {
-        this->registerLiveElement(shared_from_this());
+        bElem::toDispose.push_back(shared_from_this());
     }
     this->status->setKilled(_defaultKillTime);
     return true;
@@ -668,7 +666,24 @@ void bElem::runLiveElements()
 {
     bElem::tick();
     std::vector<std::shared_ptr<bElem>>::iterator p;
-    // First we remove everything that needs to be deregistered
+    // We will check the elements, that are dying, and chek, if syoud le remove the ones, that are stale.
+    for(unsigned int  c=0 ; c<bElem::toDispose.size();)
+    {
+        if(!bElem::toDispose[c]->status->isDying() && !bElem::toDispose[c]->status->isDestroying() && !bElem::toDispose[c]->status->isTeleporting())
+        {
+            if(!bElem::toDispose[c]->status->isDisposed())
+            {
+                bElem::toDispose[c]->playSound("Element","Disposed"); // Snd: Element->Disposed - play sound on element disposal during the game.
+                bElem::toDispose[c]->disposeElement(); // we remove the element, which stopped being dead - its time has passed.
+            }
+
+            bElem::toDispose.erase(bElem::toDispose.begin()+c);
+        }
+        else c++;
+    }
+
+
+    // We remove the unregistered elements first, so these would not be executed.
     for(unsigned long int instId: bElem::toDeregister)
     {
         for (p = bElem::liveElems.begin(); p != bElem::liveElems.end();)
@@ -683,6 +698,7 @@ void bElem::runLiveElements()
             }
         }
     }
+
     bElem::toDeregister.clear();
     bool gotPlayer=player::getActivePlayer()!=nullptr;
     if(!gotPlayer || (gotPlayer && !player::getActivePlayer()->getBoard())) // No active player? No animation!

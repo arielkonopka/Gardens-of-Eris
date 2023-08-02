@@ -13,11 +13,12 @@ monster::monster(std::shared_ptr<chamber> board, int newSubtype) : monster(board
 }
 monster::monster() : killableElements(), mechanical(), movableElements()
 {
-
 }
 
 bool monster::additionalProvisioning(int subtype, std::shared_ptr<monster>sbe)
 {
+    this->registerLiveElement(shared_from_this());
+
     return bElem::additionalProvisioning(subtype,sbe->getType());
 }
 

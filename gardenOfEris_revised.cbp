@@ -112,7 +112,6 @@
 		<Unit filename="include/soundManager.h" />
 		<Unit filename="include/stackedElement.h" />
 		<Unit filename="include/teleport.h" />
-		<Unit filename="include/usable.h" />
 		<Unit filename="include/videoElementDef.h" />
 		<Unit filename="include/wall.h" />
 		<Unit filename="main.cpp">
@@ -156,7 +155,6 @@
 		<Unit filename="src/soundManager.cpp" />
 		<Unit filename="src/stackedElement.cpp" />
 		<Unit filename="src/teleport.cpp" />
-		<Unit filename="src/usable.cpp" />
 		<Unit filename="src/videoElementDef.cpp" />
 		<Unit filename="src/wall.cpp" />
 		<Unit filename="unitTests/bElem-test.cpp">

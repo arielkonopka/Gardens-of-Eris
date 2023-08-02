@@ -39,8 +39,8 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
 bool presenter::initializeDisplay()
 {
     ALLEGRO_MONITOR_INFO info;
-   //  al_set_new_display_flags(ALLEGRO_FULLSCREEN);
-   al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 | ALLEGRO_FULLSCREEN);
+    //  al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 | ALLEGRO_FULLSCREEN);
 
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
     al_get_monitor_info(0, &info);
@@ -131,7 +131,15 @@ bool presenter::loadCofiguredData()
 bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shared_ptr<bElem> elem,bool ignoreOffset,int mode)
 {
     coords coords,offset= {0,0};
-    int sx,sy;
+    auto draw_sprite = [&]()
+    {
+        int sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
+        int sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
+        al_draw_bitmap_region(elem->getVideoElementDef()->sprites, sx, sy, this->sWidth, this->sHeight, offsetX + (x * this->sWidth), offsetY + (y * this->sHeight), 0);
+    };
+
+
+   //m int sx,sy;
     bool res=false;
     if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem.get()==nullptr || elem->getVideoElementDef()==nullptr ) return false;
 
@@ -147,60 +155,36 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
 
     if (elem->status->getSteppingOn() && mode!=_mode_onlyTop)
         res=this->showObjectTile(x,y,offsetX,offsetY,elem->status->getSteppingOn(),ignoreOffset,mode);
-
-    /* if( (elem->isMovable() || elem->isSteppable() || elem->isCollectible()) && elem->status->getStandingOn().get()==nullptr  && mode==0 && (elem->getBoard().get()!=nullptr) && (!elem->getBoard()->isVisible(elem->status->getMyPosition()))
-     {
-         sx=(this->bluredElement.x*this->sWidth)+((this->bluredElement.x+1)*(this->spacing));
-         sy=(this->bluredElement.y*this->sHeight)+((this->bluredElement.y+1)*(this->spacing));
-         al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,(x*this->sWidth),(y*this->sHeight),0);
-         return false;
-     }*/
-
     if((mode==0 && elem->status->isMoving() ))
         return true;
-
-
     int sType=elem->attrs->getSubtype()%elem->getVideoElementDef()->defArray.size();
     int sDir=((int)elem->status->getFacing())%elem->getVideoElementDef()->defArray[sType].size();
     int sPh=elem->getAnimPh()%elem->getVideoElementDef()->defArray[sType][sDir].size();
-
-
-    if( elem->getType()==_belemType || elem->attrs->isSteppable() || !elem->attrs->isDestroyable() || (!elem->status->isDying() && !elem->status->isDestroying() && !elem->status->isTeleporting()) )
+    if(elem->getType()==_floorType || ( !elem->status->isDying() && !elem->status->isDestroying() && !elem->status->isTeleporting() ))
     {
         coords=elem->getVideoElementDef()->defArray[sType][sDir][sPh];
-        //now calculate the position on the sprites surface
-        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
-        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
-        //finally draw that
-        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
+        draw_sprite();
+        if (!elem->getType()==_floorType)
+            return res;
     }
-
-
-
     if (elem->status->isDying())
     {
         coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->dying.size())];
-        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
-        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
-        //finally draw that
-        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
+        draw_sprite();
+        return res;
     }
     if (elem->status->isDestroying())
     {
         coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->destroying.size())];
-        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
-        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
-        //finally draw that
-        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
+        draw_sprite();
+        return res;
     }
 
     if(elem->status->isFading())
     {
         coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->fadingOut.size())];
-        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
-        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
-        //finally draw that
-        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
+        draw_sprite();
+        return res;
 
     }
 
@@ -208,10 +192,8 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
     if (elem->status->isTeleporting())
     {
         coords=elem->getVideoElementDef()->teleporting[elem->getAnimPh()%(elem->getVideoElementDef()->teleporting.size())];
-        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
-        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
-        //finally draw that
-        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
+        draw_sprite();
+        return res;
     }
 
 
@@ -266,12 +248,12 @@ void presenter::prepareStatsThing()
     this->showText(21,0,6,0,"Stats");
     this->showText(21,0,5,32,"P:");
     this->showText(21,1,5,0,"Dex:");
- /*   if(aPlayer->getStats()!=nullptr)
-    {
-        this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getGlobalPoints()));
-        this->showText(22,1,5,0,std::to_string(aPlayer->getStats()->getDexterity()));
-    }
-    */
+    /*   if(aPlayer->getStats()!=nullptr)
+       {
+           this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getGlobalPoints()));
+           this->showText(22,1,5,0,std::to_string(aPlayer->getStats()->getDexterity()));
+       }
+       */
 
 }
 
@@ -343,9 +325,9 @@ void presenter::showGameField()
 
     if(player->getBoard().get()!=nullptr)
     {
-    coords offsets=player->getOffset();
-    al_set_target_bitmap(this->cloakBitmap);
-    al_clear_to_color(al_map_rgba(0,0,0,0));
+        coords offsets=player->getOffset();
+        al_set_target_bitmap(this->cloakBitmap);
+        al_clear_to_color(al_map_rgba(0,0,0,0));
         for(x=-1; x<this->scrTilesX+2; x++)
             for(y=-1; y<this->scrTilesY+2; y++)
             {
@@ -353,7 +335,10 @@ void presenter::showGameField()
                 coords point=player->status->getMyPosition();
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
-                float distance=point.distance((coords){nx,ny});
+                float distance=point.distance((coords)
+                {
+                    nx,ny
+                });
                 if(distance<=player::getActivePlayer()->getViewRadius()/2)
                     continue;
                 if(distance<=player::getActivePlayer()->getViewRadius())
@@ -389,10 +374,10 @@ void presenter::showGameField()
 //    al_draw_bitmap_region(this->internalBitmap,offX+,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
 
     al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
- //   this->eyeCandy(player->getBoard()->getInstanceId());
+//   this->eyeCandy(player->getBoard()->getInstanceId());
 
 
-   // al_wait_for_vsync();
+    // al_wait_for_vsync();
     al_flip_display();
 }
 void presenter::eyeCandy(int flavour)
@@ -443,11 +428,11 @@ void presenter::mechanicLoop()
             if (player::getActivePlayer().get()!=nullptr)
                 this->showGameField();
             else
-                {
+            {
                 std::cout<<"Player not created!\n";
                 //this->showSplash();
                 this->fin=true;
-                }
+            }
         }
     }
 }

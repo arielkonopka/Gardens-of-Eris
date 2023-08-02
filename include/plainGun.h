@@ -16,7 +16,7 @@ public:
     explicit plainGun(std::shared_ptr<chamber> board,int newSubtype);
     virtual bool mechanics();
     virtual ~plainGun();
-    virtual bool readyToShoot();
+  //  virtual bool readyToShoot();
 
     virtual std::shared_ptr<bElem> createProjectible(std::shared_ptr<bElem> who);
 

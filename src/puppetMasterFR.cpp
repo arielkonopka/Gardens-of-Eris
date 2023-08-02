@@ -19,13 +19,14 @@ puppetMasterFR::~puppetMasterFR()
 puppetMasterFR::puppetMasterFR() :  mechanical(), killableElements()
 {
 }
-/*
-void puppetMasterFR::setCollected(std::shared_ptr<bElem> who)
+
+
+bool puppetMasterFR::collectOnAction(bool c, std::shared_ptr<bElem>who)
 {
-    collectible::setCollected(who);
-    if (who.get() != nullptr)
+    bool r=bElem::collectOnAction(c,who);
+    if(c && r && who.get()!=nullptr )
     {
-        if (who->getType() == _patrollingDrone) // if collected by the patrolling drone, activate the mechanics
+        if(who->getType() == _patrollingDrone)
         {
             if (this->attrs->getSubtype() == 0) // if subtype not set, set one randomly
             {
@@ -34,13 +35,17 @@ void puppetMasterFR::setCollected(std::shared_ptr<bElem> who)
             }
             this->registerLiveElement(shared_from_this());
         }
-        else if (who->getType() == _player)
+        if (who->getType() == _player)
             this->playSound("Collect", "Player");
     }
-    else if (this->isLiveElement())
-        this->deregisterLiveElement(this->status->getInstanceId()); // if not, we deactivate the elements mechanics, if it is not already disactivated
+
+    else if(this->status->hasActivatedMechanics())
+        this->deregisterLiveElement(this->status->getInstanceId());
+
+    return true;
 }
-*/
+
+
 bool puppetMasterFR::mechanics()
 {
     bool res = mechanical::mechanics();
@@ -67,7 +72,7 @@ bool puppetMasterFR::mechanics()
 bool puppetMasterFR::collectorMechanics()
 {
     std::shared_ptr<bElem> _collector=this->status->getCollector().lock();
-    for(int c=0;c<4;c++)
+    for(int c=0; c<4; c++)
     {
         direction d=this->status->getCollector().lock()->status->getMyDirection();
         d=(direction)(((int)d+c)%4);
@@ -87,7 +92,7 @@ bool puppetMasterFR::collectorMechanics()
         }
     }
 
-return false;
+    return false;
 }
 
 std::shared_ptr<bElem> puppetMasterFR::findObjectInDirection(direction dir)
@@ -120,11 +125,11 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
         return true;
     }
     else if (b2 && roulette==25)
-        {
-            collector->status->setMyDirection(pdir1);
-            collector->status->setWaiting(3);
-            return true;
-        }
+    {
+        collector->status->setMyDirection(pdir1);
+        collector->status->setWaiting(3);
+        return true;
+    }
     bool r = collector->moveInDirection(cdir);
     if (r == false)
     {

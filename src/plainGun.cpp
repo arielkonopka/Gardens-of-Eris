@@ -69,10 +69,7 @@ bool plainGun::use(std::shared_ptr<bElem> who)
         std::cout<<"Who is nullptr for plain gun!";
         return false;
     }
-    if(who->getType()==_player)
-    {
-        std::cout<<"Shoot: "<<this->readyToShoot()<<" s "<<this->shot<<" Energy "<<this->attrs->getEnergy()<<"\n";
-    }
+  ma
 #endif
    if (this->status->isWaiting())
         return false;
@@ -124,10 +121,7 @@ void plainGun::setMaxEnergy(int me)
 }
 
 */
-bool plainGun::readyToShoot()
-{
-    return (this->shot<bElem::getCntr()); // the gun will jam on counter reset, but only this instance
-}
+
 
 
 bool plainGun::mechanics()
