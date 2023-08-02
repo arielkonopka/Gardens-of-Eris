@@ -47,7 +47,7 @@ coords bElem::getOffset() const
 
 bool bElem::collectOnAction(bool collected, std::shared_ptr<bElem>who)
 {
-    if (who->getType()==_player)
+    if (collected && who && who->getType()==_player)
         this->playSound("Found","Collect");
     return true;
 }

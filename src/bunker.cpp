@@ -53,13 +53,12 @@ bool bunker::mechanics()
     bool res=bElem::mechanics();
     if(!res || this->status->isMoving() || this->status->isWaiting() || this->myGun->status->isWaiting())
         return false;
-    int randomTest=bElem::randomNumberGenerator()%1000+this->help;
-    if(randomTest>765)
+    int randomTest=bElem::randomNumberGenerator()%1000;
+    if(randomTest>865)
     {
         this->help=0;
         this->myGun->use(shared_from_this());
     }
-    else this->help++;
     return res;
 }
 
