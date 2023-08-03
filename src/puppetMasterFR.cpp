@@ -54,7 +54,6 @@ bool puppetMasterFR::mechanics()
         {
         case 0:
             return this->mechanicsPatrollingDrone();
-            break;
         case 1:
             if(!this->collectorMechanics())
                 return this->mechanicsPatrollingDrone();
