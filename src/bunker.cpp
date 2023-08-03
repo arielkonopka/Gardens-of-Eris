@@ -54,7 +54,7 @@ bool bunker::mechanics()
     if(!res || this->status->isMoving() || this->status->isWaiting() || this->myGun->status->isWaiting())
         return false;
     int randomTest=bElem::randomNumberGenerator()%1000;
-    if(randomTest>865)
+    if(randomTest>965)
     {
         this->help=0;
         this->myGun->use(shared_from_this());

@@ -8,7 +8,7 @@ class plainMissile : public killableElements, public movableElements, public mec
 public:
     static videoElement::videoElementDef* vd;
     virtual videoElement::videoElementDef* getVideoElementDef();
-    virtual int getType();
+    virtual int getType() const;
     plainMissile();
     explicit plainMissile(std::shared_ptr<chamber> mychamber);
     explicit plainMissile(std::shared_ptr<chamber> mychamber,int energy);

@@ -14,7 +14,7 @@ public:
     virtual bool hurt(int points);
     virtual bool kill();
     virtual bool destroy();
-    virtual int getType();
+    virtual int getType() const;
     virtual bool mechanics();
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<simpleBomb> sbe);
     virtual bool additionalProvisioning();

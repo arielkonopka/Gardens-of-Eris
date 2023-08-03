@@ -14,7 +14,7 @@ public:
     explicit patrollingDrone(std::shared_ptr<chamber> board);
     virtual ~patrollingDrone();
     virtual bool interact(std::shared_ptr<bElem> who);
-    int getType();
+    int getType() const;
 
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<patrollingDrone> sbe);
     virtual bool additionalProvisioning();

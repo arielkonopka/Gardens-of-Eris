@@ -16,7 +16,7 @@ public:
     //i  virtual void setCollected(std::shared_ptr<bElem> who);
     virtual ~puppetMasterFR();
     virtual bool mechanics();
-    int getType();
+    int getType() const;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<puppetMasterFR> sbe);
     virtual bool additionalProvisioning();
     virtual bool additionalProvisioning(int subtype,int typeId);

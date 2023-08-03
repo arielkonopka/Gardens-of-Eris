@@ -59,7 +59,7 @@ videoElement::videoElementDef *simpleBomb::getVideoElementDef()
     return simpleBomb::vd;
 }
 
-int simpleBomb::getType()
+int simpleBomb::getType() const
 {
     return _simpleBombType;
 }

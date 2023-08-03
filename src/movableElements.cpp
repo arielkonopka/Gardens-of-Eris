@@ -40,7 +40,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
         this->playSound("Move","StepOn");
         return true;
     }
-    else if (this->attrs->canPush()==true && stepOn->attrs->isMovable()==true)
+    else if (this->attrs->canPush()==true && stepOn->attrs->canBePushed()==true && stepOn->attrs->isMovable()==true)
     {
         std::shared_ptr<bElem> stepOn2=stepOn->getElementInDirection(dir);
         if(stepOn2.get()==nullptr || !stepOn2->attrs->isSteppable())

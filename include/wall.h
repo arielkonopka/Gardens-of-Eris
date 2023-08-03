@@ -17,7 +17,7 @@ public:
     std::shared_ptr<bElem> removeElement();
     explicit wall(std::shared_ptr<chamber> board);
     explicit wall(std::shared_ptr<chamber> board,int subtype);
-    int getType();
+    int getType() const;
 
     bool additionalProvisioning() ;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<wall> sbe);

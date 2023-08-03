@@ -61,7 +61,7 @@ bool patrollingDrone::interact(std::shared_ptr<bElem> who)
     return false;
 }
 
-int patrollingDrone::getType()
+int patrollingDrone::getType() const
 {
     return _patrollingDrone;
 }

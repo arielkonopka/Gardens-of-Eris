@@ -52,7 +52,7 @@ bool wall::additionalProvisioning()
     return this->additionalProvisioning(0,this->getType());
 }
 
-int wall::getType()
+int wall::getType() const
 {
     return _wallType;
 }

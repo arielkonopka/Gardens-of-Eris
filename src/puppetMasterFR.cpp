@@ -24,7 +24,7 @@ puppetMasterFR::puppetMasterFR() :  mechanical(), killableElements()
 bool puppetMasterFR::collectOnAction(bool c, std::shared_ptr<bElem>who)
 {
     bool r=bElem::collectOnAction(c,who);
-    if(c && r && who.get()!=nullptr )
+    if(c && r && who )
     {
         if(who->getType() == _patrollingDrone)
         {
@@ -35,10 +35,7 @@ bool puppetMasterFR::collectOnAction(bool c, std::shared_ptr<bElem>who)
             }
             this->registerLiveElement(shared_from_this());
         }
-        if (who->getType() == _player)
-            this->playSound("Collect", "Player");
     }
-
     else if(this->status->hasActivatedMechanics())
         this->deregisterLiveElement(this->status->getInstanceId());
 
@@ -142,7 +139,7 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
     return r;
 }
 
-int puppetMasterFR::getType()
+int puppetMasterFR::getType() const
 {
     return _puppetMasterType;
 }
