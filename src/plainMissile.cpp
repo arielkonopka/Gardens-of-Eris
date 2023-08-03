@@ -45,7 +45,7 @@ plainMissile::~plainMissile()
     }
     //dtor
 }
-int plainMissile::getType()
+int plainMissile::getType() const
 {
     return _plainMissile;
 }

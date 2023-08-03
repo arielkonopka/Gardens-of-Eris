@@ -119,7 +119,7 @@ void soundManager::stopSoundsByElementId(int elId)
 
         /* stop sounds from different board */
         if (n->isRegistered && this->isSndPlaying(n->source) && (n->soundSpace!=this->currSoundSpace || this->listenerPos.distance(n->position)>this->gc->soundDistance))
-                {
+        {
             this->stopSnd(n);
             n->isRegistered=false;
             this->sndRegister[n->elId][n->elType][n->eventType][n->event].r=false;
@@ -165,8 +165,11 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
     alGetError();
     std::lock_guard<std::mutex> guard(this->snd_mutex);
 
+    if(!this->gc->samples[typeId][subtypeId][eventType][event].configured && this->gc->samples[typeId][-1][eventType][event].configured)
+        {
+            subtypeId=-1;
+        }
 
-    /*************************************************************/
     if (!this->active || chamberId!=this->currSoundSpace
             || this->listenerPos.distance(position)>this->gc->soundDistance
             || !this->gc->samples[typeId][subtypeId][eventType][event].configured

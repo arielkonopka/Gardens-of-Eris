@@ -48,7 +48,11 @@ coords bElem::getOffset() const
 bool bElem::collectOnAction(bool collected, std::shared_ptr<bElem>who)
 {
     if (collected && who && who->getType()==_player)
-        this->playSound("Found","Collect");
+        {
+            this->playSound("Found","Collect");
+            std::cout<<"Colelct playsound\n";
+        }
+
     return true;
 }
 
@@ -529,18 +533,19 @@ bool bElem::collect(std::shared_ptr<bElem> collectible)
     collected = collectible->removeElement();
     if (collected.get() == nullptr) // this should never happen!
     {
-        std::cout << "Collecting failed!\n";
+        std::cout << "Collecting failed, removed null?\n";
         return false;
     }
 #ifdef _VerbousMode_
     std::cout << "Collect " << collected->getType() << " st: " << collected->attrs->getSubtype() << "\n";
 #endif
     collectible->status->setCollector(shared_from_this());
+    this->attrs->getInventory()->addToInventory(collectible);
     collectible->collectOnAction(true,shared_from_this());
 #ifdef _VerbousMode_
     std::cout << "Collected set? " << (collectible->status->isCollected()) << "\n";
 #endif
-    this->attrs->getInventory()->addToInventory(collectible);
+
     return true;
 }
 
@@ -646,12 +651,9 @@ bool bElem::moveInDirectionSpeed(direction d, int speed)
 
 void bElem::registerLiveElement(std::shared_ptr<bElem> who)
 {
-#ifdef _VerbousMode_
-    std::cout << "Register mechanics by: " << who->getType() << " " << who->status->getInstanceId() << "RL\n";
-#endif
+
     if (this->status->hasActivatedMechanics())
         return;
-    std::cout << "Register mechanics by: " << who->getType() << " " << who->status->getInstanceId() << "RL\n";
     this->status->setActivatedMechanics(true);
     bElem::liveElems.push_back(who);
 }
@@ -716,11 +718,12 @@ void bElem::runLiveElements()
     {
         if(bElem::liveElems[p].get()!=nullptr)
         {
+            std::shared_ptr<bElem> collector=bElem::liveElems[p]->status->getCollector().lock();
             if (bElem::liveElems[p]->status->getMyPosition() != NOCOORDS && bElem::liveElems[p]->getBoard() && bElem::liveElems[p]->getBoard()->getInstanceId()==chamberId)
             {
                 bElem::liveElems[p]->mechanics();
             }
-            else if (bElem::liveElems[p]->status->isCollected() && bElem::liveElems[p]->status->getCollector().lock()->getBoard()->getInstanceId()==chamberId)
+            else if (bElem::liveElems[p]->status->isCollected() && collector && collector->getBoard() && collector->getBoard()->getInstanceId()==chamberId)
             {
                 bElem::liveElems[p]->mechanics();
             }
