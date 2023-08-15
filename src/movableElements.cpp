@@ -65,7 +65,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
         }
     }
     */
-    if (this->attrs->canInteract()==true)
+    if (this->attrs->isInteractive()==true)
     {
         if(stepOn->interact(shared_from_this())==true)
         {

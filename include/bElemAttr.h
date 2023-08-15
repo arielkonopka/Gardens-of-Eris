@@ -58,7 +58,6 @@ public:
     bool canPush() const;
     bool canBePushed() const;
     bool canCollect() const;
-    bool canInteract() const ;
     std::unique_ptr<characterStats> chStats;
 private:
 

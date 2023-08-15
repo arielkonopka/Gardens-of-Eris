@@ -15,10 +15,9 @@ public:
     brickCluster(std::shared_ptr<chamber> board);
     brickCluster();
     int getType() const;
-    bool additionalProvisioning() ;
+    virtual bool additionalProvisioning() ;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<brickCluster> sbe);
     virtual bool additionalProvisioning(int subtype,int typeId);
-private:
 
 };
 

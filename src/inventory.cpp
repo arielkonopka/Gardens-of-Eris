@@ -190,11 +190,10 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
 
     if (what->attrs->isWeapon()==true)
     {
-    std::cout<<"* collect Weapon\n";
         this->weapons.push_back(what);
         return true;
     }
-    if (what->attrs->canInteract())
+    if (what->attrs->isInteractive())
     {
         this->usables.push_back(what);
         return true;
@@ -227,10 +226,8 @@ std::shared_ptr<bElem> inventory::requestToken(int type, int subType)
 {
     for(size_t c=0; c<this->tokens.size(); c++)
     {
-        std::cout<<"  ** "<<this->tokens[c]->getType()<<"\n";
         if(this->tokens[c]->getType()==type && (subType==-1 || this->tokens[c]->attrs->getSubtype()==subType)) // negative value of subtype will be ignored
         {
-     //       std::cout<<" *** accepted\n";
             std::shared_ptr<bElem> token=this->tokens[c];
             this->decrementTokenNumber( {type,token->attrs->getSubtype()});
             this->tokens.erase(this->tokens.begin()+c);
@@ -244,24 +241,22 @@ std::shared_ptr<bElem> inventory::requestToken(int type, int subType)
 int inventory::requestTokens(int number, int type, int subType)
 {
     bool found=false;
-    for(int n=number; n>0; n--)
-    {
+    int num=0;
         found=false;
-        for(size_t c=0; c<this->tokens.size(); c++)
+        for(size_t c=0; c<this->tokens.size() && num<number;)
         {
-            if(this->tokens[c]->getType()==type && this->tokens[c]->attrs->getSubtype()==subType)
+            if(this->tokens[c]->getType()==type && (this->tokens[c]->attrs->getSubtype()==subType || subType==-1) && num<number)
             {
                 found=true;
-                this->decrementTokenNumber( {type,subType});
                 this->removeToken(c); // this also disposes the token! Use it with care
-                break;
-            }
+                num++;
+            } else  c++;
+
         }
         if(found==false)
         {
-            return n;
+            return num;
         }
-    }
     return 0;
 }
 

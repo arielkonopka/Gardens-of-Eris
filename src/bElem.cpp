@@ -48,10 +48,10 @@ coords bElem::getOffset() const
 bool bElem::collectOnAction(bool collected, std::shared_ptr<bElem>who)
 {
     if (collected && who && who->getType()==_player)
-        {
-            this->playSound("Found","Collect");
-            std::cout<<"Colelct playsound\n";
-        }
+    {
+        this->playSound("Found","Collect");
+        std::cout<<"Colelct playsound\n";
+    }
 
     return true;
 }
@@ -128,6 +128,8 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
             return false;
         this->collect(step);
         step=s2;
+
+        return (step)?this->stepOnElement(step):false;
     };
     std::shared_ptr<bElem> myself=shared_from_this();
     if(this->status->getSteppingOn() || this->status->hasParent() || this->status->isCollected())
@@ -332,7 +334,7 @@ bool bElem::use(std::shared_ptr<bElem> who)
 
 bool bElem::interact(std::shared_ptr<bElem> who)
 {
-    if (this->attrs->canInteract() && !this->status->isInteracting()) /* penalty for getting into counter overflow */
+    if (this->attrs->isInteractive() && !this->status->isInteracting()) /* penalty for getting into counter overflow */
     {
         this->status->setInteracted( _interactedTime);
         return true;
