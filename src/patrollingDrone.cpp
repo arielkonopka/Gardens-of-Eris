@@ -41,9 +41,7 @@ bool patrollingDrone::additionalProvisioning(int subtype, std::shared_ptr<patrol
 */
 bool patrollingDrone::interact(std::shared_ptr<bElem> who)
 {
-    bool res = movableElements::interact(who);
-    if (!res)
-        return res;
+    bool res = bElem::interact(who);
     if (res && !this->brained && this->attrs->getSubtype() == 0 && who->attrs->canCollect())
     {
         std::shared_ptr<bElem> token = who->attrs->getInventory()->requestToken(_puppetMasterType, -1);
@@ -53,6 +51,7 @@ bool patrollingDrone::interact(std::shared_ptr<bElem> who)
             this->brained = true;
             this->brainModule = token;
             token->status->setCollector(shared_from_this());
+            token->collectOnAction(true,shared_from_this()); // since we collect the object ourselves, we should also trigger the action
             token->status->setWaiting(55);
             return true;
         }

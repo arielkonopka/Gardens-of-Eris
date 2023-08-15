@@ -113,7 +113,10 @@ void bElemAttr::setDestroyable(bool d)
 
 bool bElemAttr::isSteppable() const
 {
-    return this->steppable;
+    std::shared_ptr<bElem> owner=this->owner.lock();
+    if(!owner)
+        return this->steppable;
+    return this->steppable && !owner->status->isDying() && !owner->status->isDestroying() && !owner->status->isTeleporting();
 }
 
 void bElemAttr::setSteppable(bool s)
@@ -284,12 +287,6 @@ std::shared_ptr<inventory> bElemAttr::getInventory() const
 void bElemAttr::setInventory(std::shared_ptr<inventory>inv)
 {
     this->inv=inv;
-}
-
-
-bool bElemAttr::canInteract() const
-{
-    return true;
 }
 
 

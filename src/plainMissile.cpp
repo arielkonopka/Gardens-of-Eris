@@ -107,15 +107,7 @@ bool plainMissile::mechanics()
     return true;
 
 }
-void plainMissile::setStatsOwner(std::shared_ptr<bElem> owner)
-{
-    if(false && owner!=nullptr)
-    {
-        this->statsOwner=owner;
-        this->attrs->setEnergy(this->attrs->getEnergy());
 
-    }
-}
 
 
 

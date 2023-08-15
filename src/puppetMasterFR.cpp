@@ -48,7 +48,7 @@ bool puppetMasterFR::mechanics()
     bool res = mechanical::mechanics();
 
     std::shared_ptr<bElem> clc = this->status->getCollector().lock();
-    if (res && clc.get() != nullptr && clc->getType() == _patrollingDrone && clc->status->getMoved() == 0 && !clc->status->isWaiting())
+    if (res && clc.get() != nullptr && clc->getType() == _patrollingDrone && !clc->status->isMoving() && !clc->status->isWaiting())
     {
         switch (this->attrs->getSubtype()) // here we will route all the mechanics, when we are in the monster
         {
@@ -70,7 +70,7 @@ bool puppetMasterFR::collectorMechanics()
     std::shared_ptr<bElem> _collector=this->status->getCollector().lock();
     for(int c=0; c<4; c++)
     {
-        direction d=this->status->getCollector().lock()->status->getMyDirection();
+        direction d=_collector->status->getMyDirection();
         d=(direction)(((int)d+c)%4);
         std::shared_ptr<bElem> check=this->findObjectInDirection(d);
 
