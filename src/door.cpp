@@ -35,9 +35,9 @@ bool door::additionalProvisioning()
 bool door::additionalProvisioning(int subtype, int typeId)
 {
     bool res=bElem::additionalProvisioning(subtype,typeId);
-    this->attrs->setSteppable(false);
-    this->attrs->setLocked(true);
-    this->attrs->setOpen(false);
+    this->getAttrs()->setSteppable(false);
+    this->getAttrs()->setLocked(true);
+    this->getAttrs()->setOpen(false);
     return res;
 }
 
@@ -47,12 +47,12 @@ bool door::stepOnAction(bool step, std::shared_ptr<bElem>who)
         return false;
     if(step==true)
     {
-        if(this->attrs->getSubtype()%2==1 )
+        if(this->getAttrs()->getSubtype()%2==1 )
         {
             std::shared_ptr<bElem> k;
-            if( who->attrs->canCollect())
+            if( who->getAttrs()->canCollect())
             {
-                k=who->attrs->getInventory()->getKey(_key,this->attrs->getSubtype(),true);
+                k=who->getAttrs()->getInventory()->getKey(_key,this->getAttrs()->getSubtype(),true);
             }
             if(!k)
             {
@@ -64,13 +64,13 @@ bool door::stepOnAction(bool step, std::shared_ptr<bElem>who)
     }
     else
     {
-        if(this->attrs->getSubtype()%2==1 )
+        if(this->getAttrs()->getSubtype()%2==1 )
         {
-            this->attrs->setOpen(false);
-            this->attrs->setSteppable(this->attrs->isOpen());
-            this->attrs->setLocked(true);
-            this->playSound("Door", (this->attrs->isOpen()) ? "Unlock" : "Lock");
-            this->status->setFacing((!this->attrs->isOpen()) ? UP : LEFT);
+            this->getAttrs()->setOpen(false);
+            this->getAttrs()->setSteppable(this->getAttrs()->isOpen());
+            this->getAttrs()->setLocked(true);
+            this->playSound("Door", (this->getAttrs()->isOpen()) ? "Unlock" : "Lock");
+            this->getStats()->setFacing((!this->getAttrs()->isOpen()) ? UP : LEFT);
         }
     }
     return true;
@@ -79,8 +79,8 @@ bool door::stepOnAction(bool step, std::shared_ptr<bElem>who)
 
 void door::_alignWithOpen()
 {
-        this->status->setFacing((!this->attrs->isOpen()) ? UP : LEFT);
-        this->attrs->setSteppable(this->attrs->isOpen());
+        this->getStats()->setFacing((!this->getAttrs()->isOpen()) ? UP : LEFT);
+        this->getAttrs()->setSteppable(this->getAttrs()->isOpen());
 
 }
 
@@ -92,32 +92,32 @@ bool door::interact(std::shared_ptr<bElem> who)
     std::shared_ptr<bElem> key = nullptr;
     if (!bres)
         return false;
-    if (!this->attrs->isLocked())
+    if (!this->getAttrs()->isLocked())
     {
-        this->status->setInteracted(10);
-        who->status->setWaiting(1);
-        this->attrs->setOpen(!this->attrs->isOpen());
+        this->getStats()->setInteracted(10);
+        who->getStats()->setWaiting(1);
+        this->getAttrs()->setOpen(!this->getAttrs()->isOpen());
         this->_alignWithOpen();
-        this->playSound("Door", (this->attrs->isOpen()) ? "Unlock" : "Lock");
+        this->playSound("Door", (this->getAttrs()->isOpen()) ? "Unlock" : "Lock");
         return true;
     }
-    if (!who->attrs->canCollect())
+    if (!who->getAttrs()->canCollect())
     {
         return false;
     }
-    key = who->attrs->getInventory()->getKey(_key, this->attrs->getSubtype(), this->attrs->getSubtype()%2!=1);
+    key = who->getAttrs()->getInventory()->getKey(_key, this->getAttrs()->getSubtype(), this->getAttrs()->getSubtype()%2!=1);
     if (key != nullptr)
     {
         this->playSound("Door", "Open");
-        this->attrs->setOpen(true);
-        this->attrs->setLocked(false);
+        this->getAttrs()->setOpen(true);
+        this->getAttrs()->setLocked(false);
         this->_alignWithOpen();
     }
     else
     {
         return false;
     }
-    if(key &&  this->attrs->getSubtype()%2!=1)
+    if(key &&  this->getAttrs()->getSubtype()%2!=1)
     {
         this->playSound("Door","CollectKey");
         key->disposeElement();

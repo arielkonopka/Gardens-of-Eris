@@ -41,14 +41,14 @@ bool simpleBomb::destroy()
     }
     this->registerLiveElement(shared_from_this());
     this->triggered = true;
-    this->status->setWaiting(5); /* magic number */
+    this->getStats()->setWaiting(5); /* magic number */
     return true;
 }
 
 bool simpleBomb::mechanics()
 {
     bElem::mechanics();
-    if (this->status->getWaiting() > 1)
+    if (this->getStats()->getWaiting() > 1)
         return false;
     this->explode(1.5);
     return true;

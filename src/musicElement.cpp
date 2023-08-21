@@ -16,8 +16,8 @@ musicElement::~musicElement()
 bool musicElement::mechanics()
 {
     if(!bElem::mechanics()) return false;
-    this->status->setWaiting(50);  /* We wait for a while to try to play it again, remember, it will get denied if wrong chamber */
-    soundManager::getInstance()->registerMusic(this->attrs->getSubtype(),this->getBoard()->getInstanceId(), {this->status->getMyPosition().x,0,this->status->getMyPosition().y});
+    this->getStats()->setWaiting(50);  /* We wait for a while to try to play it again, remember, it will get denied if wrong chamber */
+    soundManager::getInstance()->registerMusic(this->getAttrs()->getSubtype(),this->getBoard()->getInstanceId(), {this->getStats()->getMyPosition().x,0,this->getStats()->getMyPosition().y});
     return true;
 }
 bool musicElement::additionalProvisioning(int subtype, std::shared_ptr<musicElement>sbe)

@@ -22,10 +22,10 @@ std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
     std::shared_ptr<bElem> pm=elementFactory::generateAnElement<plainMissile>(who->getBoard(),0);
     pm->setStatsOwner(who);
     who->lockThisObject(pm);
-    pm->status->setMyDirection(who->status->getFacing());
-    pm->status->setFacing(who->status->getFacing());
-    pm->stepOnElement(who->getElementInDirection(who->status->getFacing()));
-    pm->attrs->setEnergy(this->attrs->getEnergy());
+    pm->getStats()->setMyDirection(who->getStats()->getFacing());
+    pm->getStats()->setFacing(who->getStats()->getFacing());
+    pm->stepOnElement(who->getElementInDirection(who->getStats()->getFacing()));
+    pm->getAttrs()->setEnergy(this->getAttrs()->getEnergy());
     return pm;
 }
 
@@ -71,41 +71,41 @@ bool plainGun::use(std::shared_ptr<bElem> who)
     }
   ma
 #endif
-   if (this->status->isWaiting())
+   if (this->getStats()->isWaiting())
         return false;
-    this->status->setWaiting(_plainGunCharge);
-    if (this->attrs->getAmmo()<=0 && (this->attrs->getSubtype()%2)==0) //odd subtypes have infinite shots
+    this->getStats()->setWaiting(_plainGunCharge);
+    if (this->getAttrs()->getAmmo()<=0 && (this->getAttrs()->getSubtype()%2)==0) //odd subtypes have infinite shots
         return false;
-    myel=who->getElementInDirection(who->status->getFacing());
+    myel=who->getElementInDirection(who->getStats()->getFacing());
     if(myel!=nullptr)
     {
-        if (this->attrs->getAmmo()>0 || this->attrs->getSubtype()%2==1)
+        if (this->getAttrs()->getAmmo()>0 || this->getAttrs()->getSubtype()%2==1)
         {
 
             coords3d c3d;
-            c3d.x=who->status->getMyPosition().x*32+who->getOffset().x;
-            c3d.z=who->status->getMyPosition().y*32+who->getOffset().y;
+            c3d.x=who->getStats()->getMyPosition().x*32+who->getOffset().x;
+            c3d.z=who->getStats()->getMyPosition().y*32+who->getOffset().y;
             c3d.y=50;
             coords3d vel= {who->getOffset().x,0,who->getOffset().y};
-            soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,this->status->getInstanceId(),this->getType(),this->attrs->getSubtype(),"Shoot","Shoot");
+            soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,this->getStats()->getInstanceId(),this->getType(),this->getAttrs()->getSubtype(),"Shoot","Shoot");
 
-            if (myel->attrs->isSteppable()==true)
+            if (myel->getAttrs()->isSteppable()==true)
             {
                 this->createProjectible(who);
             }
-            else if (myel->attrs->isKillable() )
+            else if (myel->getAttrs()->isKillable() )
             {
                 /*   if(who->getStats()!=nullptr)
                        who->getStats()->countKill(myel);
                        */
-                myel->hurt(this->attrs->getEnergy());
+                myel->hurt(this->getAttrs()->getEnergy());
 
                 // this->disposeElement();
             }
-            if (this->attrs->getSubtype()%2==0)
+            if (this->getAttrs()->getSubtype()%2==0)
             {
-                this->attrs->setAmmo(this->attrs->getAmmo()-1);
-                this->attrs->setEnergy(this->attrs->getEnergy()-(this->attrs->getEnergy()*0.2));
+                this->getAttrs()->setAmmo(this->getAttrs()->getAmmo()-1);
+                this->getAttrs()->setEnergy(this->getAttrs()->getEnergy()-(this->getAttrs()->getEnergy()*0.2));
 
             }
         }
@@ -117,7 +117,7 @@ bool plainGun::use(std::shared_ptr<bElem> who)
 void plainGun::setMaxEnergy(int me)
 {
     this->maxEnergy=me;
-    this->attrs->setEnergy(me);
+    this->getAttrs()->setEnergy(me);
 }
 
 */
@@ -127,10 +127,10 @@ void plainGun::setMaxEnergy(int me)
 bool plainGun::mechanics()
 {
     bool res=mechanical::mechanics();
-    if(this->attrs->getEnergy()<this->maxEnergy)
+    if(this->getAttrs()->getEnergy()<this->maxEnergy)
     {
         if (bElem::getCntr()%5==0)
-            this->attrs->setEnergy(this->attrs->getEnergy()+1);
+            this->getAttrs()->setEnergy(this->getAttrs()->getEnergy()+1);
     }
     return res;
 }

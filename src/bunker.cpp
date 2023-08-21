@@ -51,7 +51,7 @@ bunker::~bunker()
 bool bunker::mechanics()
 {
     bool res=bElem::mechanics();
-    if(!res || this->status->isMoving() || this->status->isWaiting() || this->myGun->status->isWaiting())
+    if(!res || this->getStats()->isMoving() || this->getStats()->isWaiting() || this->myGun->getStats()->isWaiting())
         return false;
     int randomTest=bElem::randomNumberGenerator()%1000;
     if(randomTest>965)
@@ -79,7 +79,7 @@ direction bunker::findLongestShot()
     {
         element=this->getElementInDirection((direction)(dir));
         if(element.get()==nullptr) continue;
-        while(element->attrs->isSteppable()==true)
+        while(element->getAttrs()->isSteppable()==true)
         {
             routes[dir]++;
             element=element->getElementInDirection((direction)(dir));
@@ -88,7 +88,7 @@ direction bunker::findLongestShot()
         }
         if (element)
         {
-            if (element->attrs->isKillable()==true)
+            if (element->getAttrs()->isKillable()==true)
             {
                 routes[dir]=655350; // We shoot here, the place, where something to be killed stands at
             }
@@ -106,7 +106,7 @@ direction bunker::findLongestShot()
 bool bunker::selfAlign()
 {
     if(this->getBoard())
-        this->status->setFacing(this->findLongestShot());
+        this->getStats()->setFacing(this->findLongestShot());
     return true;
 }
 

@@ -16,10 +16,10 @@ std::mt19937 bElem::randomNumberGenerator;
 bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_mutex())
 {
 
-    this->status=std::make_unique<bElemStats>();
+    this->status=std::make_shared<bElemStats>();
 
-    this->status->setMyDirection(UP);
-    this->status->setFacing(UP);
+    this->getStats()->setMyDirection(UP);
+    this->getStats()->setFacing(UP);
     if (!bElem::randomNumberGeneratorInitialized)
     {
         std::random_device rd;
@@ -67,17 +67,17 @@ std::shared_ptr<chamber> bElem::getBoard() const
 void bElem::setBoard(std::shared_ptr<chamber> board)
 {
     this->attachedBoard = board;
-    if (this->provisioned && this->attrs->canCollect())
+    if (this->provisioned && this->getAttrs()->canCollect())
     {
-        this->attrs->getInventory()->updateBoard();
+        this->getAttrs()->getInventory()->updateBoard();
     }
 }
 
 bool bElem::dropItem(unsigned long int  instanceId)
 {
-    if(!this->attrs->canCollect())
+    if(!this->getAttrs()->canCollect())
         return false;
-    std::shared_ptr<bElem> item=this->attrs->getInventory()->retrieveCollectibleFromInventory(instanceId);
+    std::shared_ptr<bElem> item=this->getAttrs()->getInventory()->retrieveCollectibleFromInventory(instanceId);
     if(!item)
         return false;
     item->collectOnAction(false,shared_from_this());
@@ -108,22 +108,22 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
 //std::cout<<"SO."<<step->getType()<<","<<this->getType()<<",";
     auto elig = [](std::shared_ptr<bElem> step) -> bool
     {
-        if (!step || !step->attrs->isSteppable() || !step->getBoard() || step->status->isDisposed() || step->status->getMyPosition() == NOCOORDS)
+        if (!step || !step->getAttrs()->isSteppable() || !step->getBoard() || step->getStats()->isDisposed() || step->getStats()->getMyPosition() == NOCOORDS)
             return false;
         else
             return true;
     };
     // std::cout<<" * QualifiedToStep?\n";
-    if(this->status->isDisposed())
+    if(this->getStats()->isDisposed())
         return false;
     if(!elig(step))
         return false;
 
 
-    if(step->attrs->isCollectible() && this->attrs->canCollect())
+    if(step->getAttrs()->isCollectible() && this->getAttrs()->canCollect())
     {
         //    std::cout<<"  ** isCollectible yes\n";
-        std::shared_ptr<bElem> s2=step->status->getSteppingOn();
+        std::shared_ptr<bElem> s2=step->getStats()->getSteppingOn();
         if(!elig(s2))
             return false;
         this->collect(step);
@@ -132,29 +132,29 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
         return (step)?this->stepOnElement(step):false;
     };
     std::shared_ptr<bElem> myself=shared_from_this();
-    if(this->status->getSteppingOn() || this->status->hasParent() || this->status->isCollected())
+    if(this->getStats()->getSteppingOn() || this->getStats()->hasParent() || this->getStats()->isCollected())
     {
-        std::shared_ptr<bElem> st=this->status->getSteppingOn();
+        std::shared_ptr<bElem> st=this->getStats()->getSteppingOn();
         myself=this->removeElement();
         if(st)
             st->stepOnAction(false,myself);
     }
     std::shared_ptr<bElem> s0;
-    bool hp=step->status->hasParent();
+    bool hp=step->getStats()->hasParent();
     this->setBoard(step->getBoard());
-    this->status->setMyPosition(step->status->getMyPosition());
-    this->status->setSteppingOn(step);
-    s0=step->status->getStandingOn().lock();
-    step->status->setStandingOn(shared_from_this());
+    this->getStats()->setMyPosition(step->getStats()->getMyPosition());
+    this->getStats()->setSteppingOn(step);
+    s0=step->getStats()->getStandingOn().lock();
+    step->getStats()->setStandingOn(shared_from_this());
     if(hp)
     {
-        s0->status->setSteppingOn(myself);
-        this->status->setStandingOn(s0);
+        s0->getStats()->setSteppingOn(myself);
+        this->getStats()->setStandingOn(s0);
     }
     else
     {
         //std::cout<<"   ** no\n";
-        this->getBoard()->setElement(this->status->getMyPosition(),shared_from_this());
+        this->getBoard()->setElement(this->getStats()->getMyPosition(),shared_from_this());
     }
     step->stepOnAction(true,shared_from_this());
     return true;
@@ -164,33 +164,33 @@ oState bElem::disposeElementUnsafe()
 {
     oState res = DISPOSED;
     std::shared_ptr<chamber> myBoard = this->getBoard();
-    coords mycoords = this->status->getMyPosition();
-    if (this->status->isDisposed() == true)
+    coords mycoords = this->getStats()->getMyPosition();
+    if (this->getStats()->isDisposed() == true)
         return ERROR;
-    if (this->status->hasActivatedMechanics())
-        this->deregisterLiveElement(this->status->getInstanceId());
+    if (this->getStats()->hasActivatedMechanics())
+        this->deregisterLiveElement(this->getStats()->getInstanceId());
 
-    this->status->setDisposed(true);
+    this->getStats()->setDisposed(true);
     if (mycoords.x >= 0 && mycoords.y >= 0 && this->getBoard() != nullptr) // object on a board? need extra steps
     {
-        if (this->status->getSteppingOn() || this->status->hasParent())
+        if (this->getStats()->getSteppingOn() || this->getStats()->hasParent())
         {
             this->removeElement();
             res = DISPOSED;
         }
         else
         {
-            this->getBoard()->setElement(this->status->getMyPosition(), nullptr);
+            this->getBoard()->setElement(this->getStats()->getMyPosition(), nullptr);
             res = nullptrREACHED;
         }
 
-        if (this->getType() != _stash && this->attrs->canCollect() && this->attrs->getInventory()->isEmpty() == false && this->getType() != _rubishType && this->getType() != _plainMissile && this->getType() != _plainGun)
+        if (this->getType() != _stash && this->getAttrs()->canCollect() && this->getAttrs()->getInventory()->isEmpty() == false && this->getType() != _rubishType && this->getType() != _plainMissile && this->getType() != _plainGun)
         {
             std::shared_ptr<bElem> stash = elementFactory::generateAnElement<rubbish>(myBoard,0);
-            stash->attrs->setInventory(this->attrs->getInventory());
-            stash->attrs->getInventory()->changeOwner(stash);
-            this->attrs->setInventory(nullptr);
-            if (myBoard->getElement(mycoords)->attrs->isSteppable())
+            stash->getAttrs()->setInventory(this->getAttrs()->getInventory());
+            stash->getAttrs()->getInventory()->changeOwner(stash);
+            this->getAttrs()->setInventory(nullptr);
+            if (myBoard->getElement(mycoords)->getAttrs()->isSteppable())
             {
                 stash->stepOnElement(myBoard->getElement(mycoords));
             }
@@ -211,8 +211,8 @@ oState bElem::disposeElementUnsafe()
             }
         }
     }
-    this->status->setDisposed(true);
-    this->status->setMyPosition(NOCOORDS);
+    this->getStats()->setDisposed(true);
+    this->getStats()->setMyPosition(NOCOORDS);
     this->attachedBoard = nullptr;
     return res; // false means that there is no more elements to go.
 }
@@ -222,38 +222,38 @@ oState bElem::disposeElement()
     std::shared_ptr<bElem> t = shared_from_this();
     std::shared_ptr<bElem> stash = nullptr;
     std::shared_ptr<chamber> _myBoard=this->getBoard();
-    coords oCoords = this->status->getMyPosition();
-    if (this->status->isDisposed() )
+    coords oCoords = this->getStats()->getMyPosition();
+    if (this->getStats()->isDisposed() )
     {
         return ERROR;
     }
     this->removeElement();
-    if (this->status->hasActivatedMechanics())
+    if (this->getStats()->hasActivatedMechanics())
     {
-        this->deregisterLiveElement(this->status->getInstanceId());
+        this->deregisterLiveElement(this->getStats()->getInstanceId());
     }
-    if(this->attrs->canCollect())
+    if(this->getAttrs()->canCollect())
     {
         if (this->getType() == _rubishType )
         {
-            this->attrs->getInventory()->weapons.clear();
-            this->attrs->getInventory()->keys.clear();
-            this->attrs->getInventory()->tokens.clear();
+            this->getAttrs()->getInventory()->weapons.clear();
+            this->getAttrs()->getInventory()->keys.clear();
+            this->getAttrs()->getInventory()->tokens.clear();
         }
-        else if ( oCoords != NOCOORDS && !this->attrs->getInventory()->isEmpty() && _myBoard)
+        else if ( oCoords != NOCOORDS && !this->getAttrs()->getInventory()->isEmpty() && _myBoard)
         {
             /*
                 Create a rubbish element on the board, so the inventory would not be lost
              */
             stash = elementFactory::generateAnElement<rubbish>(this->getBoard(),0);
-            stash->attrs->setCollect(true);
-            stash->attrs->getInventory()->mergeInventory(this->attrs->getInventory());
+            stash->getAttrs()->setCollect(true);
+            stash->getAttrs()->getInventory()->mergeInventory(this->getAttrs()->getInventory());
             stash->stepOnElement(_myBoard->getElement(oCoords));
         }
     }
-    this->status->setDisposed(true);
+    this->getStats()->setDisposed(true);
     this->setBoard(nullptr);
-    this->status->setMyPosition(NOCOORDS);
+    this->getStats()->setMyPosition(NOCOORDS);
     return DISPOSED;
 }
 
@@ -263,7 +263,7 @@ oState bElem::disposeElement()
  */
 coords bElem::getAbsCoords(direction dir) const
 {
-    coords res = this->status->getMyPosition();
+    coords res = this->getStats()->getMyPosition();
     if (this->attachedBoard.get() == nullptr)
         return NOCOORDS;
     switch (dir)
@@ -301,7 +301,7 @@ std::shared_ptr<bElem> bElem::getElementInDirection(direction di)
 bElem::~bElem()
 {
     al_destroy_mutex(this->elementMutex);
-    soundManager::getInstance()->stopSoundsByElementId(this->status->getInstanceId());
+    soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
 }
 
 ALLEGRO_MUTEX *bElem::getMyMutex()
@@ -334,9 +334,9 @@ bool bElem::use(std::shared_ptr<bElem> who)
 
 bool bElem::interact(std::shared_ptr<bElem> who)
 {
-    if (this->attrs->isInteractive() && !this->status->isInteracting()) /* penalty for getting into counter overflow */
+    if (this->getAttrs()->isInteractive() && !this->getStats()->isInteracting()) /* penalty for getting into counter overflow */
     {
-        this->status->setInteracted( _interactedTime);
+        this->getStats()->setInteracted( _interactedTime);
         return true;
     }
     return false;
@@ -345,18 +345,18 @@ bool bElem::interact(std::shared_ptr<bElem> who)
 bool bElem::destroy()
 {
 //   std::cout<<" * Destroy:"<<this->getType()<<"\n";
-    if (this->attrs->isDestroyable() || this->attrs->isSteppable() || this->status->isDestroying() || this->status->isDying())
+    if (this->getAttrs()->isDestroyable() || this->getAttrs()->isSteppable() || this->getStats()->isDestroying() || this->getStats()->isDying())
     {
         //  std::cout<<"  ** yup.\n";
-        if (this->status->isDying())
+        if (this->getStats()->isDying())
         {
-            this->status->setKilled(0);
-            this->status->setKillTimeBeg(0);
-            this->status->setKillTimeReq(0);
+            this->getStats()->setKilled(0);
+            this->getStats()->setKillTimeBeg(0);
+            this->getStats()->setKillTimeReq(0);
 
         }
-        this->status->setDestroyed(_defaultDestroyTime);
-        if (this->attrs->isDestroyable() || this->attrs->isKillable())
+        this->getStats()->setDestroyed(_defaultDestroyTime);
+        if (this->getAttrs()->isDestroyable() || this->getAttrs()->isKillable())
             bElem::toDispose.push_back(shared_from_this());
         return true;
     }
@@ -372,17 +372,17 @@ bool bElem::selfAlign()
 int bElem::getAnimPh() const
 {
     int base = (int)bElem::getCntr();
-    if (this->status->isDying())
+    if (this->getStats()->isDying())
     {
-        base = (int)(bElem::getCntr() - this->status->getKillTimeBeg());
+        base = (int)(bElem::getCntr() - this->getStats()->getKillTimeBeg());
     }
-    if (this->status->isDestroying())
+    if (this->getStats()->isDestroying())
     {
-        base = (int)(bElem::getCntr() - this->status->getDestTimeBeg());
+        base = (int)(bElem::getCntr() - this->getStats()->getDestTimeBeg());
     }
-    if (this->status->isTeleporting())
+    if (this->getStats()->isTeleporting())
     {
-        base = (int)(bElem::getCntr() - this->status->getTelReqTime());
+        base = (int)(bElem::getCntr() - this->getStats()->getTelReqTime());
     }
     return base >> 3;
 }
@@ -408,11 +408,11 @@ bool bElem::readyToShoot() const
 
 bool bElem::mechanics()
 {
-    if ((this->getBoard().get() == nullptr || this->status->getMyPosition() == NOCOORDS) && (!this->status->isCollected()))
+    if ((this->getBoard().get() == nullptr || this->getStats()->getMyPosition() == NOCOORDS) && (!this->getStats()->isCollected()))
         return false;
-    this->status->setTaterCounter(this->status->getTaterCounter()+1); /// Instances own 'clock'.
+    this->getStats()->setTaterCounter(this->getStats()->getTaterCounter()+1); /// Instances own 'clock'.
 
-    if (this->status->isWaiting() || this->status->isTeleporting() || this->status->isDying() || this->status->isDestroying() || this->status->isMoving())
+    if (this->getStats()->isWaiting() || this->getStats()->isTeleporting() || this->getStats()->isDying() || this->getStats()->isDestroying() || this->getStats()->isMoving())
         return false;
 
     return true;
@@ -428,7 +428,7 @@ bool bElem::isSteppableDirection(direction di) const
     tmpcoords = this->getAbsCoords(di);
     if (!(tmpcoords == NOCOORDS) && this->attachedBoard->getElement(tmpcoords).get() != nullptr)
     {
-        return this->attachedBoard->getElement(tmpcoords)->attrs->isSteppable();
+        return this->attachedBoard->getElement(tmpcoords)->getAttrs()->isSteppable();
     }
     return false;
 }
@@ -453,53 +453,53 @@ std::shared_ptr<bElem> bElem::removeElement()
 #ifdef _VerbousMode_
     std::cout<<" * isDisposed?\n";
 #endif
-    if(this->status->isDisposed())
+    if(this->getStats()->isDisposed())
         return nullptr;
 #ifdef _VerbousMode_
     std::cout<<" * isCollected?\n";
 #endif
 
-    if(this->status->isCollected())
+    if(this->getStats()->isCollected())
     {
-        std::shared_ptr<bElem> collector=this->status->getCollector().lock();
-        collector->attrs->getInventory()->removeCollectibleFromInventory(this->status->getInstanceId());
+        std::shared_ptr<bElem> collector=this->getStats()->getCollector().lock();
+        collector->getAttrs()->getInventory()->removeCollectibleFromInventory(this->getStats()->getInstanceId());
         return shared_from_this();
     }
 #ifdef _VerbousMode_
     std::cout<<" * has position and board, newly created?\n";
 #endif
-    if (this->status->getMyPosition()==NOCOORDS  || !this->getBoard())
+    if (this->getStats()->getMyPosition()==NOCOORDS  || !this->getBoard())
     {
         return shared_from_this(); // it is not yet placed on a board.
     }
 #ifdef _VerbousMode_
     std::cout<<" * remove\n";
 #endif
-    coords _pos=this->status->getMyPosition();
+    coords _pos=this->getStats()->getMyPosition();
     std::shared_ptr<chamber> _chmbr=this->getBoard();
 #ifdef _VerbousMode_
     std::cout<<" * has parent\n";
 #endif
-    if(this->status->hasParent())
+    if(this->getStats()->hasParent())
     {
 #ifdef _VerbousMode_
         std::cout<<"  ** yes\n";
 #endif
-        std::shared_ptr<bElem> p=this->status->getStandingOn().lock();
-        p->status->setSteppingOn(this->status->getSteppingOn());
-        if(this->status->getSteppingOn())
-            this->status->getSteppingOn()->status->setStandingOn(p);
+        std::shared_ptr<bElem> p=this->getStats()->getStandingOn().lock();
+        p->getStats()->setSteppingOn(this->getStats()->getSteppingOn());
+        if(this->getStats()->getSteppingOn())
+            this->getStats()->getSteppingOn()->getStats()->setStandingOn(p);
     }
     else
     {
 #ifdef _VerbousMode_
         std::cout<<"  ** no\n";
 #endif
-        std::shared_ptr<bElem> _Stp=this->status->getSteppingOn();
-        this->getBoard()->setElement(this->status->getMyPosition(),_Stp);
+        std::shared_ptr<bElem> _Stp=this->getStats()->getSteppingOn();
+        this->getBoard()->setElement(this->getStats()->getMyPosition(),_Stp);
         //_Stp->stepOnAction(false,nullptr);
         if(_Stp)
-            _Stp->status->setHasParent(false); /// this is how we do "unstomp" now.
+            _Stp->getStats()->setHasParent(false); /// this is how we do "unstomp" now.
     }
 #ifdef _VerbousMode_
     std::cout<<" * check if we removed the last element on a board\n";
@@ -511,11 +511,11 @@ std::shared_ptr<bElem> bElem::removeElement()
         std::cout<<"  ** yes we did\n";
 #endif
         std::shared_ptr<bElem> nf=elementFactory::generateAnElement<floorElement>(_chmbr,1);
-        nf->status->setMyPosition(_pos);
+        nf->getStats()->setMyPosition(_pos);
         _chmbr->setElement(_pos,nf);
     }
     this->setBoard(nullptr);
-    this->status->setMyPosition(NOCOORDS);
+    this->getStats()->setMyPosition(NOCOORDS);
     return shared_from_this();
 }
 
@@ -527,7 +527,7 @@ std::shared_ptr<bElem> bElem::removeElement()
 bool bElem::collect(std::shared_ptr<bElem> collectible)
 {
     std::shared_ptr<bElem> collected;
-    if (collectible.get() == nullptr || !collectible->attrs->isCollectible() || !this->attrs->canCollect() || collectible->status->isDying() || collectible->status->isTeleporting() || collectible->status->isDestroying())
+    if (collectible.get() == nullptr || !collectible->getAttrs()->isCollectible() || !this->getAttrs()->canCollect() || collectible->getStats()->isDying() || collectible->getStats()->isTeleporting() || collectible->getStats()->isDestroying())
     {
         return false;
     }
@@ -539,13 +539,13 @@ bool bElem::collect(std::shared_ptr<bElem> collectible)
         return false;
     }
 #ifdef _VerbousMode_
-    std::cout << "Collect " << collected->getType() << " st: " << collected->attrs->getSubtype() << "\n";
+    std::cout << "Collect " << collected->getType() << " st: " << collected->getAttrs()->getSubtype() << "\n";
 #endif
-    collectible->status->setCollector(shared_from_this());
-    this->attrs->getInventory()->addToInventory(collectible);
+    collectible->getStats()->setCollector(shared_from_this());
+    this->getAttrs()->getInventory()->addToInventory(collectible);
     collectible->collectOnAction(true,shared_from_this());
 #ifdef _VerbousMode_
-    std::cout << "Collected set? " << (collectible->status->isCollected()) << "\n";
+    std::cout << "Collected set? " << (collectible->getStats()->isCollected()) << "\n";
 #endif
 
     return true;
@@ -557,22 +557,31 @@ bool bElem::collect(std::shared_ptr<bElem> collectible)
 
 bool bElem::kill()
 {
-    if (!this->attrs->isKillable() || this->status->isDying() || this->status->isDestroying() || this->status->isTeleporting())
+    if (!this->getAttrs()->isKillable() || this->getStats()->isDying() || this->getStats()->isDestroying() || this->getStats()->isTeleporting())
     {
         return false;
     }
-    if(this->attrs->isKillable())
+    if(this->getAttrs()->isKillable())
     {
         bElem::toDispose.push_back(shared_from_this());
     }
-    this->status->setKilled(_defaultKillTime);
+    this->getStats()->setKilled(_defaultKillTime);
     return true;
+}
+std::shared_ptr<bElemAttr> bElem::getAttrs() const
+{
+   return this->attrs;
+}
+
+std::shared_ptr<bElemStats> bElem::getStats() const
+{
+    return this->status;
 }
 
 
 bool bElem::additionalProvisioning(int subtype,int  typeId)
 {
-    this->attrs=std::make_unique<bElemAttr>(shared_from_this(),typeId,subtype);
+    this->attrs=std::make_shared<bElemAttr>(shared_from_this(),typeId,subtype);
     return  true;
 }
 
@@ -619,12 +628,12 @@ sNeighboorhood bElem::getSteppableNeighboorhood()
         {
             e1 = e->getElementInDirection(d1);
             myNeigh.nTypes[c] = e->getType();
-            myNeigh.steppable[c] = e->attrs->isSteppable();
+            myNeigh.steppable[c] = e->getAttrs()->isSteppable();
             myNeigh.steppableClose[c / 2] = myNeigh.steppable[c];
             if (e1)
             {
                 myNeigh.nTypes[c + 1] = e1->getType();
-                myNeigh.steppable[c + 1] = e1->attrs->isSteppable();
+                myNeigh.steppable[c + 1] = e1->getAttrs()->isSteppable();
             }
             else
             {
@@ -654,16 +663,16 @@ bool bElem::moveInDirectionSpeed(direction d, int speed)
 void bElem::registerLiveElement(std::shared_ptr<bElem> who)
 {
 
-    if (this->status->hasActivatedMechanics())
+    if (this->getStats()->hasActivatedMechanics())
         return;
-    this->status->setActivatedMechanics(true);
+    this->getStats()->setActivatedMechanics(true);
     bElem::liveElems.push_back(who);
 }
 
 void bElem::deregisterLiveElement(int instanceId)
 {
     toDeregister.push_back(instanceId);
-    this->status->setActivatedMechanics(false);
+    this->getStats()->setActivatedMechanics(false);
 }
 
 void bElem::runLiveElements()
@@ -673,9 +682,9 @@ void bElem::runLiveElements()
     // We will check the elements, that are dying, and chek, if syoud le remove the ones, that are stale.
     for(unsigned int  c=0 ; c<bElem::toDispose.size();)
     {
-        if(!bElem::toDispose[c]->status->isDying() && !bElem::toDispose[c]->status->isDestroying() && !bElem::toDispose[c]->status->isTeleporting())
+        if(!bElem::toDispose[c]->getStats()->isDying() && !bElem::toDispose[c]->getStats()->isDestroying() && !bElem::toDispose[c]->getStats()->isTeleporting())
         {
-            if(!bElem::toDispose[c]->status->isDisposed())
+            if(!bElem::toDispose[c]->getStats()->isDisposed())
             {
                 bElem::toDispose[c]->playSound("Element","Disposed"); // Snd: Element->Disposed - play sound on element disposal during the game.
                 bElem::toDispose[c]->disposeElement(); // we remove the element, which stopped being dead - its time has passed.
@@ -692,7 +701,7 @@ void bElem::runLiveElements()
     {
         for (p = bElem::liveElems.begin(); p != bElem::liveElems.end();)
         {
-            if (instId == (*p)->status->getInstanceId())
+            if (instId == (*p)->getStats()->getInstanceId())
             {
                 bElem::liveElems.erase(p);
             }
@@ -720,12 +729,12 @@ void bElem::runLiveElements()
     {
         if(bElem::liveElems[p].get()!=nullptr)
         {
-            std::shared_ptr<bElem> collector=bElem::liveElems[p]->status->getCollector().lock();
-            if (bElem::liveElems[p]->status->getMyPosition() != NOCOORDS && bElem::liveElems[p]->getBoard() && bElem::liveElems[p]->getBoard()->getInstanceId()==chamberId)
+            std::shared_ptr<bElem> collector=bElem::liveElems[p]->getStats()->getCollector().lock();
+            if (bElem::liveElems[p]->getStats()->getMyPosition() != NOCOORDS && bElem::liveElems[p]->getBoard() && bElem::liveElems[p]->getBoard()->getInstanceId()==chamberId)
             {
                 bElem::liveElems[p]->mechanics();
             }
-            else if (bElem::liveElems[p]->status->isCollected() && collector && collector->getBoard() && collector->getBoard()->getInstanceId()==chamberId)
+            else if (bElem::liveElems[p]->getStats()->isCollected() && collector && collector->getBoard() && collector->getBoard()->getInstanceId()==chamberId)
             {
                 bElem::liveElems[p]->mechanics();
             }
@@ -781,7 +790,7 @@ bool bElem::unlockThisObject(std::shared_ptr<bElem> who)
 {
     for (unsigned int cnt = 0; cnt < this->lockers.size();)
     {
-        if (this->lockers.at(cnt)->status->getInstanceId() == who->status->getInstanceId())
+        if (this->lockers.at(cnt)->getStats()->getInstanceId() == who->getStats()->getInstanceId())
         {
             this->lockers.erase(this->lockers.begin() + cnt);
         }
@@ -801,33 +810,33 @@ void bElem::setStatsOwner(std::shared_ptr<bElem> owner)
 
 void bElem::playSound(std::string eventType, std::string event)
 {
-    if (!this->status->getCollector().expired())
+    if (!this->getStats()->getCollector().expired())
     {
-        this->ps(this->status->getCollector().lock(),eventType,event);
+        this->ps(this->getStats()->getCollector().lock(),eventType,event);
     }
     else if(this->getBoard())
     {
         this->ps(shared_from_this(),eventType,event);
     }
-    else if (this->status->hasParent())
+    else if (this->getStats()->hasParent())
     {
-        this->ps(this->status->getStandingOn().lock(),eventType,event);
+        this->ps(this->getStats()->getStandingOn().lock(),eventType,event);
     }
-    else if (this->status->getSteppingOn())
+    else if (this->getStats()->getSteppingOn())
     {
-        this->ps(this->status->getSteppingOn(),eventType,event);
+        this->ps(this->getStats()->getSteppingOn(),eventType,event);
     }
 }
 
 void bElem::ps(std::shared_ptr<bElem>who, std::string eventType, std::string event)
 {
     coords3d c3d;
-    c3d.x=who->status->getMyPosition().x*32+who->getOffset().x;
-    c3d.z=who->status->getMyPosition().y*32+who->getOffset().y;
+    c3d.x=who->getStats()->getMyPosition().x*32+who->getOffset().x;
+    c3d.z=who->getStats()->getMyPosition().y*32+who->getOffset().y;
     c3d.y=0;
     coords3d vel= {(who->getOffset().x)?32:0, 0,(who->getOffset().y>0)?32:0};
 
-    soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,who->status->getInstanceId(),this->getType(),this->attrs->getSubtype(),eventType,event);
+    soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,who->getStats()->getInstanceId(),this->getType(),this->getAttrs()->getSubtype(),eventType,event);
 
 }
 

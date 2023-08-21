@@ -27,9 +27,9 @@ videoElement::videoElementDef* rubbish::getVideoElementDef()
 bool rubbish::mechanics()
 {
     std::shared_ptr<bElem> t=shared_from_this();
-    this->deregisterLiveElement(this->status->getInstanceId());
-    if( this->status->hasParent() && this->status->getStandingOn().lock()->attrs->canCollect())
-        this->status->getStandingOn().lock()->collect(t);
+    this->deregisterLiveElement(this->getStats()->getInstanceId());
+    if( this->getStats()->hasParent() && this->getStats()->getStandingOn().lock()->getAttrs()->canCollect())
+        this->getStats()->getStandingOn().lock()->collect(t);
     return false;
 }
 bool rubbish::additionalProvisioning()
@@ -40,7 +40,7 @@ bool rubbish::additionalProvisioning()
 bool rubbish::additionalProvisioning(int subtype,int typeId)
 {
     bool res=bElem::additionalProvisioning(subtype,typeId);
-    this->attrs->setEnergy(1);
+    this->getAttrs()->setEnergy(1);
 
     return res;
 }

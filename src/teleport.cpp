@@ -66,7 +66,7 @@ bool teleport::createConnectionsWithinSUbtype()
     for (unsigned int c = 0; c < teleport::allTeleporters.size(); c++)
     {
         std::shared_ptr<teleport> t=teleport::allTeleporters[c].lock();
-        if (!teleport::allTeleporters[c].expired() && t->attrs->getSubtype() == this->attrs->getSubtype())
+        if (!teleport::allTeleporters[c].expired() && t->getAttrs()->getSubtype() == this->getAttrs()->getSubtype())
         {
             t->connectionsMade = true;
             candidates.push_back(t);
@@ -93,13 +93,13 @@ int teleport::getType() const
 // Teleport to this becon
 bool teleport::teleportIt(std::shared_ptr<bElem> who)
 {
-    int dir = (int)who->status->getMyDirection();
+    int dir = (int)who->getStats()->getMyDirection();
     if (this->checked)
         return false;
     this->checked = true;
-    who->status->setTelInProgress(_teleportationTime);
-    if (who->status->getSteppingOn() != nullptr)
-        who->status->getSteppingOn()->status->setTelInProgress(_teleportationTime);
+    who->getStats()->setTelInProgress(_teleportationTime);
+    if (who->getStats()->getSteppingOn() != nullptr)
+        who->getStats()->getSteppingOn()->getStats()->setTelInProgress(_teleportationTime);
     for (int c = 0; c < 4; c++)
     {
         direction d = (direction)((dir + c) % 4);
@@ -115,13 +115,13 @@ bool teleport::teleportIt(std::shared_ptr<bElem> who)
 /*
 bool teleport::isSteppable()
 {
-    if (this->attrs->getSubtype() > 0)
+    if (this->getAttrs()->getSubtype() > 0)
     {
-        if (this->status->isTeleporting())
+        if (this->getStats()->isTeleporting())
             return false;
         if (this->theOtherEnd != nullptr)
         {
-            if (this->theOtherEnd->status->getStandingOn() == nullptr)
+            if (this->theOtherEnd->getStats()->getStandingOn() == nullptr)
             {
                 return true;
             }
@@ -142,7 +142,7 @@ bool teleport::isSteppable()
 void teleport::stomp(std::shared_ptr<bElem> who)
 {
     bElem::stomp(who);
-    this->status->setWaiting(_teleportStandTime);
+    this->getStats()->setWaiting(_teleportStandTime);
     this->registerLiveElement(shared_from_this());
 }
 
@@ -150,18 +150,18 @@ void teleport::unstomp()
 {
     bElem::unstomp();
     if (this->isLiveElement())
-        this->deregisterLiveElement(this->status->getInstanceId());
+        this->deregisterLiveElement(this->getStats()->getInstanceId());
 }
 */
 bool teleport::mechanics()
 {
 
-    if (!this->status->isWaiting())
+    if (!this->getStats()->isWaiting())
     {
-        if (this->status->hasParent())
+        if (this->getStats()->hasParent())
         {
-            this->interact(this->status->getStandingOn().lock());
-            this->deregisterLiveElement(this->status->getInstanceId());
+            this->interact(this->getStats()->getStandingOn().lock());
+            this->deregisterLiveElement(this->getStats()->getInstanceId());
         }
     };
     this->playSound("Teleport", "HummingSound");
@@ -173,7 +173,7 @@ bool teleport::removeFromAllTeleporters()
     for (unsigned int c = 0; c < teleport::allTeleporters.size(); c++)
     {
         std::shared_ptr<teleport> t=teleport::allTeleporters[c].lock();
-        if (!teleport::allTeleporters[c].expired() && t->attrs->getSubtype() == this->attrs->getSubtype())
+        if (!teleport::allTeleporters[c].expired() && t->getAttrs()->getSubtype() == this->getAttrs()->getSubtype())
         {
             t->connectionsMade = false;
         }
@@ -181,7 +181,7 @@ bool teleport::removeFromAllTeleporters()
     for (unsigned int c = 0; c < teleport::allTeleporters.size();)
     {
     std::shared_ptr<teleport> t=teleport::allTeleporters[c].lock();
-        if (teleport::allTeleporters[c].expired() || t->status->getInstanceId() == this->status->getInstanceId())
+        if (teleport::allTeleporters[c].expired() || t->getStats()->getInstanceId() == this->getStats()->getInstanceId())
         {
             teleport::allTeleporters.erase(teleport::allTeleporters.begin() + c);
         }

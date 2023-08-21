@@ -34,8 +34,7 @@ public:
      */
 
     static videoElement::videoElementDef *vd;
-    std::unique_ptr<bElemStats> status;
-    std::unique_ptr<bElemAttr> attrs;
+
     virtual ALLEGRO_MUTEX *getMyMutex();
     void registerLiveElement(std::shared_ptr<bElem> who);
     void deregisterLiveElement(int instanceId);
@@ -58,6 +57,9 @@ public:
     virtual coords getAbsCoords(direction dir) const;
     virtual  int getType() const;
     virtual int getAnimPh() const;
+    std::shared_ptr<bElemAttr> getAttrs() const;
+    std::shared_ptr<bElemStats> getStats() const;
+
     virtual  float getViewRadius() const;
     virtual bool collect(std::shared_ptr<bElem> collectible);
     virtual bool dropItem(unsigned long int  instanceId);
@@ -98,6 +100,10 @@ public:
 
     void playSound(std::string eventType,std::string event);
 private:
+    std::shared_ptr<bElemStats> status;
+    std::shared_ptr<bElemAttr> attrs;
+
+
     void ps(std::shared_ptr<bElem> who,std::string eventType,std::string event);
     bool provisioned=false;
     bElem(const bElem &) = delete;

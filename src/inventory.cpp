@@ -9,23 +9,23 @@ void inventory::changeOwner(std::shared_ptr<bElem> who)
     this->owner=who;
     for(auto w:this->weapons)
     {
-        w->status->setCollector(who);
+        w->getStats()->setCollector(who);
     }
     for(auto t:this->tokens)
     {
-        t->status->setCollector(who);
+        t->getStats()->setCollector(who);
     }
     for(auto k:this->keys)
     {
-        k->status->setCollector(who);
+        k->getStats()->setCollector(who);
     }
     for(auto u:this->usables)
     {
-        u->status->setCollector(who);
+        u->getStats()->setCollector(who);
     }
     for(auto m:this->mods)
     {
-        m->status->setCollector(who);
+        m->getStats()->setCollector(who);
     }
 
 
@@ -58,12 +58,12 @@ std::shared_ptr<bElem> inventory::retrieveCollectibleFromInventory(unsigned long
         std::shared_ptr<bElem> clc;
         for(unsigned int c=0; c<_vect.size();)
         {
-            if(_vect[c]->status->getInstanceId()==_inst)
+            if(_vect[c]->getStats()->getInstanceId()==_inst)
             {
-                _vect[c]->status->setCollected(false);
+                _vect[c]->getStats()->setCollected(false);
                 if(!clc)
                     clc=_vect[c];
-                this->decrementTokenNumber({_vect[c]->getType(),_vect[c]->attrs->getSubtype()});
+                this->decrementTokenNumber({_vect[c]->getType(),_vect[c]->getAttrs()->getSubtype()});
                 _vect.erase(_vect.begin()+c);
                 continue;
             }
@@ -86,7 +86,7 @@ std::shared_ptr<bElem> inventory::getKey(int type, int subtype,bool removeIt)
     std::shared_ptr<bElem> res;
     for(size_t c=0; c<this->keys.size(); c++)
     {
-        if(this->keys[c]->getType()==type && this->keys[c]->attrs->getSubtype()==subtype)
+        if(this->keys[c]->getType()==type && this->keys[c]->getAttrs()->getSubtype()==subtype)
         {
             res=this->keys[c];
             if (removeIt==true)
@@ -140,7 +140,7 @@ bool inventory::removeActiveWeapon()
     {
         return false;
     }
-    this->decrementTokenNumber({this->weapons.at(this->wPos)->getType(),this->weapons.at(this->wPos)->attrs->getSubtype()});
+    this->decrementTokenNumber({this->weapons.at(this->wPos)->getType(),this->weapons.at(this->wPos)->getAttrs()->getSubtype()});
     this->weapons.at(this->wPos)->disposeElement();
     return true;
 }
@@ -153,7 +153,7 @@ std::shared_ptr<bElem> inventory::getActiveWeapon()
 
     this->wPos=this->wPos%this->weapons.size();
  //   std::cout<<" * Wpos: "<<this->wPos<<"\n";
-    if (this->weapons[this->wPos]->attrs->getAmmo()<=0)
+    if (this->weapons[this->wPos]->getAttrs()->getAmmo()<=0)
     {
   //      std::cout<<" * Wpos: removing weapon - empty"<<this->wPos<<"\n";
 
@@ -176,45 +176,45 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
     bool res=false;
     if(what==nullptr)
         return false;
-    // if(what->isDying() || what->isTeleporting() || what->status->isDestroying())
+    // if(what->isDying() || what->isTeleporting() || what->getStats()->isDestroying())
     //     return false;
 
-    what->status->setCollector(this->owner.lock());
+    what->getStats()->setCollector(this->owner.lock());
 
-    this->incrementTokenNumber({what->getType(),what->attrs->getSubtype()});
+    this->incrementTokenNumber({what->getType(),what->getAttrs()->getSubtype()});
     if(what->getType()==_key)
     {
         this->keys.push_back(what);
         return true;
     }
 
-    if (what->attrs->isWeapon()==true)
+    if (what->getAttrs()->isWeapon()==true)
     {
         this->weapons.push_back(what);
         return true;
     }
-    if (what->attrs->isInteractive())
+    if (what->getAttrs()->isInteractive())
     {
         this->usables.push_back(what);
         return true;
     }
-    if(what->attrs->isMod()==true)
+    if(what->getAttrs()->isMod()==true)
     {
         this->mods.push_back(what);
         return true;
     }
-    if(what->attrs->isCollectible()==true && what->getType()!=_rubishType)
+    if(what->getAttrs()->isCollectible()==true && what->getType()!=_rubishType)
     {
         // we do not collect stash items, we already merged its inventory
         if(what->getType()!=_stash)
             this->tokens.push_back(what); // the collect method should remove it from the board properly
         return true;
     }
-    if(what->attrs->canCollect()==true)
+    if(what->getAttrs()->canCollect()==true)
     {
         /* this is probably a stash, or something like that. that is why, when we create an object, that shoots infinite ammo, it is better to have gun in non standard places, it would not be picked up that way*/
-        this->mergeInventory(what->attrs->getInventory());
-        what->attrs->setInventory(nullptr);
+        this->mergeInventory(what->getAttrs()->getInventory());
+        what->getAttrs()->setInventory(nullptr);
         what->disposeElement();
         res=true;
     }
@@ -226,10 +226,10 @@ std::shared_ptr<bElem> inventory::requestToken(int type, int subType)
 {
     for(size_t c=0; c<this->tokens.size(); c++)
     {
-        if(this->tokens[c]->getType()==type && (subType==-1 || this->tokens[c]->attrs->getSubtype()==subType)) // negative value of subtype will be ignored
+        if(this->tokens[c]->getType()==type && (subType==-1 || this->tokens[c]->getAttrs()->getSubtype()==subType)) // negative value of subtype will be ignored
         {
             std::shared_ptr<bElem> token=this->tokens[c];
-            this->decrementTokenNumber( {type,token->attrs->getSubtype()});
+            this->decrementTokenNumber( {type,token->getAttrs()->getSubtype()});
             this->tokens.erase(this->tokens.begin()+c);
             return token;
         }
@@ -245,7 +245,7 @@ int inventory::requestTokens(int number, int type, int subType)
         found=false;
         for(size_t c=0; c<this->tokens.size() && num<number;)
         {
-            if(this->tokens[c]->getType()==type && (this->tokens[c]->attrs->getSubtype()==subType || subType==-1) && num<number)
+            if(this->tokens[c]->getType()==type && (this->tokens[c]->getAttrs()->getSubtype()==subType || subType==-1) && num<number)
             {
                 found=true;
                 this->removeToken(c); // this also disposes the token! Use it with care
@@ -301,10 +301,10 @@ bool inventory::mergeInventory(std::shared_ptr<inventory> theOtherInventory)
     {
         for(auto item:_vect1)
         {
-            this->incrementTokenNumber({item->getType(),item->attrs->getSubtype()});
-            item->status->setCollected(false);
+            this->incrementTokenNumber({item->getType(),item->getAttrs()->getSubtype()});
+            item->getStats()->setCollected(false);
             item->collectOnAction(false,nullptr); // we let the element to react on dropping.
-            item->status->setCollector(this->owner.lock());
+            item->getStats()->setCollector(this->owner.lock());
             _vect2.push_back(item);
         };
     };
@@ -331,7 +331,7 @@ bool inventory::removeToken(int position)
     if(position>=(int)this->tokens.size())
         return false;
     token.tokenType=this->tokens[position]->getType();
-    token.tokenSubtype=this->tokens[position]->attrs->getSubtype();
+    token.tokenSubtype=this->tokens[position]->getAttrs()->getSubtype();
     this->decrementTokenNumber(token);
     this->tokens[position]->disposeElement();
     this->tokens.erase(this->tokens.begin()+position);
@@ -343,16 +343,16 @@ bool inventory::removeToken(int position)
 bool inventory::findInInventory(unsigned long int instanceId)
 {
     for(auto k:this->keys)
-        if(k->status->getInstanceId()==instanceId)
+        if(k->getStats()->getInstanceId()==instanceId)
             return true;
     for(auto m:this->mods)
-        if(m->status->getInstanceId()==instanceId)
+        if(m->getStats()->getInstanceId()==instanceId)
             return true;
     for(auto t:this->tokens)
-        if(t->status->getInstanceId()==instanceId)
+        if(t->getStats()->getInstanceId()==instanceId)
             return true;
     for(auto w:this->weapons)
-        if(w->status->getInstanceId()==instanceId)
+        if(w->getStats()->getInstanceId()==instanceId)
             return true;
     return false;
 }

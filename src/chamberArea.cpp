@@ -113,7 +113,7 @@ int chamberArea::calculateSurface(std::shared_ptr<chamber> mychamber)
         {
             for (int y=this->upLeft.y; y<=this->downRight.y; y++)
             {
-                if (mychamber->getElement(x,y)->attrs->isSteppable() && this->checkIfElementIsFree(x,y,mychamber))
+                if (mychamber->getElement(x,y)->getAttrs()->isSteppable() && this->checkIfElementIsFree(x,y,mychamber))
                 {
                     surface_++;
                 }
@@ -140,7 +140,7 @@ void chamberArea::findElementsRec(std::shared_ptr<chamber> mychamber)
         {
             for (int y=this->upLeft.y; y<=this->downRight.y; y++)
             {
-                if (mychamber->getElement(x,y)->attrs->isSteppable() && this->checkIfElementIsFree(x,y,mychamber))
+                if (mychamber->getElement(x,y)->getAttrs()->isSteppable() && this->checkIfElementIsFree(x,y,mychamber))
                 {
                     chamberArea::foundElements.push_back(mychamber->getElement(x,y));
                 }
@@ -195,7 +195,7 @@ void chamberArea::findChambersCloseToSurface(int s,int tolerance)
 
 bool chamberArea::checkIfElementIsFree(int x, int y, std::shared_ptr<chamber> mychamber)
 {
-    if(mychamber->getElement(x,y)->attrs->isSteppable()==false)
+    if(mychamber->getElement(x,y)->getAttrs()->isSteppable()==false)
         return false;
     sNeighboorhood neigh=mychamber->getElement(x,y)->getSteppableNeighboorhood();
     for(int c=0; c<8; c++)

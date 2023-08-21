@@ -32,9 +32,9 @@ bool explosives::additionalProvisioning(int subtype, int typeId)
 bool explosives::explode(float radius)
 {
 
-    std::shared_ptr<bElem> step=(this->status->isCollected())?this->status->getCollector().lock()->status->getSteppingOn():this->status->getSteppingOn();
-    coords mc=(this->status->isCollected())?this->status->getCollector().lock()->status->getMyPosition():this->status->getMyPosition();
-    std::shared_ptr<chamber> brd = (this->status->isCollected())?this->status->getCollector().lock()->getBoard():this->getBoard();
+    std::shared_ptr<bElem> step=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getSteppingOn():this->getStats()->getSteppingOn();
+    coords mc=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getMyPosition():this->getStats()->getMyPosition();
+    std::shared_ptr<chamber> brd = (this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getBoard():this->getBoard();
     int xs=(mc.x-radius<0)?0:mc.x-radius;
     int xe=(mc.x+radius>=brd->width)?brd->width-1:mc.x+radius;
     int ys=(mc.y-radius<0)?0:mc.y-radius;
@@ -64,8 +64,8 @@ bool explosives::explode(float radius)
 bool explosives::explode()
 {
     std::shared_ptr<bElem> el;
-    coords mc=(!this->status->isCollected())?this->status->getCollector().lock()->status->getMyPosition():this->status->getMyPosition();
-    std::shared_ptr<chamber> brd = (this->status->isCollected())?this->status->getCollector().lock()->getBoard():this->getBoard();
+    coords mc=(!this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getMyPosition():this->getStats()->getMyPosition();
+    std::shared_ptr<chamber> brd = (this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getBoard():this->getBoard();
     std::shared_ptr<bElem> step;
     this->playSound("Explosives","Explode"); // This sound must not be looped, otherwise it will be swiped off
     this->removeElement();

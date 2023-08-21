@@ -28,16 +28,16 @@ bool puppetMasterFR::collectOnAction(bool c, std::shared_ptr<bElem>who)
     {
         if(who->getType() == _patrollingDrone)
         {
-            if (this->attrs->getSubtype() == 0) // if subtype not set, set one randomly
+            if (this->getAttrs()->getSubtype() == 0) // if subtype not set, set one randomly
             {
-                this->attrs->setSubtype(2);
-                this->attrs->setSubtype(this->randomNumberGenerator()%2);
+                this->getAttrs()->setSubtype(2);
+                this->getAttrs()->setSubtype(this->randomNumberGenerator()%2);
             }
             this->registerLiveElement(shared_from_this());
         }
     }
-    else if(this->status->hasActivatedMechanics())
-        this->deregisterLiveElement(this->status->getInstanceId());
+    else if(this->getStats()->hasActivatedMechanics())
+        this->deregisterLiveElement(this->getStats()->getInstanceId());
 
     return true;
 }
@@ -47,10 +47,10 @@ bool puppetMasterFR::mechanics()
 {
     bool res = mechanical::mechanics();
 
-    std::shared_ptr<bElem> clc = this->status->getCollector().lock();
-    if (res && clc.get() != nullptr && clc->getType() == _patrollingDrone && !clc->status->isMoving() && !clc->status->isWaiting())
+    std::shared_ptr<bElem> clc = this->getStats()->getCollector().lock();
+    if (res && clc.get() != nullptr && clc->getType() == _patrollingDrone && !clc->getStats()->isMoving() && !clc->getStats()->isWaiting())
     {
-        switch (this->attrs->getSubtype()) // here we will route all the mechanics, when we are in the monster
+        switch (this->getAttrs()->getSubtype()) // here we will route all the mechanics, when we are in the monster
         {
         case 0:
             return this->mechanicsPatrollingDrone();
@@ -67,20 +67,20 @@ bool puppetMasterFR::mechanics()
 
 bool puppetMasterFR::collectorMechanics()
 {
-    std::shared_ptr<bElem> _collector=this->status->getCollector().lock();
+    std::shared_ptr<bElem> _collector=this->getStats()->getCollector().lock();
     for(int c=0; c<4; c++)
     {
-        direction d=_collector->status->getMyDirection();
+        direction d=_collector->getStats()->getMyDirection();
         d=(direction)(((int)d+c)%4);
         std::shared_ptr<bElem> check=this->findObjectInDirection(d);
 
-        if(check && check->attrs->isCollectible())
+        if(check && check->getAttrs()->isCollectible())
         {
-            if(_collector->status->getMyDirection()!=d)
+            if(_collector->getStats()->getMyDirection()!=d)
             {
-                _collector->status->setMyDirection(d);
-                _collector->status->setFacing(d);
-                this->status->setWaiting(5);
+                _collector->getStats()->setMyDirection(d);
+                _collector->getStats()->setFacing(d);
+                this->getStats()->setWaiting(5);
                 return true;
 
             }
@@ -93,9 +93,9 @@ bool puppetMasterFR::collectorMechanics()
 
 std::shared_ptr<bElem> puppetMasterFR::findObjectInDirection(direction dir)
 {
-    std::shared_ptr<bElem> b = this->status->getCollector().lock();
+    std::shared_ptr<bElem> b = this->getStats()->getCollector().lock();
     b=b->getElementInDirection(dir);
-    while(b!=nullptr && b->attrs->isSteppable())
+    while(b!=nullptr && b->getAttrs()->isSteppable())
     {
         b=b->getElementInDirection(dir);
     }
@@ -104,26 +104,26 @@ std::shared_ptr<bElem> puppetMasterFR::findObjectInDirection(direction dir)
 
 bool puppetMasterFR::mechanicsPatrollingDrone()
 {
-    std::shared_ptr<bElem> collector = this->status->getCollector().lock();
-    direction cdir = collector->status->getMyDirection();
+    std::shared_ptr<bElem> collector = this->getStats()->getCollector().lock();
+    direction cdir = collector->getStats()->getMyDirection();
     direction pdir1 = (direction)((((int)cdir) + 1) % 4);
     direction pdir2 = (direction)((((int)cdir) + 3) % 4);
     bool b1 = false, b2 = false;
     if (collector->getElementInDirection(pdir1))
-        b1 = collector->getElementInDirection(pdir1)->attrs->isSteppable();
+        b1 = collector->getElementInDirection(pdir1)->getAttrs()->isSteppable();
     if (collector->getElementInDirection(pdir2))
-        b2 = collector->getElementInDirection(pdir2)->attrs->isSteppable();
+        b2 = collector->getElementInDirection(pdir2)->getAttrs()->isSteppable();
     int roulette=this->randomNumberGenerator() %55;
     if (b1 && roulette == 5) // same probablility for each
     {
-        collector->status->setMyDirection(pdir1);
-        collector->status->setWaiting(3);
+        collector->getStats()->setMyDirection(pdir1);
+        collector->getStats()->setWaiting(3);
         return true;
     }
     else if (b2 && roulette==25)
     {
-        collector->status->setMyDirection(pdir1);
-        collector->status->setWaiting(3);
+        collector->getStats()->setMyDirection(pdir1);
+        collector->getStats()->setWaiting(3);
         return true;
     }
     bool r = collector->moveInDirection(cdir);
@@ -131,8 +131,8 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
     {
         int f = (this->randomNumberGenerator() % 2 == 0) ? 1 : 3;
         cdir = (direction)((((int)cdir) + f) % 4);
-        collector->status->setMyDirection(cdir);
-        collector->status->setWaiting(3);
+        collector->getStats()->setMyDirection(cdir);
+        collector->getStats()->setWaiting(3);
         return true;
     }
     return r;

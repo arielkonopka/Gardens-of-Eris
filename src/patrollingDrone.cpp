@@ -9,8 +9,8 @@ patrollingDrone::patrollingDrone(std::shared_ptr<chamber> board) : patrollingDro
 bool patrollingDrone::additionalProvisioning(int subtype,int typeId)
 {
     bool res= bElem::additionalProvisioning(subtype,typeId);
-    this->attrs->setCollect(true);
-    this->attrs->setEnergy((1024*bElem::randomNumberGenerator())%155);
+    this->getAttrs()->setCollect(true);
+    this->getAttrs()->setEnergy((1024*bElem::randomNumberGenerator())%155);
     return res;
 }
 bool patrollingDrone::additionalProvisioning()
@@ -21,7 +21,7 @@ bool patrollingDrone::additionalProvisioning()
 patrollingDrone::patrollingDrone() : killableElements(), movableElements()
 {
 
-    //  this->attrs->setSubtype(0);
+    //  this->getAttrs()->setSubtype(0);
     // this->setInventory(std::make_shared<inventory>());
 
 }
@@ -42,17 +42,17 @@ bool patrollingDrone::additionalProvisioning(int subtype, std::shared_ptr<patrol
 bool patrollingDrone::interact(std::shared_ptr<bElem> who)
 {
     bool res = bElem::interact(who);
-    if (res && !this->brained && this->attrs->getSubtype() == 0 && who->attrs->canCollect())
+    if (res && !this->brained && this->getAttrs()->getSubtype() == 0 && who->getAttrs()->canCollect())
     {
-        std::shared_ptr<bElem> token = who->attrs->getInventory()->requestToken(_puppetMasterType, -1);
+        std::shared_ptr<bElem> token = who->getAttrs()->getInventory()->requestToken(_puppetMasterType, -1);
         if (token)
         {
             this->playSound("Boot", "Success");
             this->brained = true;
             this->brainModule = token;
-            token->status->setCollector(shared_from_this());
+            token->getStats()->setCollector(shared_from_this());
             token->collectOnAction(true,shared_from_this()); // since we collect the object ourselves, we should also trigger the action
-            token->status->setWaiting(55);
+            token->getStats()->setWaiting(55);
             return true;
         }
         this->playSound("Boot", "Failure");
