@@ -13,9 +13,9 @@ plainMissile::plainMissile(std::shared_ptr<chamber> mychamber, int energy) : pla
 plainMissile::plainMissile():killableElements(),movableElements(),mechanical()
 {
     this->statsOwner=nullptr;
-    this->status->setWaiting(_plainMissileSpeed);
-    this->status->setMyDirection(UP);
-    this->status->setMoved(0);
+    this->getStats()->setWaiting(_plainMissileSpeed);
+    this->getStats()->setMyDirection(UP);
+    this->getStats()->setMoved(0);
 
 
 }
@@ -54,7 +54,7 @@ bool plainMissile::stepOnAction(bool step, std::shared_ptr<bElem>who)
 {
     if(step && who->getType()!=this->getType())
     {
-        who->hurt(this->attrs->getEnergy());
+        who->hurt(this->getAttrs()->getEnergy());
         this->kill();
     }
     return true;
@@ -74,34 +74,34 @@ bool plainMissile::mechanics()
 
     res=killableElements::mechanics();
     if(!res) return false;
-    if(this->status->isDying() || this->status->isMoving() || this->status->isWaiting())
+    if(this->getStats()->isDying() || this->getStats()->isMoving() || this->getStats()->isWaiting())
         return true;
-    std::shared_ptr<bElem> myel=this->getElementInDirection(this->status->getMyDirection());
-    if(myel==nullptr || myel->status->isDying() || myel->status->isTeleporting() || myel->status->isDestroying())
+    std::shared_ptr<bElem> myel=this->getElementInDirection(this->getStats()->getMyDirection());
+    if(myel==nullptr || myel->getStats()->isDying() || myel->getStats()->isTeleporting() || myel->getStats()->isDestroying())
     {
         this->disposeElement();
         return true;
     }
-    if (myel->attrs->isSteppable()==true)
+    if (myel->getAttrs()->isSteppable()==true)
     {
-        this->moveInDirectionSpeed(this->status->getMyDirection(),_plainMissileSpeed);
+        this->moveInDirectionSpeed(this->getStats()->getMyDirection(),_plainMissileSpeed);
         return true;
     }
-    if (myel->attrs->isKillable()==true)
+    if (myel->getAttrs()->isKillable()==true)
     {
-        myel->hurt(this->attrs->getEnergy());
-        if(!myel->status->isDying() && !myel->status->isDestroying())
+        myel->hurt(this->getAttrs()->getEnergy());
+        if(!myel->getStats()->isDying() && !myel->getStats()->isDestroying())
         {
             this->kill();
         }
         else
         {
-            if (!this->status->isDying())
+            if (!this->getStats()->isDying())
                 this->disposeElement();
         }
         return true;
     }
-    if(myel->status->isDying()|| myel->status->isDestroying()) // if next element in path is already dying, just disappear.
+    if(myel->getStats()->isDying()|| myel->getStats()->isDestroying()) // if next element in path is already dying, just disappear.
         this->disposeElement();
     this->kill();
     return true;

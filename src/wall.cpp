@@ -10,7 +10,7 @@ wall::wall(std::shared_ptr<chamber> board) : wall()
 wall::wall(std::shared_ptr<chamber> board, int subtype) : wall(board)
 {
 
-  //  this->attrs->setSubtype(subtype);
+  //  this->getAttrs()->setSubtype(subtype);
 }
 
 wall::wall() : bElem()
@@ -35,14 +35,14 @@ bool wall::stepOnElement(std::shared_ptr<bElem> elem)
 {
     bool res = bElem::stepOnElement(elem);
     if (this->getBoard().get() != nullptr)
-        this->getBoard()->setVisible(this->status->getMyPosition(), 254);
+        this->getBoard()->setVisible(this->getStats()->getMyPosition(), 254);
     return res;
 }
 
 std::shared_ptr<bElem> wall::removeElement()
 {
     if (this->getBoard().get() != nullptr)
-        this->getBoard()->setVisible(this->status->getMyPosition(), 255);
+        this->getBoard()->setVisible(this->getStats()->getMyPosition(), 255);
     std::shared_ptr<bElem> res = bElem::removeElement();
     return res;
 }

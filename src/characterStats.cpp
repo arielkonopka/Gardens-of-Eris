@@ -35,24 +35,24 @@ void characterStats::countHit(std::shared_ptr<bElem> what)
 {
     if(what==nullptr) return;
 
-    if(what->attrs->isKillable())
+    if(what->getAttrs()->isKillable())
     {
         this->globalPoints++;
-        if(what->attrs->isCollectible())
+        if(what->getAttrs()->isCollectible())
         {
             this->_dPoints++;
             this->updateDexterity();
             return;
         }
-        if(what->attrs->isMovable())
+        if(what->getAttrs()->isMovable())
         {
             this->_dPoints++;
 
-            if(what->status->hasActivatedMechanics())
+            if(what->getStats()->hasActivatedMechanics())
             {
                 this->_dPoints+=3;
             }
-            if(what->status->isDestroying())
+            if(what->getStats()->isDestroying())
             {
                 this->_dPoints+=2;
 

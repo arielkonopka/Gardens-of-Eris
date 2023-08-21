@@ -116,7 +116,7 @@ bool bElemAttr::isSteppable() const
     std::shared_ptr<bElem> owner=this->owner.lock();
     if(!owner)
         return this->steppable;
-    return this->steppable && !owner->status->isDying() && !owner->status->isDestroying() && !owner->status->isTeleporting();
+    return this->steppable && !owner->getStats()->isDying() && !owner->getStats()->isDestroying() && !owner->getStats()->isTeleporting();
 }
 
 void bElemAttr::setSteppable(bool s)
@@ -127,7 +127,7 @@ void bElemAttr::setSteppable(bool s)
 bool bElemAttr::isMovable() const
 {
     std::shared_ptr<bElem> own=this->owner.lock();
-    return this->movable && !own->status->isDestroying() && !own->status->isDying() && !own->status->isTeleporting();;
+    return this->movable && !own->getStats()->isDestroying() && !own->getStats()->isDying() && !own->getStats()->isTeleporting();;
 }
 
 void bElemAttr::setMovable(bool m)

@@ -34,13 +34,13 @@ bool killableElements::additionalProvisioning(int subtype, int typeId)
 
 bool killableElements::hurt(int points)
 {
-    if (this->attrs->isKillable()==false || this->status->isTeleporting() || this->status->isDying() || this->status->isDestroying())
+    if (this->getAttrs()->isKillable()==false || this->getStats()->isTeleporting() || this->getStats()->isDying() || this->getStats()->isDestroying())
     {
         return false;
     }
 
-    this->attrs->setEnergy(this->attrs->getEnergy()-points);
-    if (this->attrs->getEnergy()<=0)
+    this->getAttrs()->setEnergy(this->getAttrs()->getEnergy()-points);
+    if (this->getAttrs()->getEnergy()<=0)
         this->kill();
     return true;
 }

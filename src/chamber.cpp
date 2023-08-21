@@ -19,7 +19,7 @@ std::shared_ptr<chamber> chamber::makeNewChamber(coords csize)
 void chamber::createFloor()
 {
 #ifdef _VerbousMode_
-    std::cout << "Create floor instance [" << this->status->getInstanceId() << "]\n";
+    std::cout << "Create floor instance [" << this->getStats()->getInstanceId() << "]\n";
     std::cout << " cfsize [";
 #endif
     for (int c = 0; c < this->width; c++)
@@ -42,16 +42,16 @@ void chamber::createFloor()
             std::cout << "Create an object to place\n";
 #endif
             std::shared_ptr<bElem> b = elementFactory::generateAnElement<floorElement>(shared_from_this(),subtype);
-            b->status->setMyPosition((coords)
+            b->getStats()->setMyPosition((coords)
             {
                 c, d
             });
 #ifdef _VerbousMode_
-            std::cout << "created id " << b->status->getInstanceId() << "\n";
+            std::cout << "created id " << b->getStats()->getInstanceId() << "\n";
 #endif
 
 #ifdef _VerbousMode_
-            std::cout << "Push object into column vector id " << b->status->getInstanceId() << "\n";
+            std::cout << "Push object into column vector id " << b->getStats()->getInstanceId() << "\n";
 #endif
             v.push_back(b);
         }
@@ -96,7 +96,7 @@ colour chamber::getChColour()
 
 chamber::~chamber()
 {
-    /*    std::cout<<"Destroy chamber: "<<this->status->getInstanceId()<<"\n";
+    /*    std::cout<<"Destroy chamber: "<<this->getStats()->getInstanceId()<<"\n";
         for (unsigned int cX=0; cX<this->chamberArray.size(); cX++)
         {
            this->chamberArray[cX].clear();

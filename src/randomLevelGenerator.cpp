@@ -149,7 +149,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
         //we draw vertical line
         for (int a=y1; a<=y2; a++)
         {
-            if (this->mychamber->getElement(c+2,a) && a!=d && this->mychamber->getElement(c,a)->attrs->isSteppable()==true && this->mychamber->getElement(c+2,a)->attrs->isSteppable()==true)
+            if (this->mychamber->getElement(c+2,a) && a!=d && this->mychamber->getElement(c,a)->getAttrs()->isSteppable()==true && this->mychamber->getElement(c+2,a)->getAttrs()->isSteppable()==true)
             {
                 if (a<d+2)
                 {
@@ -160,7 +160,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
                     doorPlaces2.push_back(a);
                 }
             }
-            if (this->mychamber->getElement(c+1,a)->attrs->isSteppable())
+            if (this->mychamber->getElement(c+1,a)->getAttrs()->isSteppable())
             {
                 std::shared_ptr<bElem> newElement=elementFactory::generateAnElement<wall>(this->mychamber,0);
                 newElement->stepOnElement(this->mychamber->getElement(c+1,a));
@@ -205,7 +205,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
                 continue;
             }
 
-            if (a!=c && this->mychamber->getElement(a,d)->attrs->isSteppable()==true && this->mychamber->getElement(a,d+2)->attrs->isSteppable()==true)
+            if (a!=c && this->mychamber->getElement(a,d)->getAttrs()->isSteppable()==true && this->mychamber->getElement(a,d+2)->getAttrs()->isSteppable()==true)
             {
                 if (a<c+2)
                 {
@@ -216,7 +216,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
                     doorPlaces2.push_back(a);
                 }
             }
-            if (mychamber->getElement(a,d+1)->attrs->isSteppable())
+            if (mychamber->getElement(a,d+1)->getAttrs()->isSteppable())
             {
                 std::shared_ptr<bElem> newElement=elementFactory::generateAnElement<wall>(this->mychamber,0);
                 newElement->stepOnElement(this->mychamber->getElement(a,d+1));
@@ -506,12 +506,12 @@ bool randomLevelGenerator::placeDoors(elementToPlace element,chamberArea* locati
     //Ok, now we need to place the door.
     for(int c1=location->upLeft.x-1; c1<=location->downRight.x+1; c1++)
     {
-        if (this->mychamber->getElement(c1,location->upLeft.y-1)->attrs->isSteppable())
+        if (this->mychamber->getElement(c1,location->upLeft.y-1)->getAttrs()->isSteppable())
         {
             std::shared_ptr<bElem> neEl=this->createElement(element);
             neEl->stepOnElement(this->mychamber->getElement(c1,location->upLeft.y-1));
         }
-        if (this->mychamber->getElement(c1,location->downRight.y+1)->attrs->isSteppable())
+        if (this->mychamber->getElement(c1,location->downRight.y+1)->getAttrs()->isSteppable())
         {
             std::shared_ptr<bElem> neEl=this->createElement(element);
             neEl->stepOnElement(this->mychamber->getElement(c1,location->downRight.y+1));
@@ -519,12 +519,12 @@ bool randomLevelGenerator::placeDoors(elementToPlace element,chamberArea* locati
     }
     for (int c2=location->upLeft.y; c2<=location->downRight.y; c2++)
     {
-        if (this->mychamber->getElement(location->upLeft.x-1,c2)->attrs->isSteppable())
+        if (this->mychamber->getElement(location->upLeft.x-1,c2)->getAttrs()->isSteppable())
         {
             std::shared_ptr<bElem> neEl=this->createElement(element);
             neEl->stepOnElement(this->mychamber->getElement(location->upLeft.x-1,c2));
         }
-        if (this->mychamber->getElement(location->downRight.x+1,c2)->attrs->isSteppable())
+        if (this->mychamber->getElement(location->downRight.x+1,c2)->getAttrs()->isSteppable())
         {
             std::shared_ptr<bElem> neEl=this->createElement(element);
             neEl->stepOnElement(this->mychamber->getElement(location->downRight.x+1,c2));

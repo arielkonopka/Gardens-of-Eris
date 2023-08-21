@@ -48,15 +48,15 @@ bool stackedElement::stepOnElement(std::shared_ptr<bElem> step)
         this->removeElement();
         for(unsigned int c=this->topDownConstruct.size(); c>0; c--)
         {
-            if(this->topDownConstruct[c-1]->status->getInstanceId()!=this->status->getInstanceId())
+            if(this->topDownConstruct[c-1]->getStats()->getInstanceId()!=this->getStats()->getInstanceId())
             {
-                res=this->topDownConstruct[c-1]->stepOnElement(step->getBoard()->getElement(step->status->getMyPosition()));
+                res=this->topDownConstruct[c-1]->stepOnElement(step->getBoard()->getElement(step->getStats()->getMyPosition()));
             }
             if(!res) // this should actually happen only with the first element, the rest must be composed so the whole object can be created
                 break;
         }
     }
-    std::shared_ptr<bElem> be=step->getBoard()->getElement(step->status->getMyPosition());
+    std::shared_ptr<bElem> be=step->getBoard()->getElement(step->getStats()->getMyPosition());
     res=movableElements::stepOnElement(be);
     return res;
 }
@@ -72,7 +72,7 @@ std::shared_ptr<bElem> stackedElement::removeElement()
     {
         for(unsigned int c=0; c<this->topDownConstruct.size(); c++)
         {
-            if(this->status->getInstanceId()==this->topDownConstruct[c]->status->getInstanceId())
+            if(this->getStats()->getInstanceId()==this->topDownConstruct[c]->getStats()->getInstanceId())
             {
                 cnt=movableElements::removeElement();
                 continue;
@@ -89,5 +89,5 @@ std::shared_ptr<bElem> stackedElement::removeElement()
 void stackedElement::linkAnElement(std::shared_ptr<stackedElement> newBottom)
 {
     this->topDownConstruct.push_back(newBottom);
-    if(this->status->getInstanceId()!=newBottom->status->getInstanceId()) newBottom->setController(shared_from_this());
+    if(this->getStats()->getInstanceId()!=newBottom->getStats()->getInstanceId()) newBottom->setController(shared_from_this());
 }

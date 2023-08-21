@@ -17,12 +17,12 @@ int goldenApple::getType() const
 
 bool goldenApple::hurt(int points)
 {
-    if (this->attrs->getSubtype() != 1)
+    if (this->getAttrs()->getSubtype() != 1)
     {
-        this->attrs->setSubtype(1);
+        this->getAttrs()->setSubtype(1);
         for (unsigned int cnt = 0; cnt < goldenApple::apples.size();)
         {
-            if (goldenApple::apples[cnt]->status->getInstanceId() == this->status->getInstanceId())
+            if (goldenApple::apples[cnt]->getStats()->getInstanceId() == this->getStats()->getInstanceId())
             {
                 goldenApple::apples.erase(goldenApple::apples.begin() + cnt);
                 goldenApple::appleNumber--;
@@ -75,7 +75,7 @@ oState goldenApple::disposeElement()
 {
     for (unsigned int cnt = 0; cnt < goldenApple::apples.size();)
     {
-        if (goldenApple::apples[cnt]->status->getInstanceId() == this->status->getInstanceId())
+        if (goldenApple::apples[cnt]->getStats()->getInstanceId() == this->getStats()->getInstanceId())
         {
             goldenApple::apples.erase(goldenApple::apples.begin() + cnt);
             goldenApple::appleNumber--;
@@ -115,15 +115,15 @@ bool goldenApple::mechanics()
 {
     bool r = explosives::mechanics();
 
-    if (this->attrs->getSubtype() == 0 || this->status->getCollector().expired() || this->status->isWaiting())
+    if (this->getAttrs()->getSubtype() == 0 || this->getStats()->getCollector().expired() || this->getStats()->isWaiting())
     {
         return r;
     }
-    int e = this->status->getCollector().lock()->attrs->getEnergy();
+    int e = this->getStats()->getCollector().lock()->getAttrs()->getEnergy();
     if (e < 100)
     {
-        this->status->setWaiting(25);
-        this->status->getCollector().lock()->attrs->setEnergy(e + 1);
+        this->getStats()->setWaiting(25);
+        this->getStats()->getCollector().lock()->getAttrs()->setEnergy(e + 1);
         this->hurt(1);
     }
 
@@ -133,7 +133,7 @@ bool goldenApple::mechanics()
 void goldenApple::setCollected(std::shared_ptr<bElem> who)
 {
     collectible::setCollected(who);
-    if (this->isLiveElement() == false && this->attrs->getSubtype() != 0)
+    if (this->isLiveElement() == false && this->getAttrs()->getSubtype() != 0)
     {
         this->registerLiveElement(shared_from_this());
     }

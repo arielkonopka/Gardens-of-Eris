@@ -30,20 +30,20 @@ bool movableElements::moveInDirection(direction dir)
 bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 {
     std::shared_ptr<bElem> stepOn=this->getElementInDirection(dir);
-    if (stepOn.get()==nullptr || this->status->isMoving() || this->status->isDying() || this->status->isTeleporting() || this->status->isDestroying() || dir==NODIRECTION)
+    if (stepOn.get()==nullptr || this->getStats()->isMoving() || this->getStats()->isDying() || this->getStats()->isTeleporting() || this->getStats()->isDestroying() || dir==NODIRECTION)
         return false;
-    this->status->setMyDirection(dir);
-    if (stepOn->attrs->isSteppable()==true)
+    this->getStats()->setMyDirection(dir);
+    if (stepOn->getAttrs()->isSteppable()==true)
     {
         this->stepOnElement(stepOn);
-        this->status->setMoved(speed);
+        this->getStats()->setMoved(speed);
         this->playSound("Move","StepOn");
         return true;
     }
-    else if (this->attrs->canPush()==true && stepOn->attrs->canBePushed()==true && stepOn->attrs->isMovable()==true)
+    else if (this->getAttrs()->canPush()==true && stepOn->getAttrs()->canBePushed()==true && stepOn->getAttrs()->isMovable()==true)
     {
         std::shared_ptr<bElem> stepOn2=stepOn->getElementInDirection(dir);
-        if(stepOn2.get()==nullptr || !stepOn2->attrs->isSteppable())
+        if(stepOn2.get()==nullptr || !stepOn2->getAttrs()->isSteppable())
         {
            this->playSound("Move","BlockedMove");
             return false;
@@ -51,12 +51,12 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
         if(stepOn->moveInDirectionSpeed(dir,speed+1)) //move next object in direction
         {
             this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
-            this->status->setMoved(speed+1);
+            this->getStats()->setMoved(speed+1);
             this->playSound("Move","StepOn");
         }
         return true;
     }
-  /*  if (this->attrs->canCollect() && stepOn->attrs->isCollectible()==true)
+  /*  if (this->getAttrs()->canCollect() && stepOn->getAttrs()->isCollectible()==true)
     {
         if (this->collect(stepOn)==true )
         {
@@ -65,7 +65,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
         }
     }
     */
-    if (this->attrs->isInteractive()==true)
+    if (this->getAttrs()->isInteractive()==true)
     {
         if(stepOn->interact(shared_from_this())==true)
         {
@@ -113,12 +113,12 @@ bool movableElements::dragInDirectionSpeed(direction dragIntoDirection, int spee
     std::shared_ptr<bElem> draggedObj=this->getElementInDirection(objFromDir);
     if(draggedObj.get()==nullptr)
         return false;
-    if(!draggedObj->attrs->isMovable())
+    if(!draggedObj->getAttrs()->isMovable())
     {
-        d2=(direction)((((int)this->status->getMyDirection())+2)%4);
+        d2=(direction)((((int)this->getStats()->getMyDirection())+2)%4);
         draggedObj=this->getElementInDirection(d2);
-        d2=this->status->getMyDirection();
-        if(draggedObj.get()==nullptr || !draggedObj->attrs->isMovable())
+        d2=this->getStats()->getMyDirection();
+        if(draggedObj.get()==nullptr || !draggedObj->getAttrs()->isMovable())
             return false;
     }
 
@@ -130,21 +130,21 @@ bool movableElements::dragInDirectionSpeed(direction dragIntoDirection, int spee
 coords movableElements::getOffset() const
 {
     coords res= {0,0};
-    if(this->status->isMoving() && this->status->getMovingTotalTime()>0)
+    if(this->getStats()->isMoving() && this->getStats()->getMovingTotalTime()>0)
     {
-        switch(this->status->getMyDirection())
+        switch(this->getStats()->getMyDirection())
         {
         case(UP):
-            res.y=((this->status->getMoved())*64)/this->status->getMovingTotalTime();
+            res.y=((this->getStats()->getMoved())*64)/this->getStats()->getMovingTotalTime();
             break;
         case (DOWN):
-            res.y=-((this->status->getMoved())*64)/this->status->getMovingTotalTime();
+            res.y=-((this->getStats()->getMoved())*64)/this->getStats()->getMovingTotalTime();
             break;
         case(LEFT):
-            res.x=((this->status->getMoved())*64)/this->status->getMovingTotalTime();
+            res.x=((this->getStats()->getMoved())*64)/this->getStats()->getMovingTotalTime();
             break;
         case(RIGHT):
-            res.x=-((this->status->getMoved())*64)/this->status->getMovingTotalTime();
+            res.x=-((this->getStats()->getMoved())*64)/this->getStats()->getMovingTotalTime();
             break;
         case (NODIRECTION):
             break;
