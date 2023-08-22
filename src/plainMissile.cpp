@@ -38,12 +38,7 @@ bool plainMissile::additionalProvisioning(int subtype,int typeId)
 
 plainMissile::~plainMissile()
 {
-    if(this->statsOwner!=nullptr)
-    {
-        this->statsOwner->unlockThisObject(shared_from_this());
-        this->statsOwner=nullptr;
-    }
-    //dtor
+
 }
 int plainMissile::getType() const
 {

@@ -544,6 +544,7 @@ bool bElem::collect(std::shared_ptr<bElem> collectible)
     collectible->getStats()->setCollector(shared_from_this());
     this->getAttrs()->getInventory()->addToInventory(collectible);
     collectible->collectOnAction(true,shared_from_this());
+    this->getStats()->setPoints(COLLECTS,this->getStats()->getPoints(COLLECTS)+1);
 #ifdef _VerbousMode_
     std::cout << "Collected set? " << (collectible->getStats()->isCollected()) << "\n";
 #endif
@@ -805,6 +806,7 @@ bool bElem::unlockThisObject(std::shared_ptr<bElem> who)
 
 void bElem::setStatsOwner(std::shared_ptr<bElem> owner)
 {
+    this->getStats()->setStatsOwner(owner);
 }
 
 

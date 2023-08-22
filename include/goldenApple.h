@@ -9,7 +9,6 @@ public:
     static videoElement::videoElementDef* vd;
     static std::shared_ptr<bElem> getApple(int num);
     virtual videoElement::videoElementDef* getVideoElementDef();
-    void setCollected(std::shared_ptr<bElem> who);
     static  int getAppleNumber();
     int getType() const;
     bool kill() final;
@@ -23,6 +22,7 @@ public:
     bool additionalProvisioning() final;
     oState disposeElement() final;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<goldenApple> sbe);
+    bool collectOnAction(bool collected, std::shared_ptr<bElem> who);
 
 private:
     static unsigned int appleNumber;

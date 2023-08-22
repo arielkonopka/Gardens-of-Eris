@@ -31,6 +31,7 @@ public:
     unsigned int getTelTimeReq() const;
     std::shared_ptr<bElem> getSteppingOn() const;
     std::weak_ptr<bElem> getStandingOn();
+    std::weak_ptr<bElem> getStatsOwner() const;
     int getMoved() const;
     direction getMyDirection() const;
     coords getMyPosition() const;
@@ -39,6 +40,8 @@ public:
     int getFading() const;
     int getMovingTotalTime() const;
     int getStats(pointsType t);
+    int getPoints(pointsType ptype);
+
 
     void setStats(pointsType t,int value );
     // set methods
@@ -65,10 +68,12 @@ public:
     void setTaterCounter(int value);
     void setWaiting(int value);
     void setFading(int value);
+    void setPoints(pointsType ptype,int val);
     // has methods
     bool hasActivatedMechanics() const;
     bool hasParent() const;
     bool isMarked() const;
+
 
     // is methods
     bool isActive() const;
@@ -97,7 +102,7 @@ public:
     void setCollected(bool value);
     void setActive(bool value);
     void setMarked(bool value);
-
+    void setStatsOwner(std::shared_ptr<bElem> own);
 private:
     static unsigned long int currentInstance;
     unsigned long int instanceId;
@@ -133,6 +138,7 @@ private:
     std::shared_ptr<bElem> steppingOn = nullptr;
     std::weak_ptr<bElem> standingOn;
     std::weak_ptr<bElem> collector;
+    std::weak_ptr<bElem> statsOwner;
 };
 
 #endif // BELEMSTATS_H
