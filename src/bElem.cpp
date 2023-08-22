@@ -50,9 +50,7 @@ bool bElem::collectOnAction(bool collected, std::shared_ptr<bElem>who)
     if (collected && who && who->getType()==_player)
     {
         this->playSound("Found","Collect");
-        std::cout<<"Colelct playsound\n";
     }
-
     return true;
 }
 

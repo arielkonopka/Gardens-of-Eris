@@ -12,7 +12,6 @@ plainMissile::plainMissile(std::shared_ptr<chamber> mychamber, int energy) : pla
 }
 plainMissile::plainMissile():killableElements(),movableElements(),mechanical()
 {
-    this->statsOwner=nullptr;
     this->getStats()->setWaiting(_plainMissileSpeed);
     this->getStats()->setMyDirection(UP);
     this->getStats()->setMoved(0);
@@ -51,6 +50,7 @@ bool plainMissile::stepOnAction(bool step, std::shared_ptr<bElem>who)
     {
         who->hurt(this->getAttrs()->getEnergy());
         this->kill();
+        this->getStats()->getStatsOwner().lock()->getStats()->setPoints(SHOOT,this->getStats()->getStatsOwner().lock()->getStats()->getPoints(SHOOT)+1);
     }
     return true;
 }
@@ -88,11 +88,17 @@ bool plainMissile::mechanics()
         if(!myel->getStats()->isDying() && !myel->getStats()->isDestroying())
         {
             this->kill();
+            this->getStats()->getStatsOwner().lock()->getStats()->setPoints(SHOOT,this->getStats()->getStatsOwner().lock()->getStats()->getPoints(SHOOT)+1);
+
         }
         else
         {
             if (!this->getStats()->isDying())
+            {
                 this->disposeElement();
+                this->getStats()->getStatsOwner().lock()->getStats()->setPoints(SHOOT,this->getStats()->getStatsOwner().lock()->getStats()->getPoints(SHOOT)+1);
+
+            }
         }
         return true;
     }
