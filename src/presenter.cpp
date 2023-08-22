@@ -248,12 +248,8 @@ void presenter::prepareStatsThing()
     this->showText(21,0,6,0,"Stats");
     this->showText(21,0,5,32,"P:");
     this->showText(21,1,5,0,"Dex:");
-    /*   if(aPlayer->getStats()!=nullptr)
-       {
-           this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getGlobalPoints()));
-           this->showText(22,1,5,0,std::to_string(aPlayer->getStats()->getDexterity()));
-       }
-       */
+    this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getPoints(TOTAL)));
+    this->showText(22,1,5,0,std::to_string((int)(log(aPlayer->getStats()->getPoints(SHOOT)+1)/log(5))));
 
 }
 
