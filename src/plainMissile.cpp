@@ -46,11 +46,13 @@ int plainMissile::getType() const
 
 bool plainMissile::stepOnAction(bool step, std::shared_ptr<bElem>who)
 {
+    std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
     if(step && who->getType()!=this->getType())
     {
         who->hurt(this->getAttrs()->getEnergy());
         this->kill();
-        this->getStats()->getStatsOwner().lock()->getStats()->setPoints(SHOOT,this->getStats()->getStatsOwner().lock()->getStats()->getPoints(SHOOT)+1);
+        if(sowner)
+            sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
     }
     return true;
 }
@@ -66,7 +68,7 @@ videoElement::videoElementDef* plainMissile::getVideoElementDef()
 bool plainMissile::mechanics()
 {
     bool res;
-
+    std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
     res=killableElements::mechanics();
     if(!res) return false;
     if(this->getStats()->isDying() || this->getStats()->isMoving() || this->getStats()->isWaiting())
@@ -88,7 +90,8 @@ bool plainMissile::mechanics()
         if(!myel->getStats()->isDying() && !myel->getStats()->isDestroying())
         {
             this->kill();
-            this->getStats()->getStatsOwner().lock()->getStats()->setPoints(SHOOT,this->getStats()->getStatsOwner().lock()->getStats()->getPoints(SHOOT)+1);
+            if(sowner)
+                sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
 
         }
         else
@@ -96,7 +99,8 @@ bool plainMissile::mechanics()
             if (!this->getStats()->isDying())
             {
                 this->disposeElement();
-                this->getStats()->getStatsOwner().lock()->getStats()->setPoints(SHOOT,this->getStats()->getStatsOwner().lock()->getStats()->getPoints(SHOOT)+1);
+                if(sowner)
+                    sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
 
             }
         }
