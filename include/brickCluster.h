@@ -11,13 +11,13 @@ class brickCluster: public movableElements
 {
 public:
     static videoElement::videoElementDef* vd;
-    virtual videoElement::videoElementDef* getVideoElementDef();
+    videoElement::videoElementDef* getVideoElementDef() final;
     brickCluster(std::shared_ptr<chamber> board);
     brickCluster();
     int getType() const;
-    virtual bool additionalProvisioning() ;
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<brickCluster> sbe);
-    virtual bool additionalProvisioning(int subtype,int typeId);
+    bool additionalProvisioning() ;
+    bool additionalProvisioning(int subtype,std::shared_ptr<brickCluster> sbe) ;
+    bool additionalProvisioning(int subtype,int typeId) ;
 
 };
 

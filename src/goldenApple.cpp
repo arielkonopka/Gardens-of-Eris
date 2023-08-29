@@ -129,12 +129,19 @@ bool goldenApple::mechanics()
 
     return true;
 }
-/*
-void goldenApple::setCollected(std::shared_ptr<bElem> who)
+bool goldenApple::collectOnAction(bool collected, std::shared_ptr<bElem>who)
 {
-    collectible::setCollected(who);
-    if (this->isLiveElement() == false && this->getAttrs()->getSubtype() != 0)
+    bool r=bElem::collectOnAction(collected,who);
+
+    if (this->getStats()->hasActivatedMechanics() == false && this->getAttrs()->getSubtype() != 0)
     {
         this->registerLiveElement(shared_from_this());
     }
+    return r;
+}
+
+/*
+void goldenApple::setCollected(std::shared_ptr<bElem> who)
+{
+
 }*/

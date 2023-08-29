@@ -447,4 +447,29 @@ void bElemStats::setStats(pointsType t, int value)
 }
 
 
+std::weak_ptr<bElem> bElemStats::getStatsOwner() const
+{
+    return this->statsOwner;
+}
+
+void bElemStats::setStatsOwner(std::shared_ptr<bElem>own)
+{
+    this->statsOwner=own;
+}
+
+int bElemStats::getPoints(pointsType ptype)
+{
+    if(statistics.find(ptype)!=statistics.end())
+        return this->statistics[ptype];
+    return 0;
+}
+
+void bElemStats::setPoints(pointsType ptype, int val)
+{
+   this->statistics[ptype]=val;
+}
+
+
+
+
 

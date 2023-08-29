@@ -12,7 +12,6 @@ plainMissile::plainMissile(std::shared_ptr<chamber> mychamber, int energy) : pla
 }
 plainMissile::plainMissile():killableElements(),movableElements(),mechanical()
 {
-    this->statsOwner=nullptr;
     this->getStats()->setWaiting(_plainMissileSpeed);
     this->getStats()->setMyDirection(UP);
     this->getStats()->setMoved(0);
@@ -38,12 +37,7 @@ bool plainMissile::additionalProvisioning(int subtype,int typeId)
 
 plainMissile::~plainMissile()
 {
-    if(this->statsOwner!=nullptr)
-    {
-        this->statsOwner->unlockThisObject(shared_from_this());
-        this->statsOwner=nullptr;
-    }
-    //dtor
+
 }
 int plainMissile::getType() const
 {
@@ -52,10 +46,13 @@ int plainMissile::getType() const
 
 bool plainMissile::stepOnAction(bool step, std::shared_ptr<bElem>who)
 {
+    std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
     if(step && who->getType()!=this->getType())
     {
         who->hurt(this->getAttrs()->getEnergy());
         this->kill();
+        if(sowner)
+            sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
     }
     return true;
 }
@@ -71,7 +68,7 @@ videoElement::videoElementDef* plainMissile::getVideoElementDef()
 bool plainMissile::mechanics()
 {
     bool res;
-
+    std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
     res=killableElements::mechanics();
     if(!res) return false;
     if(this->getStats()->isDying() || this->getStats()->isMoving() || this->getStats()->isWaiting())
@@ -93,11 +90,19 @@ bool plainMissile::mechanics()
         if(!myel->getStats()->isDying() && !myel->getStats()->isDestroying())
         {
             this->kill();
+            if(sowner)
+                sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
+
         }
         else
         {
             if (!this->getStats()->isDying())
+            {
                 this->disposeElement();
+                if(sowner)
+                    sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
+
+            }
         }
         return true;
     }

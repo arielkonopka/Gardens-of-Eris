@@ -20,7 +20,7 @@ plainGun::plainGun(std::shared_ptr<chamber>  board, int newSubtype): plainGun(bo
 std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
 {
     std::shared_ptr<bElem> pm=elementFactory::generateAnElement<plainMissile>(who->getBoard(),0);
-    pm->setStatsOwner(who);
+    pm->getStats()->setStatsOwner(who);
     who->lockThisObject(pm);
     pm->getStats()->setMyDirection(who->getStats()->getFacing());
     pm->getStats()->setFacing(who->getStats()->getFacing());

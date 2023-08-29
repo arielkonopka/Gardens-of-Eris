@@ -40,7 +40,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
         this->playSound("Move","StepOn");
         return true;
     }
-    else if (this->getAttrs()->canPush()==true && stepOn->getAttrs()->canBePushed()==true && stepOn->getAttrs()->isMovable()==true)
+    if (this->getAttrs()->canPush()==true && stepOn->getAttrs()->canBePushed()==true && stepOn->getAttrs()->isMovable()==true)
     {
         std::shared_ptr<bElem> stepOn2=stepOn->getElementInDirection(dir);
         if(stepOn2.get()==nullptr || !stepOn2->getAttrs()->isSteppable())
@@ -56,15 +56,14 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
         }
         return true;
     }
-  /*  if (this->getAttrs()->canCollect() && stepOn->getAttrs()->isCollectible()==true)
+    if (this->getAttrs()->canCollect() && stepOn->getAttrs()->isCollectible()==true)
     {
         if (this->collect(stepOn)==true )
         {
-            this->getStats()->countCollect(stepOn);
             return true;
         }
     }
-    */
+
     if (this->getAttrs()->isInteractive()==true)
     {
         if(stepOn->interact(shared_from_this())==true)
