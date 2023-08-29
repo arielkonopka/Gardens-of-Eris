@@ -32,12 +32,12 @@ int main( int argc, char * argv[] )
 
 
     rndl->generateLevel(10);
-  /*  for (int cnt=5;cnt>0;cnt--)
+    for (int cnt=5;cnt>0;cnt--)
     {
-        rndl=new randomLevelGenerator(200+((5-cnt)*50)+(rndl->gen()%10)*5,200+((5-cnt)*50)+(rndl->gen()%10)*5);
+        rndl=new randomLevelGenerator(100+((5-cnt)*50)+(rndl->gen()%10)*5,100+((5-cnt)*50)+(rndl->gen()%10)*5);
         rndl->generateLevel(cnt);
     }
-*/
+
     soundManager::getInstance()->enableSound();
 
 

@@ -145,7 +145,8 @@ bool chamber::visitPosition(coords point)
 }
 void chamber::setVisible(coords point,int v)
 {
-    this->visitedElements[point.x][point.y]=v;
+    if(point.x>=0 && point.y>=0 && point.x<this->width && point.y<this->height)
+        this->visitedElements[point.x][point.y]=v;
 }
 
 
