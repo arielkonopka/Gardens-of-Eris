@@ -418,7 +418,8 @@ void presenter::mechanicLoop()
 {
     while(!this->fin)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(25));
         {
             std::lock_guard<std::mutex> guard(this->presenter_mutex);
             if (player::getActivePlayer().get()!=nullptr)
