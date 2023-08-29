@@ -24,6 +24,7 @@ public:
     bool mechanics() final;
     virtual bool additionalProvisioning();
     virtual bool additionalProvisioning(int subtype,int typeId);
+    bool stepOnAction(bool step,std::shared_ptr<bElem> who);
 private:
     static std::vector<std::weak_ptr<teleport>> allTeleporters;
     bool removeFromAllTeleporters();

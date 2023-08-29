@@ -924,7 +924,7 @@
         "Destroyable":false,
         "Steppable":true,
         "isMovable":false,
-        "isInteractive":false,
+        "isInteractive":true,
         "isCollectible":false,
         "canPush":false,
         "canBePushed":false,

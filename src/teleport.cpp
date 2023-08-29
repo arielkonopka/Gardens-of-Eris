@@ -94,9 +94,9 @@ int teleport::getType() const
 bool teleport::teleportIt(std::shared_ptr<bElem> who)
 {
     int dir = (int)who->getStats()->getMyDirection();
-    if (this->checked)
+    if (this->getStats()->isWaiting())
         return false;
-    this->checked = true;
+    this->getStats()->setWaiting(50);
     who->getStats()->setTelInProgress(_teleportationTime);
     if (who->getStats()->getSteppingOn() != nullptr)
         who->getStats()->getSteppingOn()->getStats()->setTelInProgress(_teleportationTime);
@@ -153,6 +153,28 @@ void teleport::unstomp()
         this->deregisterLiveElement(this->getStats()->getInstanceId());
 }
 */
+
+bool teleport::stepOnAction(bool step, std::shared_ptr<bElem>who)
+{
+    bElem::stepOnAction(step,who);
+    if(step)
+    {
+        this->getStats()->setWaiting(_teleportStandTime);
+        this->registerLiveElement(shared_from_this());
+
+
+    } else
+    {
+        if(this->getStats()->hasActivatedMechanics())
+           this->deregisterLiveElement(this->getStats()->getInstanceId());
+
+    }
+    return true;
+}
+
+
+
+
 bool teleport::mechanics()
 {
 
@@ -161,7 +183,7 @@ bool teleport::mechanics()
         if (this->getStats()->hasParent())
         {
             this->interact(this->getStats()->getStandingOn().lock());
-            this->deregisterLiveElement(this->getStats()->getInstanceId());
+          //  this->deregisterLiveElement(this->getStats()->getInstanceId());
         }
     };
     this->playSound("Teleport", "HummingSound");
