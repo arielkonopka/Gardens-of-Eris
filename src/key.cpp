@@ -1,11 +1,6 @@
 #include "key.h"
 
-videoElement::videoElementDef *key::vd = nullptr;
 
-videoElement::videoElementDef *key::getVideoElementDef()
-{
-    return key::vd;
-}
 
 int key::getType() const
 {

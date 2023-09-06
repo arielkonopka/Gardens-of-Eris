@@ -16,8 +16,7 @@ public:
     explicit player(std::shared_ptr<chamber> board);
     ~player() final=default;
     static unsigned int countVisitedPlayers() ;
-    virtual videoElement::videoElementDef* getVideoElementDef();
-    static videoElement::videoElementDef* vd;
+
     static std::shared_ptr<bElem> getActivePlayer();
     bool stepOnElement(std::shared_ptr<bElem> step);
     bool mechanics() final;

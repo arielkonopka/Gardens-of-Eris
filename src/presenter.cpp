@@ -130,18 +130,30 @@ bool presenter::loadCofiguredData()
 
 bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shared_ptr<bElem> elem,bool ignoreOffset,int mode)
 {
+    if(!elem) return false;
     coords coords,offset= {0,0};
+    auto vd=videoDriver::getInstance();
+    auto ve=(vd)?vd->getVideoElement(elem->getType()):nullptr;
+    if(!ve) return false;
     auto draw_sprite = [&]()
     {
         int sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
         int sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
-        al_draw_bitmap_region(elem->getVideoElementDef()->sprites, sx, sy, this->sWidth, this->sHeight, offsetX + (x * this->sWidth), offsetY + (y * this->sHeight), 0);
+
+        if(!vd)
+            {std::cout<<"No video driver in memory???\n";
+            exit(0);
+            };
+
+        if (ve)
+            al_draw_bitmap_region(ve->sprites, sx, sy, this->sWidth, this->sHeight, offsetX + (x * this->sWidth), offsetY + (y * this->sHeight), 0);
     };
+
 
 
    //m int sx,sy;
     bool res=false;
-    if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem.get()==nullptr || elem->getVideoElementDef()==nullptr ) return false;
+    if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem.get()==nullptr || !ve ) return false;
 
     if(!ignoreOffset)
     {
@@ -157,32 +169,32 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
         res=this->showObjectTile(x,y,offsetX,offsetY,elem->getStats()->getSteppingOn(),ignoreOffset,mode);
     if((mode==0 && elem->getStats()->isMoving() ))
         return true;
-    int sType=elem->getAttrs()->getSubtype()%elem->getVideoElementDef()->defArray.size();
-    int sDir=((int)elem->getStats()->getFacing())%elem->getVideoElementDef()->defArray[sType].size();
-    int sPh=elem->getAnimPh()%elem->getVideoElementDef()->defArray[sType][sDir].size();
+    int sType=elem->getAttrs()->getSubtype()%ve->defArray.size();
+    int sDir=((int)elem->getStats()->getFacing())%ve->defArray[sType].size();
+    int sPh=elem->getAnimPh()%ve->defArray[sType][sDir].size();
     if(elem->getType()==_floorType || ( !elem->getStats()->isDying() && !elem->getStats()->isDestroying() && !elem->getStats()->isTeleporting() ))
     {
-        coords=elem->getVideoElementDef()->defArray[sType][sDir][sPh];
+        coords=ve->defArray[sType][sDir][sPh];
         draw_sprite();
         if (!elem->getType()==_floorType)
             return res;
     }
     if (elem->getStats()->isDying())
     {
-        coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->dying.size())];
+        coords=ve->dying[elem->getAnimPh()%(ve->dying.size())];
         draw_sprite();
         return res;
     }
     if (elem->getStats()->isDestroying())
     {
-        coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->destroying.size())];
+        coords=ve->dying[elem->getAnimPh()%(ve->destroying.size())];
         draw_sprite();
         return res;
     }
 
     if(elem->getStats()->isFading())
     {
-        coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->fadingOut.size())];
+        coords=ve->dying[elem->getAnimPh()%(ve->fadingOut.size())];
         draw_sprite();
         return res;
 
@@ -191,7 +203,7 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
 
     if (elem->getStats()->isTeleporting())
     {
-        coords=elem->getVideoElementDef()->teleporting[elem->getAnimPh()%(elem->getVideoElementDef()->teleporting.size())];
+        coords=ve->teleporting[elem->getAnimPh()%(ve->teleporting.size())];
         draw_sprite();
         return res;
     }
@@ -355,7 +367,8 @@ void presenter::showGameField()
 
                     int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing));
                     int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing));
-                    al_draw_bitmap_region(player::getActivePlayer()->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,((x+1)*this->sWidth),((y+1)*this->sHeight),0);
+                    auto ve=videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
+                    al_draw_bitmap_region(ve->sprites,sx,sy,this->sWidth,this->sHeight,((x+1)*this->sWidth),((y+1)*this->sHeight),0);
 
                 };
             }

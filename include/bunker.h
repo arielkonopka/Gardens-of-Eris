@@ -10,8 +10,7 @@
 class bunker : public mechanical,public movableElements
 {
 public:
-    static videoElement::videoElementDef* vd;
-    virtual videoElement::videoElementDef* getVideoElementDef();
+
     bunker();
     explicit bunker(std::shared_ptr<chamber> board);
     virtual ~bunker();

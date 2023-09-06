@@ -7,8 +7,7 @@
 class floorElement : public bElem
 {
 public:
-    virtual videoElement::videoElementDef* getVideoElementDef();
-    static videoElement::videoElementDef* vd;
+
     floorElement();
     explicit floorElement(std::shared_ptr<chamber> board);
     virtual ~floorElement();

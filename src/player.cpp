@@ -1,6 +1,5 @@
 #include "player.h"
 
-videoElement::videoElementDef *player::vd = nullptr;
 std::vector<std::shared_ptr<bElem>> player::allPlayers;
 std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
 std::shared_ptr<bElem> player::activePlayer = nullptr;
@@ -144,10 +143,7 @@ bool player::stepOnElement(std::shared_ptr<bElem> step)
     return r;
 }
 
-videoElement::videoElementDef *player::getVideoElementDef()
-{
-    return player::vd;
-}
+
 
 bool player::mechanics()
 {

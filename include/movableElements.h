@@ -12,8 +12,7 @@
 class movableElements : virtual public bElem
 {
 public:
-    virtual videoElement::videoElementDef* getVideoElementDef();
-    static videoElement::videoElementDef* vd;
+
     movableElements();
     explicit movableElements(std::shared_ptr<chamber> board);
     virtual ~movableElements();

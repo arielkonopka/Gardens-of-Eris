@@ -6,8 +6,7 @@
 class plainMissile : public killableElements, public movableElements, public mechanical
 {
 public:
-    static videoElement::videoElementDef* vd;
-    virtual videoElement::videoElementDef* getVideoElementDef();
+
     virtual int getType() const;
     plainMissile();
     explicit plainMissile(std::shared_ptr<chamber> mychamber);

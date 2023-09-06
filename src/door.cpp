@@ -1,11 +1,6 @@
 #include "door.h"
 
-videoElement::videoElementDef *door::vd = nullptr;
 
-videoElement::videoElementDef *door::getVideoElementDef()
-{
-    return door::vd;
-}
 
 int door::getType() const
 {

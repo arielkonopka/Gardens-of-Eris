@@ -1,14 +1,9 @@
 #include "goldenApple.h"
 
-videoElement::videoElementDef *goldenApple::vd = nullptr;
 
 unsigned int goldenApple::appleNumber = 0;
 std::vector<std::shared_ptr<bElem>> goldenApple::apples;
 
-videoElement::videoElementDef *goldenApple::getVideoElementDef()
-{
-    return goldenApple::vd;
-}
 
 int goldenApple::getType() const
 {

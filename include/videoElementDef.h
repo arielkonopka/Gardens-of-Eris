@@ -40,7 +40,6 @@ class videoElementDef
         ALLEGRO_BITMAP *sprites;
         static void initializeDriver();
     private:
-        static bool initialized;
 
 };
 
