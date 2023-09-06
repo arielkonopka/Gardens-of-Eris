@@ -1,6 +1,5 @@
 #include "bunker.h"
 #include <elementFactory.h>
-videoElement::videoElementDef* bunker::vd=nullptr;
 
 bunker::bunker(std::shared_ptr<chamber> board):bunker()
 {
@@ -32,10 +31,7 @@ bool bunker::additionalProvisioning(int subtype, std::shared_ptr<bunker>sbe)
 
 
 
-videoElement::videoElementDef* bunker::getVideoElementDef()
-{
-    return bunker::vd;
-}
+
 
 bunker::~bunker()
 {

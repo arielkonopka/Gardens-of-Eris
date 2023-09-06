@@ -1,7 +1,6 @@
 #include "plainMissile.h"
 
 
-videoElement::videoElementDef* plainMissile::vd=nullptr;
 plainMissile::plainMissile(std::shared_ptr<chamber> mychamber) : plainMissile()
 {
     this->setBoard(mychamber);
@@ -58,10 +57,7 @@ bool plainMissile::stepOnAction(bool step, std::shared_ptr<bElem>who)
 }
 
 
-videoElement::videoElementDef* plainMissile::getVideoElementDef()
-{
-    return plainMissile::vd;
-}
+
 
 
 

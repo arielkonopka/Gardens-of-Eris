@@ -18,6 +18,7 @@
 #include "soundManager.h"
 #include "commons.h"
 #include <thread>
+#include <videoDriver.h>
 #include <mutex>
 /*
  This class is responsible for menu, settings, designer and game presenter.

@@ -8,8 +8,7 @@
 class patrollingDrone : public killableElements, public movableElements
 {
 public:
-    virtual videoElement::videoElementDef* getVideoElementDef();
-    static videoElement::videoElementDef* vd;
+
     patrollingDrone();
     explicit patrollingDrone(std::shared_ptr<chamber> board);
     virtual ~patrollingDrone();

@@ -9,8 +9,7 @@
 class monster : public killableElements,  public mechanical, public movableElements
 {
 public:
-    virtual videoElement::videoElementDef* getVideoElementDef();
-    static videoElement::videoElementDef* vd;
+
     monster();
     explicit monster(std::shared_ptr<chamber> board);
     explicit monster(std::shared_ptr<chamber> board,int newSubtype);

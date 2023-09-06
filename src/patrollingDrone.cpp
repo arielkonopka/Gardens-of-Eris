@@ -1,6 +1,5 @@
 #include "patrollingDrone.h"
 
-videoElement::videoElementDef *patrollingDrone::vd = nullptr;
 
 patrollingDrone::patrollingDrone(std::shared_ptr<chamber> board) : patrollingDrone()
 {
@@ -65,7 +64,4 @@ int patrollingDrone::getType() const
     return _patrollingDrone;
 }
 
-videoElement::videoElementDef *patrollingDrone::getVideoElementDef()
-{
-    return patrollingDrone::vd;
-}
+

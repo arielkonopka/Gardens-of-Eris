@@ -8,8 +8,7 @@
 class door : public bElem
 {
 public:
-    static videoElement::videoElementDef* vd;
-    virtual videoElement::videoElementDef* getVideoElementDef();
+
     virtual int getType() const;
     door();
     explicit door(std::shared_ptr<chamber>  board);

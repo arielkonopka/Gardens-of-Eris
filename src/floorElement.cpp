@@ -16,12 +16,8 @@ floorElement::~floorElement()
 {
     //dtor
 }
-videoElement::videoElementDef* floorElement::vd=nullptr;
 
-videoElement::videoElementDef* floorElement::getVideoElementDef()
-{
-    return floorElement::vd;
-}
+
 int floorElement::getType() const
 {
     return _floorType;

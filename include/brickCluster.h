@@ -10,8 +10,6 @@
 class brickCluster: public movableElements
 {
 public:
-    static videoElement::videoElementDef* vd;
-    videoElement::videoElementDef* getVideoElementDef() final;
     brickCluster(std::shared_ptr<chamber> board);
     brickCluster();
     int getType() const;

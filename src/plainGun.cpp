@@ -1,12 +1,7 @@
 #include "plainGun.h"
 
 
-videoElement::videoElementDef* plainGun::vd=nullptr;
 
-videoElement::videoElementDef* plainGun::getVideoElementDef()
-{
-    return plainGun::vd;
-}
 //public usable, public mechanical, public collectible, public nonSteppable
 plainGun::plainGun(std::shared_ptr<chamber> board): plainGun()
 {

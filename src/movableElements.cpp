@@ -1,7 +1,6 @@
 #include "movableElements.h"
 
 
-videoElement::videoElementDef* movableElements::vd=nullptr;
 
 
 movableElements::movableElements() :bElem()
@@ -80,23 +79,6 @@ int movableElements::getType() const
 {
     return _movableType;
 }
-/*
-int movableElements::getSubtype()
-{
-    return 0;
-}
-*/
-
-
-
-
-videoElement::videoElementDef* movableElements::getVideoElementDef()
-{
-    return movableElements::vd;
-}
-
-
-
 
 
 bool movableElements::dragInDirection(direction dragIntoDirection)

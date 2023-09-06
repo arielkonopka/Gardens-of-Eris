@@ -7,8 +7,7 @@
 class plainGun : public mechanical
 {
 public:
-    static videoElement::videoElementDef* vd;
-    virtual videoElement::videoElementDef* getVideoElementDef();
+
     virtual int getType() const;
     virtual bool use(std::shared_ptr<bElem> who);
     plainGun();

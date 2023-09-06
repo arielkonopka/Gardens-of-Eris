@@ -3,7 +3,6 @@
 #include "rubbish.h"
 #include "elements.h"
 
-videoElement::videoElementDef *bElem::vd = nullptr;
 std::vector<std::shared_ptr<bElem>> bElem::liveElems;
 std::vector<std::shared_ptr<bElem>> bElem::toDispose;
 std::vector<int> bElem::toDeregister;
@@ -431,11 +430,6 @@ bool bElem::isSteppableDirection(direction di) const
     return false;
 }
 
-videoElement::videoElementDef *bElem::getVideoElementDef()
-{
-    return bElem::vd;
-}
-
 /**
  * @brief removes element from its board, or inventory
  *
@@ -685,7 +679,7 @@ void bElem::runLiveElements()
         {
             if(!bElem::toDispose[c]->getStats()->isDisposed())
             {
-                bElem::toDispose[c]->playSound("Element","Disposed"); // Snd: Element->Disposed - play sound on element disposal during the game.
+              //  bElem::toDispose[c]->playSound("Element","Disposed"); // Snd: Element->Disposed - play sound on element disposal during the game.
                 bElem::toDispose[c]->disposeElement(); // we remove the element, which stopped being dead - its time has passed.
             }
 
@@ -693,8 +687,6 @@ void bElem::runLiveElements()
         }
         else c++;
     }
-
-
     // We remove the unregistered elements first, so these would not be executed.
     for(unsigned long int instId: bElem::toDeregister)
     {
@@ -737,8 +729,8 @@ void bElem::runLiveElements()
             {
                 bElem::liveElems[p]->mechanics();
             }
-            else if (bElem::randomNumberGenerator()%55==5)
-                bElem::liveElems[p]->mechanics(); /// once in a while all objects will be moving
+           // else if (bElem::randomNumberGenerator()%55==5)
+           //     bElem::liveElems[p]->mechanics(); /// once in a while all objects will be moving
         }
     }
 

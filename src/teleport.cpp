@@ -1,6 +1,5 @@
 #include "teleport.h"
 
-videoElement::videoElementDef *teleport::vd = nullptr;
 std::vector<std::weak_ptr<teleport>> teleport::allTeleporters;
 
 teleport::teleport(std::shared_ptr<chamber> board) : teleport()
@@ -80,10 +79,6 @@ bool teleport::createConnectionsWithinSUbtype()
     return true;
 }
 ////////////////
-videoElement::videoElementDef *teleport::getVideoElementDef()
-{
-    return teleport::vd;
-}
 
 int teleport::getType() const
 {

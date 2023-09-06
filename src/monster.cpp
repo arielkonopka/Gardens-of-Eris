@@ -1,7 +1,6 @@
 #include "monster.h"
 
-// the static variable must be initialized
-videoElement::videoElementDef *monster::vd = nullptr;
+
 
 monster::monster(std::shared_ptr<chamber> board) : monster()
 {
@@ -61,10 +60,7 @@ monster::~monster()
 {
 
 }
-videoElement::videoElementDef *monster::getVideoElementDef()
-{
-    return monster::vd;
-}
+
 int monster::getType() const
 {
     return _monster;

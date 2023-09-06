@@ -33,7 +33,6 @@ public:
      * these three templates below generate objects. I added them because I need bidirectional connection with everything
      */
 
-    static videoElement::videoElementDef *vd;
 
     virtual ALLEGRO_MUTEX *getMyMutex();
     void registerLiveElement(std::shared_ptr<bElem> who);
@@ -42,7 +41,6 @@ public:
 
     virtual sNeighboorhood getSteppableNeighboorhood();
     virtual ~bElem();
-    virtual videoElement::videoElementDef *getVideoElementDef();
     virtual void setBoard(std::shared_ptr<chamber> board);
     virtual std::shared_ptr<chamber> getBoard() const;
     virtual bool selfAlign();

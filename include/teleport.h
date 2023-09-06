@@ -8,8 +8,6 @@
 class teleport : public bElem
 {
 public:
-    static videoElement::videoElementDef* vd;
-    videoElement::videoElementDef* getVideoElementDef() final;
     int getType() const;
     teleport();
     explicit teleport(std::shared_ptr<chamber> board);

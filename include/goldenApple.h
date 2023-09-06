@@ -6,9 +6,7 @@
 class goldenApple : public killableElements,public explosives
 {
 public:
-    static videoElement::videoElementDef* vd;
     static std::shared_ptr<bElem> getApple(int num);
-    virtual videoElement::videoElementDef* getVideoElementDef();
     static  int getAppleNumber();
     int getType() const;
     bool kill() final;
