@@ -1,3 +1,6 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <istream>
+// *** END ***
 #ifndef INPUTMANAGER_H
 #define INPUTMANAGER_H
 #include "commons.h"

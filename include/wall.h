@@ -10,8 +10,7 @@
 class wall : public bElem
 {
 public:
-    virtual videoElement::videoElementDef* getVideoElementDef();
-    static videoElement::videoElementDef* vd;
+
     wall();
     bool stepOnElement(std::shared_ptr<bElem> elem);
     std::shared_ptr<bElem> removeElement();

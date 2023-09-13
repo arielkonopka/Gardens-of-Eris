@@ -1,3 +1,6 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <istream>
+// *** END ***
 #ifndef SOUNDMANAGER_H
 #define SOUNDMANAGER_H
 #include "commons.h"

@@ -1,3 +1,6 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <istream>
+// *** END ***
 #ifndef CONFIGMANAGER_H
 #define CONFIGMANAGER_H
 #include <vector>

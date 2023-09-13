@@ -6,8 +6,7 @@
 class rubbish:  public bElem
 {
 public:
-    virtual videoElement::videoElementDef* getVideoElementDef();
-    static videoElement::videoElementDef* vd;
+
     rubbish();
     explicit rubbish(std::shared_ptr<chamber> board);
     bool mechanics() final;

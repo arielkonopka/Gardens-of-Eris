@@ -1,8 +1,6 @@
 #include "rubbish.h"
 
 
-videoElement::videoElementDef* rubbish::vd=nullptr;
-
 rubbish::rubbish():bElem()
 {
 
@@ -18,10 +16,7 @@ int rubbish::getType() const
     return _rubishType;
 }
 
-videoElement::videoElementDef* rubbish::getVideoElementDef()
-{
-    return rubbish::vd;
-}
+
 
 
 bool rubbish::mechanics()

@@ -1,3 +1,6 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <istream>
+// *** END ***
 #ifndef ELEMENTFACTORY_H
 #define ELEMENTFACTORY_H
 #include <memory>
