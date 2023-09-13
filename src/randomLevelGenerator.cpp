@@ -53,7 +53,7 @@ int randomLevelGenerator::checkWalls(int x, int y)
         this->mychamber->setElement((coords)
         {
             x,y
-        },elementFactory::generateAnElement<wall>(this->mychamber));
+        },elementFactory::generateAnElement<wall>(this->mychamber,0));
     }
     if (walls[0] && walls[1] && walls[3] && !walls[2])
     {
@@ -73,7 +73,7 @@ int randomLevelGenerator::checkWalls(int x, int y)
     return 0;
 }
 
-/* this is recurrent division implementation */
+/* 이것은 순환 분할 구현입니다 */
 
 chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,int depth,int holes)
 {
@@ -149,7 +149,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
         //we draw vertical line
         for (int a=y1; a<=y2; a++)
         {
-            if (a!=d && this->mychamber->getElement(c,a)->isSteppable()==true && this->mychamber->getElement(c+2,a)->isSteppable()==true)
+            if (this->mychamber->getElement(c+2,a) && a!=d && this->mychamber->getElement(c,a)->getAttrs()->isSteppable()==true && this->mychamber->getElement(c+2,a)->getAttrs()->isSteppable()==true)
             {
                 if (a<d+2)
                 {
@@ -160,9 +160,9 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
                     doorPlaces2.push_back(a);
                 }
             }
-            if (this->mychamber->getElement(c+1,a)->isSteppable())
+            if (this->mychamber->getElement(c+1,a)->getAttrs()->isSteppable())
             {
-                std::shared_ptr<bElem> newElement=elementFactory::generateAnElement<wall>(this->mychamber);
+                std::shared_ptr<bElem> newElement=elementFactory::generateAnElement<wall>(this->mychamber,0);
                 newElement->stepOnElement(this->mychamber->getElement(c+1,a));
             }
             else
@@ -199,7 +199,13 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
         doorPlaces2.clear();
         for (int a=x1; a<=x2; a++)
         {
-            if (a!=c && this->mychamber->getElement(a,d)->isSteppable()==true && this->mychamber->getElement(a,d+2)->isSteppable()==true)
+            if(!this->mychamber->getElement(a,d))
+            {
+                std::cout<<"Nulls on board!\n";
+                continue;
+            }
+
+            if (a!=c && this->mychamber->getElement(a,d)->getAttrs()->isSteppable()==true && this->mychamber->getElement(a,d+2)->getAttrs()->isSteppable()==true)
             {
                 if (a<c+2)
                 {
@@ -210,9 +216,9 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
                     doorPlaces2.push_back(a);
                 }
             }
-            if (mychamber->getElement(a,d+1)->isSteppable())
+            if (mychamber->getElement(a,d+1)->getAttrs()->isSteppable())
             {
-                std::shared_ptr<bElem> newElement=elementFactory::generateAnElement<wall>(this->mychamber);
+                std::shared_ptr<bElem> newElement=elementFactory::generateAnElement<wall>(this->mychamber,0);
                 newElement->stepOnElement(this->mychamber->getElement(a,d+1));
             }
         }
@@ -299,8 +305,8 @@ bool randomLevelGenerator::generateLevel(int holes)
     //draw the walls around the whole chamber
     for(int c=0; c<this->width; c++)
     {
-        std::shared_ptr<bElem> newElem=elementFactory::generateAnElement<wall>(this->mychamber);
-        std::shared_ptr<bElem> newElem1=elementFactory::generateAnElement<wall>(this->mychamber);
+        std::shared_ptr<bElem> newElem=elementFactory::generateAnElement<wall>(this->mychamber,0);
+        std::shared_ptr<bElem> newElem1=elementFactory::generateAnElement<wall>(this->mychamber,0);
         newElem->stepOnElement(this->mychamber->getElement(c,0));
         newElem1->stepOnElement(this->mychamber->getElement(c,this->height-1));
 
@@ -308,8 +314,8 @@ bool randomLevelGenerator::generateLevel(int holes)
     for(int c=0; c<this->height; c++)
     {
 
-        std::shared_ptr<bElem> newElem2=elementFactory::generateAnElement<wall>(this->mychamber);
-        std::shared_ptr<bElem> newElem3=elementFactory::generateAnElement<wall>(this->mychamber);
+        std::shared_ptr<bElem> newElem2=elementFactory::generateAnElement<wall>(this->mychamber,0);
+        std::shared_ptr<bElem> newElem3=elementFactory::generateAnElement<wall>(this->mychamber,0);
         newElem2->stepOnElement(this->mychamber->getElement(0,c));
         newElem3->stepOnElement(this->mychamber->getElement(this->width-1,c));
     }
@@ -324,9 +330,12 @@ bool randomLevelGenerator::generateLevel(int holes)
     }
     for(int c=0; c<holes*15; c++)
     {
+        elementsToChooseFrom.push_back({_bunker,0,1,0,3});
 
         elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,3});
         elementsToChooseFrom.push_back({_simpleBombType,0,1,0,3});
+        elementsToChooseFrom.push_back({_puppetMasterType,0,1,0,3});
+        elementsToChooseFrom.push_back({_patrollingDrone,1,1,0,3});
 
 
     }
@@ -353,6 +362,8 @@ bool randomLevelGenerator::generateLevel(int holes)
     elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
     //
     elementsToChooseFrom.push_back({_patrollingDrone,1,1,0,3});
+    elementsToChooseFrom.push_back({_puppetMasterType,0,1,0,3});
+
 
     //first find area for the player and stuff for it
 
@@ -495,12 +506,12 @@ bool randomLevelGenerator::placeDoors(elementToPlace element,chamberArea* locati
     //Ok, now we need to place the door.
     for(int c1=location->upLeft.x-1; c1<=location->downRight.x+1; c1++)
     {
-        if (this->mychamber->getElement(c1,location->upLeft.y-1)->isSteppable())
+        if (this->mychamber->getElement(c1,location->upLeft.y-1)->getAttrs()->isSteppable())
         {
             std::shared_ptr<bElem> neEl=this->createElement(element);
             neEl->stepOnElement(this->mychamber->getElement(c1,location->upLeft.y-1));
         }
-        if (this->mychamber->getElement(c1,location->downRight.y+1)->isSteppable())
+        if (this->mychamber->getElement(c1,location->downRight.y+1)->getAttrs()->isSteppable())
         {
             std::shared_ptr<bElem> neEl=this->createElement(element);
             neEl->stepOnElement(this->mychamber->getElement(c1,location->downRight.y+1));
@@ -508,12 +519,12 @@ bool randomLevelGenerator::placeDoors(elementToPlace element,chamberArea* locati
     }
     for (int c2=location->upLeft.y; c2<=location->downRight.y; c2++)
     {
-        if (this->mychamber->getElement(location->upLeft.x-1,c2)->isSteppable())
+        if (this->mychamber->getElement(location->upLeft.x-1,c2)->getAttrs()->isSteppable())
         {
             std::shared_ptr<bElem> neEl=this->createElement(element);
             neEl->stepOnElement(this->mychamber->getElement(location->upLeft.x-1,c2));
         }
-        if (this->mychamber->getElement(location->downRight.x+1,c2)->isSteppable())
+        if (this->mychamber->getElement(location->downRight.x+1,c2)->getAttrs()->isSteppable())
         {
             std::shared_ptr<bElem> neEl=this->createElement(element);
             neEl->stepOnElement(this->mychamber->getElement(location->downRight.x+1,c2));
@@ -530,12 +541,11 @@ std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace elemen
 {
     switch(element.eType)
     {
-    case _collectible:
-        return elementFactory::generateAnElement<collectible>(this->mychamber);
+
     case _goldenAppleType:
-        return elementFactory::generateAnElement<goldenApple>(this->mychamber);
+        return elementFactory::generateAnElement<goldenApple>(this->mychamber,0);
     case _player:
-        return elementFactory::generateAnElement<player>(this->mychamber);
+        return elementFactory::generateAnElement<player>(this->mychamber,0);
     case _door:
         return elementFactory::generateAnElement<door>(this->mychamber,element.eSubType);
     case _key:
@@ -545,17 +555,19 @@ std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace elemen
     case _plainGun:
         return elementFactory::generateAnElement<plainGun>(this->mychamber,element.eSubType);
     case _bunker:
-        return elementFactory::generateAnElement<bunker>(this->mychamber);
+        return elementFactory::generateAnElement<bunker>(this->mychamber,0);
     case _teleporter:
         return elementFactory::generateAnElement<teleport>(this->mychamber,element.eSubType);
     case _movableType:
-        return elementFactory::generateAnElement<movableElements>(this->mychamber);
+        return elementFactory::generateAnElement<movableElements>(this->mychamber,0);
     case _simpleBombType:
-        return elementFactory::generateAnElement<simpleBomb>(this->mychamber);
+        return elementFactory::generateAnElement<simpleBomb>(this->mychamber,0);
     case _patrollingDrone:
-        return elementFactory::generateAnElement<patrollingDrone>(this->mychamber);
+        return elementFactory::generateAnElement<patrollingDrone>(this->mychamber,0);
     case _brickClusterType:
-        return elementFactory::generateAnElement<brickCluster>(this->mychamber);
+        return elementFactory::generateAnElement<brickCluster>(this->mychamber,0);
+    case _puppetMasterType:
+        return elementFactory::generateAnElement<puppetMasterFR>(this->mychamber,0);
     }
     return nullptr;
 }

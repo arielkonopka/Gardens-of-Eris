@@ -1,10 +1,10 @@
 #ifndef EXPLOSIVES_H
 #define EXPLOSIVES_H
 
-#include <audibleElement.h>
+#include <bElem.h>
 
 
-class explosives : virtual public audibleElement
+class explosives : virtual public bElem
 {
 public:
 
@@ -14,7 +14,9 @@ public:
 
     virtual bool explode();
     virtual bool explode(float radius);
-
+    virtual bool additionalProvisioning(int subtype,std::shared_ptr<explosives> sbe);
+    virtual bool additionalProvisioning();
+    virtual bool additionalProvisioning(int subtype,int typeId);
 };
 
 #endif // EXPLOSIVES_H

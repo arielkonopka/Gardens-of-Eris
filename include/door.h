@@ -1,31 +1,28 @@
 #ifndef DOOR_H
 #define DOOR_H
 
-#include <audibleElement.h>
+#include <bElem.h>
 #include "videoElementDef.h"
 #include "commons.h"
 
-class door : public audibleElement
+class door : public bElem
 {
 public:
-    static videoElement::videoElementDef* vd;
-    virtual videoElement::videoElementDef* getVideoElementDef();
-    virtual int getType();
+
+    virtual int getType() const;
     door();
     explicit door(std::shared_ptr<chamber>  board);
-    explicit door(std::shared_ptr<chamber>  board,int subtype);
+    virtual bool stepOnAction(bool step,std::shared_ptr<bElem> who);
+
     virtual bool interact(std::shared_ptr<bElem> who);
-    virtual bool isSteppable();
-    virtual bool isOpen();
-    virtual void stomp(std::shared_ptr<bElem> who);
-    virtual void unstomp();
+
     virtual ~door();
-    virtual bool canBeKilled();
-    virtual bool canBeDestroyed();
+    virtual bool additionalProvisioning(int subtype,std::shared_ptr<door> sbe);
+    virtual bool additionalProvisioning();
+    virtual bool additionalProvisioning(int subtype,int typeId);
 private:
-    int interacted=-1;
-    bool open=false;
-    bool locked=true;
+    void _alignWithOpen();
+//   int interacted=-1;
 
 };
 

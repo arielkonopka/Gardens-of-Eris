@@ -9,9 +9,6 @@
 #include "bElem.h"
 #include "movableElements.h"
 #include "killableElements.h"
-#include "nonSteppable.h"
-#include "collectible.h"
-#include "usable.h"
 #include "explosives.h"
 #include "door.h"
 #include "key.h"
@@ -29,4 +26,5 @@
 #include "floorElement.h"
 #include "simpleBomb.h"
 #include "brickCluster.h"
+#include "puppetMasterFR.h"
 #endif // ELEMENTS_H_INCLUDED

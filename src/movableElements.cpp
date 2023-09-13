@@ -1,17 +1,16 @@
 #include "movableElements.h"
 
 
-videoElement::videoElementDef* movableElements::vd=nullptr;
 
 
-movableElements::movableElements():audibleElement()
+movableElements::movableElements() :bElem()
 {
 
 }
 
-movableElements::movableElements(std::shared_ptr<chamber> board) : audibleElement(board)
+movableElements::movableElements(std::shared_ptr<chamber> board) : movableElements()
 {
-
+    this->setBoard(board);
 }
 
 
@@ -19,10 +18,7 @@ movableElements::~movableElements()
 {
     //dtor
 }
-bool movableElements::isMovable()
-{
-    return this->movable && !this->isDestroyed() && !this->isDying() && !this->isTeleporting();
-}
+
 
 bool movableElements::moveInDirection(direction dir)
 {
@@ -33,20 +29,20 @@ bool movableElements::moveInDirection(direction dir)
 bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 {
     std::shared_ptr<bElem> stepOn=this->getElementInDirection(dir);
-    if (stepOn.get()==nullptr || this->getMoved()>0 || this->isDying() || this->isTeleporting() || this->isDestroyed() || dir==NODIRECTION)
+    if (stepOn.get()==nullptr || this->getStats()->isMoving() || this->getStats()->isDying() || this->getStats()->isTeleporting() || this->getStats()->isDestroying() || dir==NODIRECTION)
         return false;
-    this->setDirection(dir);
-    if (stepOn->isSteppable()==true)
+    this->getStats()->setMyDirection(dir);
+    if (stepOn->getAttrs()->isSteppable()==true)
     {
         this->stepOnElement(stepOn);
-        this->setMoved(speed);
+        this->getStats()->setMoved(speed);
         this->playSound("Move","StepOn");
         return true;
     }
-    else if (this->canPush()==true && stepOn->isMovable()==true)
+    if (this->getAttrs()->canPush()==true && stepOn->getAttrs()->canBePushed()==true && stepOn->getAttrs()->isMovable()==true)
     {
         std::shared_ptr<bElem> stepOn2=stepOn->getElementInDirection(dir);
-        if(stepOn2.get()==nullptr || !stepOn2->isSteppable())
+        if(stepOn2.get()==nullptr || !stepOn2->getAttrs()->isSteppable())
         {
            this->playSound("Move","BlockedMove");
             return false;
@@ -54,20 +50,20 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
         if(stepOn->moveInDirectionSpeed(dir,speed+1)) //move next object in direction
         {
             this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
-            this->setMoved(speed+1);
+            this->getStats()->setMoved(speed+1);
             this->playSound("Move","StepOn");
         }
         return true;
     }
-    if (this->canCollect()==true && this->getInventory().get()!=nullptr && stepOn->isCollectible()==true)
+    if (this->getAttrs()->canCollect() && stepOn->getAttrs()->isCollectible()==true)
     {
-        if (this->collect(stepOn)==true && this->getStats().get()!=nullptr)
+        if (this->collect(stepOn)==true )
         {
-            this->getStats()->countCollect(stepOn);
             return true;
         }
     }
-    if (this->canInteract()==true)
+
+    if (this->getAttrs()->isInteractive()==true)
     {
         if(stepOn->interact(shared_from_this())==true)
         {
@@ -79,44 +75,12 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
 }
 
 
-int movableElements::getType()
+int movableElements::getType() const
 {
     return _movableType;
 }
-/*
-int movableElements::getSubtype()
-{
-    return 0;
-}
-*/
-bool movableElements::canPush()
-{
-    return _me_canPush;
-}
 
 
-
-videoElement::videoElementDef* movableElements::getVideoElementDef()
-{
-    return movableElements::vd;
-}
-
-
-
-
-void movableElements::setMoved(int time)
-{
-    this->_me_moved=this->getCntr()+time;
-    this->movingTotalTime=time;
-}
-
-int movableElements::getMoved()
-{
-    if(this->isTeleporting()) return 0;
-    if(this->_me_moved-this->getCntr()>50)
-        this->_me_moved=0;
-    return (this->_me_moved<this->getCntr())?0:this->_me_moved-this->getCntr();
-}
 bool movableElements::dragInDirection(direction dragIntoDirection)
 {
    return this->dragInDirectionSpeed(dragIntoDirection,_mov_delay*2);
@@ -130,12 +94,12 @@ bool movableElements::dragInDirectionSpeed(direction dragIntoDirection, int spee
     std::shared_ptr<bElem> draggedObj=this->getElementInDirection(objFromDir);
     if(draggedObj.get()==nullptr)
         return false;
-    if(!draggedObj->isMovable())
+    if(!draggedObj->getAttrs()->isMovable())
     {
-        d2=(direction)((((int)this->getDirection())+2)%4);
+        d2=(direction)((((int)this->getStats()->getMyDirection())+2)%4);
         draggedObj=this->getElementInDirection(d2);
-        d2=this->getDirection();
-        if(draggedObj.get()==nullptr || !draggedObj->isMovable())
+        d2=this->getStats()->getMyDirection();
+        if(draggedObj.get()==nullptr || !draggedObj->getAttrs()->isMovable())
             return false;
     }
 
@@ -144,24 +108,24 @@ bool movableElements::dragInDirectionSpeed(direction dragIntoDirection, int spee
 
 }
 
-coords movableElements::getOffset()
+coords movableElements::getOffset() const
 {
     coords res= {0,0};
-    if(this->getMoved()>0 && this->movingTotalTime>0)
+    if(this->getStats()->isMoving() && this->getStats()->getMovingTotalTime()>0)
     {
-        switch(this->getDirection())
+        switch(this->getStats()->getMyDirection())
         {
         case(UP):
-            res.y=((this->getMoved())*64)/this->movingTotalTime;
+            res.y=((this->getStats()->getMoved())*64)/this->getStats()->getMovingTotalTime();
             break;
         case (DOWN):
-            res.y=-((this->getMoved())*64)/this->movingTotalTime;
+            res.y=-((this->getStats()->getMoved())*64)/this->getStats()->getMovingTotalTime();
             break;
         case(LEFT):
-            res.x=((this->getMoved())*64)/this->movingTotalTime;
+            res.x=((this->getStats()->getMoved())*64)/this->getStats()->getMovingTotalTime();
             break;
         case(RIGHT):
-            res.x=-((this->getMoved())*64)/this->movingTotalTime;
+            res.x=-((this->getStats()->getMoved())*64)/this->getStats()->getMovingTotalTime();
             break;
         case (NODIRECTION):
             break;
@@ -173,19 +137,22 @@ coords movableElements::getOffset()
 }
 
 
-void movableElements::setMovable(bool m)
+
+
+bool movableElements::additionalProvisioning(int subtype, std::shared_ptr<movableElements>sbe)
 {
-    this->movable=m;
+    return this->additionalProvisioning(subtype,sbe->getType());
 }
 
-
-
-void movableElements::setCanPush(bool sp)
+bool movableElements::additionalProvisioning()
 {
-    this->_me_canPush=sp;
+    return this->additionalProvisioning(0,this->getType());
 }
 
-
+bool movableElements::additionalProvisioning(int subtype,int typeId)
+{
+    return bElem::additionalProvisioning(subtype,typeId);
+}
 
 
 

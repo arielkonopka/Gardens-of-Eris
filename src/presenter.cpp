@@ -39,11 +39,13 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
 bool presenter::initializeDisplay()
 {
     ALLEGRO_MONITOR_INFO info;
-   //  al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+    //  al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 ) ; //ma| ALLEGRO_FULLSCREEN);
+
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
     al_get_monitor_info(0, &info);
     this->display = al_create_display(info.x2-info.x1, info.y2-info.y1);
-    // al_hide_mouse_cursor(this->display);
+  //  al_hide_mouse_cursor(this->display);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
     this->internalBitmap=al_create_bitmap(this->scrWidth+64,this->scrHeight+64);
     this->cloakBitmap=al_create_bitmap(this->scrWidth+128,this->scrHeight+128);
@@ -81,6 +83,7 @@ _cp_gameReasonOut presenter::presentGamePlay()
 
 void presenter::showSplash()
 {
+    std::cout<<"Splash"<<this->splashFname.c_str()<<"\n";
     ALLEGRO_BITMAP *splash=al_load_bitmap(this->splashFname.c_str());
     al_clear_to_color(al_map_rgba(15,15,25,255));
     al_draw_bitmap(splash,450,0,0);
@@ -127,10 +130,30 @@ bool presenter::loadCofiguredData()
 
 bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shared_ptr<bElem> elem,bool ignoreOffset,int mode)
 {
+    if(!elem) return false;
     coords coords,offset= {0,0};
-    int sx,sy;
+    auto vd=videoDriver::getInstance();
+    auto ve=(vd)?vd->getVideoElement(elem->getType()):nullptr;
+    if(!ve) return false;
+    auto draw_sprite = [&]()
+    {
+        int sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
+        int sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
+
+        if(!vd)
+            {std::cout<<"No video driver in memory???\n";
+            exit(0);
+            };
+
+        if (ve)
+            al_draw_bitmap_region(ve->sprites, sx, sy, this->sWidth, this->sHeight, offsetX + (x * this->sWidth), offsetY + (y * this->sHeight), 0);
+    };
+
+
+
+   //m int sx,sy;
     bool res=false;
-    if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem.get()==nullptr || elem->getVideoElementDef()==nullptr ) return false;
+    if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem.get()==nullptr || !ve ) return false;
 
     if(!ignoreOffset)
     {
@@ -139,76 +162,50 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
         offsetX=offset.x;
         offsetY=offset.y;
     }
-    if(mode==1 && elem->getMoved()<=0)
+    if(mode==1 && !elem->getStats()->isMoving())
         return false;
 
-    if (elem->getSteppingOnElement().get()!=nullptr && mode!=_mode_onlyTop)
-        res=this->showObjectTile(x,y,offsetX,offsetY,elem->getSteppingOnElement(),ignoreOffset,mode);
-
-    /* if( (elem->isMovable() || elem->isSteppable() || elem->isCollectible()) && elem->getStomper().get()==nullptr  && mode==0 && (elem->getBoard().get()!=nullptr) && (!elem->getBoard()->isVisible(elem->getCoords())))
-     {
-         sx=(this->bluredElement.x*this->sWidth)+((this->bluredElement.x+1)*(this->spacing));
-         sy=(this->bluredElement.y*this->sHeight)+((this->bluredElement.y+1)*(this->spacing));
-         al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,(x*this->sWidth),(y*this->sHeight),0);
-         return false;
-     }*/
-
-    if((mode==0 && elem->getMoved()>0 ))
+    if (elem->getStats()->getSteppingOn() && mode!=_mode_onlyTop)
+        res=this->showObjectTile(x,y,offsetX,offsetY,elem->getStats()->getSteppingOn(),ignoreOffset,mode);
+    if((mode==0 && elem->getStats()->isMoving() ))
         return true;
-
-
-    int sType=elem->getSubtype()%elem->getVideoElementDef()->defArray.size();
-    int sDir=((int)elem->getFacing())%elem->getVideoElementDef()->defArray[sType].size();
-    int sPh=elem->getAnimPh()%elem->getVideoElementDef()->defArray[sType][sDir].size();
-
-
-    if( elem->getType()==_belemType || elem->isSteppable()==true || elem->canBeDestroyed()==false || (!elem->isDying() && !elem->isDestroyed() && !elem->isTeleporting()) )
+    int sType=elem->getAttrs()->getSubtype()%ve->defArray.size();
+    int sDir=((int)elem->getStats()->getFacing())%ve->defArray[sType].size();
+    int sPh=elem->getAnimPh()%ve->defArray[sType][sDir].size();
+    if(elem->getType()==_floorType || ( !elem->getStats()->isDying() && !elem->getStats()->isDestroying() && !elem->getStats()->isTeleporting() ))
     {
-        coords=elem->getVideoElementDef()->defArray[sType][sDir][sPh];
-        //now calculate the position on the sprites surface
-        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
-        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
-        //finally draw that
-        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
+        coords=ve->defArray[sType][sDir][sPh];
+        draw_sprite();
+        if (!elem->getType()==_floorType)
+            return res;
+    }
+    if (elem->getStats()->isDying())
+    {
+        coords=ve->dying[elem->getAnimPh()%(ve->dying.size())];
+        draw_sprite();
+        return res;
+    }
+    if (elem->getStats()->isDestroying())
+    {
+        coords=ve->dying[elem->getAnimPh()%(ve->destroying.size())];
+        draw_sprite();
+        return res;
     }
 
-
-
-    if (elem->isDying())
+    if(elem->getStats()->isFading())
     {
-        coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->dying.size())];
-        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
-        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
-        //finally draw that
-        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
-    }
-    if (elem->isDestroyed())
-    {
-        coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->destroying.size())];
-        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
-        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
-        //finally draw that
-        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
-    }
-
-    if(elem->isFading())
-    {
-        coords=elem->getVideoElementDef()->dying[elem->getAnimPh()%(elem->getVideoElementDef()->fadingOut.size())];
-        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
-        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
-        //finally draw that
-        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
+        coords=ve->dying[elem->getAnimPh()%(ve->fadingOut.size())];
+        draw_sprite();
+        return res;
 
     }
 
 
-    if (elem->isTeleporting())
+    if (elem->getStats()->isTeleporting())
     {
-        coords=elem->getVideoElementDef()->teleporting[elem->getAnimPh()%(elem->getVideoElementDef()->teleporting.size())];
-        sx=(coords.x*this->sWidth)+((coords.x+1)*(this->spacing));
-        sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
-        //finally draw that
-        al_draw_bitmap_region(elem->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,offsetX+(x*this->sWidth),offsetY+(y*this->sHeight),0);
+        coords=ve->teleporting[elem->getAnimPh()%(ve->teleporting.size())];
+        draw_sprite();
+        return res;
     }
 
 
@@ -236,38 +233,35 @@ void presenter::prepareStatsThing()
     this->showText(1,1,0,5,"Garden: "+aPlayer->getBoard()->getName());
     this->showObjectTile(1,0,0,0,aPlayer,true,_mode_onlyTop);
     this->showText(2,0,0,0,std::to_string(player::countVisitedPlayers()));
-    this->showText(2,0,0,32,std::to_string(aPlayer->getEnergy()));
-    this->showObjectTile(4,0,0,0,aPlayer->getInventory()->getActiveWeapon(),true,_mode_onlyTop);
+    this->showText(2,0,0,32,std::to_string(aPlayer->getAttrs()->getEnergy()));
+    this->showObjectTile(4,0,0,0,aPlayer->getAttrs()->getInventory()->getActiveWeapon(),true,_mode_onlyTop);
 
 
 
-    if( aPlayer->getInventory()->getActiveWeapon()!=nullptr)
+    if( aPlayer->getAttrs()->getInventory()->getActiveWeapon()!=nullptr)
     {
-        this->showText(5,0,0,32,std::to_string(aPlayer->getInventory()->getActiveWeapon()->getEnergy()));
-        this->showText(5,0,0,0,std::to_string(aPlayer->getInventory()->getActiveWeapon()->getAmmo()));
+        this->showText(5,0,0,32,std::to_string(aPlayer->getAttrs()->getInventory()->getActiveWeapon()->getAttrs()->getEnergy()));
+        this->showText(5,0,0,0,std::to_string(aPlayer->getAttrs()->getInventory()->getActiveWeapon()->getAttrs()->getAmmo()));
     }
     for (int cnt=0; cnt<5; cnt++)
     {
         int tokens;
-        std::shared_ptr<bElem> key=aPlayer->getInventory()->getKey(_key,cnt,false);
+        std::shared_ptr<bElem> key=aPlayer->getAttrs()->getInventory()->getKey(_key,cnt,false);
         if(key!=nullptr)
         {
-            tokens=aPlayer->getInventory()->countTokens(key->getType(),key->getSubtype());
+            tokens=aPlayer->getAttrs()->getInventory()->countTokens(key->getType(),key->getAttrs()->getSubtype());
             this->showObjectTile(7+(cnt*2),0,0,0,key,true,_mode_onlyTop);
             this->showText(8+(cnt*2),0,0,16,std::to_string(tokens));
         }
     }
     this->showObjectTile(18,0,0,0,goldenApple::getApple(1),true,_mode_onlyTop);
     this->showText(19,0,0,0,std::to_string(goldenApple::getAppleNumber()));
-    this->showText(19,0,0,32,std::to_string(aPlayer->getInventory()->countTokens(_goldenAppleType,0)));
+    this->showText(19,0,0,32,std::to_string(aPlayer->getAttrs()->getInventory()->countTokens(_goldenAppleType,0)));
     this->showText(21,0,6,0,"Stats");
     this->showText(21,0,5,32,"P:");
     this->showText(21,1,5,0,"Dex:");
-    if(aPlayer->getStats()!=nullptr)
-    {
-        this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getGlobalPoints()));
-        this->showText(22,1,5,0,std::to_string(aPlayer->getStats()->getDexterity()));
-    }
+    this->showText(22,0,5,32,std::to_string(aPlayer->getStats()->getPoints(TOTAL)));
+    this->showText(22,1,5,0,std::to_string((int)(log(aPlayer->getStats()->getPoints(SHOOT)+1)/log(5))));
 
 }
 
@@ -279,7 +273,7 @@ void presenter::showGameField()
 
 
     std::shared_ptr<bElem> player=player::getActivePlayer();
-    coords b=player->getCoords()-(coords)
+    coords b=player->getStats()->getMyPosition()-(coords)
     {
         (this->scrTilesX)/2,(this->scrTilesY)/2
     };
@@ -325,7 +319,7 @@ void presenter::showGameField()
     for(unsigned int cnt=0; cnt<mSprites.size(); cnt++)
     {
         movingSprite ms=mSprites.at(cnt);
-        if(ms.elem->getInstanceid()==player->getInstanceid())
+        if(ms.elem->getStats()->getInstanceId()==player->getStats()->getInstanceId())
         {
             px=ms.x;
             py=ms.y;
@@ -334,27 +328,30 @@ void presenter::showGameField()
         else
             this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false,1);
     }
-    if(player->getMoved()>0 && player->getBoard()->width>player->getCoords().x && player->getCoords().x>=0 && player->getBoard()->height>player->getCoords().y && player->getCoords().y>=0)
-        this->showObjectTile(px,py,0,0,player->getBoard()->getElement(player->getCoords()),false,1);
+    if(player->getStats()->isMoving() && player->getBoard()->width>player->getStats()->getMyPosition().x && player->getStats()->getMyPosition().x>=0 && player->getBoard()->height>player->getStats()->getMyPosition().y && player->getStats()->getMyPosition().y>=0)
+        this->showObjectTile(px,py,0,0,player->getBoard()->getElement(player->getStats()->getMyPosition()),false,1);
 
     if(player->getBoard().get()!=nullptr)
     {
-    coords offsets=player->getOffset();
-    al_set_target_bitmap(this->cloakBitmap);
-    al_clear_to_color(al_map_rgba(0,0,0,0));
+        coords offsets=player->getOffset();
+        al_set_target_bitmap(this->cloakBitmap);
+        al_clear_to_color(al_map_rgba(0,0,0,0));
         for(x=-1; x<this->scrTilesX+2; x++)
             for(y=-1; y<this->scrTilesY+2; y++)
             {
                 int obscured;
-                coords point=player->getCoords();
+                coords point=player->getStats()->getMyPosition();
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
-                float distance=std::sqrt((nx-point.x)*(nx-point.x)+(ny-point.y)*(ny-point.y));
-                if(distance<=this->viewRadius/2)
-                    continue;
-                if(distance<=this->viewRadius)
+                float distance=point.distance((coords)
                 {
-                    obscured=(distance*64)-(this->viewRadius*64)/2;
+                    nx,ny
+                });
+                if(distance<=player::getActivePlayer()->getViewRadius()/2)
+                    continue;
+                if(distance<=player::getActivePlayer()->getViewRadius())
+                {
+                    obscured=(distance*64)-(player::getActivePlayer()->getViewRadius()*64)/2;
                 }
                 else obscured=255;
                 if(obscured>0)
@@ -370,7 +367,8 @@ void presenter::showGameField()
 
                     int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing));
                     int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing));
-                    al_draw_bitmap_region(player::getActivePlayer()->getVideoElementDef()->sprites,sx,sy,this->sWidth,this->sHeight,((x+1)*this->sWidth),((y+1)*this->sHeight),0);
+                    auto ve=videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
+                    al_draw_bitmap_region(ve->sprites,sx,sy,this->sWidth,this->sHeight,((x+1)*this->sWidth),((y+1)*this->sHeight),0);
 
                 };
             }
@@ -385,10 +383,10 @@ void presenter::showGameField()
 //    al_draw_bitmap_region(this->internalBitmap,offX+,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
 
     al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
- //   this->eyeCandy(player->getBoard()->getInstanceId());
+//   this->eyeCandy(player->getBoard()->getInstanceId());
 
 
-    al_wait_for_vsync();
+    // al_wait_for_vsync();
     al_flip_display();
 }
 void presenter::eyeCandy(int flavour)
@@ -433,16 +431,18 @@ void presenter::mechanicLoop()
 {
     while(!this->fin)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(25));
         {
             std::lock_guard<std::mutex> guard(this->presenter_mutex);
             if (player::getActivePlayer().get()!=nullptr)
                 this->showGameField();
             else
-                {
-                this->showSplash();
+            {
+                std::cout<<"Player not created!\n";
+                //this->showSplash();
                 this->fin=true;
-                }
+            }
         }
     }
 }
@@ -475,7 +475,7 @@ int presenter::presentEverything()
             if(currentPlayer.get()!=nullptr)
             {
                 this->_cp_attachedBoard=player::getActivePlayer()->getBoard();
-                if(currentPlayer->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
+                if(currentPlayer->getAttrs()->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
                     this->fin=true;
             }
             bElem::runLiveElements();

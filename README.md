@@ -1,11 +1,11 @@
 
 # Garden of Eris or Obnoxious Labyrinth
 
-Welcome to my pet project. I started it in [Python](https://github.com/arielkonopka/pyLurker), but got to the conclusion, that Python would not deliver sufficient speed with the number of elements I plan to have at the same time.
+Greetings and welcome to me little passion project, so. I began this adventure with [Python](https://github.com/arielkonopka/pyLurker), but soon enough I found meself realizin' that Python might not have the swiftness needed for the grand number of elements I'd like to be workin' with simultaneously.
 
-From the beginning, this project is not *product oriented*, but rather it is a way to spend little time on building something. I stopped writing code many years ago, and I simply wanted to feel the joy of coding again. Since my life is rather not that *computer centric*, I spend fairly little time one the project, and therefore it advances slowly.
+Now, from the get-go, this project isn't focused on creating a product, but rather it's about takin' a wee bit of time to build somethin' for the joy of it. I hung up me coding hat a good few years back, and I simply wished to feel that delightful thrill of crafting code once more. Since me life doesn't revolve 'round computers, I can only spare a modest bit of time for the project, which means it's movin' along at a leisurely pace.
 
-**This is work in progress. It usually works, but be warned.**
+So, here we have a work in progress. It tends to function well enough, but consider yerself warned, me friend.
 
 # Recent build status
 
@@ -19,33 +19,34 @@ Sonarcloud static analysis:
 
 ## Why the idea
 
-I thought of writting similar kind of a game, since I was a kid. Few years back, I added some code to [GNU Robbo project](http://gnurobbo.sourceforge.net/), and it was fun, but that was pure C and SDL1.2.
+Ever since I was a young lad, I've dreamt of creating a game of this sort. A few years back, I contributed some code to the [GNU Robbo project](http://gnurobbo.sourceforge.net/), which was a grand bit of fun, but that was purely C and SDL1.2.
 
-Years have passed and I did not write any code. So one day I decided to do some coding, and thought of a game to make. I thought of the game's story, which I yet cought only briefly. 
+Time passed, and I didn't write a single line of code. Then one day, I resolved to do a bit of coding and thought of a game to create. I pondered over the game's story, which I've only just begun to grasp.
 
-In the repo you can find an ubrello5 file with the idea, how the classes in the game should look like. This diagram is far from being finished as well.
+In the repo, you'll find an ubrello5 file that outlines me vision for the game's classes. Mind you, this diagram is far from complete as well.
 
-I thought of a random level generator because of two reasons:
+I considered a random level generator for two reasons:
 
-- I would not have to write level editor
-- I would not have to design the levels
+I wouldn't need to create a level editor
+I wouldn't need to design the levels
+In the meantime, I've discovered a third reason:
 
-In the meanwhile I got a third reason:
-
-   I can test it fairly fast, without even loading and saving the level data. Which by the way I will have to implement eventually.
-[You can check the fairly recent video of the gameplay.](https://www.youtube.com/watch?v=u8S_trywjaM)
+I can test the game quite swiftly, without the need for loading and saving level data. Of course, I'll eventually have to implement that feature.
+[Feel free to check out a relatively recent video of the gameplay.](https://www.youtube.com/watch?v=u8S_trywjaM)
 
 ## The game story
 
-Once upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology)) went to her garden, and to all the shock, she had noticed, that all her golden apples had been gone. She as usual got furious.
+Once upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology))  ventured into her garden, only to be gobsmacked when she discovered that all her golden apples had vanished. As was her nature, she flew into a rage.
 
-Now you, a [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism) have got to recover all the apples lost in different reality. 
+Now, as a [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism), it falls upon you to recover the lost apples scattered throughout various realities.
 
-The Goddes scattered your avatars across the strange world you found yourself in. All the lost apples are there. Collect them, but be extra carefull, they might explode, they can be broken. Then bring them back to the Goddes, you will be rewarded. 
+The Goddess has dispersed your avatars throughout this peculiar world you now find yourself in. The missing apples are hidden here – collect them with great care, for they may explode or break. Return the apples to the Goddess, and she'll reward you handsomely.
 
-Everytime your avatar is killed, you are respawned in first unused and activated avatar on your way. If you did not activate any avatars, you die.
+Every time your avatar perishes, you'll respawn in the first unused and activated avatar on your path. If you haven't activated any avatars, you'll meet your end.
 
-The Labirynth is occupied by various creatures and devices. You can find gun modules, and worker drones, as guarding drones, doors, keys, movable turrets, immobile turrets. Also other nasty things (TBC).
+The labyrinth is inhabited by an assortment of creatures and contraptions. You'll encounter gun modules and worker drones, as well as guard drones, doors, keys, movable turrets, and immobile turrets. Keep an eye out for other malevolent entities (TBC).
+
+
 
 ## Building the game
 
@@ -82,23 +83,21 @@ examples:
 
 ## Main assumptions
 
-1. The game has only random generated levels.
-2. Everything should be randomly placed.
-3. It must be possible to walk from any steppable place on a board [class chamber](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/include/chamber.h) to any other steppable place, if we remove all the doors and teleports.
-4. The game actually should be very very large. 5 different chambers are created with different number of holes in the walls - that is something like the difficulty level. 
-   * The chambers are connected with teleports. 
-   * There are two types of teleports: Internal and inter-chamber
-      Inter-chamber is the same kind of a teleport, but of special subtype 0. There will be one teleporter of that subtype on each chamber.
-      Internal teleporters share common subtype per chamber. These are walk in teleporters. 
-5. Elements on board do not replace each other when they are moved, they instead step on each other. 
-    So we start with a board full of [empty](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/include/floorElement.h) elements. We then create new elements and step on the board empty elements. 
-    
-    With mechanics we deal with a vecotr of live elements (that require their mechanics to be run), then the vecotr is inspected, and each element's mechanics is run. That is how we deal with destruction of inanimate objects, they enable the mechanics by registering a live object.
-    
-    With that the mechanics method will deal with removing the object from the board. If we do not register mechanics, it will only look like it is being destroyed, but will survive.
-    
-6. No code duplications, whenever possible. Now that rule is bent few times, especially with newlly introduced code.
+1. The game features only randomly generated levels, so it does.
 
+2. Everythin' should be placed willy-nilly, with no discernible pattern.
+
+3. In a  chamber, it must be possible to traverse from any steppable spot to another, if we do away with all the doors and teleporters.
+
+4. The game ought to be vast, with five distinct chambers creatin' different levels of challenge, each with a varyin' number of holes in the walls.
+
+5. The chambers connect through teleporters.
+  * Two types of teleporters exist: internal and inter-chamber.
+    - Inter-chamber teleporters are a special subtype 0, with one such teleporter in each chamber.
+    - Internal teleporters share a common subtype within a chamber and are walk-in teleporters.
+  * When elements on the board move, they don't replace each other but step on top of one another. We start with a board chock-full of empty elements, then create new elements that step onto the empty ones. With mechanics, we manage a vector of live elements (those in need of their mechanics to run). The vector is inspected, and each element's mechanics are executed. This is how we tackle the destruction of inanimate objects—they enable the mechanics through registration. The mechanics method takes care of removin' objects from the board. If we don't register the mechanics, the object will appear destroyed but remain intact.
+
+We strive to avoid code duplications whenever we can. That said, this rule has been bent a few times, especially with newly introduced code.
 
 
 ## Random maze generator
@@ -148,28 +147,26 @@ It also contains the music and sound information.
 **TBD**
 
 # Mechanics
+There exists a vector containing "mechanical" elements. We add elements that possess certain mechanics, such as shooting, walking, or performing actions autonomously. However, the animation phases are managed differently, enabling objects without mechanics to still have animated sprites.
+There are two methods:
 
-There is a vector with "mechanical" elements. We add elements that have some mechanics (like they shoot, walk, do something on their own), but the animation phases are handled differently, so objects without mechanics still can have animated sprites.
-There are methods:
+ 1. void registerLiveElement(bElem* who);
+ 2. void deregisterLiveElement(bElem* who);
 
-  1. void registerLiveElement(bElem* who);
-  2. void deregisterLiveElement(bElem* who);
-
-One is for registering a mechanical object (there has to be implemeted mechanics method), the other one deregisters the object.
+The first method is for registering a mechanical object (which requires an implemented mechanics method), while the second method is for deregistering the object.
 
 ## Apples
-When an apple is intact it is a collectible token, that must be collected. But when it is broken (like shot at), then it becomes a healing device.
-When a player (or any other element, that can collect), collects the item, it will heal the collector.
-But it would deplay its own energy, when energy reaches 0, then the apple explodes in the inventory, killing the collector.
-
+When an apple is unbeschädigt, it acts as a collectible token that must be gathered. However, if it becomes damaged (for example, by being shot at), it transforms into a healing device. When a player (or any other element capable of collecting) acquires the item, it will heal the collector. But be warned: the apple will deplete its own energy. When the energy reaches zero, the apple will explode in the inventory, resulting in the untimely demise of the collector.
 ## Teleporters
+Every new teleporter is added to a vector (in reality, it's a vector of pointers, so it is). As soon as our player interacts with a teleporter, we're checkin' if it has an attached link to its corresponding teleporter mate. We take a gander at the type of the teleporter, and we follow these steps:
 
-Every new teleporter is placed in a vector (actually it is a vector of pointers). As soon, as the player interacts with a teleporter it checks if it has attached link to a corresponding teleporter.
-We check the type of a teleporter, if it is even, we:
-    If not, we take randomly chosen teleporter from the list, and we remove the interacted element from the list. We set the chosen teleport as the other end.
-    If other end is established, we check if the teleporter has any steppable fields in it. If so, we take the player from the original location, and place it into the steppable field found in the teleport.
-When it is odd:
-    We find the first teleport of the same type but on different chamber. Then we establish connection, where the counterpart will direct to the first teleport.
+ * If there's no established link, we pick a random teleporter from our list and remove the interacted one. 
+ * We then set the chosen teleporter as the other end of the connection. 
+ * Once the other end is all set up, we inspect the teleporter for any steppable fields. 
+ * If we find one, 
+    - we whisk the object that interacted away from their original location 
+    - and place 'em right into that steppable field we found in the teleporter.
+
 
 ## Shooting guns
 
@@ -188,10 +185,9 @@ When running build.sh, the unit tests would be built as well. You can then run t
 
 # Sound
 
-Our game now has the ability to produce sounds.
-Just inherit after audibleElement, and then you cn use playSound method with two arguments: eventType, and event. These will be used to locate your sound, along with other data, that will be done for you.
-We are using [openAL](https://www.openal.org/documentation/openal-1.1-specification.pdf) as our audiodriver, it is because we can have control over object positions, and just because we can. 
-The configuration of the sound data is contained in "samples" field of the configManager data. It is ordered similarily to the sound configuration in JSON file:
+Our game now possesses the capability to generate sounds. Simply inherit from the audibleElement class, and then you can utilize the playSound method with two arguments: eventType and event. These will be employed to locate your sound, along with additional data that will be processed for you.
+
+We are using openAL as our audio driver, allowing us control over object positions and providing further versatility. The configuration of sound data is stored in the "samples" field of the configManager data. It is organized similarly to the sound configuration in the JSON file:
 
     "Samples": [
         {
@@ -215,22 +211,21 @@ The configuration of the sound data is contained in "samples" field of the confi
         }       
      ]
 
-The sampleData is contained in structure that you can access like configObje->samples[typeId][subtypeId][EventType][Event]
-We got a singleton soundManager class. It has a method register sound. You pass element instance id, element type id, element subtypeid, event type, and event. The method will load the sample - if necessary, we build sample tree like structure (with hashmaps)- and then would play it.
-But there are limitations:
+Sample data is contained in a structure that you can access like configObject->samples[typeId][subtypeId][EventType][Event]. We have a singleton soundManager class. It includes a registerSound method. You pass the element instance ID, element type ID, element subtype ID, event type, and event. The method will load the sample, if necessary, and we construct a sample tree-like structure (with hashmaps).
 
-* the distance must be right, it is in config file _MaxSoundDistance_
-* the sound must come from the same chamber as the listener (player)
-When the element, that generated sound is removed disposed, only looping sounds are stopped, other have the chance to stop playing by themselvs.
+However, there are limitations:
 
-We handle the sounds by having the pool of sources (openAL), which we keep in a circular buffer. That helps us to find oldest samples. When we register the sample (play it) we first seek unregistered samples, if we fail with that, we seek samples that are played in loop (to kill them), and if we fail at that, we kill any first sample we try to overtake.
+ * The distance must be accurate; it is in the config file MaxSoundDistance
+ * The sound must originate from the same chamber as the listener (player)
+When the element that generated the sound is removed or disposed of, only looping sounds are stopped, while others have the opportunity to cease playing by themselves.
 
-There are controlling switches, that change the sound handling:
+We manage sounds by maintaining a pool of sources (openAL) in a circular buffer, which aids in locating the oldest samples. When we register the sample (play it), we first search for unregistered samples; if unsuccessful, we look for samples played in a loop.
 
-* allowMulti - do we allow multiple instances of the sound? If set to false, try to play the sound, while it already plays, will have no effect, good for looping sounds like humming noises activated by proximity or something alike
-* modeOfAction - 0 - regular, 1 - looping
-* stacking - if we allow multiple sounds, do we allow them to play, or should we just kill the sound that is playing, and start over on request (false), or allow all instances to play, but to avoid collisions, apply delay, if the last sound did not have the chance to play - to avoid unnecessary amplicifactions of the sound (true)
+There are control switches that modify sound handling:
 
+ * allowMulti - Do we permit multiple instances of the sound? If set to false, attempting to play the sound while it is already playing will have no effect, suitable for looping sounds like humming noises activated by proximity or similar.
+ * modeOfAction - 0 for regular, 1 for looping
+ * stacking - If we allow multiple sounds, do we let them play, or should we stop the sound currently playing and start anew upon request (false), or permit all instances to play while avoiding collisions by applying a delay if the previous sound did not have the chance to play?
 
 ## TODO
 
@@ -252,9 +247,38 @@ There are controlling switches, that change the sound handling:
 - multiStacked object, like a tank with a turret, that would rotate on it's own. The presenter class should already be able to handle to some point such an object.
 
 
+## bElem attributes
+The config file now will have entries to configure elements attributes, like being steppable, being movable and so on. 
+    int subType=-1;
+    bool killable=false;
+    bool destroyable=false;
+    bool steppable=false;
+    bool isMovable=false;
+    bool isInteractive=false;
+    bool isCollectible=false;
+    bool canPush=false;
+    bool canBePushed=false;
+    bool canCollect=false;
+    bool isWeapon=false;
+    bool isOpen=false;
+    bool isLocked=false;
+    int energy=100;
+    int maxEnergy=100;
+    int ammo=0;
+    int maxAmmo=0;
+
+
+
 ## ChangeLog
 
-
+* Reformatted skins.json file, this time has came, and I had to create a formatting tool for the file. It is an awk script, and it is use pretty much as any other awk script :)
+* Further refactoring, now I removed references to textures and video configuration, now there is a specialised singleton class, that is responsible for getting the right texture.
+* Refactored bunker, added sounds on collecting collectibles
+* Started major refactoring, which resulted in two new classes: bElemStats and bElemAttrs - that will probably in the future flatten the structure of bElems, as I plan do the mechanics, and other hooks with hashmaps of lambdas :)
+* started creating configrable element attributes. 
+* Introduced object puppetMaster, it is yet missing the graphical hooks, but it compiles. The patrolling drone will have different brains, that will control it.
+* Made some changes to the patrolling drone, now it requests a brain object on interaction
+* Made changes to Inventory, now we can request a cingle token.
 * Introduced board cloaking. It works on two levels. First, we only draw those elements, that are or were in the field of view, then we apply a cloaking mask, with a hole cut out for the player. The radius of the hole can be controlled wit a variable.
 * Now every object can have its own animations of death, teleport, destruction and fadingOut, the last one is not supported yet
 * changed the way tiles are shown on the screen. Now in the first phase we draw only still tiles. Because they are either on the floor standing still, of they are the floor. Then all the moving elements are being displayed in second round, and at the end active player is drawn. 

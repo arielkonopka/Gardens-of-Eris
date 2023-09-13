@@ -6,26 +6,27 @@
 #include "killableElements.h"
 #include "plainGun.h"
 
-class monster : public killableElements, public nonSteppable, public mechanical, public movableElements
+class monster : public killableElements,  public mechanical, public movableElements
 {
-    public:
-        virtual videoElement::videoElementDef* getVideoElementDef();
-        static videoElement::videoElementDef* vd;
-        monster();
-        explicit monster(std::shared_ptr<chamber> board);
-        explicit monster(std::shared_ptr<chamber> board,int newSubtype);
-        ~monster();
-        int getType();
-        virtual bool mechanics();
-        virtual bool checkNeigh();
-        virtual bool steppableNeigh();
+public:
 
+    monster();
+    explicit monster(std::shared_ptr<chamber> board);
+    explicit monster(std::shared_ptr<chamber> board,int newSubtype);
+    ~monster();
+    int getType() const;
+    virtual bool mechanics();
+    virtual bool checkNeigh();
+    virtual bool steppableNeigh();
+    bool additionalProvisioning(int subtype,int typeId);
+    bool additionalProvisioning();
+    virtual bool additionalProvisioning(int subtype,std::shared_ptr<monster> sbe);
 
-    private:
-        plainGun* weapon=nullptr;
-        bool inited=false;
-        int rotA=3;
-        int rotB=1;
+private:
+    std::shared_ptr<plainGun> weapon=nullptr;
+    bool inited=false;
+    int rotA=3;
+    int rotB=1;
 
 };
 

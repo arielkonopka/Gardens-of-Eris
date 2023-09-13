@@ -40,7 +40,7 @@ class chamber: public std::enable_shared_from_this<chamber>
         colour getChColour();
         coords getSizeOfChamber();
     private:
-        float visibilityRadius=9.8;
+  //      float visibilityRadius=7.8;
         std::vector<std::vector<int>> visitedElements;
         void createFloor();
         std::vector<std::vector<std::shared_ptr<bElem>>> chamberArray;

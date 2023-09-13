@@ -1,134 +1,127 @@
 #include "door.h"
 
-videoElement::videoElementDef* door::vd=nullptr;
 
-videoElement::videoElementDef* door::getVideoElementDef()
-{
-    return door::vd;
-}
 
-int door::getType()
+int door::getType() const
 {
     return _door;
 }
 
-
-door::door():audibleElement()
+door::door() : bElem()
 {
+}
+door::door(std::shared_ptr<chamber> board) : door()
+{
+
+    this->setBoard(board);
 
 }
-door::door(std::shared_ptr<chamber> board) : audibleElement(board)
-{
 
+bool door::additionalProvisioning(int subtype, std::shared_ptr<door>sbe)
+{
+    return this->additionalProvisioning(subtype,sbe->getType());
 }
 
-door::door(std::shared_ptr<chamber> board, int subtype) :audibleElement(board)
+bool door::additionalProvisioning()
 {
-    this->setSubtype(subtype);
+    return this->additionalProvisioning(0,this->getType());
 }
 
+bool door::additionalProvisioning(int subtype, int typeId)
+{
+    bool res=bElem::additionalProvisioning(subtype,typeId);
+    this->getAttrs()->setSteppable(false);
+    this->getAttrs()->setLocked(true);
+    this->getAttrs()->setOpen(false);
+    return res;
+}
 
-bool door::isSteppable()
+bool door::stepOnAction(bool step, std::shared_ptr<bElem>who)
 {
-    return this->open;
-}
-bool door::isOpen()
-{
-    return this->open;
-}
-void door::stomp(std::shared_ptr<bElem> who)
-{
-    std::shared_ptr<bElem> key=nullptr;
-    if(this->getSubtype()%2==1)
+    if(who==nullptr)
+        return false;
+    if(step==true)
     {
-        if(who->getInventory()!=nullptr)
+        if(this->getAttrs()->getSubtype()%2==1 )
         {
-            key=who->getInventory()->getKey(_key,this->getSubtype(),true); // take the key on your way out. you don't have a key? Kill, could be used as tricky traps for monsters
-            if(key==nullptr)
+            std::shared_ptr<bElem> k;
+            if( who->getAttrs()->canCollect())
+            {
+                k=who->getAttrs()->getInventory()->getKey(_key,this->getAttrs()->getSubtype(),true);
+            }
+            if(!k)
             {
                 who->kill();
             }
-        }
-        else
-        {
-            who->kill();
+            else
+                this->playSound("Door","CollectKey");
         }
     }
-    return; // True means you can safely continue
-}
-void door::unstomp()
-{
-   if(this->getSubtype()%2==1)
+    else
     {
-        this->locked=true;
-        this->open=false;
-        this->setFacing((!this->open)?UP:LEFT);
+        if(this->getAttrs()->getSubtype()%2==1 )
+        {
+            this->getAttrs()->setOpen(false);
+            this->getAttrs()->setSteppable(this->getAttrs()->isOpen());
+            this->getAttrs()->setLocked(true);
+            this->playSound("Door", (this->getAttrs()->isOpen()) ? "Unlock" : "Lock");
+            this->getStats()->setFacing((!this->getAttrs()->isOpen()) ? UP : LEFT);
+        }
     }
-    bElem::unstomp();
+    return true;
 }
 
+
+void door::_alignWithOpen()
+{
+        this->getStats()->setFacing((!this->getAttrs()->isOpen()) ? UP : LEFT);
+        this->getAttrs()->setSteppable(this->getAttrs()->isOpen());
+
+}
 
 /* open the door if you can */
 bool door::interact(std::shared_ptr<bElem> who)
 {
-    bool bres=bElem::interact(who);
-    std::shared_ptr<bElem> key=nullptr;
+
+    bool bres = bElem::interact(who);
+    std::shared_ptr<bElem> key = nullptr;
     if (!bres)
         return false;
-    if (this->locked==false)
+    if (!this->getAttrs()->isLocked())
     {
-        this->interacted=this->getCntr()+10;
-        this->open=!this->open;
-        this->setFacing((!this->open)?UP:LEFT);
-        this->playSound("Door",(this->open)?"Unlock":"Lock");
-
+        this->getStats()->setInteracted(10);
+        who->getStats()->setWaiting(1);
+        this->getAttrs()->setOpen(!this->getAttrs()->isOpen());
+        this->_alignWithOpen();
+        this->playSound("Door", (this->getAttrs()->isOpen()) ? "Unlock" : "Lock");
         return true;
     }
-    //If it cannot collect, it cannot hold a key.
-    if (who->canCollect()==false)
+    if (!who->getAttrs()->canCollect())
     {
         return false;
     }
-    //if Door is unlocked, only open/close thing
-    if (this->getSubtype()%2==0)
+    key = who->getAttrs()->getInventory()->getKey(_key, this->getAttrs()->getSubtype(), this->getAttrs()->getSubtype()%2!=1);
+    if (key != nullptr)
     {
-        key=who->getInventory()->getKey(_key,this->getSubtype(),true);
-    }
-    else
-    {
-        key=who->getInventory()->getKey(_key,this->getSubtype(),false);
-    }
-    if(key!=nullptr)
-    {
-        this->playSound("Door","Open");
-        this->open=true;
-        this->locked=false;
-        this->setFacing((!this->open)?UP:LEFT);
+        this->playSound("Door", "Open");
+        this->getAttrs()->setOpen(true);
+        this->getAttrs()->setLocked(false);
+        this->_alignWithOpen();
     }
     else
     {
         return false;
     }
-    if (this->getSubtype()%2==0)
+    if(key &&  this->getAttrs()->getSubtype()%2!=1)
     {
+        this->playSound("Door","CollectKey");
         key->disposeElement();
     }
     return true;
 }
 
-bool door::canBeKilled()
-{
-    return false;
-}
-
-bool door::canBeDestroyed()
-{
-    return true;
-}
-
-
 
 door::~door()
 {
-    //dtor
+    // dtor
 }

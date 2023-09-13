@@ -1,142 +1,114 @@
 #include "plainMissile.h"
 
 
-videoElement::videoElementDef* plainMissile::vd=nullptr;
-plainMissile::plainMissile(std::shared_ptr<chamber> mychamber) : killableElements(mychamber), movableElements(mychamber), mechanical(mychamber)
+plainMissile::plainMissile(std::shared_ptr<chamber> mychamber) : plainMissile()
 {
-    this->statsOwner=nullptr;
-    this->setStats(std::make_shared<elemStats>(_plainMissileEnergy));
-    this->setEnergy(_plainMissileEnergy);
-    this->setMoved(0);
-    this->setWait(_plainMissileSpeed);
-    this->setDirection(UP);
-    this->setMoved(0);
-    this->setSubtype(0);
+    this->setBoard(mychamber);
 }
-plainMissile::plainMissile(std::shared_ptr<chamber> mychamber, int energy) : killableElements(mychamber),  movableElements(mychamber), mechanical(mychamber)
+
+plainMissile::plainMissile(std::shared_ptr<chamber> mychamber, int energy) : plainMissile(mychamber)
 {
-    this->statsOwner=nullptr;
-    this->setStats(std::make_shared<elemStats>(energy));
-    this->setEnergy(energy);
-    this->setMoved(0);
-    this->setWait(_plainMissileSpeed);
-    this->setDirection(UP);
-    this->setMoved(0);
-    this->setSubtype(0);
 }
 plainMissile::plainMissile():killableElements(),movableElements(),mechanical()
 {
+    this->getStats()->setWaiting(_plainMissileSpeed);
+    this->getStats()->setMyDirection(UP);
+    this->getStats()->setMoved(0);
 
+
+}
+
+bool plainMissile::additionalProvisioning(int subtype, std::shared_ptr<plainMissile>sbe)
+{
+    return this->additionalProvisioning(subtype,sbe->getType());
+}
+
+bool plainMissile::additionalProvisioning()
+{
+    return this->additionalProvisioning(0,this->getType());
+}
+
+bool plainMissile::additionalProvisioning(int subtype,int typeId)
+{
+    this->registerLiveElement(shared_from_this());
+    return bElem::additionalProvisioning(subtype,typeId);
 }
 
 plainMissile::~plainMissile()
 {
-    if(this->statsOwner!=nullptr)
-    {
-        this->statsOwner->unlockThisObject(shared_from_this());
-        this->statsOwner=nullptr;
-    }
-    //dtor
+
 }
-int plainMissile::getType()
+int plainMissile::getType() const
 {
     return _plainMissile;
 }
 
-void plainMissile::stomp(std::shared_ptr<bElem> who)
+bool plainMissile::stepOnAction(bool step, std::shared_ptr<bElem>who)
 {
-    bElem::stomp(who);
-    if(who->getType()!=this->getType())
+    std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
+    if(step && who->getType()!=this->getType())
     {
-        who->hurt(this->getEnergy());
-        this->disposeElement();
+        who->hurt(this->getAttrs()->getEnergy());
+        this->kill();
+        if(sowner)
+            sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
     }
-    return;
-}
-
-
-videoElement::videoElementDef* plainMissile::getVideoElementDef()
-{
-    return plainMissile::vd;
-}
-bool plainMissile::setEnergy(int points)
-{
-    if(this->statsOwner!=nullptr && this->statsOwner->getStats()!=nullptr)
-    {
-        int ep=(points*4)/(_dexterityLevels+1-this->statsOwner->getStats()->getDexterity());
-        int dp=points-ep;
-        int r=this->randomNumberGenerator()%(points+1);
-        mechanical::setEnergy(((r<=dp)?ep/2:ep)+1);
-    } else
-        mechanical::setEnergy(points);
     return true;
 }
+
+
+
+
 
 
 bool plainMissile::mechanics()
 {
     bool res;
-    int mvd=this->getMoved();
+    std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
     res=killableElements::mechanics();
     if(!res) return false;
-    if(this->isDying())
+    if(this->getStats()->isDying() || this->getStats()->isMoving() || this->getStats()->isWaiting())
         return true;
-    if (this->getMoved()==0 && mvd==0)
+    std::shared_ptr<bElem> myel=this->getElementInDirection(this->getStats()->getMyDirection());
+    if(myel==nullptr || myel->getStats()->isDying() || myel->getStats()->isTeleporting() || myel->getStats()->isDestroying())
     {
-        std::shared_ptr<bElem> myel=this->getElementInDirection(this->getDirection());
-        if(myel==nullptr || myel->isDying() || myel->isTeleporting() || myel->isDestroyed())
-        {
-            this->disposeElement();
-            return true;
-        }
-        if (myel->isSteppable()==true)
-        {
-            this->moveInDirectionSpeed(this->getDirection(),_plainMissileSpeed);
-            return true;
-        }
-        if (myel->canBeKilled()==true)
-        {
- /*           if (myel->getType()==this->getType() && myel->getDirection()==this->getDirection() && myel->getSubtype()==this->getSubtype() && !myel->isDestroyed() && !myel->isDying())
-            {
-                return true;
-            }
- */
-            myel->hurt(this->getEnergy());
-            if(this->statsOwner!=nullptr && this->statsOwner->getStats()!=nullptr)
-            {
-                this->statsOwner->getStats()->countHit(myel);
-            }
-            if(!myel->isDying() && !myel->isDestroyed())
-            {
-                this->kill();
-            }
-            else
-            {
-                if(this->statsOwner!=nullptr && this->statsOwner->getStats()!=nullptr)
-                {
-                    this->statsOwner->getStats()->countKill(myel);
-                }
-                if (!this->isDying())
-                    this->disposeElement();
-            }
-            return true;
-        }
-        if(myel->isDying()|| myel->isDestroyed()) // if next element in path is already dying, just disappear.
-            this->disposeElement();
-        this->kill();
+        this->disposeElement();
         return true;
     }
-    return res;
-}
-void plainMissile::setStatsOwner(std::shared_ptr<bElem> owner)
-{
-    if(owner!=nullptr)
+    if (myel->getAttrs()->isSteppable()==true)
     {
-        this->statsOwner=owner;
-        this->setEnergy(this->getEnergy());
+        this->moveInDirectionSpeed(this->getStats()->getMyDirection(),_plainMissileSpeed);
+        return true;
+    }
+    if (myel->getAttrs()->isKillable()==true)
+    {
+        myel->hurt(this->getAttrs()->getEnergy());
+        if(!myel->getStats()->isDying() && !myel->getStats()->isDestroying())
+        {
+            this->kill();
+            if(sowner)
+                sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
 
+        }
+        else
+        {
+            if (!this->getStats()->isDying())
+            {
+                this->disposeElement();
+                if(sowner)
+                    sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
+
+            }
+        }
+        return true;
     }
+    if(myel->getStats()->isDying()|| myel->getStats()->isDestroying()) // if next element in path is already dying, just disappear.
+        this->disposeElement();
+    this->kill();
+    return true;
+
 }
+
 
 
 
