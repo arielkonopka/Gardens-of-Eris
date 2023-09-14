@@ -13,8 +13,8 @@ public:
 
     bunker();
     explicit bunker(std::shared_ptr<chamber> board);
-    virtual ~bunker();
-    virtual bool mechanics();
+    ~bunker() = default;
+    bool mechanics() final;
     direction findLongestShot();
     virtual bool selfAlign();
     int getType() const;

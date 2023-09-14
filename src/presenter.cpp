@@ -45,7 +45,7 @@ bool presenter::initializeDisplay()
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
     al_get_monitor_info(0, &info);
     this->display = al_create_display(info.x2-info.x1, info.y2-info.y1);
-  //  al_hide_mouse_cursor(this->display);
+    //  al_hide_mouse_cursor(this->display);
     al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
     this->internalBitmap=al_create_bitmap(this->scrWidth+64,this->scrHeight+64);
     this->cloakBitmap=al_create_bitmap(this->scrWidth+128,this->scrHeight+128);
@@ -141,9 +141,10 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
         int sy=(coords.y*this->sHeight)+((coords.y+1)*(this->spacing));
 
         if(!vd)
-            {std::cout<<"No video driver in memory???\n";
+        {
+            std::cout<<"No video driver in memory???\n";
             exit(0);
-            };
+        };
 
         if (ve)
             al_draw_bitmap_region(ve->sprites, sx, sy, this->sWidth, this->sHeight, offsetX + (x * this->sWidth), offsetY + (y * this->sHeight), 0);
@@ -151,7 +152,7 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
 
 
 
-   //m int sx,sy;
+    //m int sx,sy;
     bool res=false;
     if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem.get()==nullptr || !ve ) return false;
 
@@ -302,11 +303,21 @@ void presenter::showGameField()
     al_clear_to_color(al_map_rgba(c.r,c.g,c.b,c.a));
 
     if(player->getBoard().get()!=nullptr)
+    {
+        coords point=player->getStats()->getMyPosition();
+
         for(x=0; x<this->scrTilesX+1; x++)
             for(y=0; y<this->scrTilesY+1; y++)
             {
-                std::shared_ptr<bElem> elemToDisplay=player->getBoard()->getElement(x+(this->previousPosition.x),y+(this->previousPosition.y));
-                if(player->getBoard()->isVisible(x+(this->previousPosition.x),y+(this->previousPosition.y))>=255)
+                int nx=x+this->previousPosition.x;
+                int ny=y+this->previousPosition.y;
+                float distance=point.distance((coords)
+                {
+                    nx,ny
+                });
+
+                std::shared_ptr<bElem> elemToDisplay=player->getBoard()->getElement(nx,ny);
+                if(player->getBoard()->isVisible(nx,ny)>=255 && distance>player::getActivePlayer()->getViewRadius()+1)
                     continue; // this element is not even discovered yet
                 if(elemToDisplay.get()!=nullptr)
                 {
@@ -315,6 +326,7 @@ void presenter::showGameField()
                     continue;
                 }
             }
+    }
     int px=0,py=0;
     for(unsigned int cnt=0; cnt<mSprites.size(); cnt++)
     {
@@ -333,6 +345,8 @@ void presenter::showGameField()
 
     if(player->getBoard().get()!=nullptr)
     {
+        coords point=player->getStats()->getMyPosition();
+
         coords offsets=player->getOffset();
         al_set_target_bitmap(this->cloakBitmap);
         al_clear_to_color(al_map_rgba(0,0,0,0));
@@ -340,7 +354,6 @@ void presenter::showGameField()
             for(y=-1; y<this->scrTilesY+2; y++)
             {
                 int obscured;
-                coords point=player->getStats()->getMyPosition();
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
                 float distance=point.distance((coords)

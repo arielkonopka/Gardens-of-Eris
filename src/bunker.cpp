@@ -33,16 +33,6 @@ bool bunker::additionalProvisioning(int subtype, std::shared_ptr<bunker>sbe)
 
 
 
-bunker::~bunker()
-{
-    if(this->activatedBy!=nullptr)
-    {
-        //  this->setStats(this->backUp);
-        //    this->activatedBy->unlockThisObject(shared_from_this());
-        this->activatedBy=nullptr;
-    }
-}
-
 
 bool bunker::mechanics()
 {
