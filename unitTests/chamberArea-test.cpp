@@ -1,3 +1,6 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <list>
+// *** END ***
 #include "elements.h"
 #include "commons.h"
 #include "chamber.h"

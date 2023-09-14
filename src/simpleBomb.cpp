@@ -1,6 +1,5 @@
 #include "simpleBomb.h"
 
-videoElement::videoElementDef *simpleBomb::vd = nullptr;
 
 simpleBomb::simpleBomb(std::shared_ptr<chamber>board):explosives(board),killableElements(board),movableElements(board)
 {
@@ -54,10 +53,7 @@ bool simpleBomb::mechanics()
     return true;
 }
 
-videoElement::videoElementDef *simpleBomb::getVideoElementDef()
-{
-    return simpleBomb::vd;
-}
+
 
 int simpleBomb::getType() const
 {

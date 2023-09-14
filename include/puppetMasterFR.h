@@ -11,8 +11,7 @@ class puppetMasterFR :  public mechanical, public killableElements
 public:
     puppetMasterFR();
     puppetMasterFR(std::shared_ptr<chamber> board);
-    virtual videoElement::videoElementDef* getVideoElementDef();
-    static videoElement::videoElementDef* vd;
+
     //i  virtual void setCollected(std::shared_ptr<bElem> who);
     virtual ~puppetMasterFR();
     virtual bool mechanics();

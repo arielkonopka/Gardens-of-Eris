@@ -1,11 +1,6 @@
 #include "puppetMasterFR.h"
 
-videoElement::videoElementDef *puppetMasterFR::vd = nullptr;
 
-videoElement::videoElementDef *puppetMasterFR::getVideoElementDef()
-{
-    return puppetMasterFR::vd;
-}
 
 puppetMasterFR::puppetMasterFR(std::shared_ptr<chamber> board) :  puppetMasterFR()
 {

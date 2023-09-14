@@ -271,6 +271,8 @@ The config file now will have entries to configure elements attributes, like bei
 
 ## ChangeLog
 
+* Reformatted skins.json file, this time has came, and I had to create a formatting tool for the file. It is an awk script, and it is use pretty much as any other awk script :)
+* Further refactoring, now I removed references to textures and video configuration, now there is a specialised singleton class, that is responsible for getting the right texture.
 * Refactored bunker, added sounds on collecting collectibles
 * Started major refactoring, which resulted in two new classes: bElemStats and bElemAttrs - that will probably in the future flatten the structure of bElems, as I plan do the mechanics, and other hooks with hashmaps of lambdas :)
 * started creating configrable element attributes. 

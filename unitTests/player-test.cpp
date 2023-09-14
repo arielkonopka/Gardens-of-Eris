@@ -1,3 +1,6 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <list>
+// *** END ***
 #include "elements.h"
 #include "commons.h"
 #include "chamber.h"
@@ -15,9 +18,9 @@ BOOST_AUTO_TEST_CASE(GetActivePlayerTest)
     std::shared_ptr<chamber> mc = chamber::makeNewChamber({5, 5});
     std::shared_ptr<player> plr = elementFactory::generateAnElement<player>(mc,0);
     plr->stepOnElement(mc->getElement(point));
-    plr->status->setActive(true);
+    plr->getStats()->setActive(true);
     BOOST_CHECK(player::getActivePlayer());
-    BOOST_CHECK(plr->status->getInstanceId()==player::getActivePlayer()->status->getInstanceId());
+    BOOST_CHECK(plr->getStats()->getInstanceId()==player::getActivePlayer()->getStats()->getInstanceId());
 }
 
 /**
@@ -33,19 +36,19 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
     //    bool gunDisposed=false;
     std::shared_ptr<chamber> mc = chamber::makeNewChamber({5, 5});
     std::shared_ptr<player> plr = elementFactory::generateAnElement<player>(mc,0);
-    BOOST_CHECK(plr->attrs->canCollect());
+    BOOST_CHECK(plr->getAttrs()->canCollect());
     plr->stepOnElement(mc->getElement(2, 2));
     std::shared_ptr<plainGun> pGun = elementFactory::generateAnElement<plainGun>(mc,0);
     pGun->stepOnElement(mc->getElement(3, 2));
-    plr->status->setActive(true);
+    plr->getStats()->setActive(true);
     plr->collect(pGun);
-    BOOST_CHECK(pGun->attrs->isCollectible());
-    BOOST_CHECK(plr->attrs->getInventory()->getActiveWeapon() != nullptr);
-    BOOST_CHECK(plr->attrs->getInventory()->getActiveWeapon()->status->getInstanceId() == pGun->status->getInstanceId());
-    plr->status->setMyDirection(UP);
+    BOOST_CHECK(pGun->getAttrs()->isCollectible());
+    BOOST_CHECK(plr->getAttrs()->getInventory()->getActiveWeapon() != nullptr);
+    BOOST_CHECK(plr->getAttrs()->getInventory()->getActiveWeapon()->getStats()->getInstanceId() == pGun->getStats()->getInstanceId());
+    plr->getStats()->setMyDirection(UP);
     for (int c = 0; c < 555; c++)
     {
-        std::shared_ptr<bElem> wep = plr->attrs->getInventory()->getActiveWeapon();
+        std::shared_ptr<bElem> wep = plr->getAttrs()->getInventory()->getActiveWeapon();
         if (wep != nullptr)
         {
             plr->shootGun();
@@ -53,18 +56,18 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
         for (int d = 0; d < 100; d++)
             bElem::tick();
     }
-    BOOST_CHECK(plr->attrs->getInventory()->getActiveWeapon() == nullptr);
+    BOOST_CHECK(plr->getAttrs()->getInventory()->getActiveWeapon() == nullptr);
 
     pGun = elementFactory::generateAnElement<plainGun>(mc,0);
-    pGun->attrs->setSubtype(0);
+    pGun->getAttrs()->setSubtype(0);
     pGun->stepOnElement(mc->getElement(3, 2));
     plr->collect(pGun);
     pGun = elementFactory::generateAnElement<plainGun>(mc,0);
-    pGun->attrs->setSubtype(0);
+    pGun->getAttrs()->setSubtype(0);
     pGun->stepOnElement(mc->getElement(3, 2));
     plr->collect(pGun);
     plr->disposeElement(); // here we should have the player to be removed from the board
-    BOOST_CHECK(mc->getElement(2, 2)->status->getInstanceId()!= plr->status->getInstanceId());
+    BOOST_CHECK(mc->getElement(2, 2)->getStats()->getInstanceId()!= plr->getStats()->getInstanceId());
     BOOST_CHECK(mc->getElement(2, 2)->getType()!= plr->getType());
     BOOST_CHECK(mc->getElement(2, 2)->getType()==_rubishType);
 }
@@ -89,7 +92,7 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
         BOOST_CHECK(e != p);
         p->stepOnElement(e);
         e->disposeElement();
-        p->status->setActive(true);
+        p->getStats()->setActive(true);
         // p->moveInDirection(RIGHT);
         BOOST_CHECK(p->removeElement() != nullptr);
 
@@ -106,9 +109,9 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
                 BOOST_ASSERT(e != nullptr);
                 while (e != nullptr)
                 {
-                    if (e->status->getInstanceId() == p->status->getInstanceId())
+                    if (e->getStats()->getInstanceId() == p->getStats()->getInstanceId())
                         instances++;
-                    e = e->status->getSteppingOn();
+                    e = e->getStats()->getSteppingOn();
                 }
             }
         }
@@ -139,7 +142,7 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
 
     p0 = elementFactory::generateAnElement<player>(m[0],0);
     p0->stepOnElement(m[1]->getElement(0, 0));
-    p0->status->setActive(true);
+    p0->getStats()->setActive(true);
     for (int a = 0; a < 100; a++)
     {
         // std::cout<<a<<"\n";
@@ -157,11 +160,11 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
     tp = player::getActivePlayer();
     while (tp != nullptr)
     {
-        iid = tp->status->getInstanceId();
+        iid = tp->getStats()->getInstanceId();
         tp->disposeElement();
         tp1 = player::getActivePlayer();
         if (p1 != nullptr)
-            BOOST_CHECK(iid != p1->status->getInstanceId());
+            BOOST_CHECK(iid != p1->getStats()->getInstanceId());
         tp = tp1;
     }
     m.clear();
@@ -247,7 +250,7 @@ void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
     coords c0, c1;
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
-    c0 = p->status->getMyPosition();
+    c0 = p->getStats()->getMyPosition();
     mc->cntrlItm = cntrlItm;
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
@@ -255,7 +258,7 @@ void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
     mc->cntrlItm.dir = NODIRECTION;
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
-    c1 = p->status->getMyPosition();
+    c1 = p->getStats()->getMyPosition();
     if (cntrlItm.type == 0 || cntrlItm.type == 4)
         BOOST_CHECK(c0 != c1);
     else
@@ -275,11 +278,11 @@ void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
 void checkplayerKilled()
 {
     std::shared_ptr<bElem> p = player::getActivePlayer();
-    unsigned long int iid1 = p->status->getInstanceId();
+    unsigned long int iid1 = p->getStats()->getInstanceId();
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
     p = player::getActivePlayer();
-    BOOST_CHECK(p == nullptr || iid1 != p->status->getInstanceId());
+    BOOST_CHECK(p == nullptr || iid1 != p->getStats()->getInstanceId());
 }
 
 /**
@@ -304,7 +307,7 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
     std::shared_ptr<plainGun> pg = elementFactory::generateAnElement<plainGun>(mc,0);
     p->stepOnElement(mc->getElement(50, 50));
     p->collect(pg);
-    p->status->setActive(true);
+    p->getStats()->setActive(true);
     for (int c = 0; c < 8; c++)
     {
         if (c == 6)
@@ -315,7 +318,7 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
             pg = elementFactory::generateAnElement<plainGun>(mc,0);
             p->collect(pg);
             p->stepOnElement(mc->getElement(50, 50));
-            p->status->setActive(true);
+            p->getStats()->setActive(true);
             continue;
         }
         ci.type = c;
