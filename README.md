@@ -185,7 +185,7 @@ When running build.sh, the unit tests would be built as well. You can then run t
 
 # Sound
 
-Our game now possesses the capability to generate sounds. Simply inherit from the audibleElement class, and then you can utilize the playSound method with two arguments: eventType and event. These will be employed to locate your sound, along with additional data that will be processed for you.
+Our game now possesses the capability to generate sounds. You can utilize the playSound method with two arguments: eventType and event. These will be employed to locate your sound, along with additional data that will be processed for you.
 
 We are using openAL as our audio driver, allowing us control over object positions and providing further versatility. The configuration of sound data is stored in the "samples" field of the configManager data. It is organized similarly to the sound configuration in the JSON file:
 
