@@ -1,3 +1,6 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <istream>
+// *** END ***
 #ifndef RANDOMLEVELGENERATOR_H
 #define RANDOMLEVELGENERATOR_H
 #include <iostream>

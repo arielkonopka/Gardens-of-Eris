@@ -75,6 +75,7 @@
 		<Unit filename="include/bElem.h" />
 		<Unit filename="include/bElemAttr.h" />
 		<Unit filename="include/bElemStats.h" />
+		<Unit filename="include/bouba.h" />
 		<Unit filename="include/brickCluster.h" />
 		<Unit filename="include/bunker.h" />
 		<Unit filename="include/chamber.h" />
@@ -91,6 +92,7 @@
 		<Unit filename="include/inputManager.h" />
 		<Unit filename="include/inventory.h" />
 		<Unit filename="include/key.h" />
+		<Unit filename="include/kiki.h" />
 		<Unit filename="include/killableElements.h" />
 		<Unit filename="include/levelLoader.h" />
 		<Unit filename="include/mechanical.h" />
@@ -112,6 +114,7 @@
 		<Unit filename="include/soundManager.h" />
 		<Unit filename="include/stackedElement.h" />
 		<Unit filename="include/teleport.h" />
+		<Unit filename="include/videoDriver.h" />
 		<Unit filename="include/videoElementDef.h" />
 		<Unit filename="include/wall.h" />
 		<Unit filename="main.cpp">
@@ -121,6 +124,7 @@
 		<Unit filename="src/bElem.cpp" />
 		<Unit filename="src/bElemAttr.cpp" />
 		<Unit filename="src/bElemStats.cpp" />
+		<Unit filename="src/bouba.cpp" />
 		<Unit filename="src/brickCluster.cpp" />
 		<Unit filename="src/bunker.cpp" />
 		<Unit filename="src/chamber.cpp" />
@@ -135,6 +139,7 @@
 		<Unit filename="src/inputManager.cpp" />
 		<Unit filename="src/inventory.cpp" />
 		<Unit filename="src/key.cpp" />
+		<Unit filename="src/kiki.cpp" />
 		<Unit filename="src/killableElements.cpp" />
 		<Unit filename="src/levelLoader.cpp" />
 		<Unit filename="src/mechanical.cpp" />
@@ -155,6 +160,7 @@
 		<Unit filename="src/soundManager.cpp" />
 		<Unit filename="src/stackedElement.cpp" />
 		<Unit filename="src/teleport.cpp" />
+		<Unit filename="src/videoDriver.cpp" />
 		<Unit filename="src/videoElementDef.cpp" />
 		<Unit filename="src/wall.cpp" />
 		<Unit filename="unitTests/bElem-test.cpp">

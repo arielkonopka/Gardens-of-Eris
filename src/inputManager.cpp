@@ -73,6 +73,8 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         type=7;
     if(this->pressed_keys[ALLEGRO_KEY_SPACE])
         type=8;
+    if(this->pressed_keys[ALLEGRO_KEY_R])
+        type=9;
     return (controlItem)
     {
         type,dir

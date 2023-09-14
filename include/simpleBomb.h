@@ -7,8 +7,7 @@
 class simpleBomb: public explosives,  public killableElements, public movableElements
 {
 public:
-    static videoElement::videoElementDef* vd;
-    virtual videoElement::videoElementDef* getVideoElementDef();
+
     simpleBomb()=default;
     explicit simpleBomb(std::shared_ptr<chamber> board);
     virtual bool hurt(int points);
