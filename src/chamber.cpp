@@ -122,12 +122,7 @@ bool chamber::visitPosition(coords point)
     bool res=false;
     if(point==NOCOORDS)
         return false;
-    if(this->isVisible(point)>0) {
-            this->setVisible(point,0);
-        return true;
-    }
-
-  /*  float vradius=player::getActivePlayer()->getViewRadius();
+    const int vradius=player::getActivePlayer()->getViewRadius()/2;
     int x0=((point.x-vradius)<0)?0:((point.x-vradius>=this->width)?this->width-1:point.x-vradius);
     int y0=((point.y-vradius)<0)?0:((point.y-vradius>=this->height)?this->height-1:point.y-vradius);
     int x1=((point.x+vradius)<0)?0:((point.x+vradius>=this->width)?this->width-1:point.x+vradius);
@@ -145,7 +140,7 @@ bool chamber::visitPosition(coords point)
 
         }
     }
-    */
+
     return res;
 
 }

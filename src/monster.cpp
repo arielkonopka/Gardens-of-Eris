@@ -79,7 +79,7 @@ bool monster::checkNeigh()
 #ifdef _VerbousMode_
         std::cout<<"  ** CHK isCollectible\n";
 #endif
-        if (e->getAttrs()->isCollectible())
+        if (e->getAttrs()->isCollectible() && this->getAttrs()->canCollect())
         {
             this->collect(e);
             this->getStats()->setWaiting(_mov_delay);
@@ -180,9 +180,8 @@ bool monster::mechanics()
 
     if (!this->inited)
     {
-        if (this->isSteppableDirection(oldDir))
+        if (this->isSteppableDirection(this->getStats()->getFacing()))
         {
-            this->getStats()->setFacing(oldDir);
             return this->moveInDirection(oldDir);
         }
         this->getStats()->setMyDirection((direction)((((int)oldDir) + rotB) % 4));
