@@ -19,6 +19,12 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Install Boost
+        uses: actions/setup-boost@v2
+        with:
+          link: static+shared
+          cache: true
+          components: test
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v1
       - name: Run build-wrapper
