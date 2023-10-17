@@ -41,7 +41,9 @@ bool plainGun::additionalProvisioning()
 
 bool plainGun::additionalProvisioning(int subtype,int typeId)
 {
-    return bElem::additionalProvisioning(subtype,typeId);
+    bool r= bElem::additionalProvisioning(subtype,typeId);
+    this->registerLiveElement(shared_from_this());
+    return r;
 }
 
 

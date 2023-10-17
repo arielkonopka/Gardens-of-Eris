@@ -4,7 +4,6 @@
 #include "elementFactory.h"
 #include "plainGun.h"
 #include "bElem.h"
-//#include "soundManager.h"
 
 
 class bunker : public mechanical,public movableElements
@@ -23,7 +22,6 @@ public:
     virtual bool additionalProvisioning(int subtype,int typeId);
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<bunker> sbe);
 private:
-    std::shared_ptr<characterStats> backUp=nullptr;
     std::shared_ptr<bElem> activatedBy=nullptr;
     int help=0;
     std::shared_ptr<bElem> myGun;
