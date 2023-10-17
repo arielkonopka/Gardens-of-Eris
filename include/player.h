@@ -27,22 +27,15 @@ public:
     oState disposeElement() final;
     bool additionalProvisioning() final;
     bool additionalProvisioning(int subtype,int typeId) ;
-//    const float getViewRadius() { return this->vRadius; };
     float getViewRadius() const;
     bool additionalProvisioning(int subtype,std::shared_ptr<player> sbe) ;
 
 private:
-    float vRadius=5.5;
+    float vRadius=2;
     static std::shared_ptr<bElem> activePlayer;
-    static std::vector<std::shared_ptr<bElem>> allPlayers;
     static std::vector<std::shared_ptr<bElem>> visitedPlayers;
-//    bool visited=false;
     int animPh=0;
-//    int moved=0;
-//    int shot=0;
     bool activated=false;
-//    int used=0;
-//    int interacted=0;
     bool provisioned=false;
     int mysound;
 };
