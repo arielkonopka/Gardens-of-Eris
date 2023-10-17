@@ -8,6 +8,7 @@ bElemAttr::bElemAttr(std::shared_ptr<bElem> owner, int type, int subtype)
 {
     this->owner = owner;
     this->setSubtype(subtype);
+
     if (owner == nullptr)
         return; // no point getting values, set it yourself then
     this->getDefaultValues(type, subtype);
@@ -29,7 +30,6 @@ bElemAttr::bElemAttr(std::shared_ptr<bElem> owner, int type, int subtype)
 void bElemAttr::getDefaultValues(int typeId, int subtypeId)
 {
     auto sprites = configManager::getInstance()->getConfig()->sprites;
-    //std::cout<<"SetState of: "<<subtypeId<<" T:"<<typeId<<"\n";
     for (unsigned long int c = 0; c < sprites.size(); c++)
     {
         auto sprite = sprites[c];
@@ -40,7 +40,6 @@ void bElemAttr::getDefaultValues(int typeId, int subtypeId)
             auto attr = sprite.attributes[c1];
             if ((!this->provisioned && attr.subType < 0) || (attr.subType == subtypeId))
             {
-        //        std::cout<<"SetState of: "<<subtypeId<<" T:"<<typeId<<" as:"<<attr.subType<<"\n";
                 this->setKillable(attr.killable);
                 this->setDestroyable(attr.destroyable);
                 this->setSteppable(attr.steppable);
@@ -58,12 +57,13 @@ void bElemAttr::getDefaultValues(int typeId, int subtypeId)
                 this->setAmmo(attr.ammo);
                 this->setMaxAmmo(attr.maxAmmo);
                 this->provisioned = true; // this way we do not have to setup attributes for the walls.
-                this->chStats=std::make_unique<characterStats>(typeId);
+                if(subtypeId>=0) break; // we can define the first one as -1, and then the 0 and positive subtypes would override it.
             }
         }
     }
 
 }
+
 
 
 bool bElemAttr::isMod() const

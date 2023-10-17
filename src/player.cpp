@@ -1,7 +1,7 @@
 #include "player.h"
 
-std::vector<std::shared_ptr<bElem>> player::allPlayers;
 std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
+//std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
 std::shared_ptr<bElem> player::activePlayer = nullptr;
 
 player::player(std::shared_ptr<chamber> board) : player()
@@ -21,16 +21,18 @@ bool player::additionalProvisioning(int subtype,int typeId)
     this->getAttrs()->setEnergy(125);
     this->provisioned = true;
     this->registerLiveElement(shared_from_this());
-    if ( this->getBoard() && player::allPlayers.size() <= 0)
+    if ( this->getBoard() && player::activePlayer==nullptr)
     {
         this->getStats()->setActive(true);
         this->getStats()->setMarked(true);
+        //player::visitedPlayers.push_back(shared_from_this());
+        player::activePlayer=shared_from_this();
     }
     else
     {
         this->getStats()->setActive(false);
     }
-    player::allPlayers.push_back(shared_from_this());
+
     return true;
 }
 
@@ -49,14 +51,16 @@ std::shared_ptr<bElem> player::getActivePlayer()
     if (player::activePlayer == nullptr || (player::activePlayer && player::activePlayer->getStats()->isDisposed()))
     {
         /* find active player, because it is nullptr */
-        for (auto p : player::allPlayers)
+        for (int p=(int)player::visitedPlayers.size()-1; p>=0; p--)
         {
-            if (p && p->getStats()->isMarked() && !p->getStats()->isDisposed())
+            auto plr=player::visitedPlayers[p];
+            if (plr && !plr->getStats()->isDisposed() && plr->getBoard())
             {
-                player::activePlayer = p;
-                p->getStats()->setActive(true);
-                if(p->getBoard())
-                    soundManager::getInstance()->setListenerChamber(p->getBoard()->getInstanceId());
+                player::activePlayer = plr;
+                plr->getStats()->setActive(true);
+                soundManager::getInstance()->setListenerChamber(plr->getBoard()->getInstanceId());
+                player::visitedPlayers.erase(player::visitedPlayers.begin()+p);
+                break;
             }
         }
     }
@@ -73,38 +77,22 @@ unsigned int player::countVisitedPlayers()
 
 oState player::disposeElement()
 {
-    if (this->getStats()->isActive())
+    if (player::activePlayer && this->getStats()->getInstanceId()==player::activePlayer->getStats()->getInstanceId())
     {
         this->getStats()->setActive(false);
         player::activePlayer = nullptr;
         this->getBoard()->player = NOCOORDS;
-        if (player::visitedPlayers.size() > 0)
-        {
-            // Activate next inactive player avatar
-            std::shared_ptr<bElem> p = player::visitedPlayers[0];
-            p->getStats()->setActive(true);
-            p->getBoard()->player = p->getStats()->getMyPosition();
-            player::visitedPlayers.erase(player::visitedPlayers.begin());
-        }
-    }
-    for (unsigned int cnt = 0; cnt < player::allPlayers.size();)
-    {
-        if (player::allPlayers[cnt] == shared_from_this())
-        {
-            player::allPlayers.erase(player::allPlayers.begin() + cnt);
-        }
-        else
-            cnt++;
     }
     for (unsigned int cnt = 0; cnt < player::visitedPlayers.size();)
     {
-        if (player::visitedPlayers[cnt] == shared_from_this())
+        if (player::visitedPlayers[cnt]->getStats()->getInstanceId() == this->getStats()->getInstanceId())
         {
             player::visitedPlayers.erase(player::visitedPlayers.begin() + cnt);
         }
         else
             cnt++;
     }
+
     return killableElements::disposeElement();
 }
 
@@ -136,10 +124,9 @@ bool player::stepOnElement(std::shared_ptr<bElem> step)
     if(st)
     {
         this->getStats()->setStats(STEPS,this->getStats()->getStats(STEPS)+(bElem::randomNumberGenerator()%2));
-
         this->vRadius=2+(std::log(this->getStats()->getStats(STEPS))/2);
-    }
 
+    }
     return r;
 }
 

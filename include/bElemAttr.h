@@ -1,6 +1,5 @@
 #ifndef bELEMATTR_H
 #define bELEMATTR_H
-#include "characterStats.h"
 #include <memory>
 #include "../include/configManager.h"
 
@@ -25,7 +24,6 @@ public:
     int getMaxEnergy() const;
     int getAmmo() const;
     int getMaxAmmo() const;
-
     void setSubtype(int st);
     void setInventory(std::shared_ptr<inventory> inv);
     void setEnergy(int e);
@@ -58,9 +56,8 @@ public:
     bool canPush() const;
     bool canBePushed() const;
     bool canCollect() const;
-    std::unique_ptr<characterStats> chStats;
-private:
 
+private:
     void getDefaultValues(int typeId, int subtypeId);
     std::shared_ptr<inventory> inv=nullptr;
     bool provisioned = false;

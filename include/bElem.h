@@ -41,6 +41,7 @@ public:
 
     virtual sNeighboorhood getSteppableNeighboorhood();
     virtual ~bElem();
+
     virtual void setBoard(std::shared_ptr<chamber> board);
     virtual std::shared_ptr<chamber> getBoard() const;
     virtual bool selfAlign();
