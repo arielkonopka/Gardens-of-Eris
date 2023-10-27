@@ -2,7 +2,7 @@
 #include "floorElement.h"
 #include "rubbish.h"
 #include "elements.h"
-
+#include <algorithm>
 std::vector<std::shared_ptr<bElem>> bElem::liveElems;
 std::vector<std::shared_ptr<bElem>> bElem::toDispose;
 std::vector<int> bElem::toDeregister;
@@ -563,7 +563,7 @@ bool bElem::kill()
 }
 std::shared_ptr<bElemAttr> bElem::getAttrs() const
 {
-   return this->attrs;
+    return this->attrs;
 }
 
 std::shared_ptr<bElemStats> bElem::getStats() const
@@ -679,7 +679,7 @@ void bElem::runLiveElements()
         {
             if(!bElem::toDispose[c]->getStats()->isDisposed())
             {
-              //  bElem::toDispose[c]->playSound("Element","Disposed"); // Snd: Element->Disposed - play sound on element disposal during the game.
+                //  bElem::toDispose[c]->playSound("Element","Disposed"); // Snd: Element->Disposed - play sound on element disposal during the game.
                 bElem::toDispose[c]->disposeElement(); // we remove the element, which stopped being dead - its time has passed.
             }
 
@@ -687,22 +687,19 @@ void bElem::runLiveElements()
         }
         else c++;
     }
-    // We remove the unregistered elements first, so these would not be executed.
-    for(unsigned long int instId: bElem::toDeregister)
+
+    for (unsigned long int instId : bElem::toDeregister)
     {
-        for (p = bElem::liveElems.begin(); p != bElem::liveElems.end();)
+        auto it = std::find_if(bElem::liveElems.begin(), bElem::liveElems.end(), [instId](std::shared_ptr<bElem> elem)
         {
-            if (instId == (*p)->getStats()->getInstanceId())
-            {
-                bElem::liveElems.erase(p);
-            }
-            else
-            {
-                p++;
-            }
+            return elem->getStats()->getInstanceId() == instId;
+        });
+
+        if (it != bElem::liveElems.end())
+        {
+            bElem::liveElems.erase(it);
         }
     }
-
     bElem::toDeregister.clear();
     bool gotPlayer=player::getActivePlayer()!=nullptr;
     if(!gotPlayer || (gotPlayer && !player::getActivePlayer()->getBoard())) // No active player? No animation!
@@ -729,8 +726,8 @@ void bElem::runLiveElements()
             {
                 bElem::liveElems[p]->mechanics();
             }
-           // else if (bElem::randomNumberGenerator()%55==5)
-           //     bElem::liveElems[p]->mechanics(); /// once in a while all objects will be moving
+             else if (bElem::randomNumberGenerator()%55==5)
+                 bElem::liveElems[p]->mechanics(); /// once in a while all objects will be moving
         }
     }
 

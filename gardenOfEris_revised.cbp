@@ -80,7 +80,6 @@
 		<Unit filename="include/bunker.h" />
 		<Unit filename="include/chamber.h" />
 		<Unit filename="include/chamberArea.h" />
-		<Unit filename="include/characterStats.h" />
 		<Unit filename="include/commons.h" />
 		<Unit filename="include/configManager.h" />
 		<Unit filename="include/door.h" />
@@ -99,7 +98,6 @@
 		<Unit filename="include/monster.h" />
 		<Unit filename="include/monsterBrain.h" />
 		<Unit filename="include/movableElements.h" />
-		<Unit filename="include/musicElement.h" />
 		<Unit filename="include/objectTypes.h" />
 		<Unit filename="include/patrollingDrone.h" />
 		<Unit filename="include/plainGun.h" />
@@ -116,6 +114,7 @@
 		<Unit filename="include/teleport.h" />
 		<Unit filename="include/videoDriver.h" />
 		<Unit filename="include/videoElementDef.h" />
+		<Unit filename="include/viewPoint.h" />
 		<Unit filename="include/wall.h" />
 		<Unit filename="main.cpp">
 			<Option target="Debug" />
@@ -129,7 +128,6 @@
 		<Unit filename="src/bunker.cpp" />
 		<Unit filename="src/chamber.cpp" />
 		<Unit filename="src/chamberArea.cpp" />
-		<Unit filename="src/characterStats.cpp" />
 		<Unit filename="src/configManager.cpp" />
 		<Unit filename="src/door.cpp" />
 		<Unit filename="src/elementFactory.cpp" />
@@ -146,7 +144,6 @@
 		<Unit filename="src/monster.cpp" />
 		<Unit filename="src/monsterBrain.cpp" />
 		<Unit filename="src/movableElements.cpp" />
-		<Unit filename="src/musicElement.cpp" />
 		<Unit filename="src/patrollingDrone.cpp" />
 		<Unit filename="src/plainGun.cpp" />
 		<Unit filename="src/plainMissile.cpp" />
@@ -162,6 +159,7 @@
 		<Unit filename="src/teleport.cpp" />
 		<Unit filename="src/videoDriver.cpp" />
 		<Unit filename="src/videoElementDef.cpp" />
+		<Unit filename="src/viewPoint.cpp" />
 		<Unit filename="src/wall.cpp" />
 		<Unit filename="unitTests/bElem-test.cpp">
 			<Option target="Tests" />

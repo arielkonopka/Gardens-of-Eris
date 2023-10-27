@@ -7,7 +7,7 @@
 #include "videoElementDef.h"
 #include "plainGun.h"
 #include "soundManager.h"
-
+#include "viewPoint.h"
 
 class player : public killableElements,public movableElements,public mechanical
 {
