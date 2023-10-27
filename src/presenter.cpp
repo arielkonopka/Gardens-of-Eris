@@ -274,7 +274,7 @@ void presenter::showGameField()
 
 
     std::shared_ptr<bElem> player=player::getActivePlayer();
-    coords b=player->getStats()->getMyPosition()-(coords)
+    coords b=viewPoint::get_instance()->getViewPoint()-(coords)
     {
         (this->scrTilesX)/2,(this->scrTilesY)/2
     };
@@ -304,7 +304,7 @@ void presenter::showGameField()
 
     if(player->getBoard().get()!=nullptr)
     {
-        coords point=player->getStats()->getMyPosition();
+        coords point=viewPoint::get_instance()->getViewPoint();
 
         for(x=0; x<this->scrTilesX+1; x++)
             for(y=0; y<this->scrTilesY+1; y++)
@@ -340,14 +340,14 @@ void presenter::showGameField()
         else
             this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false,1);
     }
-    if(player->getStats()->isMoving() && player->getBoard()->width>player->getStats()->getMyPosition().x && player->getStats()->getMyPosition().x>=0 && player->getBoard()->height>player->getStats()->getMyPosition().y && player->getStats()->getMyPosition().y>=0)
-        this->showObjectTile(px,py,0,0,player->getBoard()->getElement(player->getStats()->getMyPosition()),false,1);
+    if(player->getStats()->isMoving() && player->getBoard()->width>viewPoint::get_instance()->getViewPoint().x && viewPoint::get_instance()->getViewPoint().x>=0 && player->getBoard()->height>viewPoint::get_instance()->getViewPoint().y && viewPoint::get_instance()->getViewPoint().y>=0)
+        this->showObjectTile(px,py,0,0,player->getBoard()->getElement(viewPoint::get_instance()->getViewPoint()),false,1);
 
     if(player->getBoard().get()!=nullptr)
     {
-        coords point=player->getStats()->getMyPosition();
+        coords point=viewPoint::get_instance()->getViewPoint();
 
-        coords offsets=player->getOffset();
+        coords offsets=viewPoint::get_instance()->getViewPointOffset();
         al_set_target_bitmap(this->cloakBitmap);
         al_clear_to_color(al_map_rgba(0,0,0,0));
         for(x=-1; x<this->scrTilesX+2; x++)

@@ -4,6 +4,7 @@
 #include "videoElementDef.h"
 #include "plainMissile.h"
 #include "soundManager.h"
+//#include "viewPoint.h"
 class plainGun : public mechanical
 {
 public:

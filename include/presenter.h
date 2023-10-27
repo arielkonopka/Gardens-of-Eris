@@ -20,6 +20,7 @@
 #include <thread>
 #include <videoDriver.h>
 #include <mutex>
+#include <viewPoint.h>
 /*
  This class is responsible for menu, settings, designer and game presenter.
 

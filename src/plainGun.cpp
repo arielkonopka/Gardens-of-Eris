@@ -1,5 +1,5 @@
 #include "plainGun.h"
-
+#include "viewPoint.h"
 
 
 //public usable, public mechanical, public collectible, public nonSteppable
@@ -21,6 +21,8 @@ std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
     pm->getStats()->setFacing(who->getStats()->getFacing());
     pm->stepOnElement(who->getElementInDirection(who->getStats()->getFacing()));
     pm->getAttrs()->setEnergy(this->getAttrs()->getEnergy());
+    if(who->getType()==_player)
+        viewPoint::get_instance()->setOwner(pm);
     return pm;
 }
 

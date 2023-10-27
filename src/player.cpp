@@ -27,6 +27,7 @@ bool player::additionalProvisioning(int subtype,int typeId)
         this->getStats()->setMarked(true);
         //player::visitedPlayers.push_back(shared_from_this());
         player::activePlayer=shared_from_this();
+        viewPoint::get_instance()->setOwner(player::activePlayer);
     }
     else
     {
@@ -48,6 +49,9 @@ bool player::additionalProvisioning(int subtype, std::shared_ptr<player>sbe)
 
 std::shared_ptr<bElem> player::getActivePlayer()
 {
+    std::mutex my_mutex;
+    std::lock_guard<std::mutex> lock(my_mutex);
+
     if (player::activePlayer == nullptr || (player::activePlayer && player::activePlayer->getStats()->isDisposed()))
     {
         /* find active player, because it is nullptr */
@@ -56,6 +60,7 @@ std::shared_ptr<bElem> player::getActivePlayer()
             auto plr=player::visitedPlayers[p];
             if (plr && !plr->getStats()->isDisposed() && plr->getBoard())
             {
+                viewPoint::get_instance()->setOwner(plr);
                 player::activePlayer = plr;
                 plr->getStats()->setActive(true);
                 soundManager::getInstance()->setListenerChamber(plr->getBoard()->getInstanceId());
@@ -184,6 +189,7 @@ bool player::mechanics()
         if (this->moveInDirection(this->getBoard()->cntrlItm.dir))
         {
             this->getStats()->setFacing(this->getStats()->getMyDirection());
+            viewPoint::get_instance()->setOwner(shared_from_this());
             //
         }
         break;
