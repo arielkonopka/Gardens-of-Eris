@@ -3,13 +3,34 @@
 
 std::once_flag viewPoint::once;
 viewPoint* viewPoint::instance=nullptr;
+
+bool viewPoint::isElementInVector(const std::vector<std::weak_ptr<bElem>>& vec, const std::shared_ptr<bElem>& elem)
+{
+    return std::any_of(vec.begin(), vec.end(), [&elem](const std::weak_ptr<bElem>& wp)
+    {
+        return !wp.expired() && wp.lock()->getStats()->getInstanceId() == elem->getStats()->getInstanceId();
+    });
+}
+
+
+
 void viewPoint::setOwner(std::shared_ptr<bElem> owner)
 {
-
+    this->addViewPoint(owner);
     std::mutex my_mutex;
     std::lock_guard<std::mutex> lock(my_mutex);
     this->_owner=owner;
 }
+
+void viewPoint::addViewPoint(std::shared_ptr<bElem> vp)
+{
+ //   std::mutex my_mutex;
+  //  std::lock_guard<std::mutex> lock(my_mutex);
+    if(!this->isElementInVector(this->viewPoints,vp))
+        this->viewPoints.push_back(vp);
+}
+
+
 
 std::shared_ptr<bElem> viewPoint::getOwner()
 {
@@ -33,7 +54,7 @@ coords viewPoint::getViewPoint()
 }
 coords viewPoint::getViewPointOffset()
 {
-  std::shared_ptr<bElem> be=this->getOwner();
+    std::shared_ptr<bElem> be=this->getOwner();
     if(be && be->getStats()->getMyPosition()!=NOCOORDS)
         return be->getOffset();
     else
@@ -46,7 +67,66 @@ coords viewPoint::getViewPointOffset()
     return NOCOORDS;
 }
 
+/**
+ * Calculates the amount of obscuration at a given point with the divider equal 1
+ *
+ * @param point The point to calculate the obscuration for.
+ * @return The amount of obscuration at the point, or 4096 if no owner is found, 1024 when the object is shown, but obscured fully.
+ */
+int viewPoint::calculateObscured(coords point)
+{
+    return this->calculateObscured(point,1);
+}
 
+/**
+ * Calculates the amount of obscuration at a given point.
+ *
+ * @param point The point to calculate the obscuration for.
+ * @param divider The divider to use for distance calculations.
+ * @return The amount of obscuration at the point, or 4096 if no owner is found, 1024 when the object is shown, but obscured fully.
+ */
+int viewPoint::calculateObscured(const coords point,int divider)
+{
+    auto owner = getOwner();
+    if (!owner)
+    {
+        return 4096;
+    }
+    int ownerId = owner->getBoard()->getInstanceId();
+    int obscured = 4096;
+    float radius;
+    for (unsigned long int c=0;c<viewPoints.size();)
+    {
+        auto wp = viewPoints[c].lock();
+        if (!wp || wp->getStats()->isDisposed() )
+        {
+            viewPoints.erase(viewPoints.begin()+c);
+            continue;
+        }
+
+        if(wp->getBoard() && wp->getBoard()->getInstanceId()==ownerId)
+        {
+            radius = wp->getViewRadius()*divider;
+            coords viewPointPos = (wp->getStats()->getMyPosition()*divider)+((wp->getOffset()*divider)/64);
+            viewPointPos=(coords){viewPointPos.x+floor(divider/2),viewPointPos.y+floor(divider/2)};
+            float dist=viewPointPos.distance(point);
+            int dst2 = (8*dist)/(radius);
+            if(dist>radius && dist<radius+1 && obscured>1024) obscured=1024;
+            if(dist<=radius/2) dst2=0;
+            if (dist<=radius && dst2 < obscured)
+            {
+                obscured = dst2;
+            }
+        }
+        ++c;
+    }
+    return obscured;
+}
+
+bool viewPoint::isPointVisible(coords point)
+{
+    return this->calculateObscured(point)<1025;
+}
 
 viewPoint* viewPoint::get_instance()
 {

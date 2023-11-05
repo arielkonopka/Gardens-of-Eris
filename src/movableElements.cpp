@@ -111,23 +111,28 @@ bool movableElements::dragInDirectionSpeed(direction dragIntoDirection, int spee
 coords movableElements::getOffset() const
 {
     coords res= {0,0};
+    int rx=configManager::getInstance()->getConfig()->tileWidth;
+    int ry=configManager::getInstance()->getConfig()->tileHeight;
+
     if(this->getStats()->isMoving() && this->getStats()->getMovingTotalTime()>0)
     {
         switch(this->getStats()->getMyDirection())
         {
         case(UP):
-            res.y=((this->getStats()->getMoved())*64)/this->getStats()->getMovingTotalTime();
+            res.y=((this->getStats()->getMoved())*ry)/this->getStats()->getMovingTotalTime();
             break;
         case (DOWN):
-            res.y=-((this->getStats()->getMoved())*64)/this->getStats()->getMovingTotalTime();
+            res.y=-((this->getStats()->getMoved())*ry)/this->getStats()->getMovingTotalTime();
             break;
         case(LEFT):
-            res.x=((this->getStats()->getMoved())*64)/this->getStats()->getMovingTotalTime();
+            res.x=((this->getStats()->getMoved())*rx)/this->getStats()->getMovingTotalTime();
             break;
         case(RIGHT):
-            res.x=-((this->getStats()->getMoved())*64)/this->getStats()->getMovingTotalTime();
+            res.x=-((this->getStats()->getMoved())*rx)/this->getStats()->getMovingTotalTime();
             break;
         case (NODIRECTION):
+            res.x=0;
+            res.y=0;
             break;
 
         }

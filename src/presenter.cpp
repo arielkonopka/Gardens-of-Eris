@@ -118,16 +118,19 @@ bool presenter::loadCofiguredData()
 }
 
 
-// let's draw a tile for an object
-/*
-   we take data from videElementDef and we use it against the element's inner state (like directions, subtype, animphase)
-   We use width, height (tile), spacing (that is used to help drawing)
-   and finally screen location (in tiles) and offsets, location of the left upper corner on the screen
-   we take the coordinates on the sprites surface from videoElement, to do that we take direction, subtype and animation phase from the element
-   calculate modulos (mas phases, mas subtypes and max directions) and then we take coordinates
 
-*/
-
+/**
+    * Shows a tile for an object.
+    *
+    * @param x The x-coordinate of the tile to show.
+    * @param y The y-coordinate of the tile to show.
+    * @param offsetX The offset of the tile in the x-direction.
+    * @param offsetY The offset of the tile in the y-direction.
+    * @param elem The element to show.
+    * @param ignoreOffset Whether to ignore the offset.
+    * @param mode The mode to show the object in.
+    * @return True if the tile was shown successfully, false otherwise.
+    */
 bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shared_ptr<bElem> elem,bool ignoreOffset,int mode)
 {
     if(!elem) return false;
@@ -213,7 +216,15 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
     return res;
 }
 
-
+/**
+    * Shows text.
+    *
+    * @param x The x-coordinate of the text.
+    * @param y The y-coordinate of the text.
+    * @param offsetX The offset of the text in the x-direction.
+    * @param offsetY The offset of the text in the y-direction.
+    * @param text The text to show.
+    */
 void presenter::showText(int x, int y, int offsetX, int offsetY,std::string  text)
 {
     ALLEGRO_COLOR c=al_map_rgb(255,255,200);
@@ -301,23 +312,22 @@ void presenter::showGameField()
     al_set_target_bitmap(this->internalBitmap);
     colour c=this->_cp_attachedBoard->getChColour();
     al_clear_to_color(al_map_rgba(c.r,c.g,c.b,c.a));
-
+    /***
+    draw only visible elements, walls are always visible.
+    ***/
     if(player->getBoard().get()!=nullptr)
     {
-        coords point=viewPoint::get_instance()->getViewPoint();
-
         for(x=0; x<this->scrTilesX+1; x++)
             for(y=0; y<this->scrTilesY+1; y++)
             {
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
-                float distance=point.distance((coords)
+                coords np=(coords)
                 {
                     nx,ny
-                });
-
+                };
                 std::shared_ptr<bElem> elemToDisplay=player->getBoard()->getElement(nx,ny);
-                if(player->getBoard()->isVisible(nx,ny)>=255 && distance>player::getActivePlayer()->getViewRadius()+1)
+                if(player->getBoard()->isVisible(nx,ny)>=255 && !viewPoint::get_instance()->isPointVisible(np))
                     continue; // this element is not even discovered yet
                 if(elemToDisplay.get()!=nullptr)
                 {
@@ -328,6 +338,9 @@ void presenter::showGameField()
             }
     }
     int px=0,py=0;
+    /***
+    draw elements on the move, if the element is steppable and has a still element on it, then drawing will be broken.
+    ***/
     for(unsigned int cnt=0; cnt<mSprites.size(); cnt++)
     {
         movingSprite ms=mSprites.at(cnt);
@@ -342,66 +355,80 @@ void presenter::showGameField()
     }
     if(player->getStats()->isMoving() && player->getBoard()->width>viewPoint::get_instance()->getViewPoint().x && viewPoint::get_instance()->getViewPoint().x>=0 && player->getBoard()->height>viewPoint::get_instance()->getViewPoint().y && viewPoint::get_instance()->getViewPoint().y>=0)
         this->showObjectTile(px,py,0,0,player->getBoard()->getElement(viewPoint::get_instance()->getViewPoint()),false,1);
-
-    if(player->getBoard().get()!=nullptr)
-    {
-        coords point=viewPoint::get_instance()->getViewPoint();
-
-        coords offsets=viewPoint::get_instance()->getViewPointOffset();
-        al_set_target_bitmap(this->cloakBitmap);
-        al_clear_to_color(al_map_rgba(0,0,0,0));
-        for(x=-1; x<this->scrTilesX+2; x++)
-            for(y=-1; y<this->scrTilesY+2; y++)
-            {
-                int obscured;
-                int nx=x+this->previousPosition.x;
-                int ny=y+this->previousPosition.y;
-                float distance=point.distance((coords)
-                {
-                    nx,ny
-                });
-                if(distance<=player::getActivePlayer()->getViewRadius()/2)
-                    continue;
-                if(distance<=player::getActivePlayer()->getViewRadius())
-                {
-                    obscured=(distance*64)-(player::getActivePlayer()->getViewRadius()*64)/2;
-                }
-                else obscured=255;
-                if(obscured>0)
-                {
-
-                    coords be=this->bluredElement;
-                    if(obscured<=196)
-                        be=this->bluredElement75;
-                    if(obscured<=128)
-                        be=this->bluredElement50;
-                    if(obscured<=64)
-                        be=this->bluredElement25;
-
-                    int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing));
-                    int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing));
-                    auto ve=videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
-                    al_draw_bitmap_region(ve->sprites,sx,sy,this->sWidth,this->sHeight,((x+1)*this->sWidth),((y+1)*this->sHeight),0);
-
-                };
-            }
-
-        al_set_target_bitmap(this->internalBitmap);
-        al_draw_bitmap_region(this->cloakBitmap,this->sWidth-offsets.x,this->sHeight-offsets.y,this->bsWidth+this->sWidth,this->bsHeight+this->sHeight,0,0,0);
-    }
-
+    /***
+    Draw the cloak on the game field
+    ***/
+    this->drawCloak();
     al_set_target_bitmap(al_get_backbuffer(display));
     al_clear_to_color(al_map_rgba(15,25,45,255));
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
-//    al_draw_bitmap_region(this->internalBitmap,offX+,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
-
     al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
-//   this->eyeCandy(player->getBoard()->getInstanceId());
-
-
-    // al_wait_for_vsync();
     al_flip_display();
 }
+
+void presenter::drawCloak()
+{
+    if(viewPoint::get_instance()->getViewPoint()!=NOCOORDS)
+    {
+    auto ve=videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
+
+        al_set_target_bitmap(this->cloakBitmap);
+        al_clear_to_color(al_map_rgba(0,0,0,0));
+        for(int x=-1; x<this->scrTilesX+2; x++)
+            for(int y=-1; y<this->scrTilesY+2; y++)
+            {
+
+                int obscured;
+                int nx=x+this->previousPosition.x;
+                int ny=y+this->previousPosition.y;
+                int divider=8;
+                coords np=(coords)
+                {
+                    nx,ny
+                };
+                coords be=this->bluredElement;
+                if(viewPoint::get_instance()->isPointVisible(np))
+                {
+                    for(int x1=0; x1<divider; x1++)
+                        for(int y1=0; y1<divider; y1++)
+                        {
+                            coords np1=(np*divider)+ (coords)
+                            {
+                                x1,y1
+                            };
+                            obscured=viewPoint::get_instance()->calculateObscured(np1,divider);
+                            if(obscured>0)
+                            {
+                                be=this->bluredElement;
+                                if(obscured<=8)
+                                    be=this->bluredElement75;
+                                if(obscured<=5)
+                                    be=this->bluredElement50;
+                                if(obscured<=4)
+                                    be=this->bluredElement25;
+                                int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing));
+                                int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing));
+                                al_draw_bitmap_region(ve->sprites,sx+(x1*this->sWidth)/divider,sy+(y1*this->sHeight)/divider,this->sWidth/divider,this->sHeight/divider,((x+1)*this->sWidth)+(x1*this->sWidth)/divider,((y+1)*this->sHeight)+(y1*this->sHeight)/divider,0);
+                            };
+                        }
+                    continue;
+                }
+                int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing));
+                int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing));
+                auto ve=videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
+                al_draw_bitmap_region(ve->sprites,sx,sy,this->sWidth,this->sHeight,((x+1)*this->sWidth),((y+1)*this->sHeight),0);
+
+            }
+
+        al_set_target_bitmap(this->internalBitmap);
+        al_draw_bitmap_region(this->cloakBitmap,this->sWidth,this->sHeight,this->bsWidth+this->sWidth,this->bsHeight+this->sHeight,0,0,0);
+    }
+
+}
+
+
+
+
 void presenter::eyeCandy(int flavour)
 {
     int top;
