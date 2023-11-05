@@ -155,6 +155,20 @@ typedef struct coords
             x*a,y*a
         };
     }
+     inline coords operator+(int a)
+    {
+        return (coords)
+        {
+            x+a,y+a
+        };
+    }
+    inline coords operator/(int a)
+    {
+        return (coords)
+        {
+            (int)round((double)x/a),(int)round((double)y/a)
+        };
+    }
 
 
 } coords;

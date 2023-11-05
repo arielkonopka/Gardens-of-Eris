@@ -25,7 +25,7 @@ void chamber::createFloor()
     for (int c = 0; c < this->width; c++)
     {
 
-        std::vector<int> v2(this->height,255);
+        std::vector<int> v2(this->height,555);
         this->visitedElements.push_back(v2);
 
         std::vector<std::shared_ptr<bElem>> v;
