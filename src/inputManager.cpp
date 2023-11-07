@@ -14,7 +14,7 @@ inputManager::~inputManager()
 }
 controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
 {
-    direction dir=UP;
+    direction dir=NODIRECTION;
     int type=-1;
 
     switch (ev->type)

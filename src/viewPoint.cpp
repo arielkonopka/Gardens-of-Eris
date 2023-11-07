@@ -24,8 +24,8 @@ void viewPoint::setOwner(std::shared_ptr<bElem> owner)
 
 void viewPoint::addViewPoint(std::shared_ptr<bElem> vp)
 {
- //   std::mutex my_mutex;
-  //  std::lock_guard<std::mutex> lock(my_mutex);
+//   std::mutex my_mutex;
+    //  std::lock_guard<std::mutex> lock(my_mutex);
     if(!this->isElementInVector(this->viewPoints,vp))
         this->viewPoints.push_back(vp);
 }
@@ -94,28 +94,34 @@ int viewPoint::calculateObscured(const coords point,int divider)
     }
     int ownerId = owner->getBoard()->getInstanceId();
     int obscured = 4096;
-    float radius;
-    for (unsigned long int c=0;c<viewPoints.size();)
+    float radius,hradius;
+    int dh=divider/2;
+    for (unsigned long int c=0; c<viewPoints.size();)
     {
         auto wp = viewPoints[c].lock();
         if (!wp || wp->getStats()->isDisposed() )
         {
             viewPoints.erase(viewPoints.begin()+c);
             continue;
-        }
-
-        if(wp->getBoard() && wp->getBoard()->getInstanceId()==ownerId)
+        } else if(wp->getBoard() && wp->getBoard()->getInstanceId()==ownerId)
         {
             radius = wp->getViewRadius()*divider;
-            coords viewPointPos = (wp->getStats()->getMyPosition()*divider)+((wp->getOffset()*divider)/64);
-            viewPointPos=(coords){viewPointPos.x+floor(divider/2),viewPointPos.y+floor(divider/2)};
+            coords viewPointPos = (wp->getStats()->getMyPosition()*divider) + (wp->getOffset()*divider)/64+dh;
             float dist=viewPointPos.distance(point);
-            int dst2 = (8*dist)/(radius);
-            if(dist>radius && dist<radius+1 && obscured>1024) obscured=1024;
-            if(dist<=radius/2) dst2=0;
-            if (dist<=radius && dst2 < obscured)
+            if(dist>radius && dist<radius+1.2 && obscured>1024)
             {
-                obscured = dst2;
+                obscured=1024;
+            }
+            else if(dist<=radius/2)
+            {
+                obscured=0;
+            }
+            else if (dist<=radius)
+            {
+                hradius=radius/2;
+                float hdist=dist-hradius;
+                int dst2 = 255*hdist/hradius;
+                obscured=std::min(obscured,dst2);
             }
         }
         ++c;
