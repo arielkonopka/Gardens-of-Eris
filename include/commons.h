@@ -155,11 +155,18 @@ typedef struct coords
             x*a,y*a
         };
     }
-     inline coords operator+(int a)
+    inline coords operator+(int a)
     {
         return (coords)
         {
             x+a,y+a
+        };
+    }
+    inline coords operator-(int a)
+    {
+        return (coords)
+        {
+            x-a,y-a
         };
     }
     inline coords operator/(int a)
@@ -291,7 +298,8 @@ using coords3d=struct crd3d
  * in a bElemStats object. Each enum value is a key that can be used
  * to set and retrieve values from the statistics map.
  */
-using pointsType = enum pt {
+using pointsType = enum pt
+{
     TOTAL = 0,    ///< Represents the total score.
     SHOOT = 1,    ///< Represents the shooting score.
     STEPS = 2,    ///< Represents the steps score.

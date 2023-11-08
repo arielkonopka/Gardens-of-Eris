@@ -370,60 +370,41 @@ void presenter::drawCloak()
 {
     if(viewPoint::get_instance()->getViewPoint()!=NOCOORDS)
     {
-    auto ve=videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
-
+        auto ve=videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
+        int obscured;
+        int divider=8;
         al_set_target_bitmap(this->cloakBitmap);
         al_clear_to_color(al_map_rgba(0,0,0,0));
         for(int x=-1; x<this->scrTilesX+2; x++)
             for(int y=-1; y<this->scrTilesY+2; y++)
             {
-
-                int obscured;
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
-                int divider=8;
-                coords np=(coords)
-                {
-                    nx,ny
-                };
+                coords np=(coords) { nx,ny };
                 coords be=this->bluredElement;
                 if(viewPoint::get_instance()->isPointVisible(np))
                 {
                     for(int x1=0; x1<divider; x1++)
                         for(int y1=0; y1<divider; y1++)
                         {
-                            coords np1=(np*divider)+ (coords)
-                            {
-                                x1,y1
-                            };
-                            obscured=viewPoint::get_instance()->calculateObscured(np1,divider);
+                            coords np1=(np*divider)+ (coords){x1,y1};
+                            obscured=std::min(255,viewPoint::get_instance()->calculateObscured(np1,divider));
                             if(obscured>0)
                             {
-                                be=this->bluredElement;
-                                if(obscured<=8)
-                                    be=this->bluredElement75;
-                                if(obscured<=5)
-                                    be=this->bluredElement50;
-                                if(obscured<=4)
-                                    be=this->bluredElement25;
-                                int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing));
-                                int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing));
-                                al_draw_bitmap_region(ve->sprites,sx+(x1*this->sWidth)/divider,sy+(y1*this->sHeight)/divider,this->sWidth/divider,this->sHeight/divider,((x+1)*this->sWidth)+(x1*this->sWidth)/divider,((y+1)*this->sHeight)+(y1*this->sHeight)/divider,0);
+                                int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing))+(x1*this->sWidth)/divider;
+                                int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing))+(y1*this->sHeight)/divider;
+                                al_draw_tinted_bitmap_region(ve->sprites,al_map_rgba(255,255,255,obscured),sx,sy,this->sWidth/divider,this->sHeight/divider,((x+1)*this->sWidth)+(x1*this->sWidth)/divider,((y+1)*this->sHeight)+(y1*this->sHeight)/divider,0);
                             };
                         }
                     continue;
                 }
                 int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing));
                 int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing));
-                auto ve=videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
                 al_draw_bitmap_region(ve->sprites,sx,sy,this->sWidth,this->sHeight,((x+1)*this->sWidth),((y+1)*this->sHeight),0);
-
             }
-
         al_set_target_bitmap(this->internalBitmap);
         al_draw_bitmap_region(this->cloakBitmap,this->sWidth,this->sHeight,this->bsWidth+this->sWidth,this->bsHeight+this->sHeight,0,0,0);
     }
-
 }
 
 

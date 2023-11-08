@@ -92,7 +92,7 @@ private:
     // float viewRadius=6.3;
     coords previousPosition;
     coords positionOnScreen;
-    coords bluredElement=NOCOORDS;
+    std::vector<coords> bluredElement;
     coords bluredElement25=NOCOORDS;
     coords bluredElement50=NOCOORDS;
     coords bluredElement75=NOCOORDS;
