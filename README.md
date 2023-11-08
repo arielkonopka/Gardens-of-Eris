@@ -271,24 +271,28 @@ The config file now will have entries to configure elements attributes, like bei
 
 ## ChangeLog
 
-* Reformatted skins.json file, this time has came, and I had to create a formatting tool for the file. It is an awk script, and it is use pretty much as any other awk script :)
-* Further refactoring, now I removed references to textures and video configuration, now there is a specialised singleton class, that is responsible for getting the right texture.
-* Refactored bunker, added sounds on collecting collectibles
-* Started major refactoring, which resulted in two new classes: bElemStats and bElemAttrs - that will probably in the future flatten the structure of bElems, as I plan do the mechanics, and other hooks with hashmaps of lambdas :)
-* started creating configrable element attributes. 
-* Introduced object puppetMaster, it is yet missing the graphical hooks, but it compiles. The patrolling drone will have different brains, that will control it.
-* Made some changes to the patrolling drone, now it requests a brain object on interaction
-* Made changes to Inventory, now we can request a cingle token.
-* Introduced board cloaking. It works on two levels. First, we only draw those elements, that are or were in the field of view, then we apply a cloaking mask, with a hole cut out for the player. The radius of the hole can be controlled wit a variable.
-* Now every object can have its own animations of death, teleport, destruction and fadingOut, the last one is not supported yet
-* changed the way tiles are shown on the screen. Now in the first phase we draw only still tiles. Because they are either on the floor standing still, of they are the floor. Then all the moving elements are being displayed in second round, and at the end active player is drawn. 
-    The sequence may seem weird, but since I implemented the animateion of progressing between the tiles, some situations got weird. Like when we drag an object with but turning in circles. Sometimes the object obscures player, sometimes it is the opposite. We do not have an isometric view, and that looks awkward.    
-    We have alse to point out, that in second pass only moved objects are drawn, and in the first one only stills. This has it's cons. Like we now cannot handle a situation like this, we got two fields close to each other, that have a still object, that is stepping on a moved object, that would move under a still object on the other field. So if we'd like to build a tunnel, where for eg. trains could go by, and we could see it obscured by somekind of semitransparent roof, then we would fail.
+* The cloaking mechanism is mostly done, what is left is optimizations. Removed one bitmap from use. Introduced drawing bitmaps with different alpha(transparency), now we do not beed blur75/50/25, and therefore are removed from the code.
+* Introduced partial tile copying to create roundish views
+* Introduced multi uncovered points. We simply add an object to a list with viewpoint::get_instance()->addViewPoint(std::shared_ptr<bElem> in). We also can change the main viewpoint, to make the "view to follow" different objects
+* I reformatted the skins.json file. This time, I had to create a formatting tool for the file. It's an awk script and can be used much like any other awk script.
+* I further refactored the code, removing references to textures and video configuration. Instead, there is now a specialized singleton class responsible for obtaining the right texture.
+* I refactored the bunker and added sounds for collecting collectibles.
+* I started a major refactoring process, which resulted in the creation of two new classes: bElemStats and bElemAttrs. These classes will likely flatten the structure of bElems in the future as I plan to implement mechanics and other hooks using hashmaps of lambdas.
+* I began creating configurable element attributes.
+* I introduced an object called puppetMaster, which is missing the graphical hooks but compiles. The patrolling drone will have different brains that will control it.
+* I made some changes to the patrolling drone, and now it requests a brain object on interaction.
+* I made changes to the Inventory, and now we can request a single token.
+* I introduced board cloaking, which works on two levels. First, we only draw those elements that are or were in the field of view. Then, we apply a cloaking mask with a hole cut out for the player. The radius of the hole can be controlled with a variable.
+* Now, every object can have its own animations for death, teleportation, destruction, and fading out. The last one is not supported yet.
+* I changed the way tiles are displayed on the screen. In the first phase, we only draw still tiles, whether they are on the floor standing still or they make up the floor. Then, all the moving elements are displayed in the second round, and the active player is drawn at the end. This sequence may seem strange, but since I implemented the animation of transitioning between tiles, some situations became weird. For example, when we drag an object while turning in circles, sometimes the object obscures the player, and sometimes it's the opposite. We don't have an isometric view, and that looks awkward. It's also worth noting that in the second pass, only moved objects are drawn, and in the first one, only still objects. This has its drawbacks. For instance, we can't handle a situation where two fields close to each other have a still object stepping on a moved object that would move under a still object on the other field. So if we'd like to build a tunnel where, for example, trains could pass by and be seen obscured by some kind of semitransparent roof, then we would fail.
+* I changed pointers from raw to managed.
+* I removed the garbage collector as it is no longer necessary.
+* I enabled the first sounds but encountered the first issue: there is a limited number of available sources, so I cannot have as many as I want. I still have plenty, but I will have to sort them by the distance to the player and remove the farthest ones.
 
-* changed pointers from raw to managed
-* removed Garbage collector, as it is not necessary anymore
-* enabled first sounds, stumbled upon first issue, there is a limited amount of sources, available, so I cannot really have as many as I want... Still have plenty
-    I will have to sort them by the distance to the player and remove the farthest ones.
+
+
+
+
 
 
 
