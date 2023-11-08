@@ -103,9 +103,7 @@ bool presenter::loadCofiguredData()
         return false;
     }
     this->bluredElement=gcfg->bluredElement;
-    this->bluredElement25=gcfg->bluredElement25;
-    this->bluredElement50=gcfg->bluredElement50;
-    this->bluredElement75=gcfg->bluredElement75;
+
     this->splashFname=gcfg->splashScr;
     this->sWidth=gcfg->tileWidth;
     this->sHeight=gcfg->tileHeight;
@@ -301,8 +299,8 @@ void presenter::showGameField()
     dy=(by-this->previousPosition.y);
     if (dx==0 && this->positionOnScreen.x % this->sWidth>0) dx=-1;
     if (dy==0 && this->positionOnScreen.y % this->sHeight>0) dy=-1;
-    this->positionOnScreen.x+=dx*4;
-    this->positionOnScreen.y+=dy*4;
+    this->positionOnScreen.x+=dx*8;
+    this->positionOnScreen.y+=dy*8;
     this->previousPosition.x=this->positionOnScreen.x/this->sWidth;
     this->previousPosition.y=this->positionOnScreen.y/this->sHeight;
     offX=(this->positionOnScreen.x % this->sWidth);
@@ -370,18 +368,18 @@ void presenter::drawCloak()
 {
     if(viewPoint::get_instance()->getViewPoint()!=NOCOORDS)
     {
+
         auto ve=videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
         int obscured;
-        int divider=8;
-        al_set_target_bitmap(this->cloakBitmap);
-        al_clear_to_color(al_map_rgba(0,0,0,0));
+        int divider=4;
+        coords be=this->bluredElement[player::getActivePlayer()->getBoard()->getInstanceId()%this->bluredElement.size()];
         for(int x=-1; x<this->scrTilesX+2; x++)
             for(int y=-1; y<this->scrTilesY+2; y++)
             {
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
                 coords np=(coords) { nx,ny };
-                coords be=this->bluredElement;
+
                 if(viewPoint::get_instance()->isPointVisible(np))
                 {
                     for(int x1=0; x1<divider; x1++)
@@ -393,17 +391,16 @@ void presenter::drawCloak()
                             {
                                 int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing))+(x1*this->sWidth)/divider;
                                 int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing))+(y1*this->sHeight)/divider;
-                                al_draw_tinted_bitmap_region(ve->sprites,al_map_rgba(255,255,255,obscured),sx,sy,this->sWidth/divider,this->sHeight/divider,((x+1)*this->sWidth)+(x1*this->sWidth)/divider,((y+1)*this->sHeight)+(y1*this->sHeight)/divider,0);
+                                al_draw_tinted_bitmap_region(ve->sprites,al_map_rgba(255,255,255,obscured),sx,sy,this->sWidth/divider,this->sHeight/divider,((x+0)*this->sWidth)+(x1*this->sWidth)/divider,((y+0)*this->sHeight)+(y1*this->sHeight)/divider,0);
                             };
                         }
                     continue;
                 }
                 int sx=(be.x*this->sWidth)+((be.x+1)*(this->spacing));
                 int sy=(be.y*this->sHeight)+((be.y+1)*(this->spacing));
-                al_draw_bitmap_region(ve->sprites,sx,sy,this->sWidth,this->sHeight,((x+1)*this->sWidth),((y+1)*this->sHeight),0);
+                al_draw_bitmap_region(ve->sprites,sx,sy,this->sWidth,this->sHeight,((x+0)*this->sWidth),((y+0)*this->sHeight),0);
             }
-        al_set_target_bitmap(this->internalBitmap);
-        al_draw_bitmap_region(this->cloakBitmap,this->sWidth,this->sHeight,this->bsWidth+this->sWidth,this->bsHeight+this->sHeight,0,0,0);
+
     }
 }
 
