@@ -108,7 +108,7 @@ int viewPoint::calculateObscured(const coords point,int divider)
             radius = wp->getViewRadius()*divider;
             coords viewPointPos = (wp->getStats()->getMyPosition()*divider) + (wp->getOffset()*divider)/64+dh;
             float dist=viewPointPos.distance(point);
-            if(dist>radius && dist<radius+1.2 && obscured>1024)
+            if(dist>radius && dist<radius+0.9 && obscured>1024)
             {
                 obscured=1024;
             }

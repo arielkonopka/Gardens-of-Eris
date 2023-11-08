@@ -341,20 +341,20 @@ bool bElem::interact(std::shared_ptr<bElem> who)
 
 bool bElem::destroy()
 {
-//   std::cout<<" * Destroy:"<<this->getType()<<"\n";
     if (this->getAttrs()->isDestroyable() || this->getAttrs()->isSteppable() || this->getStats()->isDestroying() || this->getStats()->isDying())
     {
-        //  std::cout<<"  ** yup.\n";
         if (this->getStats()->isDying())
         {
             this->getStats()->setKilled(0);
             this->getStats()->setKillTimeBeg(0);
             this->getStats()->setKillTimeReq(0);
-
         }
         this->getStats()->setDestroyed(_defaultDestroyTime);
         if (this->getAttrs()->isDestroyable() || this->getAttrs()->isKillable())
+        {
+          //  viewPoint::get_instance()->addViewPoint(shared_from_this());
             bElem::toDispose.push_back(shared_from_this());
+        }
         return true;
     }
     return false;
@@ -556,6 +556,7 @@ bool bElem::kill()
     }
     if(this->getAttrs()->isKillable())
     {
+       // viewPoint::get_instance()->addViewPoint(shared_from_this());
         bElem::toDispose.push_back(shared_from_this());
     }
     this->getStats()->setKilled(_defaultKillTime);

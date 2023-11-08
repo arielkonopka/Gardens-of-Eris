@@ -91,9 +91,7 @@ typedef struct gameConfig
     std::vector<coords> gTeleporting;
     std::vector<spriteData> sprites;
     std::vector<coords> bluredElement;
-    coords bluredElement25=NOCOORDS;
-    coords bluredElement50=NOCOORDS;
-    coords bluredElement75=NOCOORDS;
+
 
     //samples[ElementType][ElementSubtype][EventType][Event]
     std::map<int,std::map<int,std::map<std::string,std::map<std::string,sampleData>>>> samples;

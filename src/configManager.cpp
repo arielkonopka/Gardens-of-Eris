@@ -10,7 +10,7 @@ configManager::configManager() : std::enable_shared_from_this<configManager>()
 
 std::shared_ptr<configManager> configManager::getInstance()
 {
- //   configManager cm = configManager();
+//   configManager cm = configManager();
     if (configManager::instance == nullptr)
     {
         configManager::instance = std::make_shared<configManager>();
@@ -34,20 +34,15 @@ void configManager::configReload()
     this->gConfObj->sprites.clear();
     if (this->skinDefJson.HasMember("Blur"))
     {
-        this->gConfObj->bluredElement=(coords){this->skinDefJson["Blur"][0].GetInt(),this->skinDefJson["Blur"][1].GetInt()};
+        rapidjson::Value &blur=this->skinDefJson["Blur"];
+        for (unsigned int c = 0; c < blur.Size(); c++)
+        {
+            int x = blur[c][0].GetInt();
+            int y = blur[c][1].GetInt();
+            this->gConfObj->bluredElement.push_back((coords){ x, y });
+        }
     }
-    if (this->skinDefJson.HasMember("Blur25"))
-    {
-        this->gConfObj->bluredElement25=(coords){this->skinDefJson["Blur25"][0].GetInt(),this->skinDefJson["Blur25"][1].GetInt()};
-    }
-    if (this->skinDefJson.HasMember("Blur50"))
-    {
-        this->gConfObj->bluredElement50=(coords){this->skinDefJson["Blur50"][0].GetInt(),this->skinDefJson["Blur50"][1].GetInt()};
-    }
-    if (this->skinDefJson.HasMember("Blur75"))
-    {
-        this->gConfObj->bluredElement75=(coords){this->skinDefJson["Blur75"][0].GetInt(),this->skinDefJson["Blur75"][1].GetInt()};
-    }
+
 
 
 
@@ -65,7 +60,7 @@ void configManager::configReload()
     rapidjson::Value &fadingOut = this->skinDefJson["Fading"];
     rapidjson::Value &sprlist = this->skinDefJson["SpriteData"];
     rapidjson::Value &music=this->skinDefJson["Music"];
-    for(unsigned int c=0;c<music.Size();c++)
+    for(unsigned int c=0; c<music.Size(); c++)
     {
         musicData md;
         md.filename=music[c]["Filename"].GetString();
@@ -84,29 +79,37 @@ void configManager::configReload()
     {
         int x = dying[c][0].GetInt();
         int y = dying[c][1].GetInt();
-        this->gConfObj->gDying.push_back((coords){
-            x, y});
+        this->gConfObj->gDying.push_back((coords)
+        {
+            x, y
+        });
     }
     for (unsigned int c = 0; c < teleporting.Size(); c++)
     {
         int x = teleporting[c][0].GetInt();
         int y = teleporting[c][1].GetInt();
-        this->gConfObj->gTeleporting.push_back((coords){
-            x, y});
+        this->gConfObj->gTeleporting.push_back((coords)
+        {
+            x, y
+        });
     }
     for (unsigned int c = 0; c < destroying.Size(); c++)
     {
         int x = destroying[c][0].GetInt();
         int y = destroying[c][1].GetInt();
-        this->gConfObj->gDestroying.push_back((coords){
-            x, y});
+        this->gConfObj->gDestroying.push_back((coords)
+        {
+            x, y
+        });
     }
     for (unsigned int c = 0; c < fadingOut.Size(); c++)
     {
         int x = fadingOut[c][0].GetInt();
         int y = fadingOut[c][1].GetInt();
-        this->gConfObj->gFadingOut.push_back((coords){
-            x, y});
+        this->gConfObj->gFadingOut.push_back((coords)
+        {
+            x, y
+        });
     }
 
     for (unsigned int c = 0; c < sprlist.Size(); c++)
@@ -114,10 +117,10 @@ void configManager::configReload()
         spriteData sdata;
         sdata.name = sprlist[c]["Name"].GetString();
         sdata.eType = sprlist[c]["Type"].GetInt();
-     //   std::cout<<"cfg:type "<<sdata.eType<<"\n";
+        //   std::cout<<"cfg:type "<<sdata.eType<<"\n";
         if(sprlist[c].HasMember("Attributes"))
         {
-            for(unsigned int i =0;i<sprlist[c]["Attributes"].Size();i++)
+            for(unsigned int i =0; i<sprlist[c]["Attributes"].Size(); i++)
             {
                 /*
                 Here read the player's attributes
@@ -140,7 +143,7 @@ void configManager::configReload()
                 ad.maxEnergy=(sprlist[c]["Attributes"][i].HasMember("maxEnergy"))?sprlist[c]["Attributes"][i]["maxEnergy"].GetInt():1;
                 ad.ammo=(sprlist[c]["Attributes"][i].HasMember("ammo"))?sprlist[c]["Attributes"][i]["ammo"].GetInt():0;
                 ad.maxAmmo=(sprlist[c]["Attributes"][i].HasMember("maxAmmo"))?sprlist[c]["Attributes"][i]["maxAmmo"].GetInt():0;
-           //     std::cout<<"  cfgread: s"<<ad.subType<<" k"<<ad.killable<<" w"<<ad.isCollectible<<"\n";
+                //     std::cout<<"  cfgread: s"<<ad.subType<<" k"<<ad.killable<<" w"<<ad.isCollectible<<"\n";
 
                 sdata.attributes.push_back(ad);
             }
@@ -183,26 +186,34 @@ void configManager::configReload()
         if (sprlist[c].HasMember("Dying"))
         {
             for (unsigned int c1 = 0; c1 < sprlist[c]["Dying"].Size(); c1++)
-                sdata.dying.push_back((coords){
-                    sprlist[c]["Dying"][c1][0].GetInt(), sprlist[c]["Dying"][c1][1].GetInt()});
+                sdata.dying.push_back((coords)
+            {
+                sprlist[c]["Dying"][c1][0].GetInt(), sprlist[c]["Dying"][c1][1].GetInt()
+            });
         }
         if (sprlist[c].HasMember("Destroying"))
         {
             for (unsigned int c1 = 0; c1 < sprlist[c]["Destroying"].Size(); c1++)
-                sdata.destroying.push_back((coords){
-                    sprlist[c]["Destroying"][c1][0].GetInt(), sprlist[c]["Destroying"][c1][1].GetInt()});
+                sdata.destroying.push_back((coords)
+            {
+                sprlist[c]["Destroying"][c1][0].GetInt(), sprlist[c]["Destroying"][c1][1].GetInt()
+            });
         }
         if (sprlist[c].HasMember("Teleporting"))
         {
             for (unsigned int c1 = 0; c1 < sprlist[c]["Teleporting"].Size(); c1++)
-                sdata.teleporting.push_back((coords){
-                    sprlist[c]["Teleporting"][c1][0].GetInt(), sprlist[c]["Teleporting"][c1][1].GetInt()});
+                sdata.teleporting.push_back((coords)
+            {
+                sprlist[c]["Teleporting"][c1][0].GetInt(), sprlist[c]["Teleporting"][c1][1].GetInt()
+            });
         }
         if (sprlist[c].HasMember("Fading"))
         {
             for (unsigned int c1 = 0; c1 < sprlist[c]["Fading"].Size(); c1++)
-                sdata.fadingOut.push_back((coords){
-                    sprlist[c]["Fading"][c1][0].GetInt(), sprlist[c]["Fading"][c1][1].GetInt()});
+                sdata.fadingOut.push_back((coords)
+            {
+                sprlist[c]["Fading"][c1][0].GetInt(), sprlist[c]["Fading"][c1][1].GetInt()
+            });
         }
 
         // Make it read individual dying and teleporting
@@ -216,8 +227,10 @@ void configManager::configReload()
                 {
                     int x = sprlist[c]["AnimDef"][c1][c2][c3][0].GetInt();
                     int y = sprlist[c]["AnimDef"][c1][c2][c3][1].GetInt();
-                    phs.push_back((coords){
-                        x, y});
+                    phs.push_back((coords)
+                    {
+                        x, y
+                    });
                 }
                 dirs.push_back(phs);
             }
