@@ -90,7 +90,7 @@ typedef struct gameConfig
     std::vector<coords> gFadingOut;
     std::vector<coords> gTeleporting;
     std::vector<spriteData> sprites;
-    coords bluredElement=NOCOORDS;
+    std::vector<coords> bluredElement;
     coords bluredElement25=NOCOORDS;
     coords bluredElement50=NOCOORDS;
     coords bluredElement75=NOCOORDS;
