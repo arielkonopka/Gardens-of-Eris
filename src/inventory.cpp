@@ -180,7 +180,9 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
     //     return false;
 
     what->getStats()->setCollector(this->owner.lock());
-
+    std::shared_ptr<bElem> o=this->owner.lock();
+    if(o)
+        o->getStats()->setPoints(TOTAL,o->getStats()->getPoints(TOTAL)+1);
     this->incrementTokenNumber({what->getType(),what->getAttrs()->getSubtype()});
     if(what->getType()==_key)
     {

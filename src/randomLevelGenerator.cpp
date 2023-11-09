@@ -295,7 +295,7 @@ bool randomLevelGenerator::placeElementCollection(chamberArea* chmbrArea,std::ve
 
 bool randomLevelGenerator::generateLevel(int holes)
 {
-    int tolerance=100;
+    int tolerance=250;
     this->headNode=this->lvlGenerate(1,1,this->width-2,this->height-2,_iterations,holes);
 
     this->headNode->calculateInitialSurface();
@@ -367,16 +367,16 @@ bool randomLevelGenerator::generateLevel(int holes)
 
     //first find area for the player and stuff for it
 
-    elementCollection.push_back({_player,0,2,0,6});
-    elementCollection.push_back({_key,1,2,0,6});
-    elementCollection.push_back({_plainGun,0,2,0,6});
-    elementCollection.push_back({_teleporter,0,1,0,5});
+    elementCollection.push_back({_player,0,2,0,3});
+    elementCollection.push_back({_key,1,2,0,3});
+    elementCollection.push_back({_plainGun,0,2,0,3});
+    elementCollection.push_back({_teleporter,0,1,0,3});
 
     /***************************refactor me******************************/
     int demandedSurface=0;
     for(unsigned int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
     chamberArea::foundAreas.clear();
-    this->headNode->findChambersCloseToSurface(demandedSurface,tolerance*4);
+    this->headNode->findChambersCloseToSurface(demandedSurface,tolerance);
     if (chamberArea::foundAreas.size()<=0)
     {
         std::cout<<"Found areas is empty!\n";
