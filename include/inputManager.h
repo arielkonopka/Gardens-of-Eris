@@ -6,6 +6,8 @@
 #include "commons.h"
 #include <allegro5/allegro.h>
 #include <iostream>
+#include <mutex>
+#include <memory>
 /** \brief This class is responsible for all user input, keys, mouse clicks, touches, pad clicks, etc...
  *
  * \param none
@@ -15,11 +17,20 @@
 
 class inputManager
 {
-    public:
-        controlItem translateEvent(ALLEGRO_EVENT* ev);
-        inputManager();
-        virtual ~inputManager();
-        bool pressed_keys[ALLEGRO_KEY_MAX];
+public:
+    controlItem translateEvent(ALLEGRO_EVENT* ev);
+    controlItem getCtrlItem();
+    virtual ~inputManager();
+    bool pressed_keys[ALLEGRO_KEY_MAX];
+    static inputManager* getInstance();
+private:
+    inputManager();
+    static inputManager* _instance;
+    controlItem lastItem=(controlItem)
+    {
+        0,NODIRECTION
+    };
+    static std::once_flag once;
 
 };
 

@@ -32,7 +32,7 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
     this->chaosGameTops.push_back({0,this->scrHeight});
     this->chaosGamelastPoint= {1+this->scrWidth/2,1-this->scrHeight/2};
 
-    this->inpMngr=std::make_shared<inputManager>();
+
 }
 
 
@@ -371,7 +371,7 @@ void presenter::drawCloak()
 
         auto ve=videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
         int obscured;
-        int divider=4;
+        int divider=8;
         coords be=this->bluredElement[player::getActivePlayer()->getBoard()->getInstanceId()%this->bluredElement.size()];
         for(int x=-1; x<this->scrTilesX+2; x++)
             for(int y=-1; y<this->scrTilesY+2; y++)
@@ -505,7 +505,7 @@ int presenter::presentEverything()
                 this->fin=true;
                 return 2;
             }
-            cItem=this->inpMngr->translateEvent(&event); //We always got a status on what to do. remember, everything must have a timer!
+            cItem=inputManager::getInstance()->translateEvent(&event); //We always got a status on what to do. remember, everything must have a timer!
             // the idea is to serve the keyboard state constantly, we avoid actions that are too fast
             // by having timers on everything, like: once you shoot, you will be able to shoot in some defined time
             // same with movement, object cycling, gun cycling, using things, interacting with things.
@@ -515,11 +515,7 @@ int presenter::presentEverything()
                 this->fin=true;
                 return 1;
             }
-            if(currentPlayer->getBoard().get()!=nullptr)
-            {
-                std::lock_guard<std::mutex> guard(this->presenter_mutex);
-                currentPlayer->getBoard()->cntrlItm=cItem;
-            }
+
         }
     }
     this->fin=true;

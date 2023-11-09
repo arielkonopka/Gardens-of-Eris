@@ -81,7 +81,6 @@ private:
     coords chaosGamelastPoint;
     ALLEGRO_FONT* myfont;
     std::string splashFname;
-    std::shared_ptr<inputManager> inpMngr;
     int sWidth;
     int sHeight;
     int scrHeight;

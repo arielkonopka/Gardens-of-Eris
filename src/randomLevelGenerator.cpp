@@ -376,7 +376,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     int demandedSurface=0;
     for(unsigned int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
     chamberArea::foundAreas.clear();
-    this->headNode->findChambersCloseToSurface(demandedSurface,tolerance);
+    this->headNode->findChambersCloseToSurface(demandedSurface,tolerance*4);
     if (chamberArea::foundAreas.size()<=0)
     {
         std::cout<<"Found areas is empty!\n";
