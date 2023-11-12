@@ -130,7 +130,7 @@ bool player::stepOnElement(std::shared_ptr<bElem> step)
     {
         this->getStats()->setStats(STEPS,this->getStats()->getStats(STEPS)+(bElem::randomNumberGenerator()%2));
         this->vRadius=2+(std::log(this->getStats()->getStats(STEPS))/2);
-
+        this->getStats()->setPoints(TOTAL,this->getStats()->getPoints(TOTAL)+1);
     }
     return r;
 }
@@ -141,6 +141,7 @@ bool player::mechanics()
 {
 
     bool res = bElem::mechanics();
+    controlItem currentCtrlItem=inputManager::getInstance()->getCtrlItem();
     if (this->getStats()->isMoving())
     {
         if (bElem::getCntr() % 3 == 0)
@@ -180,13 +181,13 @@ bool player::mechanics()
 
 
 
-    switch (this->getBoard()->cntrlItm.type)
+    switch (currentCtrlItem.type)
     {
     case -1:
         this->animPh = 0;
         break;
     case 0:
-        if (this->moveInDirection(this->getBoard()->cntrlItm.dir))
+        if (this->moveInDirection(currentCtrlItem.dir))
         {
             this->getStats()->setFacing(this->getStats()->getMyDirection());
             viewPoint::get_instance()->setOwner(shared_from_this());
@@ -195,7 +196,7 @@ bool player::mechanics()
         break;
 
     case 1:
-        this->getStats()->setFacing(this->getBoard()->cntrlItm.dir);
+        this->getStats()->setFacing(currentCtrlItem.dir);
         if (this->shootGun())
         {
             this->animPh += (bElem::getCntr() % 2);
@@ -203,10 +204,10 @@ bool player::mechanics()
         break;
     case 2:
     {
-        if (this->getElementInDirection(this->getBoard()->cntrlItm.dir) == nullptr)
+        if (this->getElementInDirection(currentCtrlItem.dir) == nullptr)
             return false;
-        this->getStats()->setFacing(this->getBoard()->cntrlItm.dir);
-        std::shared_ptr<bElem> be=this->getElementInDirection(this->getBoard()->cntrlItm.dir);
+        this->getStats()->setFacing(currentCtrlItem.dir);
+        std::shared_ptr<bElem> be=this->getElementInDirection(currentCtrlItem.dir);
         if (be->getAttrs()->isInteractive())
             be->interact(shared_from_this());
         if(be->getAttrs()->isCollectible())
@@ -219,18 +220,18 @@ bool player::mechanics()
         this->getStats()->setWaiting(_mov_delay);
         break;
     case 4:
-        if (this->dragInDirection(this->getBoard()->cntrlItm.dir))
+        if (this->dragInDirection(currentCtrlItem.dir))
         {
             this->getStats()->setFacing((direction)(((int)this->getStats()->getMyDirection() + 2) % 4)); /* we face backwards while dragging */
         }
-        else if (this->moveInDirection(this->getBoard()->cntrlItm.dir))
+        else if (this->moveInDirection(currentCtrlItem.dir))
         {
             this->getStats()->setFacing(this->getStats()->getMyDirection());
         }
         break;
     case 8:
         if (this->getAttrs()->getInventory()->getUsable() != nullptr)
-            this->getAttrs()->getInventory()->getUsable()->use(this->getElementInDirection(this->getBoard()->cntrlItm.dir));
+            this->getAttrs()->getInventory()->getUsable()->use(this->getElementInDirection(currentCtrlItem.dir));
         break;
     case 5:
     {

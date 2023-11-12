@@ -48,10 +48,17 @@ bool plainMissile::stepOnAction(bool step, std::shared_ptr<bElem>who)
     std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
     if(step && who->getType()!=this->getType())
     {
+        int w=who->getAttrs()->getEnergy();
+        int dw=0;
         who->hurt(this->getAttrs()->getEnergy());
+        dw=w-who->getAttrs()->getEnergy();
         this->kill();
         if(sowner)
+        {
             sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
+            if(dw!=0)
+                sowner->getStats()->setPoints(TOTAL,sowner->getStats()->getPoints(TOTAL)+dw);
+        }
     }
     return true;
 }
@@ -82,13 +89,20 @@ bool plainMissile::mechanics()
     }
     if (myel->getAttrs()->isKillable()==true)
     {
+        int w=myel->getAttrs()->getEnergy();
+        int dw=0;
         myel->hurt(this->getAttrs()->getEnergy());
+        dw=w-myel->getAttrs()->getEnergy();
         if(!myel->getStats()->isDying() && !myel->getStats()->isDestroying())
         {
             this->kill();
             if(sowner)
+            {
                 sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
+                if (dw!=0)
+                    sowner->getStats()->setPoints(TOTAL,sowner->getStats()->getPoints(TOTAL)+dw);
 
+            }
         }
         else
         {
@@ -96,8 +110,11 @@ bool plainMissile::mechanics()
             {
                 this->disposeElement();
                 if(sowner)
+                {
                     sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
-
+                    if (dw!=0)
+                        sowner->getStats()->setPoints(TOTAL,sowner->getStats()->getPoints(TOTAL)+dw);
+                }
             }
         }
         return true;

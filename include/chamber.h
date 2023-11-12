@@ -18,7 +18,6 @@ class chamber: public std::enable_shared_from_this<chamber>
 {
     public:
         static std::shared_ptr<chamber> makeNewChamber(coords csize);
-        controlItem cntrlItm;
         bool visitPosition(int x, int y) { return this->visitPosition((coords){x,y}); };
         bool visitPosition(coords point);
         int isVisible(int x, int y) ;
