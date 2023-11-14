@@ -26,6 +26,7 @@ private:
     int help=0;
     std::shared_ptr<bElem> myGun;
     int sndHummHandle=-1;
+    const int brange=10;
 };
 
 #endif // BUNKER_H

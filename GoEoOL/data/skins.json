@@ -21,27 +21,33 @@
      {
         "Filename":"data/music/song01.mp3",
         "Name":"Song #1",
-        "chamberId":0
+        "chamberId":0,
+	"gain":0.05
      },
      {
         "Filename":"data/music/song02.mp3",
         "Name":"Song #2",
-        "chamberId":1
+        "chamberId":1,
+	"gain":0.05
+
      },
      {
         "Filename":"data/music/song03.mp3",
         "Name":"Song #2",
-        "chamberId":1
+        "chamberId":1,
+	"gain":0.05
      },
      {
         "Filename":"data/music/song04.mp3",
         "Name":"Song #2",
-        "chamberId":1
+        "chamberId":1,
+	"gain":0.05
      },
      {
         "Filename":"data/music/song05.mp3",
         "Name":"Song #2",
-        "chamberId":1
+        "chamberId":1,
+	"gain":0.05
      }
    ]
    ,
@@ -189,7 +195,8 @@
                        "name": "Step sounds of a player",
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": true,
-                       "modeOfAction": 0
+                       "modeOfAction": 0,
+		       "gain": 25.0
                     }
                   ]
                },
@@ -426,7 +433,7 @@
         ],
         "Samples": [
           {
-             "SubType": 0,
+             "SubType": -1,
              "stEvents": [
                {
                   "EventType": "Found",
@@ -438,101 +445,7 @@
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": true,
                        "stacking":false,
-                       "modeOfAction": 0
-                    }
-                  ]
-               }
-             ]
-          },
-          {
-             "SubType": 1,
-             "stEvents": [
-               {
-                  "EventType": "Found",
-                  "eventData": [
-                    {
-                       "Event": "Collect",
-                       "fname": "data/sounds/collectKey.ogg",
-                       "name": "Collect GOlden Apple sound",
-                       "description": "This is a test sound, now it will be used for sound test",
-                       "allowMulti": true,
-                       "stacking":false,
-                       "modeOfAction": 0
-                    }
-                  ]
-               }
-             ]
-          },
-          {
-             "SubType": 2,
-             "stEvents": [
-               {
-                  "EventType": "Found",
-                  "eventData": [
-                    {
-                       "Event": "Collect",
-                       "fname": "data/sounds/collectKey.ogg",
-                       "name": "Collect GOlden Apple sound",
-                       "description": "This is a test sound, now it will be used for sound test",
-                       "allowMulti": true,
-                       "stacking":false,
-                       "modeOfAction": 0
-                    }
-                  ]
-               }
-             ]
-          },
-          {
-             "SubType": 3,
-             "stEvents": [
-               {
-                  "EventType": "Found",
-                  "eventData": [
-                    {
-                       "Event": "Collect",
-                       "fname": "data/sounds/collectKey.ogg",
-                       "name": "Collect GOlden Apple sound",
-                       "description": "This is a test sound, now it will be used for sound test",
-                       "allowMulti": true,
-                       "stacking":false,
-                       "modeOfAction": 0
-                    }
-                  ]
-               }
-             ]
-          },
-          {
-             "SubType": 4,
-             "stEvents": [
-               {
-                  "EventType": "Found",
-                  "eventData": [
-                    {
-                       "Event": "Collect",
-                       "fname": "data/sounds/collectKey.ogg",
-                       "name": "Collect GOlden Apple sound",
-                       "description": "This is a test sound, now it will be used for sound test",
-                       "allowMulti": true,
-                       "stacking":false,
-                       "modeOfAction": 0
-                    }
-                  ]
-               }
-             ]
-          },
-          {
-             "SubType": 5,
-             "stEvents": [
-               {
-                  "EventType": "Found",
-                  "eventData": [
-                    {
-                       "Event": "Collect",
-                       "fname": "data/sounds/collectKey.ogg",
-                       "name": "Collect GOlden Apple sound",
-                       "description": "This is a test sound, now it will be used for sound test",
-                       "allowMulti": true,
-                       "stacking":false,
+		       "gain":0.2,
                        "modeOfAction": 0
                     }
                   ]
@@ -754,7 +667,7 @@
         ],
         "Samples": [
           {
-             "SubType": 0,
+             "SubType": -1,
              "stEvents": [ {
                   "EventType": "Shoot",
                   "eventData": [
@@ -765,32 +678,15 @@
                        "stacking":true,
                        "name": "Shoot sound",
                        "description": "(cc)Ariel Konopka",
-                       "modeOfAction": 0
+                       "modeOfAction": 0,
+                       "gain": 0.01
                     }
                   ]
                }
              ]
           },
           {
-             "SubType": 1,
-             "stEvents": [
-               {
-                  "EventType": "Shoot",
-                  "eventData": [
-                    {
-                       "Event": "Shoot",
-                       "fname": "data/sounds/sawgun.ogg",
-                       "allowMulti": true,
-                       "name": "Shoot sound",
-                       "description": "(cc)Ariel Konopka",
-                       "modeOfAction": 0
-                    }
-                  ]
-               }
-             ]
-          },
-          {
-             "SubType": 0,
+             "SubType": -1,
              "stEvents": [
                {
                   "EventType": "Found",
@@ -801,6 +697,7 @@
                        "name": "Collect gun sound",
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": false,
+		       "gain":0.2,
                        "modeOfAction": 0
                     }
                   ]
@@ -967,7 +864,8 @@
                        "name": "Machinery sound",
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": false,
-                       "modeOfAction": 0
+                       "modeOfAction": 1,
+		       "gain":0.01
                     }
                   ]
                }
@@ -1012,7 +910,8 @@
                        "name": "Step sounds of a player",
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": true,
-                       "modeOfAction": 0
+                       "modeOfAction": 0,
+		       "gain":0.5
                   }]
                },
                {
@@ -1024,7 +923,8 @@
                        "name": "Explosion",
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": false,
-                       "modeOfAction": 0
+                       "modeOfAction": 0,
+		       "gain": 2.0
                     }
                   ]
                }

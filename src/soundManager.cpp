@@ -144,8 +144,9 @@ void soundManager::stopSoundsByElementId(int elId)
             this->sndRegister[n->elId][n->elType][n->eventType][n->event].r=false;
             continue;
         }
-        float newVolume = 32.0/n->position.distance(this->listenerPos);
-        alSourcef(n->source, AL_GAIN, (newVolume>1)?1.0:newVolume);
+
+        float newVolume = 32*(n->gain/(n->position.distance(this->listenerPos)));
+        alSourcef(n->source, AL_GAIN, (newVolume>2)?2.0:newVolume);
 
     }
 }
@@ -195,6 +196,7 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
         this->samplesLoaded[typeId][subtypeId][eventType][event]->buffer=this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].buffer;
         this->samplesLoaded[typeId][subtypeId][eventType][event]->loaded=true;
         this->samplesLoaded[typeId][subtypeId][eventType][event]->mode=this->gc->samples[typeId][subtypeId][eventType][event].modeOfAction;
+
         //      this->samplesLoaded[typeId][subtypeId][eventType][event]->allowMulti=this->gc->samples[typeId][subtypeId][eventType][event].allowMulti;
     }
     std::shared_ptr<stNode> srcNode=this->getSndNode();
@@ -227,10 +229,10 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
     srcNode->elId=elId;
     srcNode->eventType=eventType;
     srcNode->event=event;
+    srcNode->gain=this->gc->samples[typeId][subtypeId][eventType][event].gain;
     srcNode->soundSpace=chamberId;
-    float newVolume = 32.0/position.distance(this->listenerPos);
-
-    alSourcef(srcNode->source, AL_GAIN, (newVolume>1)?1.0:newVolume);
+    float newVolume = 32*(srcNode->gain/(position.distance(this->listenerPos)));
+    alSourcef(srcNode->source, AL_GAIN, (newVolume>2)?2.0:newVolume);
     alSourcei(srcNode->source,AL_LOOPING,(srcNode->mode==0)?AL_FALSE:AL_TRUE);
     this->sndRegister[elId][typeId][eventType][event].r=true;
     this->sndRegister[elId][typeId][eventType][event].stn=srcNode;
@@ -477,9 +479,10 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
         muNd.source=source;
         muNd.position=position;
         muNd.chamberId=chamberId;
+        muNd.gain=this->gc->music[songNo].gain;
         muNd.bElemInstanceId=bElemInstanceId;
         alSource3f(source,AL_POSITION,(float)position.x,(float)position.y,(float)position.z);
-
+        alSourcef(source,AL_GAIN,(muNd.gain>2)?2.0:muNd.gain);
         const int buffersNum=3;
         alGenBuffers(buffersNum, &muNd.Abuffers[0]);
         for(int n=0; n<buffersNum; n++)
@@ -494,7 +497,7 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
         muNd.isRegistered=true;
         muNd.variableVol=vaiableVolume;
         // alSourcePlay(muNd.source);
-        alSourcef(muNd.source, AL_GAIN, 0.10f);
+  //      alSourcef(muNd.source, AL_GAIN, 0.10f);
         std::lock_guard<std::mutex> guard(this->snd_mutex);
 
         this->registeredMusic.push_back(muNd);
@@ -507,10 +510,10 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
 void soundManager::playSong(int songNo)
 {
     ALint buffersProcessed = 0;
-    float newVol=32.0/((float)this->listenerPos.distance(this->registeredMusic[songNo].position));
-    newVol=(newVol>0.5|| !this->registeredMusic[songNo].variableVol)?0.5:newVol;
+    float newVol=this->registeredMusic[songNo].gain/((float)this->listenerPos.distance(this->registeredMusic[songNo].position));
+    newVol=(newVol>this->registeredMusic[songNo].gain/2 || !this->registeredMusic[songNo].variableVol)?this->registeredMusic[songNo].gain:newVol;
     alGetSourcei(this->registeredMusic[songNo].source, AL_BUFFERS_PROCESSED, &buffersProcessed);
-    alSourcef(this->registeredMusic[songNo].source, AL_GAIN, newVol);
+    alSourcef(this->registeredMusic[songNo].source, AL_GAIN, (newVol>2.0)?2.0:newVol);
     if(buffersProcessed <= 0)
         return;
 

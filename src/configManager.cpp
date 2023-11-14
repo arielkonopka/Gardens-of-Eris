@@ -65,6 +65,8 @@ void configManager::configReload()
         musicData md;
         md.filename=music[c]["Filename"].GetString();
         md.name=music[c]["Name"].GetString();
+        if(music[c].HasMember("gain"))
+            md.gain=music[c]["gain"].GetFloat();
         if(music[c].HasMember("chamberId"))
             md.chamberId=music[c]["chamberId"].GetInt();
         if(music[c].HasMember("Position"))
@@ -117,7 +119,6 @@ void configManager::configReload()
         spriteData sdata;
         sdata.name = sprlist[c]["Name"].GetString();
         sdata.eType = sprlist[c]["Type"].GetInt();
-        //   std::cout<<"cfg:type "<<sdata.eType<<"\n";
         if(sprlist[c].HasMember("Attributes"))
         {
             for(unsigned int i =0; i<sprlist[c]["Attributes"].Size(); i++)
@@ -143,7 +144,6 @@ void configManager::configReload()
                 ad.maxEnergy=(sprlist[c]["Attributes"][i].HasMember("maxEnergy"))?sprlist[c]["Attributes"][i]["maxEnergy"].GetInt():1;
                 ad.ammo=(sprlist[c]["Attributes"][i].HasMember("ammo"))?sprlist[c]["Attributes"][i]["ammo"].GetInt():0;
                 ad.maxAmmo=(sprlist[c]["Attributes"][i].HasMember("maxAmmo"))?sprlist[c]["Attributes"][i]["maxAmmo"].GetInt():0;
-                //     std::cout<<"  cfgread: s"<<ad.subType<<" k"<<ad.killable<<" w"<<ad.isCollectible<<"\n";
 
                 sdata.attributes.push_back(ad);
             }
@@ -176,6 +176,8 @@ void configManager::configReload()
                         if(sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3].HasMember("stacking"))
                             sd.stacking = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["stacking"].GetBool();
                         sd.modeOfAction = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["modeOfAction"].GetInt();
+                        if(sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3].HasMember("gain"))
+                            sd.gain = sprlist[c]["Samples"][i]["stEvents"][i2]["eventData"][i3]["gain"].GetFloat();
                         sd.configured=true;
                         this->gConfObj->samples[sdata.eType][st][eventType][evname] = sd;
                     }

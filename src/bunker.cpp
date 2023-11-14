@@ -39,12 +39,33 @@ bool bunker::mechanics()
     bool res=bElem::mechanics();
     if(!res || this->getStats()->isMoving() || this->getStats()->isWaiting() || this->myGun->getStats()->isWaiting())
         return false;
-    int randomTest=bElem::randomNumberGenerator()%1000;
-    if(randomTest>965)
+    int randomTest=bElem::randomNumberGenerator()%55;
+    if(randomTest>25)
     {
         this->help=0;
         this->myGun->use(shared_from_this());
     }
+    for(int c=0; c<4; c++)
+    {
+        direction d=(direction)c;
+        std::shared_ptr<bElem> e=this->getElementInDirection(d);
+        int dd=0;
+        while(e && ++dd<this->brange)
+        {
+            if(e->getType()==_player)
+            {
+                this->getStats()->setFacing(d);
+                this->getStats()->setMyDirection(d);
+                this->myGun->use(shared_from_this());
+            }
+            if (!e->getAttrs()->isSteppable())
+            {
+                break;
+            }
+            e=e->getElementInDirection(d);
+        }
+    }
+    this->getStats()->setWaiting((1+bElem::randomNumberGenerator()%55)*5);
     return res;
 }
 

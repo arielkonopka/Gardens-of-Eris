@@ -17,6 +17,7 @@ public:
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<explosives> sbe);
     virtual bool additionalProvisioning();
     virtual bool additionalProvisioning(int subtype,int typeId);
+private:
 };
 
 #endif // EXPLOSIVES_H

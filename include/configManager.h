@@ -62,6 +62,7 @@ using sampleData= struct sampleData
     std::string description="This sampleData is empty";
     bool stacking=false;
     bool allowMulti=false;
+    float gain=1.0;
     int modeOfAction=-1; /* 0 - normal - play and forget, 1 - looped until stopped, or lost view, 2 - backwards, 3 - pingloop -forward and backward until stopped, or lost view */
 } ;
 using musicData=struct _musicData
@@ -70,6 +71,7 @@ using musicData=struct _musicData
     std::string filename;
     std::string name;
     int chamberId=-1;
+    float gain=1.0;
     coords3d position={0,0,0};
 };
 
