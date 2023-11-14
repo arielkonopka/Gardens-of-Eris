@@ -39,7 +39,7 @@ bool monster::additionalProvisioning(int subtype, int typeId)
         this->rotA = 1;
         this->rotB = 3;
     }
-    if (bElem::randomNumberGenerator() % 5 == 0)
+    if (bElem::randomNumberGenerator() % 5 >=2 )
     {
         this->weapon = elementFactory::generateAnElement<plainGun>(this->getBoard(),0);
         this->weapon->getAttrs()->setEnergy(((bElem::randomNumberGenerator()*555)%5)*5);
@@ -130,7 +130,7 @@ bool monster::checkNeigh()
                     {
                         this->weapon->use(shared_from_this()); // shoot an object with native gun
                     }
-                    else
+                    else if (this->getAttrs()->getInventory()->getActiveWeapon())
                     {
                         this->getAttrs()->getInventory()->getActiveWeapon()->use(shared_from_this()); // shoot with the one from the inventory - surprise thing:)
                     }

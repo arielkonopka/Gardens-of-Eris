@@ -46,6 +46,7 @@ using muNode=struct _mudNode
     int chamberId;
     ALenum format;
     bool variableVol=false;
+    float gain=1.0;
     unsigned int bElemInstanceId=0;
 };
 
@@ -61,6 +62,7 @@ using stNode=struct sndNode
     int elType=0;
     std::string eventType;
     std::string event;
+    float gain=1.0;
     coords3d position;
     coords3d velocity;
 };

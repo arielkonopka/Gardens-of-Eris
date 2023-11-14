@@ -32,30 +32,33 @@ bool explosives::additionalProvisioning(int subtype, int typeId)
 bool explosives::explode(float radius)
 {
 
-    std::shared_ptr<bElem> step=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getSteppingOn():this->getStats()->getSteppingOn();
-    coords mc=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getMyPosition():this->getStats()->getMyPosition();
-    std::shared_ptr<chamber> brd = (this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getBoard():this->getBoard();
-    int xs=(mc.x-radius<0)?0:mc.x-radius;
-    int xe=(mc.x+radius>=brd->width)?brd->width-1:mc.x+radius;
-    int ys=(mc.y-radius<0)?0:mc.y-radius;
-    int ye=(mc.y+radius>=brd->height)?brd->height-1:mc.y+radius;
-    // std::cout<<"SE: "<<xs<<" "<<xe<<" "<<ys<<" "<<ye<<"\n:";
-    this->playSound("Explosives","Explode");
-    this->removeElement();
-    for (int x=xs; x<=xe; x++)
+    if(!this->getStats()->isDisposed())
     {
-        for(int y=ys; y<=ye; y++)
+        std::shared_ptr<bElem> step=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getSteppingOn():this->getStats()->getSteppingOn();
+        coords mc=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getMyPosition():this->getStats()->getMyPosition();
+        std::shared_ptr<chamber> brd = (this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getBoard():this->getBoard();
+        int xs=(mc.x-radius<0)?0:mc.x-radius;
+        int xe=(mc.x+radius>=brd->width)?brd->width-1:mc.x+radius;
+        int ys=(mc.y-radius<0)?0:mc.y-radius;
+        int ye=(mc.y+radius>=brd->height)?brd->height-1:mc.y+radius;
+        // std::cout<<"SE: "<<xs<<" "<<xe<<" "<<ys<<" "<<ye<<"\n:";
+        this->playSound("Explosives","Explode");
+        this->removeElement();
+        for (int x=xs; x<=xe; x++)
         {
-            float distance;
-            distance=sqrt((x-mc.x)*(x-mc.x)+(y-mc.y)*(y-mc.y));
-            if(distance<=radius)
-                brd->getElement((coords)
+            for(int y=ys; y<=ye; y++)
             {
-                x,y
-            })->destroy();
+                float distance;
+                distance=mc.distance((coords){x,y});
+                if(distance<=radius)
+                    brd->getElement((coords)
+                {
+                    x,y
+                })->destroy();
+            }
         }
+        this->disposeElement();
     }
-    this->disposeElement();
     return true;
 
 }
