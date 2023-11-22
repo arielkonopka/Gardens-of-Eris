@@ -9,7 +9,7 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
 {
     ALLEGRO_MONITOR_INFO info;
     al_init();
-    al_install_keyboard();
+
     if(!al_init_image_addon())
     {
         std::cout<<"Could not initialize the image addon!!\n";
@@ -18,7 +18,6 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
     }
     this->alTimer = al_create_timer(1.0 / 50);
     this->evQueue= al_create_event_queue();
-    al_register_event_source(this->evQueue, al_get_keyboard_event_source());
     al_register_event_source(this->evQueue, al_get_timer_event_source(this->alTimer));
     this->_cp_attachedBoard=board;
     al_get_monitor_info(0, &info);
@@ -476,12 +475,14 @@ int presenter::presentEverything()
         std::thread nt=std::thread(&presenter::mechanicLoop, this);
         nt.detach();
     }
+
     al_start_timer(this->alTimer);
     while(!this->fin)
     {
         al_wait_for_event(this->evQueue, &event);
         if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
         {
+            inputManager::getInstance()->stop();
             this->fin = true;
             break;
         }
@@ -494,18 +495,24 @@ int presenter::presentEverything()
             {
                 this->_cp_attachedBoard=player::getActivePlayer()->getBoard();
                 if(currentPlayer->getAttrs()->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
+                {
+                    inputManager::getInstance()->stop();
                     this->fin=true;
+                }
+
             }
             bElem::runLiveElements();
         }
         else
         {
+
             if((currentPlayer=player::getActivePlayer()).get()==nullptr)
             {
                 this->fin=true;
+                inputManager::getInstance()->stop();
                 return 2;
             }
-            cItem=inputManager::getInstance()->translateEvent(&event); //We always got a status on what to do. remember, everything must have a timer!
+            cItem=inputManager::getInstance()->getCtrlItem(); //We always got a status on what to do. remember, everything must have a timer!
             // the idea is to serve the keyboard state constantly, we avoid actions that are too fast
             // by having timers on everything, like: once you shoot, you will be able to shoot in some defined time
             // same with movement, object cycling, gun cycling, using things, interacting with things.
@@ -513,12 +520,14 @@ int presenter::presentEverything()
             {
 
                 this->fin=true;
+                inputManager::getInstance()->stop();
                 return 1;
             }
 
         }
     }
     this->fin=true;
+    inputManager::getInstance()->stop();
     return 1;
 }
 

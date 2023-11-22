@@ -229,6 +229,7 @@ There are control switches that modify sound handling:
 
 ## TODO
 
+- Add sound gain on music and samples
 - Add new type of a gun, that would shoot bombs - grenade launcher
 - Add landmine, a steppable, that would kill you
 - Add a bot and a camera, when a player is near a camera, all bots are notified about the position
@@ -270,7 +271,7 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 ## ChangeLog
-
+* Joystick initial support. Now the InputManager is a singleton with its own thread, that can be started/stopped only once, it's purpose is to get the controller state to any app, that demands it.
 * The cloaking mechanism is mostly done, what is left is optimizations. Removed one bitmap from use. Introduced drawing bitmaps with different alpha(transparency), now we do not beed blur75/50/25, and therefore are removed from the code.
 * Introduced partial tile copying to create roundish views
 * Introduced multi uncovered points. We simply add an object to a list with viewpoint::get_instance()->addViewPoint(std::shared_ptr<bElem> in). We also can change the main viewpoint, to make the "view to follow" different objects
