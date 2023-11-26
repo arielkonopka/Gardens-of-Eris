@@ -1,9 +1,10 @@
 #ifndef VIDEOELEMENTDEF_H
 #define VIDEOELEMENTDEF_H
+#include "commons.h"
+
 #include <allegro5/allegro5.h>
 #include <vector>
 
-#include "commons.h"
 #include "configManager.h"
 
 

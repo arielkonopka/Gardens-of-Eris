@@ -4,11 +4,10 @@
 #ifndef INPUTMANAGER_H
 #define INPUTMANAGER_H
 #include "commons.h"
-#define ALLEGRO_UNSTABLE
+
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
-#include <allegro5/haptic.h>
 #include <iostream>
 #include <mutex>
 #include <memory>
@@ -35,10 +34,11 @@ public:
     void stop();
 private:
 
-/*  ALLEGRO_HAPTIC *haptic;
-    ALLEGRO_HAPTIC_EFFECT effect;
-    ALLEGRO_HAPTIC_EFFECT_ID id;
-*/
+ //   ALLEGRO_HAPTIC *haptic;
+ //   ALLEGRO_HAPTIC_EFFECT effect;
+ //   ALLEGRO_HAPTIC_EFFECT_ID id;
+
+    float sesitivity=0.4;
 
     std::thread nt;
     bool joyPresent=false;

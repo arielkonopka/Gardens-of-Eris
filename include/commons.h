@@ -1,5 +1,8 @@
 #ifndef COMMONS_H
 #define COMMONS_H
+#define ALLEGRO_UNSTABLE 1
+#define ALLEGRO_SRC
+
 #include <stddef.h>
 #include <memory>
 #include <vector>

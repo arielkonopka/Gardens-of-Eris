@@ -39,8 +39,8 @@ bool presenter::initializeDisplay()
 {
     ALLEGRO_MONITOR_INFO info;
     //  al_set_new_display_flags(ALLEGRO_FULLSCREEN);
-    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 ) ; //ma| ALLEGRO_FULLSCREEN);
-
+    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 |ALLEGRO_FULLSCREEN); //ma| ALLEGRO_FULLSCREEN);
+    al_inhibit_screensaver(true);
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
     al_get_monitor_info(0, &info);
     this->display = al_create_display(info.x2-info.x1, info.y2-info.y1);
@@ -377,14 +377,20 @@ void presenter::drawCloak()
             {
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
-                coords np=(coords) { nx,ny };
+                coords np=(coords)
+                {
+                    nx,ny
+                };
 
                 if(viewPoint::get_instance()->isPointVisible(np))
                 {
                     for(int x1=0; x1<divider; x1++)
                         for(int y1=0; y1<divider; y1++)
                         {
-                            coords np1=(np*divider)+ (coords){x1,y1};
+                            coords np1=(np*divider)+ (coords)
+                            {
+                                x1,y1
+                            };
                             obscured=std::min(255,viewPoint::get_instance()->calculateObscured(np1,divider));
                             if(obscured>0)
                             {

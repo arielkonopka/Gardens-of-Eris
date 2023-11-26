@@ -33,6 +33,10 @@ bool patrollingDrone::additionalProvisioning(int subtype, std::shared_ptr<patrol
 {
     return this->additionalProvisioning(subtype,sbe->getType());
 }
+float patrollingDrone::getViewRadius() const
+{
+    return 5.0;
+}
 
 
 /*
@@ -52,6 +56,8 @@ bool patrollingDrone::interact(std::shared_ptr<bElem> who)
             token->getStats()->setCollector(shared_from_this());
             token->collectOnAction(true,shared_from_this()); // since we collect the object ourselves, we should also trigger the action
             token->getStats()->setWaiting(55);
+            if(who->getType()==_player)
+                viewPoint::get_instance()->setOwner(shared_from_this());
             return true;
         }
         this->playSound("Boot", "Failure");

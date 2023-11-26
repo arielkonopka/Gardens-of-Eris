@@ -29,17 +29,18 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         this->pressed_keys[ALLEGRO_KEY_RIGHT]=false;
         if(ev->joystick.axis==0)
         {
-            if(ev->joystick.pos>0.5)
+            if(ev->joystick.pos>this->sesitivity)
                 this->pressed_keys[ALLEGRO_KEY_RIGHT]=true;
-            else if(ev->joystick.pos<-0.5)
+            else if(ev->joystick.pos<-this->sesitivity)
                 this->pressed_keys[ALLEGRO_KEY_LEFT]=true;
         }
         else if(ev->joystick.axis==1)
         {
-            if(ev->joystick.pos<-0.5)
+            if(ev->joystick.pos<-this->sesitivity)
                 this->pressed_keys[ALLEGRO_KEY_UP]=true;
-            else if(ev->joystick.pos>0.5)
+            else if(ev->joystick.pos>this->sesitivity)
                 this->pressed_keys[ALLEGRO_KEY_DOWN]=true;
+
         }
 
         break;
@@ -47,7 +48,11 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         switch (ev->joystick.button)
         {
         case 5:
+        case 4:
             this->pressed_keys[ALLEGRO_KEY_RSHIFT]=true;
+            break;
+        case 6:
+            this->pressed_keys[ALLEGRO_KEY_SPACE]=true;
             break;
         case 0:
             this->pressed_keys[ALLEGRO_KEY_LCTRL]=true;
@@ -59,7 +64,13 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
             this->pressed_keys[ALLEGRO_KEY_Z]=true;
             break;
         case 3:
+            this->pressed_keys[ALLEGRO_KEY_X]=true;
+            break;
+        case 9:
             this->pressed_keys[ALLEGRO_KEY_ESCAPE]=true;
+            break;
+        case 8:
+            this->pressed_keys[ALLEGRO_KEY_R]=true;
             break;
         }
         break;
@@ -67,7 +78,11 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         switch (ev->joystick.button)
         {
         case 5:
+        case 4:
             this->pressed_keys[ALLEGRO_KEY_RSHIFT]=false;
+            break;
+        case 6:
+            this->pressed_keys[ALLEGRO_KEY_SPACE]=false;
             break;
         case 0:
             this->pressed_keys[ALLEGRO_KEY_LCTRL]=false;
@@ -79,7 +94,13 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
             this->pressed_keys[ALLEGRO_KEY_Z]=false;
             break;
         case 3:
+            this->pressed_keys[ALLEGRO_KEY_X]=false;
+            break;
+        case 9:
             this->pressed_keys[ALLEGRO_KEY_ESCAPE]=false;
+            break;
+        case 8:
+            this->pressed_keys[ALLEGRO_KEY_R]=false;
             break;
 
         }
@@ -178,10 +199,10 @@ void inputManager::stop()
 void inputManager::hapticKick(float strength)
 {
 
-
-/*  if (!this->haptic)
+/*
+    if (!this->haptic)
     {
-       return;
+        return;
     }
     al_set_haptic_gain(this->haptic, strength);
     this->effect.type = ALLEGRO_HAPTIC_RUMBLE;
@@ -191,8 +212,8 @@ void inputManager::hapticKick(float strength)
     this->effect.replay.length = strength/10;
     al_upload_haptic_effect(this->haptic, &this->effect, &this->id);
     al_play_haptic_effect(&this->id, 1);
-    */
 
+*/
 }
 
 
@@ -206,15 +227,18 @@ inputManager* inputManager::getInstance()
         _instance->evQueue= al_create_event_queue();
         al_register_event_source(_instance->evQueue, al_get_keyboard_event_source());
         al_register_event_source(_instance->evQueue, al_get_joystick_event_source());
-      /*  if (al_get_num_joysticks() > 0)
+        if (al_get_num_joysticks() > 0)
         {
-            _instance->joystick = al_get_joystick(0); // take first joystick
+            _instance->joystick = al_get_joystick(al_get_num_joysticks()-1); // take first joystick
             _instance->joyPresent=true;
-            _instance->haptic=al_get_haptic_from_joystick(_instance->joystick);
+          //  std::cout<<"getting haptic "<<al_get_num_joysticks()<<"\n";
+         //   _instance->haptic=al_get_haptic_from_joystick(_instance->joystick);
+         //   std::cout<<"took haptic\n";
         }
-        */
+
         _instance->nt=std::thread(&inputManager::inputLoop, _instance);
         _instance->nt.detach();
+
 
     });
     return inputManager::_instance;

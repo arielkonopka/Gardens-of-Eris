@@ -31,6 +31,7 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
     std::shared_ptr<bElem> stepOn=this->getElementInDirection(dir);
     if (stepOn.get()==nullptr || this->getStats()->isMoving() || this->getStats()->isDying() || this->getStats()->isTeleporting() || this->getStats()->isDestroying() || dir==NODIRECTION)
         return false;
+    std::shared_ptr<bElem> stepOn2=stepOn->getElementInDirection(dir);
     this->getStats()->setMyDirection(dir);
     if (stepOn->getAttrs()->isSteppable()==true)
     {
@@ -39,37 +40,21 @@ bool movableElements::moveInDirectionSpeed(direction dir, int speed)
         this->playSound("Move","StepOn");
         return true;
     }
-    if (this->getAttrs()->canPush()==true && stepOn->getAttrs()->canBePushed()==true && stepOn->getAttrs()->isMovable()==true)
+    else if (this->getAttrs()->canCollect() && stepOn->getAttrs()->isCollectible()==true && this->collect(stepOn))
     {
-        std::shared_ptr<bElem> stepOn2=stepOn->getElementInDirection(dir);
-        if(stepOn2.get()==nullptr || !stepOn2->getAttrs()->isSteppable())
-        {
-           this->playSound("Move","BlockedMove");
-            return false;
-        }
-        if(stepOn->moveInDirectionSpeed(dir,speed+1)) //move next object in direction
-        {
-            this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
-            this->getStats()->setMoved(speed+1);
-            this->playSound("Move","StepOn");
-        }
         return true;
     }
-    if (this->getAttrs()->canCollect() && stepOn->getAttrs()->isCollectible()==true)
+    else if (this->getAttrs()->canPush()==true && stepOn->getAttrs()->canBePushed()==true && stepOn->getAttrs()->isMovable()==true && stepOn2 && stepOn2->getAttrs()->isSteppable() && stepOn->moveInDirectionSpeed(dir,speed+1))
     {
-        if (this->collect(stepOn)==true )
-        {
-            return true;
-        }
+
+        this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
+        this->getStats()->setMoved(speed+1);
+        this->playSound("Move","StepOn");
+        return true;
     }
-
-    if (this->getAttrs()->isInteractive()==true)
+    else  if (this->getAttrs()->isInteractive()==true && stepOn->interact(shared_from_this()))
     {
-        if(stepOn->interact(shared_from_this())==true)
-        {
-            return true;
-
-        }
+        return true;
     }
     return false;
 }
@@ -83,7 +68,7 @@ int movableElements::getType() const
 
 bool movableElements::dragInDirection(direction dragIntoDirection)
 {
-   return this->dragInDirectionSpeed(dragIntoDirection,_mov_delay*2);
+    return this->dragInDirectionSpeed(dragIntoDirection,_mov_delay*2);
 }
 
 

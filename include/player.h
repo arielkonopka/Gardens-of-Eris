@@ -1,8 +1,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
-
-#include <movableElements.h>
 #include "commons.h"
+#include "inputManager.h"
+#include <movableElements.h>
 #include "objectTypes.h"
 #include "videoElementDef.h"
 #include "plainGun.h"
