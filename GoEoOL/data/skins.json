@@ -297,9 +297,7 @@
      {
         "Type": 7,
         "Name": "Patrolling drone",
-        "AnimDef": [ [ [
-          [ 1, 1 ], [ 2, 1 ]
-        ] ] ],
+        "AnimDef": [ [ [ [ 11, 4 ], [ 12, 4 ] ] ,[ [ 11,5] ,[12,5]], [[13,4],[14,4]],[[13,5],[14,5] ]] ],
         "Samples": [
           {
              "SubType": 0,
@@ -649,7 +647,7 @@
              "SubType":-1,
              "Killable":true,
              "Destroyable":true,
-             "Steppable":true,
+             "Steppable":false,
              "isMovable":false,
              "isInteractive":false,
              "isCollectible":true,
@@ -659,8 +657,8 @@
              "isWeapon":true,
              "isOpen":false,
              "isLocked":false,
-             "energy":55,
-             "maxEnergy":555,
+             "energy":100,
+             "maxEnergy":155,
              "ammo":10,
              "maxAmmo":555
           }
@@ -939,9 +937,9 @@
         "Attributes": [
           {
              "SubType":-1,
-             "Killable":false,
+             "Killable":true,
              "Destroyable":true,
-             "Steppable":true,
+             "Steppable":false,
              "isMovable":true,
              "isInteractive":false,
              "isCollectible":true,
