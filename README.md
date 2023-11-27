@@ -32,7 +32,7 @@ I wouldn't need to design the levels
 In the meantime, I've discovered a third reason:
 
 I can test the game quite swiftly, without the need for loading and saving level data. Of course, I'll eventually have to implement that feature.
-[Feel free to check out a relatively recent video of the gameplay.](https://www.youtube.com/watch?v=u8S_trywjaM)
+[Feel free to check out a relatively recent video of the gameplay.](https://youtu.be/X4SFUldNLq8)
 
 ## The game story
 
