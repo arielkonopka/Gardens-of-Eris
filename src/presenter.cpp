@@ -9,7 +9,7 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
 {
     ALLEGRO_MONITOR_INFO info;
     al_init();
-    al_install_keyboard();
+
     if(!al_init_image_addon())
     {
         std::cout<<"Could not initialize the image addon!!\n";
@@ -18,7 +18,6 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
     }
     this->alTimer = al_create_timer(1.0 / 50);
     this->evQueue= al_create_event_queue();
-    al_register_event_source(this->evQueue, al_get_keyboard_event_source());
     al_register_event_source(this->evQueue, al_get_timer_event_source(this->alTimer));
     this->_cp_attachedBoard=board;
     al_get_monitor_info(0, &info);
@@ -40,8 +39,8 @@ bool presenter::initializeDisplay()
 {
     ALLEGRO_MONITOR_INFO info;
     //  al_set_new_display_flags(ALLEGRO_FULLSCREEN);
-    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 ) ; //ma| ALLEGRO_FULLSCREEN);
-
+    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 |ALLEGRO_FULLSCREEN); //ma| ALLEGRO_FULLSCREEN);
+    al_inhibit_screensaver(true);
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
     al_get_monitor_info(0, &info);
     this->display = al_create_display(info.x2-info.x1, info.y2-info.y1);
@@ -378,14 +377,20 @@ void presenter::drawCloak()
             {
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
-                coords np=(coords) { nx,ny };
+                coords np=(coords)
+                {
+                    nx,ny
+                };
 
                 if(viewPoint::get_instance()->isPointVisible(np))
                 {
                     for(int x1=0; x1<divider; x1++)
                         for(int y1=0; y1<divider; y1++)
                         {
-                            coords np1=(np*divider)+ (coords){x1,y1};
+                            coords np1=(np*divider)+ (coords)
+                            {
+                                x1,y1
+                            };
                             obscured=std::min(255,viewPoint::get_instance()->calculateObscured(np1,divider));
                             if(obscured>0)
                             {
@@ -476,12 +481,14 @@ int presenter::presentEverything()
         std::thread nt=std::thread(&presenter::mechanicLoop, this);
         nt.detach();
     }
+
     al_start_timer(this->alTimer);
     while(!this->fin)
     {
         al_wait_for_event(this->evQueue, &event);
         if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
         {
+            inputManager::getInstance()->stop();
             this->fin = true;
             break;
         }
@@ -494,18 +501,24 @@ int presenter::presentEverything()
             {
                 this->_cp_attachedBoard=player::getActivePlayer()->getBoard();
                 if(currentPlayer->getAttrs()->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
+                {
+                    inputManager::getInstance()->stop();
                     this->fin=true;
+                }
+
             }
             bElem::runLiveElements();
         }
         else
         {
+
             if((currentPlayer=player::getActivePlayer()).get()==nullptr)
             {
                 this->fin=true;
+                inputManager::getInstance()->stop();
                 return 2;
             }
-            cItem=inputManager::getInstance()->translateEvent(&event); //We always got a status on what to do. remember, everything must have a timer!
+            cItem=inputManager::getInstance()->getCtrlItem(); //We always got a status on what to do. remember, everything must have a timer!
             // the idea is to serve the keyboard state constantly, we avoid actions that are too fast
             // by having timers on everything, like: once you shoot, you will be able to shoot in some defined time
             // same with movement, object cycling, gun cycling, using things, interacting with things.
@@ -513,12 +526,14 @@ int presenter::presentEverything()
             {
 
                 this->fin=true;
+                inputManager::getInstance()->stop();
                 return 1;
             }
 
         }
     }
     this->fin=true;
+    inputManager::getInstance()->stop();
     return 1;
 }
 

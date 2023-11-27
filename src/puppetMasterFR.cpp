@@ -1,4 +1,5 @@
 #include "puppetMasterFR.h"
+#include "viewPoint.h"
 
 
 
@@ -25,8 +26,10 @@ bool puppetMasterFR::collectOnAction(bool c, std::shared_ptr<bElem>who)
         {
             if (this->getAttrs()->getSubtype() == 0) // if subtype not set, set one randomly
             {
-                this->getAttrs()->setSubtype(2);
+               //this->getAttrs()->setSubtype(2);
                 this->getAttrs()->setSubtype(this->randomNumberGenerator()%2);
+                if(this->getAttrs()->getSubtype()==0)
+                    viewPoint::get_instance()->addViewPoint(who);
             }
             this->registerLiveElement(shared_from_this());
         }
@@ -112,12 +115,14 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
     if (b1 && roulette == 5) // same probablility for each
     {
         collector->getStats()->setMyDirection(pdir1);
+        collector->getStats()->setFacing(pdir1);
         collector->getStats()->setWaiting(3);
         return true;
     }
     else if (b2 && roulette==25)
     {
         collector->getStats()->setMyDirection(pdir1);
+        collector->getStats()->setFacing(pdir1);
         collector->getStats()->setWaiting(3);
         return true;
     }
@@ -127,6 +132,7 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
         int f = (this->randomNumberGenerator() % 2 == 0) ? 1 : 3;
         cdir = (direction)((((int)cdir) + f) % 4);
         collector->getStats()->setMyDirection(cdir);
+        collector->getStats()->setFacing(cdir);
         collector->getStats()->setWaiting(3);
         return true;
     }

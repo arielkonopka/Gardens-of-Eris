@@ -4,7 +4,7 @@
 #include <killableElements.h>
 #include "commons.h"
 #include "videoElementDef.h"
-
+#include "viewPoint.h"
 class patrollingDrone : public killableElements, public movableElements
 {
 public:
@@ -14,7 +14,7 @@ public:
     virtual ~patrollingDrone();
     virtual bool interact(std::shared_ptr<bElem> who);
     int getType() const;
-
+    float getViewRadius() const;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<patrollingDrone> sbe);
     virtual bool additionalProvisioning();
     virtual bool additionalProvisioning(int subtype,int typeId);

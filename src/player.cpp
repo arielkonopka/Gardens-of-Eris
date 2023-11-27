@@ -132,6 +132,8 @@ bool player::stepOnElement(std::shared_ptr<bElem> step)
         this->vRadius=2+(std::log(this->getStats()->getStats(STEPS))/2);
         this->getStats()->setPoints(TOTAL,this->getStats()->getPoints(TOTAL)+1);
     }
+    if (r)
+        inputManager::getInstance()->hapticKick(1.0);
     return r;
 }
 

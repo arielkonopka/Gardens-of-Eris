@@ -1,5 +1,6 @@
 #ifndef CHAMBERPRESENTER_H
 #define CHAMBERPRESENTER_H
+#include "commons.h"
 
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
@@ -16,7 +17,6 @@
 #include "objectTypes.h"
 #include "configManager.h"
 #include "soundManager.h"
-#include "commons.h"
 #include <thread>
 #include <videoDriver.h>
 #include <mutex>

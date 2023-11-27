@@ -112,15 +112,15 @@ int viewPoint::calculateObscured(const coords point,int divider)
             {
                 obscured=1024;
             }
-            else if(dist<=radius/2)
+            else if(dist<=radius/3)
             {
                 obscured=0;
             }
             else if (dist<=radius)
             {
-                hradius=radius/2;
-                float hdist=dist-hradius;
-                int dst2 = 240*hdist/hradius;
+           //     hradius=2*radius/3;
+           //     float hdist=dist-hradius;
+                int dst2 = (255*dist/radius);
                 obscured=std::min(obscured,dst2);
             }
         }

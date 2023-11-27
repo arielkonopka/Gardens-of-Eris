@@ -482,7 +482,7 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
         muNd.gain=this->gc->music[songNo].gain;
         muNd.bElemInstanceId=bElemInstanceId;
         alSource3f(source,AL_POSITION,(float)position.x,(float)position.y,(float)position.z);
-        alSourcef(source,AL_GAIN,(muNd.gain>2)?2.0:muNd.gain);
+        alSourcef(source,AL_GAIN,std::min(muNd.gain,(float)1.0));
         const int buffersNum=3;
         alGenBuffers(buffersNum, &muNd.Abuffers[0]);
         for(int n=0; n<buffersNum; n++)
@@ -510,10 +510,10 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
 void soundManager::playSong(int songNo)
 {
     ALint buffersProcessed = 0;
-    float newVol=this->registeredMusic[songNo].gain/((float)this->listenerPos.distance(this->registeredMusic[songNo].position));
-    newVol=(newVol>this->registeredMusic[songNo].gain/2 || !this->registeredMusic[songNo].variableVol)?this->registeredMusic[songNo].gain:newVol;
+    float newVol=(this->registeredMusic[songNo].gain*555)/((float)this->listenerPos.distance(this->registeredMusic[songNo].position));
+    newVol=(this->registeredMusic[songNo].variableVol)?std::min((float)1.0,newVol):this->registeredMusic[songNo].gain;
     alGetSourcei(this->registeredMusic[songNo].source, AL_BUFFERS_PROCESSED, &buffersProcessed);
-    alSourcef(this->registeredMusic[songNo].source, AL_GAIN, (newVol>2.0)?2.0:newVol);
+    alSourcef(this->registeredMusic[songNo].source, AL_GAIN, newVol);
     if(buffersProcessed <= 0)
         return;
 
