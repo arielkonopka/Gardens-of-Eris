@@ -1,7 +1,7 @@
 #ifndef EXPLOSIVES_H
 #define EXPLOSIVES_H
-
 #include <bElem.h>
+
 
 
 class explosives : virtual public bElem

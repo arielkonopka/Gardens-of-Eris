@@ -32,10 +32,10 @@ bool goldenApple::hurt(int points)
 
 bool goldenApple::destroy()
 {
-    bool res = killableElements::destroy();
-    if (res)
-        this->explode(2.5);
-    return res;
+
+    if(!this->getStats()->isDestroying())
+        return this->explode(2.5);
+    return false;
 }
 
 goldenApple::goldenApple(std::shared_ptr<chamber> board) : goldenApple()
@@ -98,13 +98,7 @@ and we will have to add that information only once.
 */
 bool goldenApple::kill()
 {
-    if (killableElements::kill())
-    {
-
-        this->explode(2.5);
-        return true;
-    }
-    return false;
+    return this->destroy();
 }
 bool goldenApple::mechanics()
 {
@@ -117,9 +111,9 @@ bool goldenApple::mechanics()
     int e = this->getStats()->getCollector().lock()->getAttrs()->getEnergy();
     if (e < 100)
     {
-        this->getStats()->setWaiting(25);
-        this->getStats()->getCollector().lock()->getAttrs()->setEnergy(e + 1);
-        this->hurt(1);
+        this->getStats()->setWaiting(55);
+        this->getStats()->getCollector().lock()->getAttrs()->setEnergy(e + 5);
+        this->hurt(5);
     }
 
     return true;

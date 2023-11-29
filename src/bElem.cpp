@@ -341,8 +341,10 @@ bool bElem::interact(std::shared_ptr<bElem> who)
 
 bool bElem::destroy()
 {
-    if (this->getAttrs()->isDestroyable() || this->getAttrs()->isSteppable() || this->getStats()->isDestroying() || this->getStats()->isDying())
+   // std::cout<<" be1\n";
+    if (this->getAttrs()->isDestroyable() || this->getAttrs()->isSteppable() || this->getAttrs()->isKillable())
     {
+     //   std::cout<<"  be2\n";
         if (this->getStats()->isDying())
         {
             this->getStats()->setKilled(0);
@@ -352,7 +354,6 @@ bool bElem::destroy()
         this->getStats()->setDestroyed(_defaultDestroyTime);
         if (this->getAttrs()->isDestroyable() || this->getAttrs()->isKillable())
         {
-          //  viewPoint::get_instance()->addViewPoint(shared_from_this());
             bElem::toDispose.push_back(shared_from_this());
         }
         return true;
