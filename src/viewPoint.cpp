@@ -94,7 +94,7 @@ int viewPoint::calculateObscured(const coords point,int divider)
     }
     int ownerId = owner->getBoard()->getInstanceId();
     int obscured = 4096;
-    float radius,hradius;
+    float radius;
     int dh=divider/2;
     for (unsigned long int c=0; c<viewPoints.size();)
     {

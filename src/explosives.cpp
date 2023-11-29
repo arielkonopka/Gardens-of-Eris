@@ -1,4 +1,5 @@
 #include "explosives.h"
+#include <viewPoint.h>
 
 explosives::explosives(std::shared_ptr<chamber> board) : explosives()
 {
@@ -26,57 +27,56 @@ bool explosives::additionalProvisioning()
 
 bool explosives::additionalProvisioning(int subtype, int typeId)
 {
+
     return bElem::additionalProvisioning(subtype,typeId);
 }
 
 bool explosives::explode(float radius)
 {
-
-    if(!this->getStats()->isDisposed())
+    if(!this->getStats()->isDisposed() && !this->getStats()->isDestroying())
     {
-        std::shared_ptr<bElem> step=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getSteppingOn():this->getStats()->getSteppingOn();
         coords mc=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getMyPosition():this->getStats()->getMyPosition();
         std::shared_ptr<chamber> brd = (this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getBoard():this->getBoard();
-        int xs=(mc.x-radius<0)?0:mc.x-radius;
-        int xe=(mc.x+radius>=brd->width)?brd->width-1:mc.x+radius;
-        int ys=(mc.y-radius<0)?0:mc.y-radius;
-        int ye=(mc.y+radius>=brd->height)?brd->height-1:mc.y+radius;
-        // std::cout<<"SE: "<<xs<<" "<<xe<<" "<<ys<<" "<<ye<<"\n:";
+        int xs=std::min(0,(int)(mc.x-radius));
+        int xe=std::min(brd->width-1,(int)(mc.x+radius));
+        int ys=std::min(0,(int)(mc.y-radius));
+        int ye=std::min(brd->height-1,(int)(mc.y+radius));
         this->playSound("Explosives","Explode");
-        this->removeElement();
         for (int x=xs; x<=xe; x++)
         {
             for(int y=ys; y<=ye; y++)
             {
-                float distance;
-                distance=mc.distance((coords){x,y});
-                if(distance<=radius)
-                    brd->getElement((coords)
+                coords ccrd=(coords) { x,y };
+                if(ccrd==mc)
                 {
-                    x,y
-                })->destroy();
+                    if(this->getStats()->isCollected())
+                    {
+                        this->getStats()->getCollector().lock()->destroy();
+                        viewPoint::get_instance()->addViewPoint(this->getStats()->getCollector().lock());
+                    }
+                    else
+                        viewPoint::get_instance()->addViewPoint(shared_from_this());
+                    bElem::destroy();
+                    continue;
+                }
+                if(mc.distance(ccrd)<=radius)
+                    brd->getElement(ccrd)->destroy();
             }
         }
-        this->disposeElement();
     }
     return true;
-
 }
 
 
 bool explosives::explode()
 {
     std::shared_ptr<bElem> el;
-    coords mc=(!this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getMyPosition():this->getStats()->getMyPosition();
-    std::shared_ptr<chamber> brd = (this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getBoard():this->getBoard();
-    std::shared_ptr<bElem> step;
+    if(this->getStats()->isDestroying())
+        return false;
     this->playSound("Explosives","Explode"); // This sound must not be looped, otherwise it will be swiped off
-    this->removeElement();
-    step = brd->getElement(mc);
-    step->destroy();
     for (int cnt = 0; cnt < 4; cnt++)
     {
-        el = step->getElementInDirection((direction)(cnt));
+        el = this->getElementInDirection((direction)(cnt));
         if (el != nullptr)
         {
             el->destroy();
@@ -85,7 +85,10 @@ bool explosives::explode()
                 el->destroy();
         }
     }
+    if(this->getStats()->isCollected())
+        this->getStats()->getCollector().lock()->destroy();
+    bElem::destroy();
 
-    this->disposeElement();
-    return false;
+
+    return true;
 }

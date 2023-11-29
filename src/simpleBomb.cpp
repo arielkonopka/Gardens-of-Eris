@@ -10,6 +10,10 @@ bool simpleBomb::additionalProvisioning(int subtype, std::shared_ptr<simpleBomb>
 {
     return this->additionalProvisioning(subtype,sbe->getType());
 }
+float simpleBomb::getViewRadius() const
+{
+    return 4.5;
+}
 
 bool simpleBomb::additionalProvisioning()
 {
@@ -33,24 +37,19 @@ bool simpleBomb::kill()
 
 bool simpleBomb::destroy()
 {
-    bElem::destroy();
-    if (this->triggered)
-    {
+    if(this->getStats()->isDestroying() || this->triggered)
         return false;
-    }
+
     this->registerLiveElement(shared_from_this());
     this->triggered = true;
-    this->getStats()->setWaiting(5); /* magic number */
+    this->getStats()->setWaiting(15); /* magic number */
     return true;
 }
 
 bool simpleBomb::mechanics()
 {
-    bElem::mechanics();
-    if (this->getStats()->getWaiting() > 1)
-        return false;
-    this->explode(1.5);
-    return true;
+    if (bElem::mechanics()) return this->explode(1.5);
+    return false;
 }
 
 

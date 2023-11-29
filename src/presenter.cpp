@@ -39,7 +39,7 @@ bool presenter::initializeDisplay()
 {
     ALLEGRO_MONITOR_INFO info;
     //  al_set_new_display_flags(ALLEGRO_FULLSCREEN);
-    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 |ALLEGRO_FULLSCREEN); //ma| ALLEGRO_FULLSCREEN);
+    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 ); //ma| ALLEGRO_FULLSCREEN);
     al_inhibit_screensaver(true);
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
     al_get_monitor_info(0, &info);
