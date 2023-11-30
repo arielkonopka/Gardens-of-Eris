@@ -48,7 +48,7 @@ goldenApple::goldenApple() : killableElements(), explosives()
 
 bool goldenApple::additionalProvisioning()
 {
-  return this->additionalProvisioning(0,this->getType());
+    return this->additionalProvisioning(0,this->getType());
 }
 bool goldenApple::additionalProvisioning(int subtype, int typeId)
 {
@@ -103,29 +103,39 @@ bool goldenApple::kill()
 bool goldenApple::mechanics()
 {
     bool r = explosives::mechanics();
-
-    if (this->getAttrs()->getSubtype() == 0 || this->getStats()->getCollector().expired() || this->getStats()->isWaiting())
+    std::shared_ptr<bElem> _owner=this->getStats()->getCollector().lock();
+    if (this->getAttrs()->getSubtype() == 0 || !this->getStats()->isCollected() || this->getStats()->isWaiting() || !_owner)
     {
         return r;
     }
-    int e = this->getStats()->getCollector().lock()->getAttrs()->getEnergy();
+    int e = _owner->getAttrs()->getEnergy();
     if (e < 100)
     {
         this->getStats()->setWaiting(55);
-        this->getStats()->getCollector().lock()->getAttrs()->setEnergy(e + 5);
+        _owner->getAttrs()->setEnergy(e + 5);
         this->hurt(5);
     }
-
     return true;
 }
 bool goldenApple::collectOnAction(bool collected, std::shared_ptr<bElem>who)
 {
-    bool r=bElem::collectOnAction(collected,who);
 
-    if (this->getStats()->hasActivatedMechanics() == false && this->getAttrs()->getSubtype() != 0)
+    if(collected && who )
     {
-        this->registerLiveElement(shared_from_this());
+        if(who->getAttrs()->getInventory()->countTokens(this->getType(),this->getAttrs()->getSubtype())>1 || this->getAttrs()->getSubtype()==0)
+        {
+            this->deregisterLiveElement(this->getStats()->getInstanceId());
+        }
+        else
+        {
+            this->registerLiveElement(shared_from_this());
+        }
     }
+    else
+    {
+        this->deregisterLiveElement(this->getStats()->getInstanceId());
+    }
+    bool r=bElem::collectOnAction(collected,who);
     return r;
 }
 

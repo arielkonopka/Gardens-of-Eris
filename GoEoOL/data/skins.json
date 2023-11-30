@@ -735,7 +735,73 @@
           }
         ]
         
-     },
+     }
+,
+     {
+        "Type": 205,
+        "Name": "bazookaMissile",
+        "AnimDef": [ [
+      [ [ 13, 3 ] ],
+      [ [ 14, 2 ] ],
+      [ [ 14, 3 ] ],
+      [ [ 13, 2 ] ]
+        ] ],
+        "Attributes": [
+          {
+             "SubType":-1,
+             "Killable":true,
+             "Destroyable":true,
+             "Steppable":false,
+             "isMovable":true,
+             "isInteractive":false,
+             "isCollectible":false,
+             "canPush":false,
+             "canBePushed":false,
+             "canCollect":false,
+             "isWeapon":true,
+             "isOpen":false,
+             "isLocked":false,
+             "energy":55,
+             "maxEnergy":555,
+             "ammo":0,
+             "maxAmmo":0
+          }
+        ]
+        
+     }
+,
+     {
+        "Type": 204,
+        "Name": "bazooka",
+        "AnimDef": [ [
+      [ [ 13, 0 ], [ 13, 1 ] ],
+      [ [ 14, 0 ], [ 14, 1 ] ]
+        ] ],
+        "Attributes": [
+          {
+             "SubType":-1,
+             "Killable":true,
+             "Destroyable":true,
+             "Steppable":false,
+             "isMovable":true,
+             "isInteractive":false,
+             "isCollectible":true,
+             "canPush":false,
+             "canBePushed":false,
+             "canCollect":false,
+             "isWeapon":true,
+             "isOpen":false,
+             "isLocked":false,
+             "energy":55,
+             "maxEnergy":555,
+             "ammo":5,
+             "maxAmmo":10
+          }
+        ]
+        
+     }
+
+,
      {
         "Type": 250,
         "Name": "bunker",

@@ -27,4 +27,6 @@
 #include "simpleBomb.h"
 #include "brickCluster.h"
 #include "puppetMasterFR.h"
+#include "bazooka.h"
+#include "bazookaMissile.h"
 #endif // ELEMENTS_H_INCLUDED

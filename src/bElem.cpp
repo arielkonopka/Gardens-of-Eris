@@ -654,10 +654,14 @@ bool bElem::moveInDirectionSpeed(direction d, int speed)
 }
 
 
-
 void bElem::registerLiveElement(std::shared_ptr<bElem> who)
 {
 
+    int iid=who->getStats()->getInstanceId();
+    for(unsigned int c=0;c<bElem::toDeregister.size();)
+        if(bElem::toDeregister[c]==iid)
+            bElem::toDeregister.erase(bElem::toDeregister.begin()+c);
+        else c++;
     if (this->getStats()->hasActivatedMechanics())
         return;
     this->getStats()->setActivatedMechanics(true);

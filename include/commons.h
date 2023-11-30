@@ -26,6 +26,10 @@
 #define _plainMissile 201
 #define _plainGun 200
 #define _bunker 250
+
+#define _bazookaMissileType 205
+#define _bazookaType 204
+
 #define _teleporter 400
 #define _teleportationTime (_mov_delay*15)
 #define _teleportStandTime 55
@@ -42,6 +46,7 @@
 
 #define _plainGunAmmo 10
 #define _plainMissileSpeed 4
+#define _bazookaMissileSpeed 4
 #define _plainMissileEnergy 100
 #define _plainGunCharge 10
 
