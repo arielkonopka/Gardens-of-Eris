@@ -5,11 +5,7 @@ mechanical::mechanical(std::shared_ptr<chamber> board) : mechanical()
     this->setBoard(board);
 }
 
-mechanical::~mechanical()
-{
 
-  //  this->deregisterLiveElement(this->getStats()->getInstanceId());
-}
 mechanical::mechanical(std::shared_ptr<chamber> board, bool rEl) : mechanical(board)
 {
 

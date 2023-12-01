@@ -5,17 +5,20 @@ bazookaMissile::bazookaMissile(std::shared_ptr<chamber> board):explosives(board)
     this->setBoard(board);
 }
 
-bazookaMissile::~bazookaMissile()
-{
-    //dtor
-}
-
 bool bazookaMissile::mechanics()
 {
-    if(!movableElements::mechanics()) return false;
-    if(this->getElementInDirection(this->getStats()->getMyDirection())->getAttrs()->isSteppable())
-      return this->moveInDirectionSpeed(this->getStats()->getMyDirection(),_bazookaMissileSpeed);
-    return this->explode();
+    if(!movableElements::mechanics())
+        return false;
+    if(this->moveInDirectionSpeed(this->getStats()->getMyDirection(),_bazookaMissileSpeed))
+    {
+        this->steps++;
+        return true;
+    }
+    if(steps>1) return this->explode();
+    std::shared_ptr<bElem> be=this->getElementInDirection(this->getStats()->getMyDirection());
+    if(be)
+        be->hurt(this->getAttrs()->getEnergy());
+    return this->kill();
 }
 
 int bazookaMissile::getType() const
@@ -30,7 +33,6 @@ bool bazookaMissile::additionalProvisioning()
 
 bool bazookaMissile::additionalProvisioning(int subtype, int typeId)
 {
-
     return movableElements::additionalProvisioning(subtype,typeId);;
 }
 
