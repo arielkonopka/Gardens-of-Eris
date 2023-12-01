@@ -199,46 +199,52 @@ void inputManager::stop()
 void inputManager::hapticKick(float strength)
 {
 
-/*
-    if (!this->haptic)
-    {
-        return;
-    }
-    al_set_haptic_gain(this->haptic, strength);
-    this->effect.type = ALLEGRO_HAPTIC_RUMBLE;
-    this->effect.data.rumble.strong_magnitude = strength;
-    this->effect.data.rumble.weak_magnitude = strength;
-    this->effect.replay.delay = 0.1;
-    this->effect.replay.length = strength/10;
-    al_upload_haptic_effect(this->haptic, &this->effect, &this->id);
-    al_play_haptic_effect(&this->id, 1);
+    /*
+        if (!this->haptic)
+        {
+            return;
+        }
+        al_set_haptic_gain(this->haptic, strength);
+        this->effect.type = ALLEGRO_HAPTIC_RUMBLE;
+        this->effect.data.rumble.strong_magnitude = strength;
+        this->effect.data.rumble.weak_magnitude = strength;
+        this->effect.replay.delay = 0.1;
+        this->effect.replay.length = strength/10;
+        al_upload_haptic_effect(this->haptic, &this->effect, &this->id);
+        al_play_haptic_effect(&this->id, 1);
 
-*/
+    */
 }
-
 
 inputManager* inputManager::getInstance()
 {
-    std::call_once(once, []()
+    return inputManager::getInstance(false);
+}
+
+inputManager* inputManager::getInstance(bool testmode)
+{
+    std::call_once(once, [testmode]()
     {
         inputManager::_instance=new inputManager();
-        al_install_keyboard();
-        al_install_joystick();
-        _instance->evQueue= al_create_event_queue();
-        al_register_event_source(_instance->evQueue, al_get_keyboard_event_source());
-        al_register_event_source(_instance->evQueue, al_get_joystick_event_source());
-        if (al_get_num_joysticks() > 0)
+        if(!testmode)
         {
-            _instance->joystick = al_get_joystick(al_get_num_joysticks()-1); // take first joystick
-            _instance->joyPresent=true;
-          //  std::cout<<"getting haptic "<<al_get_num_joysticks()<<"\n";
-         //   _instance->haptic=al_get_haptic_from_joystick(_instance->joystick);
-         //   std::cout<<"took haptic\n";
+            al_install_keyboard();
+            al_install_joystick();
+            _instance->evQueue= al_create_event_queue();
+            al_register_event_source(_instance->evQueue, al_get_keyboard_event_source());
+            al_register_event_source(_instance->evQueue, al_get_joystick_event_source());
+            if (al_get_num_joysticks() > 0)
+            {
+                _instance->joystick = al_get_joystick(al_get_num_joysticks()-1); // take first joystick
+                _instance->joyPresent=true;
+                //  std::cout<<"getting haptic "<<al_get_num_joysticks()<<"\n";
+                //   _instance->haptic=al_get_haptic_from_joystick(_instance->joystick);
+                //   std::cout<<"took haptic\n";
+            }
+
+            _instance->nt=std::thread(&inputManager::inputLoop, _instance);
+            _instance->nt.detach();
         }
-
-        _instance->nt=std::thread(&inputManager::inputLoop, _instance);
-        _instance->nt.detach();
-
 
     });
     return inputManager::_instance;

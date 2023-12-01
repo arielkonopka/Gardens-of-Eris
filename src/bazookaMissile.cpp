@@ -30,7 +30,7 @@ bool bazookaMissile::additionalProvisioning()
 
 bool bazookaMissile::additionalProvisioning(int subtype, int typeId)
 {
-    this->registerLiveElement(shared_from_this());
+
     return movableElements::additionalProvisioning(subtype,typeId);;
 }
 

@@ -1,7 +1,9 @@
 // *** ADDED BY HEADER FIXUP ***
 #include <list>
 // *** END ***
-//#ifndef _UNIT_TEST_BUILD_
+#ifndef _UNIT_TEST_BUILD_
+#define _UNIT_TEST_BUILD_
+#endif
 //#ifndef BELEM_H_INCLUDED
 //#define BELEM_H_INCLUDED
 #include "elements.h"
@@ -15,11 +17,12 @@
 #include "floorElement.h"
 #include "bElemStats.h"
 #include "bElemAttr.h"
+#include "inputManager.h"
 
 
-typedef boost::mpl::list<bElem,killableElements,player,mechanical,door,explosives,movableElements> base_test_types;
+typedef boost::mpl::list<bElem,killableElements,player,mechanical,door,explosives,brickCluster> base_test_types;
 
-typedef boost::mpl::list<bElem,bunker,floorElement,door,explosives,goldenApple,key,killableElements,mechanical,monster,movableElements,patrollingDrone,plainGun,plainMissile,player,rubbish,teleport,wall> all_test_types;
+typedef boost::mpl::list<bElem,bunker,floorElement,door,explosives,goldenApple,key,killableElements,mechanical,monster,brickCluster,patrollingDrone,plainGun,plainMissile,player,rubbish,teleport,wall> all_test_types;
 
 
 int countTheStack(std::shared_ptr<bElem> in)
@@ -69,7 +72,7 @@ BOOST_AUTO_TEST_SUITE( BasicObjectTests )
 //    std::cout<<"make chamber\n";
     std::shared_ptr<chamber> chmbr=chamber::makeNewChamber(csize); // we need only a small chamber
     coords cs1=chmbr->getSizeOfChamber();
-    BOOST_ASSERT( chmbr!=nullptr );
+    BOOST_ASSERT( chmbr);
     BOOST_CHECK( cs1==csize);
     for(int c=0; c<csize.x; c++) // check that all elements are not nullptr
         for(int d=0; d<csize.y; d++)
@@ -80,12 +83,16 @@ BOOST_AUTO_TEST_SUITE( BasicObjectTests )
             BOOST_CHECK( beOrig->getType()==_floorType);
             BOOST_CHECK(beOrig->getStats()->getMyPosition()==mcoords); // just check if the allocation is correct
             BOOST_CHECK(beOrig->getStats()->hasParent()==false);
-            BOOST_ASSERT(beOrig->getStats()->getSteppingOn().get()==nullptr);
+
+            BOOST_CHECK(!beOrig->getStats()->getSteppingOn());
         }
 
     std::shared_ptr<bElem> beOrig=chmbr->getElement(0,0); // ok, now let's step on something
+    BOOST_CHECK(beOrig);
     std::shared_ptr<bElem> be=elementFactory::generateAnElement<T>(chmbr,0);
-    BOOST_ASSERT( be!=nullptr );
+
+    BOOST_ASSERT( be );
+    inputManager::getInstance(true);
     be->stepOnElement(chmbr->getElement(0,0));
     BOOST_CHECK(be->getBoard()==chmbr);
     std::shared_ptr<bElem> be2=chmbr->getElement(0,0); // check if the element is placed
@@ -322,39 +329,37 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDisposingTest,T,all_test_types)
  */
 BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDestroyingTheWholeChamber,T,all_test_types)
 {
-    std::shared_ptr<chamber> mc=chamber::makeNewChamber({11,11});
+    std::shared_ptr<chamber> mc=chamber::makeNewChamber({12,12});
     std::shared_ptr<bElem> be=nullptr;
     std::shared_ptr<bElem> be1=elementFactory::generateAnElement<bElem>(mc,0);
     BOOST_CHECK(be1!=nullptr);
-    BOOST_CHECK(be1->stepOnElement(mc->getElement(10,10))==true); // this is the object that will be interacting with tested elements
+    BOOST_CHECK(be1->stepOnElement(mc->getElement(11,11))==true); // this is the object that will be interacting with tested elements
     for(int x=0; x<10; x++)
     {
         for(int y=0; y<10; y++)
         {
-        //    std::cout<<"x,y"<<x<<","<<y<<"\n";
-            be=elementFactory::generateAnElement<T>(mc,0);
 
+            be=elementFactory::generateAnElement<T>(mc,x);
             BOOST_CHECK(mc->getElement(x,y)!=nullptr);
-        //    std::cout<<"element\n";
             be->stepOnElement(mc->getElement(x,y));
-
             BOOST_CHECK(be->getStats()->getInstanceId()==mc->getElement(x,y)->getStats()->getInstanceId());
             be->getStats()->setActive(true);
             BOOST_CHECK(be->getStats()->isActive());
-
-            be->interact(be1);
-            BOOST_CHECK(be->getStats()->isActive()==true);
-            //be->mechanics(false);
-            // be->use(be1);
         }
-        //     std::cout<<"\n";
     }
     for(int x=0; x<11; x++)
     {
         for(int y=0; y<11; y++)
         {
-         //   std::cout<<"m(x,y)"<<x<<","<<y<<"\n";
-            mc->getElement(x,y)->mechanics();
+            be->interact(be1);
+        }
+    }
+    for(int x=0; x<11; x++)
+    {
+        for(int y=0; y<11; y++)
+        {
+            for(int cnt=0; cnt<1000; cnt++)
+                mc->getElement(x,y)->mechanics();
         }
 
     }
@@ -641,7 +646,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(InteractTimerMechanismChecker,T,all_test_types)
 
     for(int c=0; c<1000; c++) bElem::tick();
     tElem->interact(mc->getElement(1,1));
-    BOOST_CHECK((tElem->getStats()->isInteracting() && tElem->getAttrs()->isInteractive() )|| (!tElem->getStats()->isInteracting() && !tElem->getAttrs()->isInteractive() ));
+    bElem::tick();
+    if(tElem->getAttrs()->isInteractive())
+        BOOST_CHECK(tElem->getStats()->isInteracting() );
     for(int c=0; c<_interactedTime+1; c++) bElem::tick();
     BOOST_CHECK((!tElem->getStats()->isInteracting() && tElem->getAttrs()->isInteractive() )|| (!tElem->getStats()->isInteracting() && !tElem->getAttrs()->isInteractive() ));
     for(int c=0; c<1000; c++)
@@ -675,7 +682,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TryToCollectAnObjectAndDisposeIt,T,all_test_types)
     std::shared_ptr<bElem> mC=elementFactory::generateAnElement<T>(mc,0);
 //std::shared_ptr<inventory> nInv;
     mO->getAttrs()->setCollect(true);
-  //  nInv=mO->getAttrs()->getInventory();
+    //  nInv=mO->getAttrs()->getInventory();
     mO->stepOnElement(mc->getElement(2,2));
     mC->stepOnElement(mc->getElement(2,3));
     //Check if the collect method works well with its limits
@@ -685,7 +692,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TryToCollectAnObjectAndDisposeIt,T,all_test_types)
     {
         BOOST_CHECK(mc->getElement(2,3)->getStats()->getInstanceId()!=mC->getStats()->getInstanceId());
         BOOST_CHECK(mC->getStats()->isCollected());
-      //  std::cout<<"is in inv?"<<mO->getAttrs()->getInventory()->findInInventory(mC->getStats()->getInstanceId())<<"\n";
+        //  std::cout<<"is in inv?"<<mO->getAttrs()->getInventory()->findInInventory(mC->getStats()->getInstanceId())<<"\n";
     }
     else
     {

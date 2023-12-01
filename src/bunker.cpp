@@ -71,6 +71,8 @@ bool bunker::mechanics()
 
 bool bunker::interact(std::shared_ptr<bElem> Who)
 {
+    if(!bElem::interact(Who))
+        return false;
     this->help=5555;
     return true;
 }

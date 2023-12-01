@@ -25,6 +25,7 @@ std::shared_ptr<bElem> bazooka::createProjectible(std::shared_ptr<bElem>who)
     pm->getAttrs()->setEnergy(this->getAttrs()->getEnergy());
     if(who->getType()==_player)
         viewPoint::get_instance()->setOwner(pm);
+    pm->registerLiveElement(pm);
     return pm;
 }
 bool bazooka::additionalProvisioning()
