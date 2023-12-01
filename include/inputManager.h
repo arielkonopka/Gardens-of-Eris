@@ -30,6 +30,7 @@ public:
     virtual ~inputManager();
     bool pressed_keys[ALLEGRO_KEY_MAX];
     static inputManager* getInstance();
+    static inputManager* getInstance(bool testmode);
     void hapticKick(float strength);
     void stop();
 private:

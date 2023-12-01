@@ -271,6 +271,7 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 ## ChangeLog
+* Added a bazooka weapon, the graphics is pancerfaust60.
 * Explosives were refactored a bit, now the explode method can be used instead of destroy.
 * Joystick initial support. Now the InputManager is a singleton with its own thread, that can be started/stopped only once, it's purpose is to get the controller state to any app, that demands it.
 * The cloaking mechanism is mostly done, what is left is optimizations. Removed one bitmap from use. Introduced drawing bitmaps with different alpha(transparency), now we do not beed blur75/50/25, and therefore are removed from the code.

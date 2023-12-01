@@ -75,6 +75,8 @@
 		<Unit filename="include/bElem.h" />
 		<Unit filename="include/bElemAttr.h" />
 		<Unit filename="include/bElemStats.h" />
+		<Unit filename="include/bazooka.h" />
+		<Unit filename="include/bazookaMissile.h" />
 		<Unit filename="include/bouba.h" />
 		<Unit filename="include/brickCluster.h" />
 		<Unit filename="include/bunker.h" />
@@ -123,6 +125,8 @@
 		<Unit filename="src/bElem.cpp" />
 		<Unit filename="src/bElemAttr.cpp" />
 		<Unit filename="src/bElemStats.cpp" />
+		<Unit filename="src/bazooka.cpp" />
+		<Unit filename="src/bazookaMissile.cpp" />
 		<Unit filename="src/bouba.cpp" />
 		<Unit filename="src/brickCluster.cpp" />
 		<Unit filename="src/bunker.cpp" />

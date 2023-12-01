@@ -410,7 +410,7 @@ bool bElem::mechanics()
         return false;
     this->getStats()->setTaterCounter(this->getStats()->getTaterCounter()+1); /// Instances own 'clock'.
 
-    if (this->getStats()->isWaiting() || this->getStats()->isTeleporting() || this->getStats()->isDying() || this->getStats()->isDestroying() || this->getStats()->isMoving())
+    if (this->getStats()->isWaiting() || this->getStats()->isTeleporting() || this->getStats()->isDying() || this->getStats()->isDestroying() || this->getStats()->isMoving() || (this->getAttrs()->isInteractive() && this->getStats()->isInteracting()))
         return false;
 
     return true;
@@ -654,10 +654,14 @@ bool bElem::moveInDirectionSpeed(direction d, int speed)
 }
 
 
-
 void bElem::registerLiveElement(std::shared_ptr<bElem> who)
 {
 
+    int iid=who->getStats()->getInstanceId();
+    for(unsigned int c=0;c<bElem::toDeregister.size();)
+        if(bElem::toDeregister[c]==iid)
+            bElem::toDeregister.erase(bElem::toDeregister.begin()+c);
+        else c++;
     if (this->getStats()->hasActivatedMechanics())
         return;
     this->getStats()->setActivatedMechanics(true);
@@ -666,7 +670,8 @@ void bElem::registerLiveElement(std::shared_ptr<bElem> who)
 
 void bElem::deregisterLiveElement(int instanceId)
 {
-    toDeregister.push_back(instanceId);
+    if(this->getStats()->hasActivatedMechanics())
+        bElem::toDeregister.push_back(instanceId);
     this->getStats()->setActivatedMechanics(false);
 }
 

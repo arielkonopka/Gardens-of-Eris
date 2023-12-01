@@ -343,6 +343,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     {
         elementsToChooseFrom.push_back({_key,1,1,0,3});
         elementsToChooseFrom.push_back({_key,3,1,0,3});
+         elementsToChooseFrom.push_back({_bazookaType,0,1,0,3});
 
 
 
@@ -360,6 +361,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     //  elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
     elementsToChooseFrom.push_back({_player,0,1,0,3});
     elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
+
     //
     elementsToChooseFrom.push_back({_patrollingDrone,0,1,0,3});
     elementsToChooseFrom.push_back({_puppetMasterType,0,1,0,3});
@@ -568,6 +570,8 @@ std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace elemen
         return elementFactory::generateAnElement<brickCluster>(this->mychamber,0);
     case _puppetMasterType:
         return elementFactory::generateAnElement<puppetMasterFR>(this->mychamber,0);
+    case _bazookaType:
+        return elementFactory::generateAnElement<bazooka>(this->mychamber,element.eSubType);
     }
     return nullptr;
 }
