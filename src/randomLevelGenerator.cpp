@@ -418,7 +418,7 @@ bool randomLevelGenerator::generateLevel(int holes)
 
     bool _ex=false;
     chamberArea::foundAreas.clear();
-    while(this->headNode->surface>55 && !_ex)
+    while(!_ex)
     {
 #ifdef _VerbousMode_
         std::cout<<"Surface total: "<<this->headNode->surface<<"\n";
@@ -427,7 +427,7 @@ bool randomLevelGenerator::generateLevel(int holes)
         int demandedSurface=0;
 
         int cnt;
-        int elementsToMake=((this->gen()%3)+2)*5;
+        int elementsToMake=((this->gen()%5)+1)*5;
         elementCollection.clear();
         for(cnt=0; cnt<elementsToMake; cnt++)
         {
@@ -436,13 +436,10 @@ bool randomLevelGenerator::generateLevel(int holes)
 
         }
         for(unsigned int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
-        if(chamberArea::foundAreas.size()<2)
-        {
-            chamberArea::foundAreas.clear();
-            this->headNode->findChambersCloseToSurface(demandedSurface,tolerance);
-            if(chamberArea::foundAreas.size()<1)
-               _ex=true;
-        }
+        chamberArea::foundAreas.clear();
+        this->headNode->findChambersCloseToSurface(demandedSurface,tolerance);
+        if(chamberArea::foundAreas.size()<1)
+            _ex=true;
         if(chamberArea::foundAreas.size()>=1)
         {
             int selectedChamberNo=(this->gen()%chamberArea::foundAreas.size());
@@ -468,17 +465,15 @@ bool randomLevelGenerator::generateLevel(int holes)
                 }
                 this->headNode->removeEmptyNodes();
                 delete chamberArea::foundAreas[selectedChamberNo];
-                chamberArea::foundAreas[selectedChamberNo]=chamberArea::foundAreas[chamberArea::foundAreas.size()-1];
-                chamberArea::foundAreas.pop_back();
+
             }
 
         }
         else
         {
-            tolerance+=15;
-            this->headNode->findChambersCloseToSurface(demandedSurface+tolerance,tolerance);
-            if(chamberArea::foundAreas.size()==0)
-                _ex=true;
+            _ex=true;
+
+
         }
 
 
