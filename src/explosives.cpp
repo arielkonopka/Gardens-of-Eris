@@ -10,10 +10,6 @@ explosives::explosives() : bElem()
 {
 }
 
-explosives::~explosives()
-{
-    // dtor
-}
 bool explosives::additionalProvisioning(int subtype, std::shared_ptr<explosives>sbe)
 {
     return this->additionalProvisioning(subtype,sbe->getType());

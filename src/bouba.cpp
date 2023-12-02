@@ -4,8 +4,3 @@ bouba::bouba()
 {
     //ctor
 }
-
-bouba::~bouba()
-{
-    //dtor
-}

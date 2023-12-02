@@ -40,7 +40,11 @@ public:
     static void runLiveElements();
 
     virtual sNeighboorhood getSteppableNeighboorhood();
-    virtual ~bElem();
+
+    bElem();
+    explicit bElem(std::shared_ptr<chamber> board);
+    bElem(const bElem &) = delete;
+    virtual ~bElem()=default;
 
     virtual void setBoard(std::shared_ptr<chamber> board);
     virtual std::shared_ptr<chamber> getBoard() const;
@@ -90,8 +94,7 @@ public:
 
     virtual int getTypeInDirection(direction di);
     virtual void setStatsOwner(std::shared_ptr<bElem> owner);
-    bElem();
-    explicit bElem(std::shared_ptr<chamber> board);
+
     virtual bool additionalProvisioning();
     virtual bool additionalProvisioning(int subtype,int typeId);
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<bElem> sbe);
@@ -105,7 +108,7 @@ private:
 
     void ps(std::shared_ptr<bElem> who,std::string eventType,std::string event);
     bool provisioned=false;
-    bElem(const bElem &) = delete;
+
     std::shared_ptr<chamber> attachedBoard = nullptr;
     ALLEGRO_MUTEX *elementMutex = nullptr;
     static int instances;

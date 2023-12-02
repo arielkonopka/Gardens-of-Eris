@@ -4,8 +4,3 @@ kiki::kiki()
 {
     //ctor
 }
-
-kiki::~kiki()
-{
-    //dtor
-}

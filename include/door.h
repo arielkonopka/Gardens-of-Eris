@@ -16,7 +16,7 @@ public:
 
     virtual bool interact(std::shared_ptr<bElem> who);
 
-    virtual ~door();
+    virtual ~door()=default;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<door> sbe);
     virtual bool additionalProvisioning();
     virtual bool additionalProvisioning(int subtype,int typeId);

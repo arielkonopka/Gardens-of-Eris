@@ -11,7 +11,7 @@ class bElemStats
 {
 public:
     bElemStats();
-    virtual ~bElemStats();
+    ~bElemStats() =default;
 
     // get methods
     unsigned long int getInstanceId() const;

@@ -2,7 +2,7 @@
 
 bazookaMissile::bazookaMissile(std::shared_ptr<chamber> board):explosives(board),movableElements(board)
 {
-    this->setBoard(board);
+
 }
 
 bool bazookaMissile::mechanics()

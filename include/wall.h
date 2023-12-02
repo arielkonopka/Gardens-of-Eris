@@ -12,6 +12,7 @@ class wall : public bElem
 public:
 
     wall();
+    virtual ~wall()=default;
     bool stepOnElement(std::shared_ptr<bElem> elem);
     std::shared_ptr<bElem> removeElement();
     explicit wall(std::shared_ptr<chamber> board);

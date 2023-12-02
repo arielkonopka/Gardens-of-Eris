@@ -11,7 +11,7 @@ public:
     plainMissile();
     explicit plainMissile(std::shared_ptr<chamber> mychamber);
     explicit plainMissile(std::shared_ptr<chamber> mychamber,int energy);
-    virtual ~plainMissile();
+    virtual ~plainMissile()=default;
     virtual bool mechanics();
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<plainMissile> sbe);
     virtual bool additionalProvisioning();

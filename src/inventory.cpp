@@ -292,9 +292,11 @@ void inventory::decrementTokenNumber(tType token)
 
 }
 
-
-
-
+/**
+* @brief: merge external inventory with local, destroying the other one
+* @params: theOtherInventory - pretty self explanatory
+* @return: true on success
+*/
 bool inventory::mergeInventory(std::shared_ptr<inventory> theOtherInventory)
 {
     if(theOtherInventory.get()==nullptr)
@@ -307,6 +309,8 @@ bool inventory::mergeInventory(std::shared_ptr<inventory> theOtherInventory)
             item->getStats()->setCollected(false);
             item->collectOnAction(false,nullptr); // we let the element to react on dropping.
             item->getStats()->setCollector(this->owner.lock());
+            item->getStats()->setCollected(true);
+            item->collectOnAction(true,item->getStats()->getCollector().lock());
             _vect2.push_back(item);
         };
     };
@@ -320,12 +324,14 @@ bool inventory::mergeInventory(std::shared_ptr<inventory> theOtherInventory)
     theOtherInventory->mods.clear();
     theOtherInventory->keys.clear();
     theOtherInventory->tokens.clear();
-
     return true;
 }
 
-
-
+/**
+* @brief: removes a token from tokens, and disposes it
+* @params: token position
+* @returns: true on success
+*/
 bool inventory::removeToken(int position)
 {
     tType token;
@@ -338,8 +344,6 @@ bool inventory::removeToken(int position)
     this->tokens[position]->disposeElement();
     this->tokens.erase(this->tokens.begin()+position);
     return true;
-
-
 }
 
 bool inventory::findInInventory(unsigned long int instanceId)
@@ -363,7 +367,6 @@ bool inventory::findInInventory(unsigned long int instanceId)
 
 bool inventory::isEmpty()
 {
-
     return ((this->keys.size()==0) && (this->mods.size()==0) && (this->tokens.size()==0) && (this->weapons.size()==0));
 }
 

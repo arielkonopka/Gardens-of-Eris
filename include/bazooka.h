@@ -9,7 +9,7 @@ class bazooka : public plainGun
 {
     public:
         bazooka(std::shared_ptr<chamber> board);
-        virtual ~bazooka();
+        virtual ~bazooka()=default;
         int getType() const;
         std::shared_ptr<bElem> createProjectible(std::shared_ptr<bElem> who);
         bool additionalProvisioning();

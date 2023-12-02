@@ -5,9 +5,3 @@ monsterBrain::monsterBrain()
     //ctor
 }
 
-monsterBrain::~monsterBrain()
-{
-    //dtor
-}
-
-

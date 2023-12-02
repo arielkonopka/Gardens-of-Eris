@@ -11,6 +11,7 @@ class killableElements : virtual public bElem
 public:
     explicit killableElements(std::shared_ptr<chamber> board);
     killableElements() ;
+    virtual ~killableElements()=default;
     virtual bool hurt(int points);
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<killableElements> sbe);
     virtual bool additionalProvisioning();

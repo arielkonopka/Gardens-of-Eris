@@ -120,8 +120,3 @@ bool door::interact(std::shared_ptr<bElem> who)
     return true;
 }
 
-
-door::~door()
-{
-    // dtor
-}

@@ -12,11 +12,6 @@ floorElement::floorElement(std::shared_ptr<chamber> board) : floorElement()
 
 
 
-floorElement::~floorElement()
-{
-    //dtor
-}
-
 
 int floorElement::getType() const
 {

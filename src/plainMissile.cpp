@@ -34,10 +34,7 @@ bool plainMissile::additionalProvisioning(int subtype,int typeId)
     return bElem::additionalProvisioning(subtype,typeId);
 }
 
-plainMissile::~plainMissile()
-{
 
-}
 int plainMissile::getType() const
 {
     return _plainMissile;

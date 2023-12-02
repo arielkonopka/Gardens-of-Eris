@@ -12,6 +12,7 @@ class brickCluster: public movableElements
 public:
     brickCluster(std::shared_ptr<chamber> board);
     brickCluster();
+    virtual ~brickCluster()=default;
     int getType() const;
     bool additionalProvisioning() ;
     bool additionalProvisioning(int subtype,std::shared_ptr<brickCluster> sbe) ;

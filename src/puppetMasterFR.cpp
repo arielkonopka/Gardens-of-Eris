@@ -8,10 +8,6 @@ puppetMasterFR::puppetMasterFR(std::shared_ptr<chamber> board) :  puppetMasterFR
     this->setBoard(board);
 }
 
-puppetMasterFR::~puppetMasterFR()
-{
-    // dtor
-}
 puppetMasterFR::puppetMasterFR() :  mechanical(), killableElements()
 {
 }

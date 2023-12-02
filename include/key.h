@@ -9,7 +9,7 @@ class key : public bElem
 {
 
 public:
-
+    virtual ~key()=default;
     virtual int getType() const;
     explicit key(std::shared_ptr<chamber> board);
     explicit key(std::shared_ptr<chamber> board,int x,int y);

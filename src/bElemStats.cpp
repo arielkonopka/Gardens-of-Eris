@@ -19,10 +19,6 @@ bElemStats::bElemStats()
     this->createInstanceId();
 }
 
-bElemStats::~bElemStats()
-{
-    //dtor
-}
 bool bElemStats::isDisposed() const
 {
     return this->disposed;

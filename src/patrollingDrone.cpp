@@ -25,10 +25,7 @@ patrollingDrone::patrollingDrone() : killableElements(), movableElements()
 
 }
 
-patrollingDrone::~patrollingDrone()
-{
-    this->brainModule=nullptr;
-}
+
 bool patrollingDrone::additionalProvisioning(int subtype, std::shared_ptr<patrollingDrone>sbe)
 {
     return this->additionalProvisioning(subtype,sbe->getType());

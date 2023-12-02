@@ -36,11 +36,6 @@ bool teleport::additionalProvisioning(int subtype,int typeId)
 }
 
 
-teleport::~teleport()
-{
-
-    this->removeFromAllTeleporters();
-}
 /* here we will try to teleport an object to the becon connected to this teleporter. if the becon is not yet established, randomly choose one */
 bool teleport::interact(std::shared_ptr<bElem> who)
 {

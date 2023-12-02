@@ -10,7 +10,7 @@ public:
 
     explicit explosives(std::shared_ptr<chamber> board);
     explosives();
-    virtual ~explosives();
+    virtual ~explosives()=default;
 
     virtual bool explode();
     virtual bool explode(float radius);

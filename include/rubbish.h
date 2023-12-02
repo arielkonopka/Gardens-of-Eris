@@ -9,6 +9,7 @@ public:
 
     rubbish();
     explicit rubbish(std::shared_ptr<chamber> board);
+    virtual ~rubbish() = default;
     bool mechanics() final;
     int getType()  const ;
     virtual bool additionalProvisioning();

@@ -2,13 +2,9 @@
 
 bazooka::bazooka(std::shared_ptr<chamber> board):plainGun(board)
 {
-    //ctor
 }
 
-bazooka::~bazooka()
-{
-    //dtor
-}
+
 
 int bazooka::getType() const
 {
