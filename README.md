@@ -106,7 +106,7 @@ My implementation of [recursive division](https://en.wikipedia.org/wiki/Maze_gen
 
 # Random element placement
 
-During the labirynth creation, we create a [spanning tree](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/docs/spanningtree.gifg?raw=true). Every node can have multiple children (usually 4), and every node has a parent, except for the head, which has no parent. You can check the diagram in docs folder.
+During the labirynth creation, we create a [spanning tree](https://github.com/arielkonopka/Gardens-of-Eris/blob/main/docs/spanningtree.gif). Every node can have multiple children (usually 4), and every node has a parent, except for the head, which has no parent. You can check the diagram in docs folder.
 
 Every node has a surface (a number of available spaces), which is calculated using algorythm: 
 
