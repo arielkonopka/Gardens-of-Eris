@@ -16,23 +16,24 @@ puppetMasterFR::puppetMasterFR() :  mechanical(), killableElements()
 bool puppetMasterFR::collectOnAction(bool c, std::shared_ptr<bElem>who)
 {
     bool r=bElem::collectOnAction(c,who);
-    if(c && r && who )
+
+    if(c && r && who && who->getType()==_patrollingDrone )
     {
-        if(who->getType() == _patrollingDrone)
+        std::shared_ptr<bElem> b=who->getAttrs()->getInventory()->retrieveCollectibleFromInventory(this->getStats()->getInstanceId(),false);
+        if(b)
         {
-            if (this->getAttrs()->getSubtype() == 0) // if subtype not set, set one randomly
-            {
-               //this->getAttrs()->setSubtype(2);
-                this->getAttrs()->setSubtype(this->randomNumberGenerator()%2);
-                if(this->getAttrs()->getSubtype()==0)
-                    viewPoint::get_instance()->addViewPoint(who);
-            }
-            this->registerLiveElement(shared_from_this());
+            return who->dropItem(this->getStats()->getInstanceId());
         }
+        if (this->getAttrs()->getSubtype() == 0) // if subtype not set, set one randomly
+        {
+            this->getAttrs()->setSubtype(this->randomNumberGenerator()%2);
+            if(this->getAttrs()->getSubtype()==0)
+                viewPoint::get_instance()->addViewPoint(who);
+        }
+        this->registerLiveElement(shared_from_this());
     }
     else if(this->getStats()->hasActivatedMechanics())
         this->deregisterLiveElement(this->getStats()->getInstanceId());
-
     return true;
 }
 
@@ -62,21 +63,34 @@ bool puppetMasterFR::mechanics()
 bool puppetMasterFR::collectorMechanics()
 {
     std::shared_ptr<bElem> _collector=this->getStats()->getCollector().lock();
+    direction _d=_collector->getStats()->getMyDirection();
+    direction d=_d;
+    direction _d1=(direction)(((int)(_d)+1)%4);
+    direction _d2=(direction)(((int)(_d)+3)%4);
+    direction _d3=(this->randomNumberGenerator()%2==0)?_d1:_d2;
     for(int c=0; c<4; c++)
     {
-        direction d=_collector->getStats()->getMyDirection();
-        d=(direction)(((int)d+c)%4);
+        d=(direction)(((int)_d+c)%4);
+        switch((int)d-(int)_d)
+        {
+        case 1:
+            _d3=_d1;
+            break;
+        case -1:
+        case -3:
+        case 3:
+            _d3=_d2;
+            break;
+        }
         std::shared_ptr<bElem> check=this->findObjectInDirection(d);
-
-        if(check && check->getAttrs()->isCollectible())
+        if(check && check->getAttrs()->isCollectible() && check->getType()!=this->getType())
         {
             if(_collector->getStats()->getMyDirection()!=d)
             {
-                _collector->getStats()->setMyDirection(d);
-                _collector->getStats()->setFacing(d);
-                this->getStats()->setWaiting(5);
+                _collector->getStats()->setMyDirection(_d3);
+                _collector->getStats()->setFacing(_d3);
+                this->getStats()->setWaiting(_mov_delay*2);
                 return true;
-
             }
             return _collector->moveInDirection(d);
         }
@@ -119,20 +133,20 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
     {
         collector->getStats()->setMyDirection(pdir1);
         collector->getStats()->setFacing(pdir1);
-        collector->getStats()->setWaiting(3);
+        collector->getStats()->setWaiting(_mov_delay);
         return true;
     }
-    bool r = collector->moveInDirection(cdir);
-    if (r == false)
+
+    if (!collector->moveInDirection(cdir))
     {
         int f = (this->randomNumberGenerator() % 2 == 0) ? 1 : 3;
         cdir = (direction)((((int)cdir) + f) % 4);
         collector->getStats()->setMyDirection(cdir);
         collector->getStats()->setFacing(cdir);
-        collector->getStats()->setWaiting(3);
+        collector->getStats()->setWaiting(_mov_delay);
         return true;
     }
-    return r;
+    return true;
 }
 
 int puppetMasterFR::getType() const

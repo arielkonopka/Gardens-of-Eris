@@ -29,7 +29,7 @@
 
 #define _bazookaMissileType 205
 #define _bazookaType 204
-
+#define _bazookaMaxSteps 40
 #define _teleporter 400
 #define _teleportationTime (_mov_delay*15)
 #define _teleportStandTime 55

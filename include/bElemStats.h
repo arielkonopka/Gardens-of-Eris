@@ -34,7 +34,7 @@ public:
     std::weak_ptr<bElem> getStatsOwner() const;
     int getMoved() const;
     direction getMyDirection() const;
-    coords getMyPosition() const;
+    coords getMyPosition() ;
     int getTaterCounter() const;
     int getWaiting() const;
     int getFading() const;

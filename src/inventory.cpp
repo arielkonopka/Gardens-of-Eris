@@ -48,12 +48,12 @@ void inventory::changeOwner(std::shared_ptr<bElem> who)
 
 bool inventory::removeCollectibleFromInventory(unsigned long  int instance)
 {
-    return (this->retrieveCollectibleFromInventory(instance)==nullptr);
+    return (this->retrieveCollectibleFromInventory(instance,true)==nullptr);
 }
 
-std::shared_ptr<bElem> inventory::retrieveCollectibleFromInventory(unsigned long int instanceId)
+std::shared_ptr<bElem> inventory::retrieveCollectibleFromInventory(unsigned long int instanceId,bool removeIt)
 {
-   auto removeFromColl=[&](std::vector<std::shared_ptr<bElem>>& _vect,unsigned long int _inst )
+    auto removeFromColl=[&](std::vector<std::shared_ptr<bElem>>& _vect,unsigned long int _inst )
     {
         std::shared_ptr<bElem> clc;
         for(unsigned int c=0; c<_vect.size();)
@@ -61,14 +61,17 @@ std::shared_ptr<bElem> inventory::retrieveCollectibleFromInventory(unsigned long
             if(_vect[c]->getStats()->getInstanceId()==_inst)
             {
                 _vect[c]->getStats()->setCollected(false);
-                if(!clc)
-                    clc=_vect[c];
-                this->decrementTokenNumber({_vect[c]->getType(),_vect[c]->getAttrs()->getSubtype()});
-                _vect.erase(_vect.begin()+c);
-                continue;
+                clc=_vect[c];
+                if(removeIt)
+                {
+                    this->decrementTokenNumber({_vect[c]->getType(),_vect[c]->getAttrs()->getSubtype()});
+                    _vect.erase(_vect.begin()+c);
+                }
+                return clc;
             }
             c++;
         }
+        clc.reset();
         return clc;
     };
     std::shared_ptr<bElem> e=removeFromColl(this->weapons,instanceId);
@@ -150,13 +153,9 @@ std::shared_ptr<bElem> inventory::getActiveWeapon()
 {
     if (this->weapons.size()<=0)
         return nullptr;
-
     this->wPos=this->wPos%this->weapons.size();
- //   std::cout<<" * Wpos: "<<this->wPos<<"\n";
     if (this->weapons[this->wPos]->getAttrs()->getAmmo()<=0)
     {
-  //      std::cout<<" * Wpos: removing weapon - empty"<<this->wPos<<"\n";
-
         this->removeActiveWeapon();
         return nullptr; // We will remove empty Weapons recursively, if it is necessary
     }
@@ -176,8 +175,8 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
     bool res=false;
     if(what==nullptr)
         return false;
-    // if(what->isDying() || what->isTeleporting() || what->getStats()->isDestroying())
-    //     return false;
+    if(what->getStats()->isDying() || what->getStats()->isTeleporting() || what->getStats()->isDestroying())
+        return false;
 
     what->getStats()->setCollector(this->owner.lock());
     std::shared_ptr<bElem> o=this->owner.lock();
@@ -224,15 +223,18 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
     return res;
 }
 
-std::shared_ptr<bElem> inventory::requestToken(int type, int subType)
+std::shared_ptr<bElem> inventory::requestToken(int type, int subType,bool removeIt)
 {
     for(size_t c=0; c<this->tokens.size(); c++)
     {
         if(this->tokens[c]->getType()==type && (subType==-1 || this->tokens[c]->getAttrs()->getSubtype()==subType)) // negative value of subtype will be ignored
         {
             std::shared_ptr<bElem> token=this->tokens[c];
-            this->decrementTokenNumber( {type,token->getAttrs()->getSubtype()});
-            this->tokens.erase(this->tokens.begin()+c);
+            if(removeIt)
+            {
+                this->decrementTokenNumber( {type,token->getAttrs()->getSubtype()});
+                this->tokens.erase(this->tokens.begin()+c);
+            }
             return token;
         }
     }
@@ -244,21 +246,22 @@ int inventory::requestTokens(int number, int type, int subType)
 {
     bool found=false;
     int num=0;
-        found=false;
-        for(size_t c=0; c<this->tokens.size() && num<number;)
+    found=false;
+    for(size_t c=0; c<this->tokens.size() && num<number;)
+    {
+        if(this->tokens[c]->getType()==type && (this->tokens[c]->getAttrs()->getSubtype()==subType || subType==-1) && num<number)
         {
-            if(this->tokens[c]->getType()==type && (this->tokens[c]->getAttrs()->getSubtype()==subType || subType==-1) && num<number)
-            {
-                found=true;
-                this->removeToken(c); // this also disposes the token! Use it with care
-                num++;
-            } else  c++;
+            found=true;
+            this->removeToken(c); // this also disposes the token! Use it with care
+            num++;
+        }
+        else  c++;
 
-        }
-        if(found==false)
-        {
-            return num;
-        }
+    }
+    if(found==false)
+    {
+        return num;
+    }
     return 0;
 }
 

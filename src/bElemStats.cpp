@@ -288,8 +288,16 @@ void bElemStats::setTaterCounter(int value)
     this->taterCounter=value;
 }
 
-coords bElemStats::getMyPosition() const
+coords bElemStats::getMyPosition()
 {
+    if(this->collected)
+    {
+        std::shared_ptr<bElem> be=(this->getCollector().lock());
+        if(be)
+        {
+            return be->getStats()->getMyPosition();
+        }
+    }
     return this->myPosition;
 }
 

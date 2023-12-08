@@ -18,7 +18,7 @@ public:
     virtual bool additionalProvisioning(int subtype,int typeId);
     virtual bool stepOnAction(bool step, std::shared_ptr<bElem> who);
 private:
-    std::shared_ptr<bElem> statsOwner;
+   // std::shared_ptr<bElem> statsOwner;
 
 };
 

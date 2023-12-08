@@ -44,7 +44,7 @@ bool patrollingDrone::interact(std::shared_ptr<bElem> who)
     bool res = bElem::interact(who);
     if (res && !this->brained && this->getAttrs()->getSubtype() == 0 && who->getAttrs()->canCollect())
     {
-        std::shared_ptr<bElem> token = who->getAttrs()->getInventory()->requestToken(_puppetMasterType, -1);
+        std::shared_ptr<bElem> token = who->getAttrs()->getInventory()->requestToken(_puppetMasterType, -1,true);
         if (token)
         {
             this->playSound("Boot", "Success");

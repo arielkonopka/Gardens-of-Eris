@@ -15,6 +15,7 @@ bool goldenApple::hurt(int points)
     if (this->getAttrs()->getSubtype() != 1)
     {
         this->getAttrs()->setSubtype(1);
+        this->getAttrs()->setInteractive(true);
         for (unsigned int cnt = 0; cnt < goldenApple::apples.size();)
         {
             if (goldenApple::apples[cnt]->getStats()->getInstanceId() == this->getStats()->getInstanceId())
@@ -117,6 +118,20 @@ bool goldenApple::mechanics()
     }
     return true;
 }
+
+bool goldenApple::interact(std::shared_ptr<bElem>who)
+{
+    if(!this->getAttrs()->isInteractive() || !who || !bElem::interact(who))
+        return false;
+    this->getStats()->setWaiting(55);
+    this->getStats()->setInteracted(55);
+    who->getAttrs()->setEnergy(who->getAttrs()->getEnergy() + 5);
+    this->hurt(5);
+    return true;
+}
+
+
+
 bool goldenApple::collectOnAction(bool collected, std::shared_ptr<bElem>who)
 {
 

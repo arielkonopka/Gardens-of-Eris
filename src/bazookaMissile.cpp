@@ -9,16 +9,28 @@ bool bazookaMissile::mechanics()
 {
     if(!movableElements::mechanics())
         return false;
-    if(this->moveInDirectionSpeed(this->getStats()->getMyDirection(),_bazookaMissileSpeed))
-    {
-        this->steps++;
+    if(++this->steps<_bazookaMaxSteps && this->moveInDirectionSpeed(this->getStats()->getMyDirection(),_bazookaMissileSpeed) )
         return true;
-    }
-    if(steps>1) return this->explode();
+    if(this->steps>1)
+        return this->explode(1.5);
     std::shared_ptr<bElem> be=this->getElementInDirection(this->getStats()->getMyDirection());
+    int beEnergy=be->getAttrs()->getEnergy();
+
     if(be)
         be->hurt(this->getAttrs()->getEnergy());
-    return this->kill();
+    beEnergy=beEnergy-be->getAttrs()->getEnergy();
+    if(beEnergy)
+    {
+        std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
+        if(sowner)
+        {
+            sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
+            if(beEnergy!=0)
+                sowner->getStats()->setPoints(TOTAL,sowner->getStats()->getPoints(TOTAL)+beEnergy);
+        }
+    }
+
+    return bElem::kill();
 }
 
 int bazookaMissile::getType() const

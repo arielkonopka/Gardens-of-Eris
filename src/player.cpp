@@ -210,8 +210,8 @@ bool player::mechanics()
             return false;
         this->getStats()->setFacing(currentCtrlItem.dir);
         std::shared_ptr<bElem> be=this->getElementInDirection(currentCtrlItem.dir);
-        if (be->getAttrs()->isInteractive())
-            be->interact(shared_from_this());
+        if (be->getAttrs()->isInteractive() && be->interact(shared_from_this()))
+            return true;
         if(be->getAttrs()->isCollectible())
             this->collect(be);
         this->animPh++;
@@ -234,16 +234,24 @@ bool player::mechanics()
     case 8:
         if (this->getAttrs()->getInventory()->getUsable() != nullptr)
             this->getAttrs()->getInventory()->getUsable()->use(this->getElementInDirection(currentCtrlItem.dir));
+        this->getStats()->setWaiting(_mov_delay*2);
         break;
     case 5:
     {
         this->getAttrs()->getInventory()->nextGun();
-        this->getStats()->setWaiting(_mov_delay);
+        this->getStats()->setWaiting(_mov_delay*2);
         break;
     }
     case 6:
         this->kill();
         break;
+    case 9:
+        std::shared_ptr<bElem> _be=this->getAttrs()->getInventory()->getUsable();
+        this->getStats()->setWaiting(_mov_delay*2);
+        if(_be)
+            return this->dropItem(_be->getStats()->getInstanceId());
+        break;
+
     }
     return true;
 }

@@ -13,7 +13,7 @@ public:
     bool destroy() final;
     bool hurt(int points);
     explicit goldenApple(std::shared_ptr<chamber> board);
-
+    bool interact(std::shared_ptr<bElem> who);
     bool mechanics();
     goldenApple();
     bool additionalProvisioning(int subtype,int typeId) final;
