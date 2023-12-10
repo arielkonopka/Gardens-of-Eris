@@ -3,6 +3,7 @@
 #include <chrono>
 #include <random>
 #include <memory>
+#include <mutex>
 #include <array>
 #include <algorithm>
 #include "commons.h"
@@ -33,7 +34,8 @@ public:
      * these three templates below generate objects. I added them because I need bidirectional connection with everything
      */
 
-
+    static void mechLock();
+    static void mechUnlock();
     virtual ALLEGRO_MUTEX *getMyMutex();
     void registerLiveElement(std::shared_ptr<bElem> who);
     void deregisterLiveElement(int instanceId);
@@ -99,7 +101,6 @@ public:
     virtual bool additionalProvisioning(int subtype,int typeId);
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<bElem> sbe);
 
-
     void playSound(std::string eventType,std::string event);
 private:
     std::shared_ptr<bElemStats> status;
@@ -111,6 +112,7 @@ private:
 
     std::shared_ptr<chamber> attachedBoard = nullptr;
     ALLEGRO_MUTEX *elementMutex = nullptr;
+    static std::mutex mechanicMutex;
     static int instances;
     static unsigned int sTaterCounter;
     //  struct _cfg eConfig;
