@@ -31,10 +31,10 @@ int main( int argc, char * argv[] )
     soundManager::getInstance()->setupSong(9,0,{0,0,0},6,false);
 
     rndl->generateLevel(10);
-    for (float cnt=1;cnt<3.5;cnt+=0.5)
+    for (float cnt=1;cnt<=3.5;cnt+=0.5)
     {
         rndl=new randomLevelGenerator((cnt*100)+(rndl->gen()%10)*5,(cnt*100)+(rndl->gen()%10)*5);
-        rndl->generateLevel(8-cnt);
+        rndl->generateLevel(8-(cnt*2));
     }
 
 
