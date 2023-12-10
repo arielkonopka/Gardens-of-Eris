@@ -15,6 +15,7 @@ BOOST_AUTO_TEST_SUITE(PlayerTests)
 BOOST_AUTO_TEST_CASE(GetActivePlayerTest)
 {
     coords point={3,3};
+    inputManager::getInstance(true);
     std::shared_ptr<chamber> mc = chamber::makeNewChamber({5, 5});
     std::shared_ptr<player> plr = elementFactory::generateAnElement<player>(mc,0);
     plr->stepOnElement(mc->getElement(point));
@@ -34,6 +35,7 @@ BOOST_AUTO_TEST_CASE(GetActivePlayerTest)
 BOOST_AUTO_TEST_CASE(PlayerShootsGun)
 {
     //    bool gunDisposed=false;
+    inputManager::getInstance(true);
     std::shared_ptr<chamber> mc = chamber::makeNewChamber({5, 5});
     std::shared_ptr<player> plr = elementFactory::generateAnElement<player>(mc,0);
     BOOST_CHECK(plr->getAttrs()->canCollect());
@@ -81,6 +83,7 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
  */
 BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
 {
+    inputManager::getInstance(true);
     std::shared_ptr<chamber> mc = chamber::makeNewChamber({10, 10});
     std::shared_ptr<player> p = nullptr;
     p = elementFactory::generateAnElement<player>(mc,0);
@@ -131,6 +134,7 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
 
 BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
 {
+    inputManager::getInstance(true);
     std::vector<std::shared_ptr<chamber>> m;
     std::shared_ptr<player> p;
     std::shared_ptr<player> p1;
@@ -180,6 +184,7 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
  */
 BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestroyedWithBomb)
 {
+    inputManager::getInstance(true);
     std::shared_ptr<chamber> mc = chamber::makeNewChamber({10, 10});
     std::shared_ptr<goldenApple> gc = elementFactory::generateAnElement<goldenApple>(mc,0);
     std::shared_ptr<player> p = elementFactory::generateAnElement<player>(mc,0);
@@ -300,6 +305,7 @@ void checkplayerKilled()
  */
 BOOST_AUTO_TEST_CASE(MovePlayer)
 {
+    inputManager::getInstance(true);
     std::shared_ptr<chamber> mc = chamber::makeNewChamber({100, 100});
     coords c0, c1;
     controlItem ci;
