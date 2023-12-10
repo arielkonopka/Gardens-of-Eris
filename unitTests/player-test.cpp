@@ -329,6 +329,7 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
         {
             controlItem ci2;
             ci2.type = 6;
+            ci2.dir=NODIRECTION;
             inputManager::getInstance()->setControlItem( ci2);
             checkplayerKilled();
             p = elementFactory::generateAnElement<player>(mc,0);
