@@ -147,8 +147,6 @@ void chamberArea::findElementsRec(std::shared_ptr<chamber> mychamber)
             }
         }
 
-
-
     }
     else
     {
@@ -173,19 +171,20 @@ bool chamberArea::findElementsToStepOn(std::shared_ptr<chamber> myChamber)
 void chamberArea::findChambersCloseToSurface(int s,int tolerance)
 {
     bool last=true;
-    if(this->surface>=s && this->children.size()>0)
+    if(this->surface>s)
+    {
         for(unsigned int cnt=0; cnt<this->children.size(); cnt++)
         {
-            if (this->children[cnt]->surface>s)
+            if (this->children[cnt]->surface>=s)
             {
                 this->children[cnt]->findChambersCloseToSurface(s,tolerance);
                 last=false;
             }
         }
-
+    }
     if (last==true)
     {
-        if(this->surface>=s && (this->surface<=s+((s*tolerance)/100)))
+        if(this->surface>=s )
         {
             chamberArea::foundAreas.push_back(this);
         }

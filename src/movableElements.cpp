@@ -14,10 +14,6 @@ movableElements::movableElements(std::shared_ptr<chamber> board) : movableElemen
 }
 
 
-movableElements::~movableElements()
-{
-    //dtor
-}
 
 
 bool movableElements::moveInDirection(direction dir)

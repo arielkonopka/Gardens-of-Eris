@@ -295,7 +295,7 @@ bool randomLevelGenerator::placeElementCollection(chamberArea* chmbrArea,std::ve
 
 bool randomLevelGenerator::generateLevel(int holes)
 {
-    int tolerance=250;
+    int tolerance=10;
     this->headNode=this->lvlGenerate(1,1,this->width-2,this->height-2,_iterations,holes);
 
     this->headNode->calculateInitialSurface();
@@ -343,7 +343,8 @@ bool randomLevelGenerator::generateLevel(int holes)
     {
         elementsToChooseFrom.push_back({_key,1,1,0,3});
         elementsToChooseFrom.push_back({_key,3,1,0,3});
-         elementsToChooseFrom.push_back({_bazookaType,0,1,0,3});
+        elementsToChooseFrom.push_back({_bazookaType,0,1,0,3});
+        elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
 
 
 
@@ -360,7 +361,6 @@ bool randomLevelGenerator::generateLevel(int holes)
     }
     //  elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
     elementsToChooseFrom.push_back({_player,0,1,0,3});
-    elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
 
     //
     elementsToChooseFrom.push_back({_patrollingDrone,0,1,0,3});
@@ -416,9 +416,9 @@ bool randomLevelGenerator::generateLevel(int holes)
     chamberArea::foundAreas.pop_back();
 
 
-
-
-    while(this->headNode->surface>75)
+    bool _ex=false;
+    chamberArea::foundAreas.clear();
+    while(!_ex)
     {
 #ifdef _VerbousMode_
         std::cout<<"Surface total: "<<this->headNode->surface<<"\n";
@@ -427,7 +427,7 @@ bool randomLevelGenerator::generateLevel(int holes)
         int demandedSurface=0;
 
         int cnt;
-        int elementsToMake=((this->gen()%3)+2)*5;
+        int elementsToMake=((this->gen()%5)+1)*5;
         elementCollection.clear();
         for(cnt=0; cnt<elementsToMake; cnt++)
         {
@@ -438,12 +438,13 @@ bool randomLevelGenerator::generateLevel(int holes)
         for(unsigned int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
         chamberArea::foundAreas.clear();
         this->headNode->findChambersCloseToSurface(demandedSurface,tolerance);
-        if(chamberArea::foundAreas.size()>0)
+        if(chamberArea::foundAreas.size()<1)
+            _ex=true;
+        if(chamberArea::foundAreas.size()>=1)
         {
             int selectedChamberNo=(this->gen()%chamberArea::foundAreas.size());
             this->placeElementCollection(chamberArea::foundAreas[selectedChamberNo],&elementCollection);
             elementCollection.clear();
-
             if(chamberArea::foundAreas[selectedChamberNo]->parent!=nullptr)
             {
                 if(chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock==false)
@@ -462,23 +463,17 @@ bool randomLevelGenerator::generateLevel(int holes)
                     }
 
                 }
-
-                delete chamberArea::foundAreas[selectedChamberNo];
                 this->headNode->removeEmptyNodes();
-
+                delete chamberArea::foundAreas[selectedChamberNo];
 
             }
 
-
-            chamberArea::foundAreas[selectedChamberNo]=chamberArea::foundAreas[chamberArea::foundAreas.size()-1];
-            chamberArea::foundAreas.pop_back();
         }
         else
         {
-            tolerance+=15;
-            this->headNode->findChambersCloseToSurface(demandedSurface,tolerance);
-            if(chamberArea::foundAreas.size()==0)
-                break;
+            _ex=true;
+
+
         }
 
 

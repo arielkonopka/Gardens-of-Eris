@@ -56,11 +56,6 @@ bool monster::additionalProvisioning()
 
 
 
-monster::~monster()
-{
-
-}
-
 int monster::getType() const
 {
     return _monster;

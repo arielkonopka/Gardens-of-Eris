@@ -11,7 +11,7 @@ public:
 
     patrollingDrone();
     explicit patrollingDrone(std::shared_ptr<chamber> board);
-    virtual ~patrollingDrone();
+    virtual ~patrollingDrone()=default;
     virtual bool interact(std::shared_ptr<bElem> who);
     int getType() const;
     float getViewRadius() const;

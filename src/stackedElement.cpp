@@ -9,10 +9,6 @@ stackedElement::stackedElement(std::shared_ptr<chamber> board):stackedElement()
     this->setBoard(board);
 }
 
-stackedElement::~stackedElement()
-{
-    //dtor
-}
 
 
 bool stackedElement::additionalProvisioning(int st, std::shared_ptr<stackedElement>sbe)

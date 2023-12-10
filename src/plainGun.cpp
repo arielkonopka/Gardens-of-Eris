@@ -54,10 +54,7 @@ int plainGun::getType() const
     return _plainGun;
 }
 
-plainGun::~plainGun()
-{
 
-}
 
 bool plainGun::use(std::shared_ptr<bElem> who)
 {

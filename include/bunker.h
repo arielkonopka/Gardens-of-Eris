@@ -12,7 +12,7 @@ public:
 
     bunker();
     explicit bunker(std::shared_ptr<chamber> board);
-    ~bunker() = default;
+    virtual ~bunker() = default;
     bool mechanics() final;
     direction findLongestShot();
     virtual bool selfAlign();

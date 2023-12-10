@@ -11,14 +11,14 @@ public:
     plainMissile();
     explicit plainMissile(std::shared_ptr<chamber> mychamber);
     explicit plainMissile(std::shared_ptr<chamber> mychamber,int energy);
-    virtual ~plainMissile();
+    virtual ~plainMissile()=default;
     virtual bool mechanics();
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<plainMissile> sbe);
     virtual bool additionalProvisioning();
     virtual bool additionalProvisioning(int subtype,int typeId);
     virtual bool stepOnAction(bool step, std::shared_ptr<bElem> who);
 private:
-    std::shared_ptr<bElem> statsOwner;
+   // std::shared_ptr<bElem> statsOwner;
 
 };
 

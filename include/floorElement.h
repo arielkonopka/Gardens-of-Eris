@@ -10,7 +10,7 @@ public:
 
     floorElement();
     explicit floorElement(std::shared_ptr<chamber> board);
-    virtual ~floorElement();
+    virtual ~floorElement()=default;
     virtual  int getType() const;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<floorElement> sbe);
     virtual bool additionalProvisioning();

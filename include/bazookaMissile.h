@@ -9,7 +9,7 @@ class bazookaMissile : public explosives, public movableElements
 {
     public:
         int getType() const;
-        bazookaMissile(std::shared_ptr<chamber> board);
+        explicit bazookaMissile(std::shared_ptr<chamber> board);
         bool mechanics();
         virtual ~bazookaMissile() = default;
         bool additionalProvisioning();

@@ -1,5 +1,18 @@
 #include "door.h"
 
+bool door::destroy()
+{
+    if(this->getAttrs()->getSubtype()%2==1)
+    {
+        std::shared_ptr<bElem> newWall=elementFactory::generateAnElement<wall>(this->getBoard(),1);
+        std::shared_ptr<bElem> se=this->getStats()->getSteppingOn();
+        this->removeElement();
+        newWall->stepOnElement(se);
+        this->disposeElement();
+        return true;
+    }
+    return bElem::destroy();
+}
 
 
 int door::getType() const
@@ -74,8 +87,8 @@ bool door::stepOnAction(bool step, std::shared_ptr<bElem>who)
 
 void door::_alignWithOpen()
 {
-        this->getStats()->setFacing((!this->getAttrs()->isOpen()) ? UP : LEFT);
-        this->getAttrs()->setSteppable(this->getAttrs()->isOpen());
+    this->getStats()->setFacing((!this->getAttrs()->isOpen()) ? UP : LEFT);
+    this->getAttrs()->setSteppable(this->getAttrs()->isOpen());
 
 }
 
@@ -120,8 +133,3 @@ bool door::interact(std::shared_ptr<bElem> who)
     return true;
 }
 
-
-door::~door()
-{
-    // dtor
-}

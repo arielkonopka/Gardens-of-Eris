@@ -72,6 +72,11 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         case 8:
             this->pressed_keys[ALLEGRO_KEY_R]=true;
             break;
+        case 10:
+            this->pressed_keys[ALLEGRO_KEY_SPACE]=true;
+            break;
+
+
         }
         break;
     case (ALLEGRO_EVENT_JOYSTICK_BUTTON_UP):
@@ -102,6 +107,10 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         case 8:
             this->pressed_keys[ALLEGRO_KEY_R]=false;
             break;
+        case 10:
+            this->pressed_keys[ALLEGRO_KEY_SPACE]=false;
+            break;
+
 
         }
 

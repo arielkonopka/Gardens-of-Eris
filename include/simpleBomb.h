@@ -10,6 +10,7 @@ public:
 
     simpleBomb()=default;
     explicit simpleBomb(std::shared_ptr<chamber> board);
+    virtual ~simpleBomb()=default;
     virtual bool hurt(int points);
     virtual bool kill();
     virtual bool destroy();

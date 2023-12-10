@@ -12,7 +12,7 @@ public:
     teleport();
     explicit teleport(std::shared_ptr<chamber> board);
     explicit teleport(std::shared_ptr<chamber> board,int newSubtype);
-    ~teleport() final;
+    virtual ~teleport()=default;
     bool interact(std::shared_ptr<bElem> who) final;
     virtual bool teleportIt(std::shared_ptr<bElem> who);
     virtual oState disposeElement();

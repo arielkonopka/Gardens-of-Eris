@@ -13,7 +13,7 @@ public:
     puppetMasterFR(std::shared_ptr<chamber> board);
 
     //i  virtual void setCollected(std::shared_ptr<bElem> who);
-    virtual ~puppetMasterFR();
+    virtual ~puppetMasterFR()=default;
     virtual bool mechanics();
     int getType() const;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<puppetMasterFR> sbe);

@@ -8,7 +8,7 @@ class kiki : public bElem
 {
     public:
         kiki();
-        virtual ~kiki();
+        virtual ~kiki()=default;
 
     protected:
 

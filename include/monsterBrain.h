@@ -7,7 +7,7 @@ class monsterBrain
 {
 public:
     monsterBrain();
-    ~monsterBrain();
+    ~monsterBrain()=delete;
 
 protected:
 

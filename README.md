@@ -95,9 +95,9 @@ examples:
   * Two types of teleporters exist: internal and inter-chamber.
     - Inter-chamber teleporters are a special subtype 0, with one such teleporter in each chamber.
     - Internal teleporters share a common subtype within a chamber and are walk-in teleporters.
-  * When elements on the board move, they don't replace each other but step on top of one another. We start with a board chock-full of empty elements, then create new elements that step onto the empty ones. With mechanics, we manage a vector of live elements (those in need of their mechanics to run). The vector is inspected, and each element's mechanics are executed. This is how we tackle the destruction of inanimate objects—they enable the mechanics through registration. The mechanics method takes care of removin' objects from the board. If we don't register the mechanics, the object will appear destroyed but remain intact.
-
-We strive to avoid code duplications whenever we can. That said, this rule has been bent a few times, especially with newly introduced code.
+6. When elements on the board move, they don't replace each other but step on top of one another. We start with a board chock-full of empty elements, then create new elements that step onto the empty ones. With mechanics, we manage a vector of live elements (those in need of their mechanics to run). The vector is inspected, and each element's mechanics are executed. 
+7. The destruction of elements occurs by adding their ID and a timestamp to a separate vector. Later on, this vector is scanned, and when their time elapses, the disposeElement() method is executed on the respective element.
+8. We strive to avoid code duplications whenever we can. That said, this rule has been bent a few times, especially with newly introduced code.
 
 
 ## Random maze generator
@@ -271,6 +271,7 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 ## ChangeLog
+* Extended the interface, now we can drop usables, like broken apples, and we also see the broken apple, and how much more energy does it have
 * Added a bazooka weapon, the graphics is pancerfaust60.
 * Explosives were refactored a bit, now the explode method can be used instead of destroy.
 * Joystick initial support. Now the InputManager is a singleton with its own thread, that can be started/stopped only once, it's purpose is to get the controller state to any app, that demands it.

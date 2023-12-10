@@ -22,32 +22,32 @@
         "Filename":"data/music/song01.mp3",
         "Name":"Song #1",
         "chamberId":0,
-	"gain":0.05
+        "gain":0.05
      },
      {
         "Filename":"data/music/song02.mp3",
         "Name":"Song #2",
         "chamberId":1,
-	"gain":0.05
-
+        "gain":0.05
+        
      },
      {
         "Filename":"data/music/song03.mp3",
         "Name":"Song #2",
         "chamberId":1,
-	"gain":0.05
+        "gain":0.05
      },
      {
         "Filename":"data/music/song04.mp3",
         "Name":"Song #2",
         "chamberId":1,
-	"gain":0.05
+        "gain":0.05
      },
      {
         "Filename":"data/music/song05.mp3",
         "Name":"Song #2",
         "chamberId":1,
-	"gain":0.05
+        "gain":0.05
      }
    ]
    ,
@@ -91,7 +91,7 @@
         "Type": 4,
         "Name": "Wall",
         "AnimDef": [
-      [ [ [ 1, 20 ] ] ]
+      [ [ [ 1, 20 ] ] ],[ [ [ 6,20 ],[6,21] ] ]
         ],
         "Attributes": [
           {
@@ -196,7 +196,7 @@
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": true,
                        "modeOfAction": 0,
-		       "gain": 25.0
+                       "gain": 25.0
                     }
                   ]
                },
@@ -297,7 +297,7 @@
      {
         "Type": 7,
         "Name": "Patrolling drone",
-        "AnimDef": [ [ [ [ 11, 4 ], [ 12, 4 ] ] ,[ [ 11,5] ,[12,5]], [[13,4],[14,4]],[[13,5],[14,5] ]] ],
+      "AnimDef": [ [ [ [ 11, 4 ], [ 12, 4 ] ] ,[ [ 11,5] ,[12,5]], [[13,4],[14,4]],[[13,5],[14,5] ]] ],
         "Samples": [
           {
              "SubType": 0,
@@ -390,8 +390,8 @@
              "isWeapon":false,
              "isOpen":false,
              "isLocked":false,
-             "energy":5555,
-             "maxEnergy":5555,
+             "energy":555,
+             "maxEnergy":555,
              "ammo":0,
              "maxAmmo":0
              
@@ -443,7 +443,7 @@
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": true,
                        "stacking":false,
-		       "gain":0.2,
+                       "gain":0.2,
                        "modeOfAction": 0
                     }
                   ]
@@ -695,7 +695,7 @@
                        "name": "Collect gun sound",
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": false,
-		       "gain":0.2,
+                       "gain":0.2,
                        "modeOfAction": 0
                     }
                   ]
@@ -736,15 +736,15 @@
         ]
         
      }
-,
+     ,
      {
         "Type": 205,
         "Name": "bazookaMissile",
         "AnimDef": [ [
-      [ [ 13, 3 ] ],
-      [ [ 14, 2 ] ],
-      [ [ 14, 3 ] ],
-      [ [ 13, 2 ] ]
+        [ [ 13, 3 ] ],
+        [ [ 14, 2 ] ],
+        [ [ 14, 3 ] ],
+        [ [ 13, 2 ] ]
         ] ],
         "Attributes": [
           {
@@ -766,10 +766,31 @@
              "ammo":0,
              "maxAmmo":0
           }
-        ]
+        ],
+        
+        "Samples": [ {
+             "SubType": -1,
+             "stEvents": [
+               {
+                  "EventType": "Explosives",
+                  "eventData": [
+                    {
+                       "Event": "Explode",
+                       "fname": "data/sounds/bomb.ogg",
+                       "name": "Explosion",
+                       "description": "This is a test sound, now it will be used for sound test",
+                       "allowMulti": false,
+                       "modeOfAction": 0,
+                       "gain": 2.0
+                    }
+                  ]
+               }
+             ]
+        }]
+        
         
      }
-,
+     ,
      {
         "Type": 204,
         "Name": "bazooka",
@@ -800,8 +821,8 @@
         ]
         
      }
-
-,
+     
+     ,
      {
         "Type": 250,
         "Name": "bunker",
@@ -929,7 +950,7 @@
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": false,
                        "modeOfAction": 1,
-		       "gain":0.01
+                       "gain":0.01
                     }
                   ]
                }
@@ -975,7 +996,7 @@
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": true,
                        "modeOfAction": 0,
-		       "gain":0.5
+                       "gain":0.5
                   }]
                },
                {
@@ -988,7 +1009,7 @@
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": false,
                        "modeOfAction": 0,
-		       "gain": 2.0
+                       "gain": 2.0
                     }
                   ]
                }

@@ -244,6 +244,7 @@ void presenter::prepareStatsThing()
     this->showText(2,0,0,0,std::to_string(player::countVisitedPlayers()));
     this->showText(2,0,0,32,std::to_string(aPlayer->getAttrs()->getEnergy()));
     this->showObjectTile(4,0,0,0,aPlayer->getAttrs()->getInventory()->getActiveWeapon(),true,_mode_onlyTop);
+    this->showObjectTile(6,0,0,0,aPlayer->getAttrs()->getInventory()->getUsable(),true,_mode_onlyTop);
 
 
 
@@ -252,6 +253,15 @@ void presenter::prepareStatsThing()
         this->showText(5,0,0,32,std::to_string(aPlayer->getAttrs()->getInventory()->getActiveWeapon()->getAttrs()->getEnergy()));
         this->showText(5,0,0,0,std::to_string(aPlayer->getAttrs()->getInventory()->getActiveWeapon()->getAttrs()->getAmmo()));
     }
+    if(aPlayer->getAttrs()->getInventory()->getUsable())
+    {
+        this->showText(7,0,0,32,std::to_string(aPlayer->getAttrs()->getInventory()->getUsable()->getAttrs()->getEnergy()));
+        this->showText(7,0,0,0,std::to_string(
+                           aPlayer->getAttrs()->getInventory()->countTokens(aPlayer->getAttrs()->getInventory()->getUsable()->getType(),
+                                   aPlayer->getAttrs()->getInventory()->getUsable()->getAttrs()->getSubtype())));
+    }
+
+
     for (int cnt=0; cnt<5; cnt++)
     {
         int tokens;
@@ -259,8 +269,8 @@ void presenter::prepareStatsThing()
         if(key!=nullptr)
         {
             tokens=aPlayer->getAttrs()->getInventory()->countTokens(key->getType(),key->getAttrs()->getSubtype());
-            this->showObjectTile(7+(cnt*2),0,0,0,key,true,_mode_onlyTop);
-            this->showText(8+(cnt*2),0,0,16,std::to_string(tokens));
+            this->showObjectTile(8+(cnt*2),0,0,0,key,true,_mode_onlyTop);
+            this->showText(9+(cnt*2),0,0,16,std::to_string(tokens));
         }
     }
     this->showObjectTile(18,0,0,0,goldenApple::getApple(1),true,_mode_onlyTop);

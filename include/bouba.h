@@ -8,7 +8,7 @@ class bouba : public bElem
 {
     public:
         bouba();
-        virtual ~bouba();
+        virtual ~bouba()=default;
 
     protected:
 

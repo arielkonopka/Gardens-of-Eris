@@ -74,17 +74,19 @@ bool bElem::dropItem(unsigned long int  instanceId)
 {
     if(!this->getAttrs()->canCollect())
         return false;
-    std::shared_ptr<bElem> item=this->getAttrs()->getInventory()->retrieveCollectibleFromInventory(instanceId);
+
+    std::shared_ptr<bElem> item=this->getAttrs()->getInventory()->retrieveCollectibleFromInventory(instanceId,true);
     if(!item)
         return false;
     item->collectOnAction(false,shared_from_this());
-    for(int c=0; c<4; c++)
+    for(int c=1; c<5; c++)
     {
-        if(this->isSteppableDirection((direction)(c)))
+        direction d_=(direction)(((int)this->getStats()->getMyDirection()+c)%4);
+        if(this->isSteppableDirection(d_))
         {
             if (this->getType()==_player)
                 item->playSound("Drop","Item");
-            item->stepOnElement(this->getElementInDirection((direction)(c)));
+            item->stepOnElement(this->getElementInDirection(d_));
             return true;
         }
     }
@@ -208,10 +210,13 @@ oState bElem::disposeElementUnsafe()
             }
         }
     }
+    al_destroy_mutex(this->elementMutex);
+    soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
     this->getStats()->setDisposed(true);
     this->getStats()->setMyPosition(NOCOORDS);
     this->attachedBoard = nullptr;
     return res; // false means that there is no more elements to go.
+
 }
 
 oState bElem::disposeElement()
@@ -251,6 +256,8 @@ oState bElem::disposeElement()
     this->getStats()->setDisposed(true);
     this->setBoard(nullptr);
     this->getStats()->setMyPosition(NOCOORDS);
+    al_destroy_mutex(this->elementMutex);
+    soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
     return DISPOSED;
 }
 
@@ -295,11 +302,7 @@ std::shared_ptr<bElem> bElem::getElementInDirection(direction di)
     return this->attachedBoard->getElement(mycoords.x, mycoords.y);
 }
 
-bElem::~bElem()
-{
-    al_destroy_mutex(this->elementMutex);
-    soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
-}
+
 
 ALLEGRO_MUTEX *bElem::getMyMutex()
 {
@@ -341,10 +344,10 @@ bool bElem::interact(std::shared_ptr<bElem> who)
 
 bool bElem::destroy()
 {
-   // std::cout<<" be1\n";
+    // std::cout<<" be1\n";
     if (this->getAttrs()->isDestroyable() || this->getAttrs()->isSteppable() || this->getAttrs()->isKillable())
     {
-     //   std::cout<<"  be2\n";
+        //   std::cout<<"  be2\n";
         if (this->getStats()->isDying())
         {
             this->getStats()->setKilled(0);
@@ -557,7 +560,7 @@ bool bElem::kill()
     }
     if(this->getAttrs()->isKillable())
     {
-       // viewPoint::get_instance()->addViewPoint(shared_from_this());
+        // viewPoint::get_instance()->addViewPoint(shared_from_this());
         bElem::toDispose.push_back(shared_from_this());
     }
     this->getStats()->setKilled(_defaultKillTime);
@@ -658,7 +661,7 @@ void bElem::registerLiveElement(std::shared_ptr<bElem> who)
 {
 
     int iid=who->getStats()->getInstanceId();
-    for(unsigned int c=0;c<bElem::toDeregister.size();)
+    for(unsigned int c=0; c<bElem::toDeregister.size();)
         if(bElem::toDeregister[c]==iid)
             bElem::toDeregister.erase(bElem::toDeregister.begin()+c);
         else c++;
@@ -733,8 +736,8 @@ void bElem::runLiveElements()
             {
                 bElem::liveElems[p]->mechanics();
             }
-             else if (bElem::randomNumberGenerator()%55==5)
-                 bElem::liveElems[p]->mechanics(); /// once in a while all objects will be moving
+            else if (bElem::randomNumberGenerator()%55==5)
+                bElem::liveElems[p]->mechanics(); /// once in a while all objects will be moving
         }
     }
 

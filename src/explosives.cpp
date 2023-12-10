@@ -10,10 +10,6 @@ explosives::explosives() : bElem()
 {
 }
 
-explosives::~explosives()
-{
-    // dtor
-}
 bool explosives::additionalProvisioning(int subtype, std::shared_ptr<explosives>sbe)
 {
     return this->additionalProvisioning(subtype,sbe->getType());
@@ -37,11 +33,27 @@ bool explosives::explode(float radius)
     {
         coords mc=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getMyPosition():this->getStats()->getMyPosition();
         std::shared_ptr<chamber> brd = (this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getBoard():this->getBoard();
-        int xs=std::min(0,(int)(mc.x-radius));
+        int xs=std::max(0,(int)(mc.x-radius));
         int xe=std::min(brd->width-1,(int)(mc.x+radius));
-        int ys=std::min(0,(int)(mc.y-radius));
+        int ys=std::max(0,(int)(mc.y-radius));
         int ye=std::min(brd->height-1,(int)(mc.y+radius));
         this->playSound("Explosives","Explode");
+        std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
+        if(sowner)
+        {
+            for(int _direction=0; _direction<4; _direction++)
+            {
+                direction dr=(direction)_direction;
+                std::shared_ptr<bElem> inDir=this->getElementInDirection(dr);
+                if(inDir && (inDir->getAttrs()->isDestroyable() || inDir->getAttrs()->isKillable()))
+                {
+                    sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
+                    sowner->getStats()->setPoints(TOTAL,sowner->getStats()->getPoints(TOTAL)+inDir->getAttrs()->getEnergy());
+                }
+            }
+
+        }
+
         for (int x=xs; x<=xe; x++)
         {
             for(int y=ys; y<=ye; y++)
@@ -59,7 +71,7 @@ bool explosives::explode(float radius)
                     bElem::destroy();
                     continue;
                 }
-                if(mc.distance(ccrd)<=radius)
+                if(std::round(mc.distance(ccrd))<=radius)
                     brd->getElement(ccrd)->destroy();
             }
         }
@@ -70,25 +82,7 @@ bool explosives::explode(float radius)
 
 bool explosives::explode()
 {
-    std::shared_ptr<bElem> el;
-    if(this->getStats()->isDestroying())
-        return false;
-    this->playSound("Explosives","Explode"); // This sound must not be looped, otherwise it will be swiped off
-    for (int cnt = 0; cnt < 4; cnt++)
-    {
-        el = this->getElementInDirection((direction)(cnt));
-        if (el != nullptr)
-        {
-            el->destroy();
-            el = el->getElementInDirection((direction)((cnt + 1) % 4));
-            if (el != nullptr)
-                el->destroy();
-        }
-    }
-    if(this->getStats()->isCollected())
-        this->getStats()->getCollector().lock()->destroy();
-    bElem::destroy();
-
+    this->explode(1.5);
 
     return true;
 }

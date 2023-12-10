@@ -15,7 +15,7 @@ public:
 
     movableElements();
     explicit movableElements(std::shared_ptr<chamber> board);
-    virtual ~movableElements();
+    virtual ~movableElements()=default;
     virtual bool moveInDirection(direction dir);
     virtual bool moveInDirectionSpeed(direction dir,int speed);
     virtual int getType() const;
