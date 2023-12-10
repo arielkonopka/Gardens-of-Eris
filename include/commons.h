@@ -66,6 +66,8 @@
 #define NOCOORDS   ((coords){-1,-1})
 #define NOSTATS ((stats){-1,-1,-1,-1})
 
+const static int _dividerCloak=4;
+
 
 /**
  * @struct coords
