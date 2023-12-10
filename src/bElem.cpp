@@ -10,7 +10,7 @@ unsigned int bElem::sTaterCounter = 5;
 int bElem::instances = 0;
 bool bElem::randomNumberGeneratorInitialized = false;
 std::mt19937 bElem::randomNumberGenerator;
-
+std::mutex bElem::mechanicMutex;
 
 bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_mutex())
 {
@@ -678,6 +678,16 @@ void bElem::deregisterLiveElement(int instanceId)
     this->getStats()->setActivatedMechanics(false);
 }
 
+void bElem::mechLock()
+{
+    bElem::mechanicMutex.lock();
+}
+
+void bElem::mechUnlock()
+{
+    bElem::mechanicMutex.unlock();
+}
+
 void bElem::runLiveElements()
 {
     bElem::tick();
@@ -714,14 +724,17 @@ void bElem::runLiveElements()
     bool gotPlayer=player::getActivePlayer()!=nullptr;
     if(!gotPlayer || (gotPlayer && !player::getActivePlayer()->getBoard())) // No active player? No animation!
     {
+        bElem::mechLock();
         for (unsigned int p = 0; p < bElem::liveElems.size(); p++)
         {
             //  if(bElem::liveElems[p] && bElem::randomNumberGenerator()%55==5)
             bElem::liveElems[p]->mechanics();
 
         }
+        bElem::mechUnlock();
         return;
     }
+
     int chamberId=player::getActivePlayer()->getBoard()->getInstanceId();
     for (unsigned int p = 0; p < bElem::liveElems.size(); p++)
     {

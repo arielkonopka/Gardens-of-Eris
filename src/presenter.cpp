@@ -320,8 +320,13 @@ void presenter::showGameField()
     colour c=this->_cp_attachedBoard->getChColour();
     al_clear_to_color(al_map_rgba(c.r,c.g,c.b,c.a));
     /***
+    do not conflict in time with mechanics, usefull on getiing of the gltiches"
+    ***/
+    bElem::mechLock();
+    /***
     draw only visible elements, walls are always visible.
     ***/
+
     if(player->getBoard().get()!=nullptr)
     {
         for(x=0; x<this->scrTilesX+1; x++)
@@ -361,11 +366,12 @@ void presenter::showGameField()
             this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false,1);
     }
     if(player->getStats()->isMoving() && player->getBoard()->width>viewPoint::get_instance()->getViewPoint().x && viewPoint::get_instance()->getViewPoint().x>=0 && player->getBoard()->height>viewPoint::get_instance()->getViewPoint().y && viewPoint::get_instance()->getViewPoint().y>=0)
-        this->showObjectTile(px,py,0,0,player->getBoard()->getElement(viewPoint::get_instance()->getViewPoint()),false,1);
+        this->showObjectTile(px,py,0,0,player->getBoard()->getElement(player->getStats()->getMyPosition()),false,1);
     /***
     Draw the cloak on the game field
     ***/
     this->drawCloak();
+    bElem::mechUnlock();
     al_set_target_bitmap(al_get_backbuffer(display));
     al_clear_to_color(al_map_rgba(15,25,45,255));
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
@@ -380,7 +386,7 @@ void presenter::drawCloak()
 
         auto ve=videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
         int obscured;
-        int divider=8;
+        int divider=_dividerCloak;
         coords be=this->bluredElement[player::getActivePlayer()->getBoard()->getInstanceId()%this->bluredElement.size()];
         for(int x=-1; x<this->scrTilesX+2; x++)
             for(int y=-1; y<this->scrTilesY+2; y++)

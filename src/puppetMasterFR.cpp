@@ -73,11 +73,12 @@ bool puppetMasterFR::collectorMechanics()
         d=(direction)(((int)_d+c)%4);
         switch((int)d-(int)_d)
         {
+
         case 1:
+        case -3:
             _d3=_d1;
             break;
         case -1:
-        case -3:
         case 3:
             _d3=_d2;
             break;
@@ -89,7 +90,7 @@ bool puppetMasterFR::collectorMechanics()
             {
                 _collector->getStats()->setMyDirection(_d3);
                 _collector->getStats()->setFacing(_d3);
-                this->getStats()->setWaiting(_mov_delay*2);
+                this->getStats()->setWaiting(_mov_delay);
                 return true;
             }
             return _collector->moveInDirection(d);
@@ -121,12 +122,13 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
         b1 = collector->getElementInDirection(pdir1)->getAttrs()->isSteppable();
     if (collector->getElementInDirection(pdir2))
         b2 = collector->getElementInDirection(pdir2)->getAttrs()->isSteppable();
-    int roulette=this->randomNumberGenerator() %55;
+    int roulette=this->randomNumberGenerator() %555;
     if (b1 && roulette == 5) // same probablility for each
     {
         collector->getStats()->setMyDirection(pdir1);
         collector->getStats()->setFacing(pdir1);
-        collector->getStats()->setWaiting(3);
+        collector->getStats()->setWaiting(_mov_delay);
+        this->getStats()->setWaiting(_mov_delay);
         return true;
     }
     else if (b2 && roulette==25)
@@ -134,18 +136,25 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
         collector->getStats()->setMyDirection(pdir1);
         collector->getStats()->setFacing(pdir1);
         collector->getStats()->setWaiting(_mov_delay);
+        this->getStats()->setWaiting(_mov_delay);
         return true;
     }
 
-    if (!collector->moveInDirection(cdir))
+    if(collector->moveInDirection(cdir))
     {
-        int f = (this->randomNumberGenerator() % 2 == 0) ? 1 : 3;
-        cdir = (direction)((((int)cdir) + f) % 4);
+
+
         collector->getStats()->setMyDirection(cdir);
         collector->getStats()->setFacing(cdir);
-        collector->getStats()->setWaiting(_mov_delay);
-        return true;
     }
+    else
+    {
+        direction ndir=(bElem::randomNumberGenerator()%2==0)?pdir2:pdir1;
+        collector->getStats()->setMyDirection(ndir);
+        collector->getStats()->setFacing(ndir);
+    }
+    collector->getStats()->setWaiting(_mov_delay);
+    this->getStats()->setWaiting(_mov_delay);
     return true;
 }
 
