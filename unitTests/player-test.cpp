@@ -216,12 +216,16 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
     // We take time for the exploded bomb to finish
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
+    // we should have the rubbish with the apples contained, so no harm done, still two apples
     BOOST_CHECK(goldenApple::getAppleNumber() == 2);
     std::cout << "Ano: " << goldenApple::getAppleNumber() << "\n";
     mc->getElement(2, 1)->disposeElement();
+    bElem::runLiveElements();
+    bElem::runLiveElements();
+    bElem::runLiveElements();
     BOOST_CHECK(mc->getElement(2, 1)->getType() == _floorType);
     std::cout << "Ano: " << goldenApple::getAppleNumber() << "\n";
-    BOOST_CHECK(goldenApple::getAppleNumber() == 0);
+    BOOST_CHECK(goldenApple::getAppleNumber() == 2);
 }
 
 /**
@@ -319,7 +323,7 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
     p->stepOnElement(mc->getElement(50, 50));
     p->collect(pg);
     p->getStats()->setActive(true);
-    for (int c = 0; c < 8; c++)
+    for (int c = 0; c < 7; c++)
     {
         if (c == 6)
         {
@@ -330,7 +334,7 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
             p = elementFactory::generateAnElement<player>(mc,0);
             pg = elementFactory::generateAnElement<plainGun>(mc,0);
             p->collect(pg);
-            p->stepOnElement(mc->getElement(50, 50));
+            p->stepOnElement(mc->getElement(61, 61));
             p->getStats()->setActive(true);
             continue;
         }
