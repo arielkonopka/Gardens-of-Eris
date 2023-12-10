@@ -247,15 +247,19 @@ void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
     BOOST_CHECK(p.get() != nullptr);
     if (!p)
         return;
+    controlItem ctItem;
     coords c0, c1;
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
     c0 = p->getStats()->getMyPosition();
-    mc->cntrlItm = cntrlItm;
+    inputManager::getInstance()->setControlItem( cntrlItm);
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
-    mc->cntrlItm.type = -1;
-    mc->cntrlItm.dir = NODIRECTION;
+
+    ctItem.type = -1;
+    ctItem.dir = NODIRECTION;
+    inputManager::getInstance()->setControlItem( ctItem);
+
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
     c1 = p->getStats()->getMyPosition();
@@ -299,6 +303,7 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
     std::shared_ptr<chamber> mc = chamber::makeNewChamber({100, 100});
     coords c0, c1;
     controlItem ci;
+
     while (player::getActivePlayer())
     {
         player::getActivePlayer()->disposeElement();
@@ -312,7 +317,9 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
     {
         if (c == 6)
         {
-            mc->cntrlItm.type = 6;
+            controlItem ci2;
+            ci2.type = 6;
+            inputManager::getInstance()->setControlItem( ci2);
             checkplayerKilled();
             p = elementFactory::generateAnElement<player>(mc,0);
             pg = elementFactory::generateAnElement<plainGun>(mc,0);

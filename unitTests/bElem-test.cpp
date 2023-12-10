@@ -20,9 +20,9 @@
 #include "inputManager.h"
 
 
-typedef boost::mpl::list<bElem,killableElements,player,mechanical,door,explosives,brickCluster> base_test_types;
+typedef boost::mpl::list<bElem,killableElements,player,movableElements,door,explosives,brickCluster> base_test_types;
 
-typedef boost::mpl::list<bElem,bunker,floorElement,door,explosives,goldenApple,key,killableElements,mechanical,monster,brickCluster,patrollingDrone,plainGun,plainMissile,player,rubbish,teleport,wall> all_test_types;
+typedef boost::mpl::list<bElem,bazooka,bazookaMissile,bunker,floorElement,door,explosives,goldenApple,key,killableElements,mechanical,monster,brickCluster,patrollingDrone,plainGun,plainMissile,player,rubbish,teleport,wall> all_test_types;
 
 
 int countTheStack(std::shared_ptr<bElem> in)
@@ -342,6 +342,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDestroyingTheWholeChamber,T,all_test_ty
             be=elementFactory::generateAnElement<T>(mc,x);
             BOOST_CHECK(mc->getElement(x,y)!=nullptr);
             be->stepOnElement(mc->getElement(x,y));
+            be->getStats()->setMyDirection(UP);
             BOOST_CHECK(be->getStats()->getInstanceId()==mc->getElement(x,y)->getStats()->getInstanceId());
             be->getStats()->setActive(true);
             BOOST_CHECK(be->getStats()->isActive());
