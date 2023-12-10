@@ -21,13 +21,12 @@ bool goldenApple::hurt(int points)
             if (goldenApple::apples[cnt]->getStats()->getInstanceId() == this->getStats()->getInstanceId())
             {
                 goldenApple::apples.erase(goldenApple::apples.begin() + cnt);
-                goldenApple::appleNumber--;
             }
             else
                 cnt++;
         }
     }
-
+    goldenApple::appleNumber=goldenApple::apples.size();
     return killableElements::hurt(points);
 }
 
@@ -56,9 +55,10 @@ bool goldenApple::additionalProvisioning(int subtype, int typeId)
     bElem::additionalProvisioning(subtype,typeId);
     if(subtype==0)
     {
-        goldenApple::appleNumber++;
         goldenApple::apples.push_back(shared_from_this());
     }
+    goldenApple::appleNumber=goldenApple::apples.size();
+
     return true;
 }
 bool goldenApple::additionalProvisioning(int subtype, std::shared_ptr<goldenApple>sbe)
@@ -74,11 +74,11 @@ oState goldenApple::disposeElement()
         if (goldenApple::apples[cnt]->getStats()->getInstanceId() == this->getStats()->getInstanceId())
         {
             goldenApple::apples.erase(goldenApple::apples.begin() + cnt);
-            goldenApple::appleNumber--;
         }
         else
             cnt++;
     }
+    goldenApple::appleNumber=goldenApple::apples.size();
     return bElem::disposeElement();
 }
 
