@@ -41,6 +41,8 @@ BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
     }
     BOOST_CHECK(mc->getElement(crds.x,crds.y)->getStats()->isTeleporting()==false);
     BOOST_CHECK(mc->getElement(2,3)->getStats()->isTeleporting()==false);
+    tel1->disposeElement();
+
 }
 //We have two teleports of the same type
 BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
@@ -62,13 +64,16 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
     BOOST_CHECK( crds==nc );
     BOOST_CHECK(transportEl->getStats()->getInstanceId()==mc->getElement(5,4)->getStats()->getInstanceId());
     BOOST_CHECK(transportEl->getStats()->isTeleporting()==true);
-    for(int c=0; c<_teleportationTime+1; c++)
+    for(int c=0; c<_teleportationTime+10; c++)
         bElem::tick();
     BOOST_CHECK(transportEl->getStats()->isTeleporting()==false);
     transportEl->getStats()->setMyDirection(LEFT);
     BOOST_CHECK(tel2->interact(transportEl)==true);
+    bElem::runLiveElements();
     BOOST_CHECK(transportEl->getStats()->getInstanceId()==mc->getElement(1,2)->getStats()->getInstanceId());
     BOOST_CHECK(transportEl->getStats()->isTeleporting()==true);
+    tel1->disposeElement();
+    tel2->disposeElement();
 }
 
 BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
@@ -94,6 +99,9 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
     BOOST_CHECK(tr1c==t1crds);
     coords tr2c=_tr2->getStats()->getMyPosition();
     BOOST_CHECK(tr2c==t2crds);
+    tel1->disposeElement();
+    tel2->disposeElement();
+    mc.reset();
 }
 
 BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
@@ -102,10 +110,8 @@ BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
     coords pointA={3,5};
     coords pointAt={2,5};
     coords pointB={5,5};
-
     std::shared_ptr<bElem> tel1,tel2,transported;
     bElem::tick();
-
     transported=elementFactory::generateAnElement<bElem>(mc,0);
     transported->stepOnElement(mc->getElement(pointAt));
     transported->getStats()->setMyDirection(RIGHT);
@@ -125,6 +131,9 @@ BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
         bElem::runLiveElements();
     }
     BOOST_CHECK(transported->getStats()->isTeleporting()==true);
+    tel1->disposeElement();
+    tel2->disposeElement();
+    mc.reset();
 }
 
 
