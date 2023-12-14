@@ -12,9 +12,9 @@ class bazookaMissile : public explosives, public movableElements
         explicit bazookaMissile(std::shared_ptr<chamber> board);
         bool mechanics();
         virtual ~bazookaMissile() = default;
-        bool additionalProvisioning();
-        bool additionalProvisioning(int subtype,int typeId);
-        bool additionalProvisioning(int subtype,std::shared_ptr<bazookaMissile> sbe);
+        virtual bool additionalProvisioning();
+        virtual bool additionalProvisioning(int subtype,int typeId);
+        virtual bool additionalProvisioning(int subtype,std::shared_ptr<bazookaMissile> sbe);
     protected:
         int steps=0;
     private:

@@ -12,9 +12,9 @@ class bazooka : public plainGun
         virtual ~bazooka()=default;
         int getType() const;
         std::shared_ptr<bElem> createProjectible(std::shared_ptr<bElem> who);
-        bool additionalProvisioning();
-        bool additionalProvisioning(int subtype,int typeId);
-        bool additionalProvisioning(int subtype,std::shared_ptr<bazooka> sbe);
+        virtual bool additionalProvisioning() final;
+        virtual bool additionalProvisioning(int subtype,int typeId) final ;
+        virtual bool additionalProvisioning(int subtype,std::shared_ptr<bazooka> sbe) final;
     protected:
 
     private:
