@@ -67,6 +67,7 @@ BOOST_AUTO_TEST_CASE(KillTest)
     goldenAppleObj->stepOnElement(chamber->getElement(point/2));
     bElem::tick();
     BOOST_CHECK(goldenAppleObj->kill());
+    BOOST_CHECK(!goldenAppleObj->kill());
     BOOST_CHECK(goldenAppleObj->getStats()->isDestroying());
     for(int x=0; x<4; x++)
     {
