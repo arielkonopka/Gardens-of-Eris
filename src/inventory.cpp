@@ -244,25 +244,17 @@ std::shared_ptr<bElem> inventory::requestToken(int type, int subType,bool remove
 
 int inventory::requestTokens(int number, int type, int subType)
 {
-    bool found=false;
     int num=0;
-    found=false;
     for(size_t c=0; c<this->tokens.size() && num<number;)
     {
         if(this->tokens[c]->getType()==type && (this->tokens[c]->getAttrs()->getSubtype()==subType || subType==-1) && num<number)
         {
-            found=true;
             this->removeToken(c); // this also disposes the token! Use it with care
             num++;
         }
         else  c++;
-
     }
-    if(found==false)
-    {
-        return num;
-    }
-    return 0;
+    return num;
 }
 
 
@@ -271,12 +263,10 @@ void inventory::incrementTokenNumber(tType token)
     if(this->tokenNumbers.find(token)!= this->tokenNumbers.end())
     {
         this->tokenNumbers[token]+=1;
-
     }
     else
     {
         this->tokenNumbers[token]=1;
-
     }
 }
 
@@ -381,22 +371,18 @@ void inventory::updateBoard()
     if(this->owner.expired())
         return;
     std::shared_ptr<chamber> board=this->owner.lock()->getBoard();
-    for(auto w:this->weapons)
+    auto updateG=[&](std::vector<std::shared_ptr<bElem>>& _collection)
     {
-        w->setBoard(board);
-    }
-    for(auto k:this->keys)
-    {
-        k->setBoard(board);
-    }
-    for(auto m:this->mods)
-    {
-        m->setBoard(board);
-    }
-    for(auto t:this->tokens)
-    {
-        t->setBoard(board);
-    }
+        for(auto w:_collection)
+        {
+            w->setBoard(board);
+        }
+    };
+    updateG(this->weapons);
+    updateG(this->keys);
+    updateG(this->mods);
+    updateG(this->tokens);
+    updateG(this->usables);
 
 }
 

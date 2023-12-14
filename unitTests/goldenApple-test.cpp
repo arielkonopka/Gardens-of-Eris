@@ -32,6 +32,7 @@ BOOST_AUTO_TEST_CASE(GetTypeTest)
             BOOST_CHECK(goldenAppleObj2->getAttrs()->getSubtype()==0);
             BOOST_CHECK(!goldenAppleObj2->getAttrs()->isInteractive());
             goldenAppleObj2->hurt(1);
+            goldenAppleObj2->hurt(1);
             BOOST_CHECK(goldenAppleObj2->getAttrs()->getSubtype()!=0);
             BOOST_CHECK(goldenAppleObj2->getAttrs()->isInteractive());
         }

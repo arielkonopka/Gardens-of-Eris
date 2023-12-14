@@ -171,10 +171,13 @@
 		<Unit filename="unitTests/chamberArea-test.cpp">
 			<Option target="Tests" />
 		</Unit>
-		<Unit filename="unitTests/player-test.cpp">
+		<Unit filename="unitTests/goldenApple-test.cpp">
 			<Option target="Tests" />
 		</Unit>
-		<Unit filename="unitTests/stackedElement-test.cpp">
+		<Unit filename="unitTests/guns-test.cpp">
+			<Option target="Tests" />
+		</Unit>
+		<Unit filename="unitTests/player-test.cpp">
 			<Option target="Tests" />
 		</Unit>
 		<Unit filename="unitTests/teleport-test.cpp">
