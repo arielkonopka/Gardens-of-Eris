@@ -23,6 +23,20 @@ BOOST_AUTO_TEST_CASE(GetTypeTest)
 
     std::shared_ptr<chamber> chamber = chamber::makeNewChamber(point);
     std::shared_ptr<goldenApple> goldenAppleObj = elementFactory::generateAnElement<goldenApple>(chamber,0);
+    for(int x=0; x<point.x; x++)
+    {
+        std::shared_ptr<goldenApple> goldenAppleObj2 = elementFactory::generateAnElement<goldenApple>(chamber,0);
+        goldenAppleObj2->stepOnElement(chamber->getElement(x,0));
+        if(x%3==2)
+        {
+            BOOST_CHECK(goldenAppleObj2->getAttrs()->getSubtype()==0);
+            BOOST_CHECK(!goldenAppleObj2->getAttrs()->isInteractive());
+            goldenAppleObj2->hurt(1);
+            BOOST_CHECK(goldenAppleObj2->getAttrs()->getSubtype()!=0);
+            BOOST_CHECK(goldenAppleObj2->getAttrs()->isInteractive());
+        }
+    }
+    bElem::tick();
     bElem::tick();
     BOOST_CHECK(chamber->getElement(point/2)->getType()!=_goldenAppleType);
     goldenAppleObj->stepOnElement(chamber->getElement(point/2));
@@ -34,6 +48,10 @@ BOOST_AUTO_TEST_CASE(GetTypeTest)
     BOOST_CHECK(goldenAppleObj->getAttrs()->getSubtype()!=0);
     BOOST_CHECK(goldenAppleObj->getAttrs()->isInteractive());
     goldenAppleObj->disposeElement();
+    for(int x=0; x<point.x; x++)
+    {
+        chamber->getElement(x,0)->disposeElement();
+    }
     // Add more assertions or scenarios if needed
 }
 
