@@ -6,32 +6,20 @@
 
 void inventory::changeOwner(std::shared_ptr<bElem> who)
 {
+    auto chg=[](std::shared_ptr<bElem>& w,std::vector<std::shared_ptr<bElem>>& vec)
+    {
+        for(auto w:vec)
+        {
+            w->getStats()->setCollector(w);
+        }
+
+    };
     this->owner=who;
-    for(auto w:this->weapons)
-    {
-        w->getStats()->setCollector(who);
-    }
-    for(auto t:this->tokens)
-    {
-        t->getStats()->setCollector(who);
-    }
-    for(auto k:this->keys)
-    {
-        k->getStats()->setCollector(who);
-    }
-    for(auto u:this->usables)
-    {
-        u->getStats()->setCollector(who);
-    }
-    for(auto m:this->mods)
-    {
-        m->getStats()->setCollector(who);
-    }
-
-
-
-
-
+    chg(who,this->weapons);
+    chg(who,this->mods);
+    chg(who,this->tokens);
+    chg(who,this->usables);
+    chg(who,this->keys);
 }
 
 
@@ -123,6 +111,8 @@ std::shared_ptr<bElem> inventory::getUsable()
 {
     if(this->usables.size()<=0)
         return nullptr;
+    if(!this->usables[this->uPos]->getStats()->isCollected())
+        this->nextUsable();
     return this->usables[this->uPos];
 }
 
@@ -130,7 +120,7 @@ bool inventory::nextUsable()
 {
     if (this->usables.size()<=0)
         return false;
-    this->uPos=(this->uPos+1) % this->usables.size();
+    this->uPos=this->cycleElement(this->usables,this->uPos);
     return true;
 }
 
@@ -154,19 +144,29 @@ std::shared_ptr<bElem> inventory::getActiveWeapon()
     if (this->weapons.size()<=0)
         return nullptr;
     this->wPos=this->wPos%this->weapons.size();
-    if (this->weapons[this->wPos]->getAttrs()->getAmmo()<=0)
+    if (this->weapons[this->wPos]->getAttrs()->getAmmo()<=0 && !this->weapons[this->wPos]->getStats()->isCollected())
     {
         this->removeActiveWeapon();
         return nullptr; // We will remove empty Weapons recursively, if it is necessary
     }
     return this->weapons[this->wPos];
 }
+int inventory::cycleElement(std::vector<std::shared_ptr<bElem>>& vec, int& pos)
+{
+    int p=pos;
+    vec[pos]->getStats()->setActive(false);
+    p=(p+1) % vec.size();
+    vec[pos]->getStats()->setActive(true);
+    return p;
+}
+
+
 
 bool inventory::nextGun()
 {
     if (this->weapons.size()<=0)
         return false;
-    this->wPos=(this->wPos+1) % this->weapons.size();
+    this->wPos=this->cycleElement(this->weapons,this->wPos);
     return true;
 }
 
@@ -341,18 +341,25 @@ bool inventory::removeToken(int position)
 
 bool inventory::findInInventory(unsigned long int instanceId)
 {
-    for(auto k:this->keys)
-        if(k->getStats()->getInstanceId()==instanceId)
-            return true;
-    for(auto m:this->mods)
-        if(m->getStats()->getInstanceId()==instanceId)
-            return true;
-    for(auto t:this->tokens)
-        if(t->getStats()->getInstanceId()==instanceId)
-            return true;
-    for(auto w:this->weapons)
-        if(w->getStats()->getInstanceId()==instanceId)
-            return true;
+    auto checkPresence=[](std::vector<std::shared_ptr<bElem>>& v,unsigned int inst)
+    {
+        for(auto k:v)
+            if(k->getStats()->getInstanceId()==inst)
+                return true;
+        return false;
+    };
+    if(checkPresence(this->keys,instanceId))
+        return true;
+    if(checkPresence(this->mods,instanceId))
+        return true;
+    if(checkPresence(this->tokens,instanceId))
+        return true;
+    if(checkPresence(this->weapons,instanceId))
+        return true;
+    if(checkPresence(this->mods,instanceId))
+        return true;
+    if(checkPresence(this->usables,instanceId))
+        return true;
     return false;
 }
 

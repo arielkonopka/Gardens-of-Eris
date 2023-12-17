@@ -70,6 +70,7 @@ public:
     std::vector<std::shared_ptr<bElem>> keys;
 
 private:
+    int cycleElement(std::vector<std::shared_ptr<bElem>>& vec,int& pos);
     virtual void incrementTokenNumber(tType token);
     virtual void decrementTokenNumber(tType token);
     std::weak_ptr<bElem> owner;

@@ -290,37 +290,37 @@ void presenter::prepareStatsThing()
 void presenter::showGameField()
 {
 
-
-    std::shared_ptr<bElem> player=player::getActivePlayer();
-    coords b=viewPoint::get_instance()->getViewPoint()-(coords)
+    int x,y;
+    coords d;
+    coords halfscreen=(coords)
     {
         (this->scrTilesX)/2,(this->scrTilesY)/2
     };
-    std::vector<movingSprite> mSprites;
-    mSprites.clear();
-    int x,y;
-    int bx,by; /* middle of the screen calculated based on the player position - destination */
-    int dx,dy;
     int offX=0,offY=0;
-    bx=(b.x>0)?((b.x>player->getBoard()->width-(this->scrTilesX))?player->getBoard()->width-(this->scrTilesX):b.x):0;
-    by=(b.y>0)?((b.y>(player->getBoard()->height-(this->scrTilesY)))?player->getBoard()->height-(this->scrTilesY):b.y):0;
-    dx=(bx-this->previousPosition.x);
-    dy=(by-this->previousPosition.y);
-    if (dx==0 && this->positionOnScreen.x % this->sWidth>0) dx=-1;
-    if (dy==0 && this->positionOnScreen.y % this->sHeight>0) dy=-1;
-    this->positionOnScreen.x+=dx*8;
-    this->positionOnScreen.y+=dy*8;
+    std::vector<movingSprite> mSprites;
+
+    std::shared_ptr<bElem> player=player::getActivePlayer();
+    // Calculate LeftUpper corner of the viewpoint
+    //BEGIN:upperLeft
+    coords b=viewPoint::get_instance()->getViewPoint()-halfscreen;
+    b.x=std::max(0,std::min(player->getBoard()->width-(this->scrTilesX),b.x));
+    b.y=std::max(0,std::min(player->getBoard()->height-(this->scrTilesY),b.y));
+    // END:upperLeft
+    d=b-this->previousPosition;
+    if (d.x==0 && this->positionOnScreen.x % this->sWidth>0) d.x=-1;
+    if (d.y==0 && this->positionOnScreen.y % this->sHeight>0) d.y=-1;
+    this->positionOnScreen=this->positionOnScreen+(d*8);
     this->previousPosition.x=this->positionOnScreen.x/this->sWidth;
     this->previousPosition.y=this->positionOnScreen.y/this->sHeight;
     offX=(this->positionOnScreen.x % this->sWidth);
     offY=(this->positionOnScreen.y % this->sHeight);
-    soundManager::getInstance()->setListenerVelocity({dx*555,0,dy*555});
+    soundManager::getInstance()->setListenerVelocity({d.x*555,0,d.y*555});
     this->prepareStatsThing();
     al_set_target_bitmap(this->internalBitmap);
     colour c=this->_cp_attachedBoard->getChColour();
     al_clear_to_color(al_map_rgba(c.r,c.g,c.b,c.a));
     /***
-    do not conflict in time with mechanics, usefull on getiing of the gltiches"
+    do not conflict in time with mechanics, useful on getting of the glitches"
     ***/
     bElem::mechLock();
     /***
@@ -332,14 +332,12 @@ void presenter::showGameField()
         for(x=0; x<this->scrTilesX+1; x++)
             for(y=0; y<this->scrTilesY+1; y++)
             {
-                int nx=x+this->previousPosition.x;
-                int ny=y+this->previousPosition.y;
                 coords np=(coords)
                 {
-                    nx,ny
+                    x+this->previousPosition.x,y+this->previousPosition.y
                 };
-                std::shared_ptr<bElem> elemToDisplay=player->getBoard()->getElement(nx,ny);
-                if(player->getBoard()->isVisible(nx,ny)>=255 && !viewPoint::get_instance()->isPointVisible(np))
+                std::shared_ptr<bElem> elemToDisplay=player->getBoard()->getElement(np);
+                if(player->getBoard()->isVisible(np)>=255 && !viewPoint::get_instance()->isPointVisible(np))
                     continue; // this element is not even discovered yet
                 if(elemToDisplay.get()!=nullptr)
                 {
