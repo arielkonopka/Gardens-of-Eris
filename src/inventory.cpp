@@ -144,7 +144,7 @@ std::shared_ptr<bElem> inventory::getActiveWeapon()
     if (this->weapons.size()<=0)
         return nullptr;
     this->wPos=this->wPos%this->weapons.size();
-    if (this->weapons[this->wPos]->getAttrs()->getAmmo()<=0 && !this->weapons[this->wPos]->getStats()->isCollected())
+    if (this->weapons[this->wPos]->getAttrs()->getAmmo()<=0 || !this->weapons[this->wPos]->getStats()->isCollected())
     {
         this->removeActiveWeapon();
         return nullptr; // We will remove empty Weapons recursively, if it is necessary
