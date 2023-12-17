@@ -105,7 +105,7 @@ bool goldenApple::mechanics()
 {
     bool r = explosives::mechanics();
     std::shared_ptr<bElem> _owner=this->getStats()->getCollector().lock();
-    if (this->getAttrs()->getSubtype() == 0 || !this->getStats()->isCollected() || this->getStats()->isWaiting() || !_owner)
+    if (!this->getStats()->isActive() || this->getAttrs()->getSubtype() == 0 || !this->getStats()->isCollected() || this->getStats()->isWaiting() || !_owner)
     {
         return r;
     }
@@ -130,32 +130,25 @@ bool goldenApple::interact(std::shared_ptr<bElem>who)
     return true;
 }
 
-
-
+/***
+ * @brief collectOnAction - when collected, checks, if it is a first collect by the collector, if so, sets itself active.
+ * enables its own mechanics when collected and is of subtype other than zero
+ */
 bool goldenApple::collectOnAction(bool collected, std::shared_ptr<bElem>who)
 {
-
-    if(collected && who )
+    if(collected && who && this->getAttrs()->getSubtype()!=0)
     {
-        if(who->getAttrs()->getInventory()->countTokens(this->getType(),this->getAttrs()->getSubtype())>1 || this->getAttrs()->getSubtype()==0)
-        {
-            this->deregisterLiveElement(this->getStats()->getInstanceId());
-        }
-        else
-        {
-            this->registerLiveElement(shared_from_this());
-        }
+        if(who->getAttrs()->getInventory()->countTokens(this->getType(),this->getAttrs()->getSubtype())<=1)
+            this->getStats()->setActive(true);
+        this->registerLiveElement(shared_from_this());
     }
     else
     {
+        this->getStats()->setActive(false);
         this->deregisterLiveElement(this->getStats()->getInstanceId());
     }
     bool r=bElem::collectOnAction(collected,who);
     return r;
 }
 
-/*
-void goldenApple::setCollected(std::shared_ptr<bElem> who)
-{
 
-}*/

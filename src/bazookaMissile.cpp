@@ -11,9 +11,10 @@ bool bazookaMissile::mechanics()
         return false;
     if(++this->steps<_bazookaMaxSteps && this->moveInDirectionSpeed(this->getStats()->getMyDirection(),_bazookaMissileSpeed) )
         return true;
-    if(this->steps>1)
-        return this->explode(1.5);
     std::shared_ptr<bElem> be=this->getElementInDirection(this->getStats()->getMyDirection());
+    if(this->steps>1 || !be)
+        return this->explode(1.5);
+
     int beEnergy=be->getAttrs()->getEnergy();
 
     if(be)
