@@ -84,19 +84,13 @@ bool plainGun::use(std::shared_ptr<bElem> who)
             c3d.y=50;
             coords3d vel= {who->getOffset().x,0,who->getOffset().y};
             soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,this->getStats()->getInstanceId(),this->getType(),this->getAttrs()->getSubtype(),"Shoot","Shoot");
-
             if (myel->getAttrs()->isSteppable()==true)
             {
                 this->createProjectible(who);
             }
             else if (myel->getAttrs()->isKillable() )
             {
-                /*   if(who->getStats()!=nullptr)
-                       who->getStats()->countKill(myel);
-                       */
                 myel->hurt(this->getAttrs()->getEnergy());
-
-                // this->disposeElement();
             }
             if (this->getAttrs()->getSubtype()%2==0)
             {

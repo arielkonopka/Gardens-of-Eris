@@ -117,18 +117,14 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
         return false;
     if(!elig(step))
         return false;
-
-
     if(step->getAttrs()->isCollectible() && this->getAttrs()->canCollect())
     {
-        //    std::cout<<"  ** isCollectible yes\n";
         std::shared_ptr<bElem> s2=step->getStats()->getSteppingOn();
         if(!elig(s2))
             return false;
         this->collect(step);
         step=s2;
-
-        return (step)?this->stepOnElement(step):false;
+        return step?this->stepOnElement(step):false;
     };
     std::shared_ptr<bElem> myself=shared_from_this();
     if(this->getStats()->getSteppingOn() || this->getStats()->hasParent() || this->getStats()->isCollected())

@@ -5,6 +5,7 @@ bunker::bunker(std::shared_ptr<chamber> board):bunker()
 {
     this->setBoard(board);
     this->myGun->setBoard(board);
+    this->myGun->getStats()->setCollected(true);
 
 
 }
@@ -21,6 +22,7 @@ bool bunker::additionalProvisioning()
 bool bunker::additionalProvisioning(int subtype, int typeId)
 {
     this->registerLiveElement(shared_from_this());
+    this->myGun->getStats()->setCollector(shared_from_this());
     return bElem::additionalProvisioning(subtype,typeId);;
 }
 
