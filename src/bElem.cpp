@@ -58,7 +58,7 @@ bool bElem::collectOnAction(bool collected, std::shared_ptr<bElem>who)
 
 std::shared_ptr<chamber> bElem::getBoard() const
 {
-    return this->attachedBoard;
+    return this->attachedBoard.lock();
 }
 
 void bElem::setBoard(std::shared_ptr<chamber> board)
@@ -214,7 +214,7 @@ oState bElem::disposeElementUnsafe()
     soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
     this->getStats()->setDisposed(true);
     this->getStats()->setMyPosition(NOCOORDS);
-    this->attachedBoard = nullptr;
+    this->attachedBoard.reset();
     return res; // false means that there is no more elements to go.
 
 }
@@ -268,7 +268,8 @@ oState bElem::disposeElement()
 coords bElem::getAbsCoords(direction dir) const
 {
     coords res = this->getStats()->getMyPosition();
-    if (this->attachedBoard.get() == nullptr)
+    std::shared_ptr<chamber> brd=this->attachedBoard.lock();
+    if (this->attachedBoard.expired())
         return NOCOORDS;
     switch (dir)
     {
@@ -287,7 +288,7 @@ coords bElem::getAbsCoords(direction dir) const
     case NODIRECTION:
         break;
     }
-    if (res.y >= this->attachedBoard->height || res.y < 0 || res.x >= this->attachedBoard->width || res.x < 0)
+    if (res.y >= brd->height || res.y < 0 || res.x >= brd->width || res.x < 0)
     {
         return NOCOORDS;
     }
@@ -297,9 +298,9 @@ coords bElem::getAbsCoords(direction dir) const
 std::shared_ptr<bElem> bElem::getElementInDirection(direction di)
 {
     coords mycoords = this->getAbsCoords(di);
-    if (mycoords == NOCOORDS)
+    if (mycoords == NOCOORDS || this->attachedBoard.expired())
         return nullptr;
-    return this->attachedBoard->getElement(mycoords.x, mycoords.y);
+    return this->attachedBoard.lock()->getElement(mycoords.x, mycoords.y);
 }
 
 
@@ -309,18 +310,6 @@ ALLEGRO_MUTEX *bElem::getMyMutex()
     return this->elementMutex;
 }
 
-
-/*
-std::shared_ptr<elemStats> bElem::getStats()
-{
-    return this->eConfig.myStats;
-}
-
-void bElem::setStats(std::shared_ptr<elemStats> stat)
-{
-    this->eConfig.myStats = stat;
-}
-*/
 
 bool bElem::moveInDirection(direction d)
 {
@@ -427,9 +416,10 @@ bool bElem::isSteppableDirection(direction di) const
 {
     coords tmpcoords;
     tmpcoords = this->getAbsCoords(di);
-    if (!(tmpcoords == NOCOORDS) && this->attachedBoard->getElement(tmpcoords).get() != nullptr)
+    std::shared_ptr<chamber> brd=this->attachedBoard.lock();
+    if (!(tmpcoords == NOCOORDS) && brd && brd->getElement(tmpcoords))
     {
-        return this->attachedBoard->getElement(tmpcoords)->getAttrs()->isSteppable();
+        return brd->getElement(tmpcoords)->getAttrs()->isSteppable();
     }
     return false;
 }
