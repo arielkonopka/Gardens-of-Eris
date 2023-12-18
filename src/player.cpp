@@ -86,7 +86,8 @@ oState player::disposeElement()
     {
         this->getStats()->setActive(false);
         player::activePlayer = nullptr;
-        this->getBoard()->player = NOCOORDS;
+        if(this->getBoard())
+            this->getBoard()->player = NOCOORDS;
     }
     for (unsigned int cnt = 0; cnt < player::visitedPlayers.size();)
     {
