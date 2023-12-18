@@ -110,7 +110,7 @@ private:
     void ps(std::shared_ptr<bElem> who,std::string eventType,std::string event);
     bool provisioned=false;
 
-    std::shared_ptr<chamber> attachedBoard = nullptr;
+    std::weak_ptr<chamber> attachedBoard;
     ALLEGRO_MUTEX *elementMutex = nullptr;
     static std::mutex mechanicMutex;
     static int instances;

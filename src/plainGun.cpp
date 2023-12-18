@@ -67,11 +67,11 @@ bool plainGun::use(std::shared_ptr<bElem> who)
     }
   ma
 #endif
-   if (this->getStats()->isWaiting())
+   if (this->getStats()->isWaiting() || (this->getAttrs()->getAmmo()<=0 && (this->getAttrs()->getSubtype()%2)==0))
         return false;
     this->getStats()->setWaiting(_plainGunCharge);
-    if (this->getAttrs()->getAmmo()<=0 && (this->getAttrs()->getSubtype()%2)==0) //odd subtypes have infinite shots
-        return false;
+    if(!this->getStats()->isCollected())
+        who=shared_from_this();
     myel=who->getElementInDirection(who->getStats()->getFacing());
     if(myel!=nullptr)
     {

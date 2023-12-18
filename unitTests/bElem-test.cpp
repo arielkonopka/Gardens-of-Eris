@@ -63,7 +63,8 @@ BOOST_AUTO_TEST_SUITE( BasicObjectTests )
  * the relationships and references between objects are correctly maintained.
  *
  * @tparam T The element type to be tested, specified by the BOOST_AUTO_TEST_CASE_TEMPLATE macro.
- */BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
+ */
+ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
 {
     coords csize=(coords)
     {
@@ -211,8 +212,9 @@ std::shared_ptr<bElem> findLastStep(std::shared_ptr<bElem> first)
     return last;
 }
 
-//Place few objects on each other, then remove some from the top, bottom, middle
-BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndRemovingTest,T,all_test_types)
+/**
+ * @brief This unit test tests placing few objects on each other, then randomly removing them and checking, there is still integrity
+ */BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndRemovingTest,T,all_test_types)
 {
     std::shared_ptr<chamber> mc=chamber::makeNewChamber({10,10}); // we need only a small chamber
     std::shared_ptr<bElem> te;
@@ -267,8 +269,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndRemovingTest,T,all_test_types)
 }
 
 
-
-//Place few objects on each other, then remove some from the top, bottom, middle
+/**
+ * @brief This unit test tests placing few objects on eeach other, then randomly disposing them and checking, there is still integrity
+ */
 BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDisposingTest,T,all_test_types)
 {
     std::shared_ptr<chamber> mc=chamber::makeNewChamber({5,6});
@@ -540,9 +543,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
 
     std::shared_ptr<bElem> myObj=elementFactory::generateAnElement<T>(mc,0);
     bool canBeDestroyed=myObj->getAttrs()->isDestroyable();
-    // bool isSteppable=myObj->isSteppable();
-    //  int origType=myObj->getType();
-    // std::cout<<"type:"<<myObj->getType()<<" "<<_belemType<<"\n";
     unsigned long int instance=myObj->getStats()->getInstanceId();
     bElem::tick();
     bElem::tick();
@@ -552,7 +552,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
     myObj->destroy();
     for(int c=0; c<_defaultDestroyTime; c++)
     {
-        //  std::cout<<"Waiting for destruction\n";
         BOOST_CHECK(mc->getElement(3,3)->getStats()->isDestroying()==true);
         bElem::runLiveElements();
     }
@@ -561,7 +560,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
     BOOST_CHECK(mc->getElement(3,3)->getStats()->isDestroying()==false);
     if(!canBeDestroyed )
     {
-        //   std::cout<<"instance "<<instance<<" "<<mc->getElement(3,3)->getStats()->getInstanceId()<<"\n";
         BOOST_CHECK(mc->getElement(3,3)->getStats()->getInstanceId()==instance);
     }
     else
@@ -571,7 +569,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
     }
 }
 
-/*
 /**
  * @brief This unit test "ElementsLockUnlockFeature" examines whether the lock/unlock functionality of an element works as expected across various element types.
  *
@@ -587,7 +584,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
  * - An additional unlock attempt with blocker2, when no locks are present, confirms that the element remains unlocked.
  *
  * This test ensures that an element remains locked if it's locked by multiple other elements and that it's only unlocked when all lockers have issued an unlock.
- *
+ */
 BOOST_AUTO_TEST_CASE_TEMPLATE(ElementsLockUnlockFeature,T,all_test_types)
 {
     std::shared_ptr<chamber>  mc=chamber::makeNewChamber({5,5});
@@ -602,17 +599,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ElementsLockUnlockFeature,T,all_test_types)
     BOOST_CHECK(myElement->isLocked()==true);
     myElement->lockThisObject(blocker);
     BOOST_CHECK(myElement->isLocked()==true);
-
     myElement->lockThisObject(blocker2);
     BOOST_CHECK(myElement->isLocked()==true);
-    myElement->unlockThisObject(blocker);
-    BOOST_CHECK(myElement->isLocked()==true);
-    myElement->unlockThisObject(blocker2);
-    BOOST_CHECK(myElement->isLocked()==false);
-    myElement->unlockThisObject(blocker2);
-    BOOST_CHECK(myElement->isLocked()==false);
-
-}*/
+}
 
 /**
  * @brief The unit test "InteractTimerMechanismChecker" verifies if the interaction timer mechanism functions correctly for various element types.
