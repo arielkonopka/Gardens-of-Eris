@@ -837,8 +837,8 @@ void bElem::ps(std::shared_ptr<bElem>who, std::string eventType, std::string eve
     c3d.z=who->getStats()->getMyPosition().y*32+who->getOffset().y;
     c3d.y=0;
     coords3d vel= {(who->getOffset().x)?32:0, 0,(who->getOffset().y>0)?32:0};
-
-    soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,who->getStats()->getInstanceId(),this->getType(),this->getAttrs()->getSubtype(),eventType,event);
+    if(!who || !who->getBoard()) return;
+    soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,who->getStats()->getInstanceId(),who->getType(),who->getAttrs()->getSubtype(),eventType,event);
 
 }
 
