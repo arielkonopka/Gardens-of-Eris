@@ -6,7 +6,7 @@
 #include "bElem.h"
 
 
-class bunker : public mechanical,public movableElements
+class bunker : public movableElements
 {
 public:
 

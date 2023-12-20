@@ -26,9 +26,8 @@ std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
     return pm;
 }
 
-plainGun::plainGun():mechanical()
+plainGun::plainGun():bElem()
 {
-    //this->setStats(std::make_shared<elemStats>(((bElem::randomNumberGenerator()%4)+1)*25));
 
 }
 bool plainGun::additionalProvisioning(int subtype, std::shared_ptr<plainGun>sbe)
@@ -116,7 +115,7 @@ void plainGun::setMaxEnergy(int me)
 
 bool plainGun::mechanics()
 {
-    bool res=mechanical::mechanics();
+    bool res=bElem::mechanics();
     if(this->getAttrs()->getEnergy()<this->maxEnergy)
     {
         if (bElem::getCntr()%5==0)

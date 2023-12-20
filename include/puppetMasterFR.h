@@ -6,7 +6,7 @@
 #include <mechanical.h>
 
 
-class puppetMasterFR :  public mechanical, public killableElements
+class puppetMasterFR :   public killableElements
 {
 public:
     puppetMasterFR();

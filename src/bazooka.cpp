@@ -1,6 +1,6 @@
 #include "bazooka.h"
 
-bazooka::bazooka(std::shared_ptr<chamber> board):plainGun(board)
+bazooka::bazooka():plainGun()
 {
 }
 

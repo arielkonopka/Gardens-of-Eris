@@ -3,7 +3,7 @@
 #include "killableElements.h"
 #include "videoElementDef.h"
 #include <math.h>
-class plainMissile : public killableElements, public movableElements, public mechanical
+class plainMissile : public killableElements, public movableElements
 {
 public:
 

@@ -10,7 +10,7 @@ player::player(std::shared_ptr<chamber> board) : player()
     this->setBoard(board);
 }
 
-player::player() : killableElements(), movableElements(), mechanical()
+player::player() : killableElements(), movableElements()
 {
 }
 

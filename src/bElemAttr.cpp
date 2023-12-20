@@ -88,7 +88,7 @@ int bElemAttr::getEnergy() const
 
 void bElemAttr::setEnergy(int e)
 {
-    this->energy = (unsigned int)(e>0)?e:0;
+    this->energy = std::max(0,e);
 }
 
 bool bElemAttr::isKillable() const
@@ -255,7 +255,7 @@ int bElemAttr::getMaxEnergy() const
 
 void bElemAttr::setMaxEnergy(int e)
 {
-    this->maxEnergy=e;
+    this->maxEnergy=std::max(0,e);
 }
 
 int bElemAttr::getAmmo() const
@@ -265,7 +265,7 @@ int bElemAttr::getAmmo() const
 
 void bElemAttr::setAmmo(int a)
 {
-    this->ammo=a;
+    this->ammo=std::max(0,a);
 }
 
 int bElemAttr::getMaxAmmo() const
@@ -275,7 +275,7 @@ int bElemAttr::getMaxAmmo() const
 
 void bElemAttr::setMaxAmmo(int m)
 {
-    this->maxAmmo=m;
+    this->maxAmmo=std::max(0,m);
 }
 
 

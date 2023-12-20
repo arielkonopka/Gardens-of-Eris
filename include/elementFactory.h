@@ -13,34 +13,17 @@ public:
     elementFactory() = default;
     virtual ~elementFactory() = default;
 
-/*    template <class T>
-    static std::shared_ptr<T> generateAnElement(std::shared_ptr<chamber> board)
-    {
-        std::shared_ptr<T> l=std::make_shared<T>(board);
-        l->additionalProvisioning();
-        return l;
-    }
-*/
+
     template <class T>
     static std::shared_ptr<T> generateAnElement(std::shared_ptr<chamber> board,int subtype)
     {
-        std::shared_ptr<T> l=std::make_shared<T>(board);
-        l->additionalProvisioning(subtype,l);
-     //   std::cout<<"CR."<<l->getType();
-        return l;
-    }
-
-/*
-    template <class T>
-    static std::shared_ptr<T> generateAnElement()
-    {
         std::shared_ptr<T> l=std::make_shared<T>();
-        l->additionalProvisioning();
+        l->setBoard(board);
+        l->additionalProvisioning(subtype,l);
         return l;
-
     }
 
-    */
+
 protected:
 
 private:
