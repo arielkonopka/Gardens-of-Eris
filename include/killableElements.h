@@ -1,7 +1,6 @@
 #ifndef KILLABLEELEMENTS_H
 #define KILLABLEELEMENTS_H
-
-#include "mechanical.h"
+#include "bElem.h"
 #include "commons.h"
 
 

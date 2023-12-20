@@ -3,7 +3,6 @@
 
 #include <bElem.h>
 #include <killableElements.h>
-#include <mechanical.h>
 
 
 class puppetMasterFR :   public killableElements
