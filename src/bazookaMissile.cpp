@@ -1,13 +1,13 @@
 #include "bazookaMissile.h"
 
-bazookaMissile::bazookaMissile():explosives(),movableElements()
+bazookaMissile::bazookaMissile():explosives()
 {
 
 }
 
 bool bazookaMissile::mechanics()
 {
-    if(!movableElements::mechanics())
+    if(!explosives::mechanics())
         return false;
     if(++this->steps<_bazookaMaxSteps && this->moveInDirectionSpeed(this->getStats()->getMyDirection(),_bazookaMissileSpeed) )
         return true;
@@ -46,7 +46,7 @@ bool bazookaMissile::additionalProvisioning()
 
 bool bazookaMissile::additionalProvisioning(int subtype, int typeId)
 {
-    return movableElements::additionalProvisioning(subtype,typeId);;
+    return explosives::additionalProvisioning(subtype,typeId);;
 }
 
 bool bazookaMissile::additionalProvisioning(int subtype, std::shared_ptr<bazookaMissile>sbe)

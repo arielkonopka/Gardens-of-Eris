@@ -271,6 +271,7 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 ## ChangeLog
+* removed two unneded classes: movableElements and mechanical and non steppable
 * Extended the interface, now we can drop usables, like broken apples, and we also see the broken apple, and how much more energy does it have
 * Added a bazooka weapon, the graphics is pancerfaust60.
 * Explosives were refactored a bit, now the explode method can be used instead of destroy.

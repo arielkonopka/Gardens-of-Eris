@@ -1,6 +1,6 @@
 #include "stackedElement.h"
 
-stackedElement::stackedElement():movableElements()
+stackedElement::stackedElement():bElem()
 {
     //ctor
 }
@@ -53,7 +53,7 @@ bool stackedElement::stepOnElement(std::shared_ptr<bElem> step)
         }
     }
     std::shared_ptr<bElem> be=step->getBoard()->getElement(step->getStats()->getMyPosition());
-    res=movableElements::stepOnElement(be);
+    res=bElem::stepOnElement(be);
     return res;
 }
 std::shared_ptr<bElem> stackedElement::getController()
@@ -70,7 +70,7 @@ std::shared_ptr<bElem> stackedElement::removeElement()
         {
             if(this->getStats()->getInstanceId()==this->topDownConstruct[c]->getStats()->getInstanceId())
             {
-                cnt=movableElements::removeElement();
+                cnt=bElem::removeElement();
                 continue;
             }
             this->topDownConstruct[c]->removeElement();
@@ -79,7 +79,7 @@ std::shared_ptr<bElem> stackedElement::removeElement()
 
     }
     else
-        return movableElements::removeElement();
+        return bElem::removeElement();
 }
 
 void stackedElement::linkAnElement(std::shared_ptr<stackedElement> newBottom)

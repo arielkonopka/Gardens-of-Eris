@@ -2,10 +2,9 @@
 #define BAZOOKAMISSILE_H
 #include "commons.h"
 #include <explosives.h>
-#include <movableElements.h>
 
 
-class bazookaMissile : public explosives, public movableElements
+class bazookaMissile : public explosives
 {
     public:
         int getType() const;

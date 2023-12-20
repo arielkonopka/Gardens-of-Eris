@@ -6,7 +6,7 @@ brickCluster::brickCluster(std::shared_ptr<chamber> board) : brickCluster()
 {
     this->setBoard(board);
 }
-brickCluster::brickCluster() : movableElements()
+brickCluster::brickCluster() : bElem()
 {
 }
 

@@ -555,8 +555,7 @@ std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace elemen
         return elementFactory::generateAnElement<bunker>(this->mychamber,0);
     case _teleporter:
         return elementFactory::generateAnElement<teleport>(this->mychamber,element.eSubType);
-    case _movableType:
-        return elementFactory::generateAnElement<movableElements>(this->mychamber,0);
+
     case _simpleBombType:
         return elementFactory::generateAnElement<simpleBomb>(this->mychamber,0);
     case _patrollingDrone:

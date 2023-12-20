@@ -5,7 +5,7 @@
 #include "commons.h"
 #include "videoElementDef.h"
 #include "viewPoint.h"
-class patrollingDrone : public killableElements, public movableElements
+class patrollingDrone : public killableElements
 {
 public:
 

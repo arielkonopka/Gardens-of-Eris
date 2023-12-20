@@ -10,7 +10,7 @@ monster::monster(std::shared_ptr<chamber> board) : monster()
 monster::monster(std::shared_ptr<chamber> board, int newSubtype) : monster(board)
 {
 }
-monster::monster() : killableElements(),  movableElements()
+monster::monster() : killableElements()
 {
 }
 
@@ -41,10 +41,16 @@ bool monster::additionalProvisioning(int subtype, int typeId)
     }
     if (bElem::randomNumberGenerator() % 5 >=2 )
     {
-        this->weapon = elementFactory::generateAnElement<plainGun>(this->getBoard(),0);
+        if(bElem::randomNumberGenerator()%2==0)
+            this->weapon = elementFactory::generateAnElement<plainGun>(this->getBoard(),1);
+        else
+            this->weapon=elementFactory::generateAnElement<bazooka>(this->getBoard(),1);
         this->weapon->getAttrs()->setEnergy(((bElem::randomNumberGenerator()*555)%5)*5);
         this->weapon->getAttrs()->setAmmo(5 * (5 + bElem::randomNumberGenerator() % 55));
         this->weapon->getAttrs()->setMaxEnergy(5*5*5);
+        this->weapon->getStats()->setCollected(true);
+        this->weapon->getStats()->setCollector(shared_from_this());
+
     }
     return res1;
 }
@@ -166,7 +172,7 @@ bool monster::mechanics()
 
     direction newDir = NODIRECTION;
     direction oldDir = (direction)(((int)this->getStats()->getMyDirection()) % 4);
-    if (!movableElements::mechanics())
+    if (!bElem::mechanics())
         return false;
 //    std::cout<<"   * CHK seppableNeigh\n";
     if (this->steppableNeigh())

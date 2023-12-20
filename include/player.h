@@ -2,14 +2,13 @@
 #define PLAYER_H
 #include "commons.h"
 #include "inputManager.h"
-#include <movableElements.h>
 #include "objectTypes.h"
 #include "videoElementDef.h"
 #include "plainGun.h"
 #include "soundManager.h"
 #include "viewPoint.h"
 
-class player : public killableElements,public movableElements
+class player : public killableElements
 {
 public:
     player();

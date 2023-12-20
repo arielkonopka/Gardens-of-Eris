@@ -10,7 +10,7 @@ bunker::bunker(std::shared_ptr<chamber> board):bunker()
 
 }
 
-bunker::bunker(): movableElements(), myGun(elementFactory::generateAnElement<plainGun>(nullptr,1))
+bunker::bunker(): bElem(), myGun(elementFactory::generateAnElement<plainGun>(nullptr,1))
 {
 
 }

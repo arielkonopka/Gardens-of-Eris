@@ -1,10 +1,10 @@
 #ifndef PLAINMISSILE_H
 #define PLAINMISSILE_H
 #include "killableElements.h"
-#include "movableElements.h"
+#include "bElem.h"
 #include "videoElementDef.h"
 #include <math.h>
-class plainMissile : public killableElements, public movableElements
+class plainMissile : public killableElements
 {
 public:
 

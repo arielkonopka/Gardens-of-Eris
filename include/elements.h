@@ -7,8 +7,6 @@
 //#include "objectTypes.h"
 //#include "commons.h"
 #include "bElem.h"
-#include "movableElements.h"
-#include "killableElements.h"
 #include "explosives.h"
 #include "door.h"
 #include "key.h"

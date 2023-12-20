@@ -9,7 +9,7 @@ plainMissile::plainMissile(std::shared_ptr<chamber> mychamber) : plainMissile()
 plainMissile::plainMissile(std::shared_ptr<chamber> mychamber, int energy) : plainMissile(mychamber)
 {
 }
-plainMissile::plainMissile():killableElements(),movableElements()
+plainMissile::plainMissile():killableElements()
 {
     this->getStats()->setWaiting(_plainMissileSpeed);
     this->getStats()->setMyDirection(UP);

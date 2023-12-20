@@ -154,9 +154,9 @@ std::shared_ptr<bElem> inventory::getActiveWeapon()
 int inventory::cycleElement(std::vector<std::shared_ptr<bElem>>& vec, int& pos)
 {
     int p=pos;
-    vec[pos]->getStats()->setActive(false);
+    vec[p]->getStats()->setActive(false);
     p=(p+1) % vec.size();
-    vec[pos]->getStats()->setActive(true);
+    vec[p]->getStats()->setActive(true);
     return p;
 }
 

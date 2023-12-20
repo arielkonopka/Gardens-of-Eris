@@ -1,7 +1,7 @@
 #include "simpleBomb.h"
 
 
-simpleBomb::simpleBomb(std::shared_ptr<chamber>board):explosives(board),killableElements(board),movableElements(board)
+simpleBomb::simpleBomb(std::shared_ptr<chamber>board):explosives(board),killableElements(board)
 {
 
 }
