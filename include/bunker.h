@@ -3,10 +3,10 @@
 #include "commons.h"
 #include "elementFactory.h"
 #include "plainGun.h"
-#include "movableElements.h"
+#include "bElem.h"
 
 
-class bunker : public movableElements
+class bunker : public bElem
 {
 public:
 

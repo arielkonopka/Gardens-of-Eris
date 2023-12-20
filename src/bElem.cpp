@@ -40,7 +40,34 @@ bElem::bElem(std::shared_ptr<chamber> board) : bElem()
 
 coords bElem::getOffset() const
 {
-    return {0, 0};
+
+    coords res= {0,0};
+    int rx=configManager::getInstance()->getConfig()->tileWidth;
+    int ry=configManager::getInstance()->getConfig()->tileHeight;
+
+    if(this->getStats()->isMoving() && this->getStats()->getMovingTotalTime()>0)
+    {
+        switch(this->getStats()->getMyDirection())
+        {
+        case(UP):
+            res.y=((this->getStats()->getMoved())*ry)/this->getStats()->getMovingTotalTime();
+            break;
+        case (DOWN):
+            res.y=-((this->getStats()->getMoved())*ry)/this->getStats()->getMovingTotalTime();
+            break;
+        case(LEFT):
+            res.x=((this->getStats()->getMoved())*rx)/this->getStats()->getMovingTotalTime();
+            break;
+        case(RIGHT):
+            res.x=-((this->getStats()->getMoved())*rx)/this->getStats()->getMovingTotalTime();
+            break;
+        case (NODIRECTION):
+            res.x=0;
+            res.y=0;
+            break;
+        }
+    }
+    return res;
 }
 
 
@@ -307,10 +334,6 @@ ALLEGRO_MUTEX *bElem::getMyMutex()
 }
 
 
-bool bElem::moveInDirection(direction d)
-{
-    return false;
-}
 
 bool bElem::use(std::shared_ptr<bElem> who)
 {
@@ -380,7 +403,7 @@ float bElem::getViewRadius() const
 
 }
 
- bool bElem::hurt(int points)
+bool bElem::hurt(int points)
 {
     if (!this->getAttrs()->isKillable() || this->getStats()->isDying() || this->getStats()->isDestroying()  || this->getStats()->isTeleporting() || this->getStats()->isDisposed())
         return false;
@@ -643,9 +666,66 @@ sNeighboorhood bElem::getSteppableNeighboorhood()
     return myNeigh;
 }
 
-bool bElem::moveInDirectionSpeed(direction d, int speed)
+bool bElem::moveInDirectionSpeed(direction dir, int speed)
 {
+        std::shared_ptr<bElem> stepOn=this->getElementInDirection(dir);
+    if (stepOn.get()==nullptr || this->getStats()->isMoving() || this->getStats()->isDying() || this->getStats()->isTeleporting() || this->getStats()->isDestroying() || dir==NODIRECTION)
+        return false;
+    std::shared_ptr<bElem> stepOn2=stepOn->getElementInDirection(dir);
+    this->getStats()->setMyDirection(dir);
+    if (stepOn->getAttrs()->isSteppable()==true)
+    {
+        this->stepOnElement(stepOn);
+        this->getStats()->setMoved(speed);
+        this->playSound("Move","StepOn");
+        return true;
+    }
+    else if (this->getAttrs()->canCollect() && stepOn->getAttrs()->isCollectible()==true && this->collect(stepOn))
+    {
+        return true;
+    }
+    else if (this->getAttrs()->canPush()==true && stepOn->getAttrs()->canBePushed()==true && stepOn->getAttrs()->isMovable()==true && stepOn2 && stepOn2->getAttrs()->isSteppable() && stepOn->moveInDirectionSpeed(dir,speed+1))
+    {
+
+        this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
+        this->getStats()->setMoved(speed+1);
+        this->playSound("Move","StepOn");
+        return true;
+    }
+    else  if (this->getAttrs()->isInteractive()==true && stepOn->interact(shared_from_this()))
+    {
+        return true;
+    }
     return false;
+}
+bool bElem::moveInDirection(direction d)
+{
+    return this->moveInDirectionSpeed(d,_mov_delay);
+}
+bool bElem::dragInDirection(direction dragIntoDirection)
+{
+    return this->dragInDirectionSpeed(dragIntoDirection,_mov_delay*2);
+}
+
+bool bElem::dragInDirectionSpeed(direction dragIntoDirection, int speed)
+{
+     direction objFromDir=(direction)((((int)dragIntoDirection)+2)%4);
+    direction d2=dragIntoDirection;
+    std::shared_ptr<bElem> draggedObj=this->getElementInDirection(objFromDir);
+    if(draggedObj.get()==nullptr)
+        return false;
+    if(!draggedObj->getAttrs()->isMovable())
+    {
+        d2=(direction)((((int)this->getStats()->getMyDirection())+2)%4);
+        draggedObj=this->getElementInDirection(d2);
+        d2=this->getStats()->getMyDirection();
+        if(draggedObj.get()==nullptr || !draggedObj->getAttrs()->isMovable())
+            return false;
+    }
+
+    this->moveInDirectionSpeed(dragIntoDirection,speed);
+    return draggedObj->moveInDirectionSpeed(d2,speed);
+
 }
 
 

@@ -97,11 +97,12 @@ bool goldenApple::kill()
 }
 bool goldenApple::mechanics()
 {
-    bool r = explosives::mechanics();
+    if (!this->getStats()->isActive() || !explosives::mechanics())
+        return false;
     std::shared_ptr<bElem> _owner=this->getStats()->getCollector().lock();
-    if (!r || !this->getStats()->isActive() || !_owner || !_owner->getBoard() || this->getAttrs()->getSubtype() == 0 || !this->getStats()->isCollected() || this->getStats()->isWaiting())
+    if ( this->getAttrs()->getSubtype() == 0 || !this->getStats()->isCollected() || !_owner || !_owner->getBoard() )
     {
-        return r;
+        return false;
     }
     int e = _owner->getAttrs()->getEnergy();
     if (e < 100)

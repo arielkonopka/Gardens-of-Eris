@@ -53,7 +53,9 @@ public:
     virtual bool selfAlign();
     virtual bool stepOnElement(std::shared_ptr<bElem> step);
     virtual bool moveInDirection(direction d);
-    virtual bool moveInDirectionSpeed(direction d, int speed);
+    virtual bool moveInDirectionSpeed(direction dir, int speed);
+    virtual bool dragInDirection(direction dragIntoDirection);
+    virtual bool dragInDirectionSpeed(direction dragIntoDirection,int speed);
     virtual bool destroy();
     virtual bool kill();
     virtual bool hurt(int points);

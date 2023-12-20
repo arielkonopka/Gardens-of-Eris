@@ -20,7 +20,7 @@
 #include "inputManager.h"
 
 
-typedef boost::mpl::list<bElem,killableElements,player,movableElements,door,explosives,brickCluster,plainGun> base_test_types;
+typedef boost::mpl::list<bElem,killableElements,player,door,explosives,brickCluster,plainGun> base_test_types;
 
 typedef boost::mpl::list<bElem,bazooka,bazookaMissile,bunker,floorElement,door,explosives,goldenApple,key,killableElements,monster,brickCluster,patrollingDrone,plainGun,plainMissile,player,rubbish,teleport,wall,simpleBomb> all_test_types;
 

@@ -3,9 +3,8 @@
 #include "bElem.h"
 #include "explosives.h"
 #include "killableElements.h"
-#include "movableElements.h"
 
-class simpleBomb: public explosives,  public killableElements, public movableElements
+class simpleBomb: public explosives,  public killableElements
 {
 public:
 

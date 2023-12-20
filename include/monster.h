@@ -5,8 +5,9 @@
 #include "videoElementDef.h"
 #include "killableElements.h"
 #include "plainGun.h"
+#include "bazooka.h"
 
-class monster : public killableElements,  public movableElements
+class monster : public killableElements
 {
 public:
 

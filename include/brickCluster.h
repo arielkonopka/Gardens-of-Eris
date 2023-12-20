@@ -6,8 +6,7 @@
 #include "bElem.h"
 #include "chamber.h"
 #include "memory.h"
-#include "movableElements.h"
-class brickCluster: public movableElements
+class brickCluster: public bElem
 {
 public:
     brickCluster(std::shared_ptr<chamber> board);

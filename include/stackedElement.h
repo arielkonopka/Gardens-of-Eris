@@ -1,12 +1,12 @@
 #ifndef STACKEDELEMENT_H
 #define STACKEDELEMENT_H
 
-#include <movableElements.h>
+#include <bElem.h>
 #include <vector>
 #include <memory>
 
 /* element Factory must create all instances of the stacked element */
-class stackedElement : public movableElements
+class stackedElement : public bElem
 {
 public:
     stackedElement();

@@ -10,7 +10,7 @@ player::player(std::shared_ptr<chamber> board) : player()
     this->setBoard(board);
 }
 
-player::player() : killableElements(), movableElements()
+player::player() : killableElements()
 {
 }
 
@@ -123,7 +123,7 @@ bool player::interact(std::shared_ptr<bElem> who)
 
 bool player::stepOnElement(std::shared_ptr<bElem> step)
 {
-    bool r = movableElements::stepOnElement(step);
+    bool r = killableElements::stepOnElement(step);
     bool st=false;
     if (this->getBoard().get() != nullptr && this->getStats()->isActive())
         st=this->getBoard()->visitPosition(this->getStats()->getMyPosition()); // we visit the position.

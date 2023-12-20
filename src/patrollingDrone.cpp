@@ -17,7 +17,7 @@ bool patrollingDrone::additionalProvisioning()
     return this->additionalProvisioning(0,this->getType());
 }
 
-patrollingDrone::patrollingDrone() : killableElements(), movableElements()
+patrollingDrone::patrollingDrone() : killableElements()
 {
 
     //  this->getAttrs()->setSubtype(0);
