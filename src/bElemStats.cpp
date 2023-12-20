@@ -389,7 +389,7 @@ int bElemStats::getAmmo() const
 
 void bElemStats::setAmmo(int value)
 {
-    this->ammo=value;
+    this->ammo=std::max(0,value);
 }
 
 int bElemStats::getFading() const

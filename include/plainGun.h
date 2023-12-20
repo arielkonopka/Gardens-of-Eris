@@ -5,7 +5,7 @@
 #include "plainMissile.h"
 #include "soundManager.h"
 //#include "viewPoint.h"
-class plainGun : public mechanical
+class plainGun : public bElem
 {
 public:
 

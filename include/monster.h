@@ -6,7 +6,7 @@
 #include "killableElements.h"
 #include "plainGun.h"
 
-class monster : public killableElements,  public mechanical, public movableElements
+class monster : public killableElements,  public movableElements
 {
 public:
 

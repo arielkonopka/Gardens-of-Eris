@@ -9,7 +9,7 @@
 #include "soundManager.h"
 #include "viewPoint.h"
 
-class player : public killableElements,public movableElements,public mechanical
+class player : public killableElements,public movableElements
 {
 public:
     player();

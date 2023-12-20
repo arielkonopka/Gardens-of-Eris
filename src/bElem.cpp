@@ -379,12 +379,18 @@ float bElem::getViewRadius() const
     return 2.5;
 
 }
-bool bElem::hurt(int points)
+
+ bool bElem::hurt(int points)
 {
-
-    return false;
-
+    if (!this->getAttrs()->isKillable() || this->getStats()->isDying() || this->getStats()->isDestroying()  || this->getStats()->isTeleporting() || this->getStats()->isDisposed())
+        return false;
+    this->getAttrs()->setEnergy(this->getAttrs()->getEnergy()-points);
+    if (this->getAttrs()->getEnergy()<=0)
+        this->kill();
+    return true;
 }
+
+
 
 bool bElem::readyToShoot() const
 {

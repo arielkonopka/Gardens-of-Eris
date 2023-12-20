@@ -1,6 +1,6 @@
 #include "bazookaMissile.h"
 
-bazookaMissile::bazookaMissile(std::shared_ptr<chamber> board):explosives(board),movableElements(board)
+bazookaMissile::bazookaMissile():explosives(),movableElements()
 {
 
 }

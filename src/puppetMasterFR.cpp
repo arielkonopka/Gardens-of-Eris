@@ -8,7 +8,7 @@ puppetMasterFR::puppetMasterFR(std::shared_ptr<chamber> board) :  puppetMasterFR
     this->setBoard(board);
 }
 
-puppetMasterFR::puppetMasterFR() :  mechanical(), killableElements()
+puppetMasterFR::puppetMasterFR() :   killableElements()
 {
 }
 
@@ -19,20 +19,17 @@ bool puppetMasterFR::collectOnAction(bool c, std::shared_ptr<bElem>who)
 
     if(c && r && who && who->getType()==_patrollingDrone )
     {
-        std::shared_ptr<bElem> b=who->getAttrs()->getInventory()->retrieveCollectibleFromInventory(this->getStats()->getInstanceId(),false);
-        if(b)
+        if(who->getAttrs()->getInventory()->retrieveCollectibleFromInventory(this->getStats()->getInstanceId(),false))
         {
             return who->dropItem(this->getStats()->getInstanceId());
-        }
-        if (this->getAttrs()->getSubtype() == 0) // if subtype not set, set one randomly
+        } else if (this->getAttrs()->getSubtype() == 0) // if subtype not set, set one randomly
         {
             this->getAttrs()->setSubtype(this->randomNumberGenerator()%2);
             if(this->getAttrs()->getSubtype()==0)
                 viewPoint::get_instance()->addViewPoint(who);
         }
         this->registerLiveElement(shared_from_this());
-    }
-    else if(this->getStats()->hasActivatedMechanics())
+    } else if(this->getStats()->hasActivatedMechanics())
         this->deregisterLiveElement(this->getStats()->getInstanceId());
     return true;
 }
@@ -40,7 +37,7 @@ bool puppetMasterFR::collectOnAction(bool c, std::shared_ptr<bElem>who)
 
 bool puppetMasterFR::mechanics()
 {
-    bool res = mechanical::mechanics();
+    bool res = bElem::mechanics();
 
     std::shared_ptr<bElem> clc = this->getStats()->getCollector().lock();
     if (res && clc.get() != nullptr && clc->getType() == _patrollingDrone && !clc->getStats()->isMoving() && !clc->getStats()->isWaiting())
@@ -142,8 +139,6 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
 
     if(collector->moveInDirection(cdir))
     {
-
-
         collector->getStats()->setMyDirection(cdir);
         collector->getStats()->setFacing(cdir);
     }

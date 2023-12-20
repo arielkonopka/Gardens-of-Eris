@@ -58,7 +58,6 @@ bool goldenApple::additionalProvisioning(int subtype, int typeId)
         goldenApple::apples.push_back(shared_from_this());
     }
     goldenApple::appleNumber=goldenApple::apples.size();
-
     return true;
 }
 bool goldenApple::additionalProvisioning(int subtype, std::shared_ptr<goldenApple>sbe)
@@ -91,12 +90,7 @@ std::shared_ptr<bElem> goldenApple::getApple(int num)
 {
     return goldenApple::apples.at(num);
 }
-/*
-Here we will have a lottery made with random level generator (there will be a static method to generate a random object)
-Random level generator will be great for that, because it would hold information on which objects should be generated
-and we will have to add that information only once.
 
-*/
 bool goldenApple::kill()
 {
     return this->destroy();
@@ -105,7 +99,7 @@ bool goldenApple::mechanics()
 {
     bool r = explosives::mechanics();
     std::shared_ptr<bElem> _owner=this->getStats()->getCollector().lock();
-    if (!this->getStats()->isActive() || this->getAttrs()->getSubtype() == 0 || !this->getStats()->isCollected() || this->getStats()->isWaiting() || !_owner)
+    if (!r || !this->getStats()->isActive() || !_owner || !_owner->getBoard() || this->getAttrs()->getSubtype() == 0 || !this->getStats()->isCollected() || this->getStats()->isWaiting() || !_owner)
     {
         return r;
     }

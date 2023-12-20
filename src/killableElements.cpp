@@ -2,14 +2,14 @@
 
 killableElements::killableElements(std::shared_ptr<chamber> board) :bElem(board)
 {
-  //  this->setStats(std::make_shared<elemStats>(555));
+    //  this->setStats(std::make_shared<elemStats>(555));
 }
 
 
 
 killableElements::killableElements():bElem()
 {
-   // this->setStats(std::make_shared<elemStats>(555));
+    // this->setStats(std::make_shared<elemStats>(555));
 }
 
 
@@ -29,18 +29,3 @@ bool killableElements::additionalProvisioning(int subtype, int typeId)
 }
 
 
-
-
-
-bool killableElements::hurt(int points)
-{
-    if (this->getAttrs()->isKillable()==false || this->getStats()->isTeleporting() || this->getStats()->isDying() || this->getStats()->isDestroying())
-    {
-        return false;
-    }
-
-    this->getAttrs()->setEnergy(this->getAttrs()->getEnergy()-points);
-    if (this->getAttrs()->getEnergy()<=0)
-        this->kill();
-    return true;
-}

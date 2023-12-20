@@ -5,12 +5,12 @@ bunker::bunker(std::shared_ptr<chamber> board):bunker()
 {
     this->setBoard(board);
     this->myGun->setBoard(board);
-    this->myGun->getStats()->setCollected(true);
+
 
 
 }
 
-bunker::bunker():mechanical(),movableElements(), myGun(elementFactory::generateAnElement<plainGun>(nullptr,1))
+bunker::bunker(): movableElements(), myGun(elementFactory::generateAnElement<plainGun>(nullptr,1))
 {
 
 }
@@ -23,6 +23,7 @@ bool bunker::additionalProvisioning(int subtype, int typeId)
 {
     this->registerLiveElement(shared_from_this());
     this->myGun->getStats()->setCollector(shared_from_this());
+     this->myGun->getStats()->setCollected(true);
     return bElem::additionalProvisioning(subtype,typeId);;
 }
 
