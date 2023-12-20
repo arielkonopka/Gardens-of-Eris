@@ -99,7 +99,7 @@ bool goldenApple::mechanics()
 {
     bool r = explosives::mechanics();
     std::shared_ptr<bElem> _owner=this->getStats()->getCollector().lock();
-    if (!r || !this->getStats()->isActive() || !_owner || !_owner->getBoard() || this->getAttrs()->getSubtype() == 0 || !this->getStats()->isCollected() || this->getStats()->isWaiting() || !_owner)
+    if (!r || !this->getStats()->isActive() || !_owner || !_owner->getBoard() || this->getAttrs()->getSubtype() == 0 || !this->getStats()->isCollected() || this->getStats()->isWaiting())
     {
         return r;
     }
