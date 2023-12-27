@@ -1,6 +1,7 @@
 #include "soundManager.h"
 
 soundManager *soundManager::instance = nullptr;
+std::once_flag soundManager::_onceFlag;
 soundManager::soundManager()
 {
     this->cm=configManager::getInstance();
@@ -57,8 +58,11 @@ soundManager::~soundManager()
 }
 soundManager *soundManager::getInstance()
 {
-    if (soundManager::instance == nullptr)
+
+    std::call_once(soundManager::_onceFlag,[]()
+    {
         soundManager::instance = new soundManager();
+    });
     return soundManager::instance;
 }
 /*
@@ -167,9 +171,9 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
     std::lock_guard<std::mutex> guard(this->snd_mutex);
 
     if(!this->gc->samples[typeId][subtypeId][eventType][event].configured && this->gc->samples[typeId][-1][eventType][event].configured)
-        {
-            subtypeId=-1;
-        }
+    {
+        subtypeId=-1;
+    }
 
     if (!this->active || chamberId!=this->currSoundSpace
             || this->listenerPos.distance(position)>this->gc->soundDistance
@@ -497,7 +501,7 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
         muNd.isRegistered=true;
         muNd.variableVol=vaiableVolume;
         // alSourcePlay(muNd.source);
-  //      alSourcef(muNd.source, AL_GAIN, 0.10f);
+        //      alSourcef(muNd.source, AL_GAIN, 0.10f);
         std::lock_guard<std::mutex> guard(this->snd_mutex);
 
         this->registeredMusic.push_back(muNd);

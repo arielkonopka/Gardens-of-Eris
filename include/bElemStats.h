@@ -37,7 +37,10 @@ public:
     coords getMyPosition() ;
     int getTaterCounter() const;
     int getWaiting() const;
-    int getFading() const;
+    int getFadingIn() const;
+    int getFadingInReq() const;
+    int getFadingOutReq() const;
+    int getFadingOut() const;
     int getMovingTotalTime() const;
     int getStats(pointsType t);
     int getPoints(pointsType ptype);
@@ -67,7 +70,8 @@ public:
     void setMyPosition(coords value);
     void setTaterCounter(int value);
     void setWaiting(int value);
-    void setFading(int value);
+    void setFadingIn(int value);
+    void setFadingOut(int value);
     void setPoints(pointsType ptype,int val);
     // has methods
     bool hasActivatedMechanics() const;
@@ -85,7 +89,8 @@ public:
     bool isInteracting() const;
     int isDestroying() const;
     bool isMoving() const;
-    bool isFading() const;
+    bool isFadingOut() const;
+    bool isFadingIn() const;
     // can methods
     // none present
 
@@ -123,7 +128,10 @@ private:
     unsigned int interacted = 0;
     std::unordered_map<pointsType,int> statistics;
     int movingTotalTime=-1;
-    int fading =-1;
+    int fadingOut =-1;
+    int fadingIn=-1;
+    unsigned int fadingInReq=0;
+    unsigned int fadingOutReq=0;
     int waiting = -1;
     int moved = -1;
     int destroyed = -1;

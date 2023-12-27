@@ -1,4 +1,3 @@
-
 #include <exception>
 #include <string>
 #include <iostream>
@@ -19,19 +18,19 @@ int main( int argc, char * argv[] )
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
     myPresenter->showSplash();
-    soundManager::getInstance()->setupSong(0,0,{0,0,0},0,true);
-    soundManager::getInstance()->setupSong(1,1,{rndl->mychamber->width*32,0,0},0,true);
-    soundManager::getInstance()->setupSong(2,2,{rndl->mychamber->width*32,0,rndl->mychamber->height*32},0,true);
-    soundManager::getInstance()->setupSong(3,3,{0,0,rndl->mychamber->height*32},0,true);
-    soundManager::getInstance()->setupSong(4,4,{0,0,0},1,false);
-    soundManager::getInstance()->setupSong(5,3,{0,0,0},2,false);
-    soundManager::getInstance()->setupSong(6,2,{0,0,0},3,false);
-    soundManager::getInstance()->setupSong(7,1,{0,0,0},4,false);
-    soundManager::getInstance()->setupSong(8,0,{0,0,0},5,false);
-    soundManager::getInstance()->setupSong(9,0,{0,0,0},6,false);
+    soundManager::getInstance()->setupSong(0,0, {0,0,0},0,true);
+    soundManager::getInstance()->setupSong(1,1, {rndl->mychamber->width*32,0,0},0,true);
+    soundManager::getInstance()->setupSong(2,2, {rndl->mychamber->width*32,0,rndl->mychamber->height*32},0,true);
+    soundManager::getInstance()->setupSong(3,3, {0,0,rndl->mychamber->height*32},0,true);
+    soundManager::getInstance()->setupSong(4,4, {0,0,0},1,false);
+    soundManager::getInstance()->setupSong(5,3, {0,0,0},2,false);
+    soundManager::getInstance()->setupSong(6,2, {0,0,0},3,false);
+    soundManager::getInstance()->setupSong(7,1, {0,0,0},4,false);
+    soundManager::getInstance()->setupSong(8,0, {0,0,0},5,false);
+    soundManager::getInstance()->setupSong(9,0, {0,0,0},6,false);
 
     rndl->generateLevel(10);
-    for (int cnt=2;cnt<=7;cnt++)
+    for (int cnt=3; cnt<=7; cnt++)
     {
         rndl=new randomLevelGenerator((cnt*100)/2+(rndl->gen()%10)*5,(cnt*100)/2+(rndl->gen()%10)*5);
         rndl->generateLevel(8-cnt);

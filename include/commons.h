@@ -66,6 +66,9 @@
 #define NOCOORDS   ((coords){-1,-1})
 #define NOSTATS ((stats){-1,-1,-1,-1})
 
+#define confFname1 "./data/skins.json"
+#define confFname2 "./GoEoOL/data/skins.json"
+
 const static int _dividerCloak=4;
 
 

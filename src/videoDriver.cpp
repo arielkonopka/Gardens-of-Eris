@@ -1,6 +1,6 @@
 #include "videoDriver.h"
 videoDriver* videoDriver::myInstance=nullptr;
-
+std::once_flag videoDriver::_onceFlag;
 
 videoDriver::videoDriver():std::enable_shared_from_this<videoDriver>()
 {
@@ -63,6 +63,16 @@ videoDriver::videoDriver():std::enable_shared_from_this<videoDriver>()
             for(auto e:gameConfig->gFadingOut)
                 ved->fadingOut.push_back(e);
         }
+        if(gameConfig->sprites[c].fadingIn.size()>0)
+        {
+            for(auto e:gameConfig->sprites[c].fadingIn)
+                ved->fadingIn.push_back(e);
+        }
+        else
+        {
+            for(auto e:gameConfig->gFadingIn)
+                ved->fadingIn.push_back(e);
+        }
         for(unsigned int c1=0; c1<gameConfig->sprites[c].animDef.size(); c1++)
         {
             std::vector<std::vector<coords>> dirs;
@@ -71,13 +81,7 @@ videoDriver::videoDriver():std::enable_shared_from_this<videoDriver>()
                 std::vector<coords> phs;
                 for(unsigned int c3=0; c3<gameConfig->sprites[c].animDef[c1][c2].size(); c3++)
                 {
-                    int x=gameConfig->sprites[c].animDef[c1][c2][c3].x;
-                    int y=gameConfig->sprites[c].animDef[c1][c2][c3].y;
-                    phs.push_back((coords)
-                    {
-                        x,y
-                    });
-
+                    phs.push_back(gameConfig->sprites[c].animDef[c1][c2][c3]);
                 }
                 dirs.push_back(phs);
             }
@@ -95,14 +99,15 @@ videoDriver::~videoDriver()
 
 videoDriver* videoDriver::getInstance()
 {
-    if(!videoDriver::myInstance)
+    std::call_once(videoDriver::_onceFlag,[]()
     {
-        videoDriver* vd=new videoDriver();
-        videoDriver::myInstance=vd;
-    }
-
+        videoDriver::myInstance=new videoDriver();
+    });
     return videoDriver::myInstance;
 }
+
+
+
 
 
 vElement videoDriver::getVideoElement(int typeId)

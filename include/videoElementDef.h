@@ -23,6 +23,7 @@ class videoElementDef
         coordVector dying;
         coordVector destroying;
         coordVector fadingOut;
+        coordVector fadingIn;
         videoElementDef(ALLEGRO_BITMAP *sprites_);
         ~videoElementDef();
         videoElementDef(const videoElementDef& other);
