@@ -393,6 +393,14 @@ int bElem::getAnimPh() const
     {
         base = (int)(bElem::getCntr() - this->getStats()->getTelReqTime());
     }
+    if (this->getStats()->isFadingIn())
+    {
+        base = (int)(bElem::getCntr() - this->getStats()->getFadingInReq());
+    }
+  if (this->getStats()->isFadingOut())
+    {
+        base = (int)(bElem::getCntr() - this->getStats()->getFadingOutReq());
+    }
     return base >> 3;
 }
 
@@ -427,7 +435,7 @@ bool bElem::mechanics()
         return false;
     this->getStats()->setTaterCounter(this->getStats()->getTaterCounter()+1); /// Instances own 'clock'.
 
-    if (this->getStats()->isWaiting() || this->getStats()->isTeleporting() || this->getStats()->isDying() || this->getStats()->isDestroying() || this->getStats()->isMoving() || (this->getAttrs()->isInteractive() && this->getStats()->isInteracting()))
+    if (this->getStats()->isWaiting() || this->getStats()->isTeleporting() || this->getStats()->isDying() || this->getStats()->isDestroying() || this->getStats()->isMoving() || this->getStats()->isFadingIn() || this->getStats()->isFadingOut() || (this->getAttrs()->isInteractive() && this->getStats()->isInteracting()))
         return false;
 
     return true;

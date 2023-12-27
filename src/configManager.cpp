@@ -1,27 +1,27 @@
 #include "configManager.h"
 
 std::shared_ptr<configManager> configManager::instance = nullptr;
+std::once_flag configManager::_onceFlag;
 
 configManager::configManager() : std::enable_shared_from_this<configManager>()
 {
     this->gConfObj = std::make_shared<gameConfig>();
-    this->configReload();
 }
 
 std::shared_ptr<configManager> configManager::getInstance()
 {
-//   configManager cm = configManager();
-    if (configManager::instance == nullptr)
+    std::call_once(configManager::_onceFlag,[]()
     {
         configManager::instance = std::make_shared<configManager>();
-    }
+        configManager::instance->configReload();
+    });
     return configManager::instance;
 }
 void configManager::configReload()
 {
-    FILE *fp = fopen("data/skins.json", "rb"); // non-Windows use "r"
+    FILE *fp = fopen(confFname1, "rb"); // non-Windows use "r"
     if(fp==nullptr)
-        fp = fopen("GoEoOL/data/skins.json", "rb");
+        fp = fopen(confFname2, "rb");
     char readBuffer[65536];
     rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
     this->skinDefJson.ParseStream(is);
@@ -29,6 +29,7 @@ void configManager::configReload()
     this->gConfObj->gDestroying.clear();
     this->gConfObj->gDying.clear();
     this->gConfObj->gFadingOut.clear();
+    this->gConfObj->gFadingIn.clear();
     this->gConfObj->gTeleporting.clear();
     this->gConfObj->sylables.clear();
     this->gConfObj->sprites.clear();
@@ -39,13 +40,12 @@ void configManager::configReload()
         {
             int x = blur[c][0].GetInt();
             int y = blur[c][1].GetInt();
-            this->gConfObj->bluredElement.push_back((coords){ x, y });
+            this->gConfObj->bluredElement.push_back((coords)
+            {
+                x, y
+            });
         }
     }
-
-
-
-
     this->gConfObj->soundDistance=this->skinDefJson["MaxSoundDistance"].GetInt();
     this->gConfObj->sndFifoSize=this->skinDefJson["SndFifoSize"].GetInt();
     this->gConfObj->FontFile = this->skinDefJson["FontFile"].GetString();
@@ -54,10 +54,6 @@ void configManager::configReload()
     this->gConfObj->tileWidth = this->skinDefJson["width"].GetInt();
     this->gConfObj->tileHeight = this->skinDefJson["height"].GetInt();
     this->gConfObj->spacing = this->skinDefJson["spacing"].GetInt();
-    rapidjson::Value &dying = this->skinDefJson["Dying"];
-    rapidjson::Value &teleporting = this->skinDefJson["Teleporting"];
-    rapidjson::Value &destroying = this->skinDefJson["Destroying"];
-    rapidjson::Value &fadingOut = this->skinDefJson["Fading"];
     rapidjson::Value &sprlist = this->skinDefJson["SpriteData"];
     rapidjson::Value &music=this->skinDefJson["Music"];
     for(unsigned int c=0; c<music.Size(); c++)
@@ -77,43 +73,32 @@ void configManager::configReload()
         }
         this->gConfObj->music.push_back(md);
     }
-    for (unsigned int c = 0; c < dying.Size(); c++)
-    {
-        int x = dying[c][0].GetInt();
-        int y = dying[c][1].GetInt();
-        this->gConfObj->gDying.push_back((coords)
-        {
-            x, y
-        });
-    }
-    for (unsigned int c = 0; c < teleporting.Size(); c++)
-    {
-        int x = teleporting[c][0].GetInt();
-        int y = teleporting[c][1].GetInt();
-        this->gConfObj->gTeleporting.push_back((coords)
-        {
-            x, y
-        });
-    }
-    for (unsigned int c = 0; c < destroying.Size(); c++)
-    {
-        int x = destroying[c][0].GetInt();
-        int y = destroying[c][1].GetInt();
-        this->gConfObj->gDestroying.push_back((coords)
-        {
-            x, y
-        });
-    }
-    for (unsigned int c = 0; c < fadingOut.Size(); c++)
-    {
-        int x = fadingOut[c][0].GetInt();
-        int y = fadingOut[c][1].GetInt();
-        this->gConfObj->gFadingOut.push_back((coords)
-        {
-            x, y
-        });
-    }
 
+    auto convTabsInt=[](rapidjson::Value &tab,std::vector<coords>& v)
+    {
+        for(unsigned int c=0; c<tab.Size(); c++)
+        {
+            coords p= {tab[c][0].GetInt(),tab[c][1].GetInt()};
+            v.push_back(p);
+        }
+    };
+    auto convTabsDoc=[&](rapidjson::Document &tab, auto& name,std::vector<coords>& v)
+    {
+        if(tab.HasMember(name))
+            convTabsInt(tab[name],v);
+    };
+    auto convTabsValue=[&](rapidjson::Value &tab, auto& name,std::vector<coords>& v)
+    {
+        if(tab.HasMember(name))
+            convTabsInt(tab[name],v);
+    };
+    /// add animation phases for various general things, like dying animation, destroying animation and so on...
+    convTabsDoc(this->skinDefJson,"Dying",this->gConfObj->gDying);
+    convTabsDoc(this->skinDefJson,"Teleporting",this->gConfObj->gTeleporting);
+    convTabsDoc(this->skinDefJson,"Destroying",this->gConfObj->gDestroying);
+    convTabsDoc(this->skinDefJson,"Fading Out",this->gConfObj->gFadingOut);
+    convTabsDoc(this->skinDefJson,"Fading In",this->gConfObj->gFadingIn);
+    ///
     for (unsigned int c = 0; c < sprlist.Size(); c++)
     {
         spriteData sdata;
@@ -124,8 +109,7 @@ void configManager::configReload()
             for(unsigned int i =0; i<sprlist[c]["Attributes"].Size(); i++)
             {
                 /*
-                Here read the player's attributes
-
+                Here we read the player's attributes
                 */
                 attributeData ad;
                 ad.subType=(sprlist[c]["Attributes"][i].HasMember("Subtype"))?sprlist[c]["Attributes"][i]["Subtype"].GetInt():-1;
@@ -144,16 +128,9 @@ void configManager::configReload()
                 ad.maxEnergy=(sprlist[c]["Attributes"][i].HasMember("maxEnergy"))?sprlist[c]["Attributes"][i]["maxEnergy"].GetInt():1;
                 ad.ammo=(sprlist[c]["Attributes"][i].HasMember("ammo"))?sprlist[c]["Attributes"][i]["ammo"].GetInt():0;
                 ad.maxAmmo=(sprlist[c]["Attributes"][i].HasMember("maxAmmo"))?sprlist[c]["Attributes"][i]["maxAmmo"].GetInt():0;
-
                 sdata.attributes.push_back(ad);
             }
-
-
         }
-
-
-
-
         if (sprlist[c].HasMember("Samples"))
         {
             for (unsigned int i = 0; i < sprlist[c]["Samples"].Size(); i++)
@@ -184,40 +161,12 @@ void configManager::configReload()
                 }
             }
         }
-
-        if (sprlist[c].HasMember("Dying"))
-        {
-            for (unsigned int c1 = 0; c1 < sprlist[c]["Dying"].Size(); c1++)
-                sdata.dying.push_back((coords)
-            {
-                sprlist[c]["Dying"][c1][0].GetInt(), sprlist[c]["Dying"][c1][1].GetInt()
-            });
-        }
-        if (sprlist[c].HasMember("Destroying"))
-        {
-            for (unsigned int c1 = 0; c1 < sprlist[c]["Destroying"].Size(); c1++)
-                sdata.destroying.push_back((coords)
-            {
-                sprlist[c]["Destroying"][c1][0].GetInt(), sprlist[c]["Destroying"][c1][1].GetInt()
-            });
-        }
-        if (sprlist[c].HasMember("Teleporting"))
-        {
-            for (unsigned int c1 = 0; c1 < sprlist[c]["Teleporting"].Size(); c1++)
-                sdata.teleporting.push_back((coords)
-            {
-                sprlist[c]["Teleporting"][c1][0].GetInt(), sprlist[c]["Teleporting"][c1][1].GetInt()
-            });
-        }
-        if (sprlist[c].HasMember("Fading"))
-        {
-            for (unsigned int c1 = 0; c1 < sprlist[c]["Fading"].Size(); c1++)
-                sdata.fadingOut.push_back((coords)
-            {
-                sprlist[c]["Fading"][c1][0].GetInt(), sprlist[c]["Fading"][c1][1].GetInt()
-            });
-        }
-
+        // Adding custom to the element type, various things, if they exist, like dying, teleporting, fading in or out, etc.
+        convTabsValue(sprlist[c],"Dying",sdata.dying);
+        convTabsValue(sprlist[c],"Destroying",sdata.destroying);
+        convTabsValue(sprlist[c],"Teleporting",sdata.teleporting);
+        convTabsValue(sprlist[c],"Fading Out",sdata.fadingOut);
+        convTabsValue(sprlist[c],"Fading In",sdata.fadingIn);
         // Make it read individual dying and teleporting
         for (unsigned int c1 = 0; c1 < sprlist[c]["AnimDef"].Size(); c1++)
         {
@@ -227,18 +176,12 @@ void configManager::configReload()
                 std::vector<coords> phs;
                 for (unsigned int c3 = 0; c3 < sprlist[c]["AnimDef"][c1][c2].Size(); c3++)
                 {
-                    int x = sprlist[c]["AnimDef"][c1][c2][c3][0].GetInt();
-                    int y = sprlist[c]["AnimDef"][c1][c2][c3][1].GetInt();
-                    phs.push_back((coords)
-                    {
-                        x, y
-                    });
+                    convTabsInt(sprlist[c]["AnimDef"][c1][c2],phs);
                 }
                 dirs.push_back(phs);
             }
             sdata.animDef.push_back(dirs);
         }
-
         this->gConfObj->sprites.push_back(sdata);
     }
 }

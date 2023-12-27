@@ -127,6 +127,8 @@ private:
     int regSndPos=0;
     int currentMusic=1;
     std::thread myThread;
+
+    static std::once_flag _onceFlag;
 };
 
 #endif // SOUNDMANAGER_H

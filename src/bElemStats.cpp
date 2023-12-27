@@ -392,19 +392,45 @@ void bElemStats::setAmmo(int value)
     this->ammo=std::max(0,value);
 }
 
-int bElemStats::getFading() const
+int bElemStats::getFadingOut() const
 {
-    return this->getValueInTime(this->fading);
+    return this->getValueInTime(this->fadingOut);
+}
+int bElemStats::getFadingIn() const
+{
+    return this->getValueInTime(this->fadingIn);
 }
 
-void bElemStats::setFading(int value)
+void bElemStats::setFadingIn(int value)
 {
-    this->fading=this->calculateValueInTime(value);
+    this->fadingIn=this->calculateValueInTime(value);
+    this->fadingInReq=bElem::getCntr();
+
 }
 
-bool bElemStats::isFading() const
+void bElemStats::setFadingOut(int value)
 {
-    return this->getFading()>0;
+    this->fadingOut=this->calculateValueInTime(value);
+    this->fadingOutReq=bElem::getCntr();
+}
+int bElemStats::getFadingInReq() const
+{
+    return this->fadingInReq;
+}
+
+int bElemStats::getFadingOutReq() const
+{
+    return this->fadingOutReq;
+}
+
+bool bElemStats::isFadingIn() const
+{
+    return this->getFadingIn()>0;
+}
+
+bool bElemStats::isFadingOut() const
+{
+    return this->getFadingOut()>0;
 }
 
 bool bElemStats::isMarked() const
@@ -470,7 +496,7 @@ int bElemStats::getPoints(pointsType ptype)
 
 void bElemStats::setPoints(pointsType ptype, int val)
 {
-   this->statistics[ptype]=val;
+    this->statistics[ptype]=val;
 }
 
 

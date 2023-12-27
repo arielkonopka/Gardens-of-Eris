@@ -54,7 +54,9 @@
    "Blur":         [ [ 5,15 ], [ 0, 15 ],[ 1,15 ],[ 2,15 ],[ 3,15 ],[ 4,15 ] ],
    "Dying":        [ [ 0,7 ], [ 1,7], [ 2,7], [3,7],[4,7] ],
    "Destroying":   [ [ 0, 7 ], 	[ 1, 7 ], [ 0, 7 ], [ 1, 7 ] ],
-   "Fading":       [ [ 1, 2 ], [ 2, 2 ], [ 3, 2 ], [ 4, 2 ] ],
+   "Fading Out":       [ [ 1, 2 ], [ 2, 2 ], [ 3, 2 ], [ 4, 2 ] ],
+   "Fading In":       [ [ 4, 2 ], [ 3, 2 ], [ 2, 2 ], [ 1, 2 ] ],
+
    "Teleporting":  [ [ 10, 2 ], [ 10, 3 ], [ 10, 4 ], [ 10, 5 ], [ 10, 6 ], [ 10, 7 ] ],
    
    "SpriteData":
@@ -439,7 +441,7 @@
                     {
                        "Event": "Collect",
                        "fname": "data/sounds/collectKey.ogg",
-                       "name": "Collect GOlden Apple sound",
+                       "name": "Collect a key sound",
                        "description": "This is a test sound, now it will be used for sound test",
                        "allowMulti": true,
                        "stacking":false,

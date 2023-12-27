@@ -3,8 +3,6 @@
 #include <allegro5/allegro5.h>
 #include <vector>
 #include <unordered_map>
-//#include <allegro5/allegro_font.h>
-//#import "presenter.h"
 #include "commons.h"
 #include <memory>
 #include <mutex>
@@ -32,6 +30,7 @@ private:
     std::unordered_map<int,vElement> sprites;
     int lastSpriteT=-1;
     vElement lSprite;
+    static std::once_flag _onceFlag;
 
 };
 

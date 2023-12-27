@@ -96,10 +96,7 @@
 		<Unit filename="include/kiki.h" />
 		<Unit filename="include/killableElements.h" />
 		<Unit filename="include/levelLoader.h" />
-		<Unit filename="include/mechanical.h" />
 		<Unit filename="include/monster.h" />
-		<Unit filename="include/monsterBrain.h" />
-		<Unit filename="include/movableElements.h" />
 		<Unit filename="include/objectTypes.h" />
 		<Unit filename="include/patrollingDrone.h" />
 		<Unit filename="include/plainGun.h" />
@@ -144,10 +141,7 @@
 		<Unit filename="src/kiki.cpp" />
 		<Unit filename="src/killableElements.cpp" />
 		<Unit filename="src/levelLoader.cpp" />
-		<Unit filename="src/mechanical.cpp" />
 		<Unit filename="src/monster.cpp" />
-		<Unit filename="src/monsterBrain.cpp" />
-		<Unit filename="src/movableElements.cpp" />
 		<Unit filename="src/patrollingDrone.cpp" />
 		<Unit filename="src/plainGun.cpp" />
 		<Unit filename="src/plainMissile.cpp" />

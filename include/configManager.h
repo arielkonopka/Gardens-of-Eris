@@ -50,6 +50,7 @@ typedef struct spriteData
     std::vector<coords > dying;
     std::vector<coords > destroying;
     std::vector<coords> fadingOut;
+    std::vector<coords> fadingIn;
     std::vector<coords> teleporting;
     std::vector<attributeData> attributes;
 } spriteData;
@@ -90,6 +91,7 @@ typedef struct gameConfig
     std::vector<coords> gDying;
     std::vector<coords> gDestroying;
     std::vector<coords> gFadingOut;
+    std::vector<coords> gFadingIn;
     std::vector<coords> gTeleporting;
     std::vector<spriteData> sprites;
     std::vector<coords> bluredElement;
@@ -111,6 +113,7 @@ public:
     configManager();
 
 private:
+    static std::once_flag _onceFlag;
     std::shared_ptr<gameConfig> gConfObj;
     int tileWidth;
     int tileHeight;

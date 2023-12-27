@@ -149,9 +149,6 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
         if (ve)
             al_draw_bitmap_region(ve->sprites, sx, sy, this->sWidth, this->sHeight, offsetX + (x * this->sWidth), offsetY + (y * this->sHeight), 0);
     };
-
-
-
     //m int sx,sy;
     bool res=false;
     if (x>this->scrTilesX+20 || y>this->scrTilesY+20 || elem.get()==nullptr || !ve ) return false;
@@ -188,28 +185,29 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
     }
     if (elem->getStats()->isDestroying())
     {
-        coords=ve->dying[elem->getAnimPh()%(ve->destroying.size())];
+        coords=ve->destroying[elem->getAnimPh()%(ve->destroying.size())];
         draw_sprite();
         return res;
     }
 
-    if(elem->getStats()->isFading())
+    if(elem->getStats()->isFadingOut())
     {
-        coords=ve->dying[elem->getAnimPh()%(ve->fadingOut.size())];
+        coords=ve->fadingOut[elem->getAnimPh()%(ve->fadingOut.size())];
         draw_sprite();
         return res;
-
     }
-
-
+     if(elem->getStats()->isFadingIn())
+    {
+        coords=ve->fadingIn[elem->getAnimPh()%(ve->fadingIn.size())];
+        draw_sprite();
+        return res;
+    }
     if (elem->getStats()->isTeleporting())
     {
         coords=ve->teleporting[elem->getAnimPh()%(ve->teleporting.size())];
         draw_sprite();
         return res;
     }
-
-
     return res;
 }
 
