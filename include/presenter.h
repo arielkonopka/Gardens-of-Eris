@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) 2023, Ariel Konopka
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+
 #ifndef CHAMBERPRESENTER_H
 #define CHAMBERPRESENTER_H
 #include "commons.h"
@@ -21,16 +44,7 @@
 #include <videoDriver.h>
 #include <mutex>
 #include <viewPoint.h>
-/*
- This class is responsible for menu, settings, designer and game presenter.
 
-Trzeba utworzyć relację między obiektami, a ich wizualną reprezentacją.
-Najlepiej, chcielibyśmy móc przypisywać dowolną definicję do dowolnego obiektu, problem robi się gdy:
-trzeba utworzyć nowy obiekt na planszy. - można pobrac z tabeli videoElementów-lub poprosić jakiś obiekt o to.
-obiekt się teleportuje (animacja)
-obiekt ginie (animacja)
-
-*/
 
 #define _offsetX 64
 #define _offsetY 64

@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2023, Ariel Konopka
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #include "../include/bElemAttr.h"
 #include "../include/bElem.h"
 #include "../include/inventory.h"
@@ -40,6 +61,8 @@ void bElemAttr::getDefaultValues(int typeId, int subtypeId)
             auto attr = sprite.attributes[c1];
             if ((!this->provisioned && attr.subType < 0) || (attr.subType == subtypeId))
             {
+                this->setMaxEnergy(attr.maxEnergy);
+                this->setMaxAmmo(attr.maxAmmo);
                 this->setKillable(attr.killable);
                 this->setDestroyable(attr.destroyable);
                 this->setSteppable(attr.steppable);
@@ -53,9 +76,7 @@ void bElemAttr::getDefaultValues(int typeId, int subtypeId)
                 this->setOpen(attr.isOpen);
                 this->setLocked(attr.isLocked);
                 this->setEnergy(attr.energy);
-                this->setMaxEnergy(attr.maxEnergy);
                 this->setAmmo(attr.ammo);
-                this->setMaxAmmo(attr.maxAmmo);
                 this->provisioned = true; // this way we do not have to setup attributes for the walls.
                 if(subtypeId>=0) break; // we can define the first one as -1, and then the 0 and positive subtypes would override it.
             }
@@ -88,7 +109,7 @@ int bElemAttr::getEnergy() const
 
 void bElemAttr::setEnergy(int e)
 {
-    this->energy = std::max(0,e);
+    this->energy = std::min(this->getMaxEnergy(),std::max(0,e));
 }
 
 bool bElemAttr::isKillable() const
@@ -155,7 +176,7 @@ bool bElemAttr::isCollectible() const
 
 void bElemAttr::setCollectible(bool c)
 {
-   this->collectible=c;
+    this->collectible=c;
 }
 
 bool bElemAttr::canPush() const
@@ -265,7 +286,7 @@ int bElemAttr::getAmmo() const
 
 void bElemAttr::setAmmo(int a)
 {
-    this->ammo=std::max(0,a);
+    this->ammo=std::min(this->getMaxAmmo(),std::max(0,a));
 }
 
 int bElemAttr::getMaxAmmo() const

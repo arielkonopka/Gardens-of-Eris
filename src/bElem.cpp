@@ -1,3 +1,25 @@
+
+/*
+ * Copyright (c) 2023, Ariel Konopka
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #include "../include/bElem.h"
 #include "floorElement.h"
 #include "rubbish.h"
@@ -397,7 +419,7 @@ int bElem::getAnimPh() const
     {
         base = (int)(bElem::getCntr() - this->getStats()->getFadingInReq());
     }
-  if (this->getStats()->isFadingOut())
+    if (this->getStats()->isFadingOut())
     {
         base = (int)(bElem::getCntr() - this->getStats()->getFadingOutReq());
     }
@@ -676,7 +698,7 @@ sNeighboorhood bElem::getSteppableNeighboorhood()
 
 bool bElem::moveInDirectionSpeed(direction dir, int speed)
 {
-        std::shared_ptr<bElem> stepOn=this->getElementInDirection(dir);
+    std::shared_ptr<bElem> stepOn=this->getElementInDirection(dir);
     if (stepOn.get()==nullptr || this->getStats()->isMoving() || this->getStats()->isDying() || this->getStats()->isTeleporting() || this->getStats()->isDestroying() || dir==NODIRECTION)
         return false;
     std::shared_ptr<bElem> stepOn2=stepOn->getElementInDirection(dir);
@@ -717,7 +739,7 @@ bool bElem::dragInDirection(direction dragIntoDirection)
 
 bool bElem::dragInDirectionSpeed(direction dragIntoDirection, int speed)
 {
-     direction objFromDir=(direction)((((int)dragIntoDirection)+2)%4);
+    direction objFromDir=(direction)((((int)dragIntoDirection)+2)%4);
     direction d2=dragIntoDirection;
     std::shared_ptr<bElem> draggedObj=this->getElementInDirection(objFromDir);
     if(draggedObj.get()==nullptr)
@@ -772,25 +794,24 @@ void bElem::runLiveElements()
 {
     bElem::tick();
     std::vector<std::shared_ptr<bElem>>::iterator p;
-    // We will check the elements, that are dying, and chek, if syoud le remove the ones, that are stale.
+    // We will check the elements, that are dying, and chek, if should we remove the ones, that are stale.
     for(unsigned int  c=0 ; c<bElem::toDispose.size();)
     {
         if(!bElem::toDispose[c]->getStats()->isDying() && !bElem::toDispose[c]->getStats()->isDestroying() && !bElem::toDispose[c]->getStats()->isTeleporting())
         {
             if(!bElem::toDispose[c]->getStats()->isDisposed())
             {
-                //  bElem::toDispose[c]->playSound("Element","Disposed"); // Snd: Element->Disposed - play sound on element disposal during the game.
                 bElem::toDispose[c]->disposeElement(); // we remove the element, which stopped being dead - its time has passed.
             }
-
             bElem::toDispose.erase(bElem::toDispose.begin()+c);
         }
         else c++;
     }
 
+
     for (unsigned long int instId : bElem::toDeregister)
     {
-        auto it = std::find_if(bElem::liveElems.begin(), bElem::liveElems.end(), [instId](std::shared_ptr<bElem> elem)
+        auto it = std::ranges::find_if(bElem::liveElems.begin(), bElem::liveElems.end(), [instId](std::shared_ptr<bElem> elem)
         {
             return elem->getStats()->getInstanceId() == instId;
         });
@@ -807,9 +828,7 @@ void bElem::runLiveElements()
         bElem::mechLock();
         for (unsigned int p = 0; p < bElem::liveElems.size(); p++)
         {
-            //  if(bElem::liveElems[p] && bElem::randomNumberGenerator()%55==5)
             bElem::liveElems[p]->mechanics();
-
         }
         bElem::mechUnlock();
         return;
@@ -829,7 +848,7 @@ void bElem::runLiveElements()
             {
                 bElem::liveElems[p]->mechanics();
             }
-            else if (bElem::randomNumberGenerator()%55==5)
+            else if (bElem::randomNumberGenerator()%555==5)
                 bElem::liveElems[p]->mechanics(); /// once in a while all objects will be moving
         }
     }
