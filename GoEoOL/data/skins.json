@@ -110,8 +110,8 @@
              "isWeapon":false,
              "isOpen":false,
              "isLocked":false,
-             "energy":100,
-             "maxEnergy":100,
+             "energy":5555,
+             "maxEnergy":5555,
              "ammo":0,
              "maxAmmo":0
           }

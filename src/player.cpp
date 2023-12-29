@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2023, Ariel Konopka
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #include "player.h"
 
 std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
@@ -10,7 +31,7 @@ player::player(std::shared_ptr<chamber> board) : player()
     this->setBoard(board);
 }
 
-player::player() : killableElements()
+player::player() : bElem()
 {
 }
 
@@ -99,12 +120,12 @@ oState player::disposeElement()
             cnt++;
     }
 
-    return killableElements::disposeElement();
+    return bElem::disposeElement();
 }
 
 bool player::interact(std::shared_ptr<bElem> who)
 {
-    if (who == nullptr || this->getBoard() == nullptr || this->getStats()->isActive() || this->getStats()->isMarked() || killableElements::interact(who) == false)
+    if (who == nullptr || this->getBoard() == nullptr || this->getStats()->isActive() || this->getStats()->isMarked() || bElem::interact(who) == false)
         return false;
 
     if (who->getType() == this->getType() && !this->getStats()->isActive() && !this->getStats()->isMarked())
@@ -123,7 +144,7 @@ bool player::interact(std::shared_ptr<bElem> who)
 
 bool player::stepOnElement(std::shared_ptr<bElem> step)
 {
-    bool r = killableElements::stepOnElement(step);
+    bool r = bElem::stepOnElement(step);
     bool st=false;
     if (this->getBoard().get() != nullptr && this->getStats()->isActive())
         st=this->getBoard()->visitPosition(this->getStats()->getMyPosition()); // we visit the position.
@@ -234,8 +255,8 @@ bool player::mechanics()
         break;
     case 8:
         if (this->getAttrs()->getInventory()->getUsable() != nullptr)
-            this->getAttrs()->getInventory()->getUsable()->use(this->getElementInDirection(currentCtrlItem.dir));
-        this->getStats()->setWaiting(_mov_delay*2);
+            this->getAttrs()->getInventory()->getUsable()->interact(shared_from_this());
+        this->getStats()->setWaiting(1);
         break;
     case 5:
     {
