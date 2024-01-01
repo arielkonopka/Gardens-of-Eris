@@ -38,18 +38,10 @@ int floorElement::getType() const
 {
     return _floorType;
 }
-bool floorElement::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
 
-bool floorElement::additionalProvisioning(int subtype, int typeId)
-{
-    return bElem::additionalProvisioning(subtype,typeId);
-}
 bool floorElement::additionalProvisioning(int subtype, std::shared_ptr<floorElement>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
+    return bElem::additionalProvisioning(subtype,sbe);
 }
 
 

@@ -37,24 +37,8 @@ monster::monster() : bElem()
 
 bool monster::additionalProvisioning(int subtype, std::shared_ptr<monster>sbe)
 {
-    this->registerLiveElement(shared_from_this());
-
-    return bElem::additionalProvisioning(subtype,sbe->getType());
-}
-
-
-
-
-
-
-
-
-
-bool monster::additionalProvisioning(int subtype, int typeId)
-{
-    bool res1= bElem::additionalProvisioning(subtype,typeId);
-//  this->getAttrs()->setEnergy(_defaultEnergy);
-//   this->setInventory(std::make_shared<inventory>()); // setCollect should be true
+    if(!bElem::additionalProvisioning(subtype,sbe))
+        return false;
     if (bElem::randomNumberGenerator() % 2 == 0)
     {
         this->rotA = 1;
@@ -73,13 +57,20 @@ bool monster::additionalProvisioning(int subtype, int typeId)
         this->weapon->getStats()->setCollector(shared_from_this());
 
     }
-    return res1;
+    this->registerLiveElement(shared_from_this());
+
+    return true;
+
 }
 
-bool monster::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
+
+
+
+
+
+
+
+
 
 
 
@@ -170,7 +161,7 @@ bool monster::checkNeigh()
                 }
 
                 // closed door? and we got a key?
-                if ((e->getType() == _door && !e->getAttrs()->isSteppable()) && (this->getAttrs()->getInventory()->countTokens(_door, e->getAttrs()->getSubtype()) > 0))
+                if ((e->getType() == _door && !e->getAttrs()->isSteppable()) && this->getAttrs()->canCollect() && (this->getAttrs()->getInventory()->countTokens(_door, e->getAttrs()->getSubtype()) > 0))
                 {
 
                     this->getStats()->setMyDirection(d);

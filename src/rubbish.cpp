@@ -49,21 +49,10 @@ bool rubbish::mechanics()
         this->getStats()->getStandingOn().lock()->collect(t);
     return false;
 }
-bool rubbish::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
 
-bool rubbish::additionalProvisioning(int subtype,int typeId)
-{
-    bool res=bElem::additionalProvisioning(subtype,typeId);
-    this->getAttrs()->setEnergy(1);
-
-    return res;
-}
 
 bool rubbish::additionalProvisioning(int subtype, std::shared_ptr<rubbish>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
+    return bElem::additionalProvisioning(subtype,sbe);
 }
 

@@ -53,22 +53,15 @@ door::door(std::shared_ptr<chamber> board) : door()
 
 bool door::additionalProvisioning(int subtype, std::shared_ptr<door>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
-}
-
-bool door::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
-
-bool door::additionalProvisioning(int subtype, int typeId)
-{
-    bool res=bElem::additionalProvisioning(subtype,typeId);
+    if (!bElem::additionalProvisioning(subtype,sbe))
+        return false;
     this->getAttrs()->setSteppable(false);
     this->getAttrs()->setLocked(true);
     this->getAttrs()->setOpen(false);
-    return res;
+    return true;
+
 }
+
 
 bool door::stepOnAction(bool step, std::shared_ptr<bElem>who)
 {

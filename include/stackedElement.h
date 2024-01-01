@@ -40,8 +40,7 @@ public:
     void setController(std::shared_ptr<bElem> controller);
     std::shared_ptr<bElem> getController();
     bool additionalProvisioning(int st,std::shared_ptr<stackedElement> sbe);
-    virtual bool additionalProvisioning();
-    virtual bool additionalProvisioning(int subtype,int typeId);
+
 protected:
 
 private:

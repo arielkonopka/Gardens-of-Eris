@@ -34,17 +34,7 @@ stackedElement::stackedElement(std::shared_ptr<chamber> board):stackedElement()
 
 bool stackedElement::additionalProvisioning(int st, std::shared_ptr<stackedElement>sbe)
 {
-    return this->additionalProvisioning(st,sbe->getType());
-}
-
-bool stackedElement::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
-
-bool stackedElement::additionalProvisioning(int subtype,int typeId)
-{
-    return bElem::additionalProvisioning(subtype,typeId);
+    return bElem::additionalProvisioning(st,sbe);
 }
 
 

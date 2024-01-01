@@ -1596,7 +1596,7 @@
 	<boost/mpl/list.hpp>
 	<memory>
 
-1703018000 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/main.cpp
+1703884056 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/main.cpp
 	<exception>
 	<string>
 	<iostream>
@@ -1608,19 +1608,19 @@
 	"randomLevelGenerator.h"
 	"soundManager.h"
 
-1702078799 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/commons.h
+1703883162 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/commons.h
 	<stddef.h>
 	<memory>
 	<vector>
 	"elementFactory.h"
 	<cmath>
 
-1702935304 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/elementFactory.h
+1704070932 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/elementFactory.h
 	<istream>
 	<memory>
 	<iostream>
 
-1703110678 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/elements.h
+1703883775 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/elements.h
 	"bElem.h"
 	"explosives.h"
 	"door.h"
@@ -1643,7 +1643,7 @@
 	"bazooka.h"
 	"bazookaMissile.h"
 
-1703109444 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElem.h
+1704071885 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElem.h
 	<chrono>
 	<random>
 	<memory>
@@ -1659,33 +1659,33 @@
 	"bElemStats.h"
 	"bElemAttr.h"
 
-1694719958 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/objectTypes.h
+1703883961 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/objectTypes.h
 
-1702850676 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/inventory.h
+1703883811 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/inventory.h
 	"commons.h"
 	<vector>
 	<map>
 
-1699566836 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/chamber.h
+1703883153 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/chamber.h
 	"commons.h"
 	"randomWordGen.h"
 	<memory>
 	<thread>
 	<mutex>
 
-1694719958 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/randomWordGen.h
+1703882998 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/randomWordGen.h
 	<vector>
 	<string>
 	<chrono>
 	<random>
 
-1703627928 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/videoElementDef.h
+1703883060 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/videoElementDef.h
 	"commons.h"
 	<allegro5/allegro5.h>
 	<vector>
 	"configManager.h"
 
-1703632102 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/configManager.h
+1703882976 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/configManager.h
 	<istream>
 	<vector>
 	<rapidjson/document.h>
@@ -1701,7 +1701,7 @@
 	"objectTypes.h"
 	"commons.h"
 
-1701463177 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/inputManager.h
+1703882980 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/inputManager.h
 	<istream>
 	"commons.h"
 	<allegro5/allegro.h>
@@ -1716,7 +1716,7 @@
 	<math.h>
 	"commons.h"
 
-1699911316 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/soundManager.h
+1703883018 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/soundManager.h
 	<istream>
 	"commons.h"
 	<map>
@@ -1768,45 +1768,44 @@
 1690580038 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/usable.h
 	"bElem.h"
 
-1701470050 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/explosives.h
+1704072899 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/explosives.h
 	<bElem.h>
 
-1701556861 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/door.h
+1704071814 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/door.h
 	<bElem.h>
 	"videoElementDef.h"
 	"wall.h"
 	"commons.h"
 
-1701470062 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/key.h
+1704072916 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/key.h
 	"commons.h"
 	"objectTypes.h"
 	"videoElementDef.h"
 	"bElem.h"
 
-1703022251 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/plainGun.h
+1704072488 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/plainGun.h
 	"videoElementDef.h"
 	"plainMissile.h"
 	"soundManager.h"
 
-1703111629 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/plainMissile.h
-	"killableElements.h"
+1704072481 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/plainMissile.h
 	"bElem.h"
 	"videoElementDef.h"
 	<math.h>
 
-1703110635 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bunker.h
+1704072885 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bunker.h
 	"commons.h"
 	"elementFactory.h"
 	"plainGun.h"
 	"bElem.h"
 
-1701470082 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/teleport.h
+1704072783 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/teleport.h
 	"commons.h"
 	"videoElementDef.h"
 	"randomLevelGenerator.h"
 	"bElem.h"
 
-1694458117 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/randomLevelGenerator.h
+1703883996 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/randomLevelGenerator.h
 	<istream>
 	<iostream>
 	<chrono>
@@ -1822,32 +1821,30 @@
 	"chamberArea.h"
 	<vector>
 
-1694719958 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/chamberArea.h
+1703882950 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/chamberArea.h
 	"commons.h"
 	"chamber.h"
 	"bElem.h"
 	<vector>
 
-1703110712 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/patrollingDrone.h
-	<killableElements.h>
+1704072372 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/patrollingDrone.h
+	<bElem.h>
 	"commons.h"
 	"videoElementDef.h"
 	"viewPoint.h"
 
-1703111637 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/simpleBomb.h
+1704072651 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/simpleBomb.h
 	"bElem.h"
 	"explosives.h"
-	"killableElements.h"
 
-1703111911 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/monster.h
+1704071318 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/monster.h
 	"objectTypes.h"
 	"chamber.h"
 	"videoElementDef.h"
-	"killableElements.h"
 	"plainGun.h"
 	"bazooka.h"
 
-1703111641 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/player.h
+1704071697 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/player.h
 	"commons.h"
 	"inputManager.h"
 	"objectTypes.h"
@@ -1856,30 +1853,30 @@
 	"soundManager.h"
 	"viewPoint.h"
 
-1702068845 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/goldenApple.h
+1704072237 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/goldenApple.h
 	"elements.h"
 	<vector>
 	"soundManager.h"
 
-1701470181 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/wall.h
+1704072964 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/wall.h
 	"videoElementDef.h"
 	"objectTypes.h"
 	"bElem.h"
 
-1701470201 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/rubbish.h
+1704072530 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/rubbish.h
 	"bElem.h"
 	"objectTypes.h"
 
-1701470134 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/floorElement.h
+1704071863 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/floorElement.h
 	"bElem.h"
 
-1703110571 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/brickCluster.h
+1704072091 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/brickCluster.h
 	"commons.h"
 	"bElem.h"
 	"chamber.h"
 	"memory.h"
 
-1700768101 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/presenter.h
+1703882991 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/presenter.h
 	"commons.h"
 	<allegro5/allegro5.h>
 	<allegro5/allegro_font.h>
@@ -1904,76 +1901,76 @@
 1688853026 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/audibleElement.cpp
 	"audibleElement.h"
 
-1703632009 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp
+1704072020 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp
 	"../include/bElem.h"
 	"floorElement.h"
 	"rubbish.h"
 	"elements.h"
 	<algorithm>
 
-1703110591 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/brickCluster.cpp
+1704071758 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/brickCluster.cpp
 	"brickCluster.h"
 
-1703110614 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bunker.cpp
+1704072301 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bunker.cpp
 	"bunker.h"
 	<elementFactory.h>
 
-1698616546 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/chamber.cpp
+1703885509 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/chamber.cpp
 	"chamber.h"
 	"floorElement.h"
 	"player.h"
 
-1701547343 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/chamberArea.cpp
+1703885519 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/chamberArea.cpp
 	"chamberArea.h"
 
 1690579686 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/collectible.cpp
 	"collectible.h"
 
-1703633058 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/configManager.cpp
+1703885526 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/configManager.cpp
 	"configManager.h"
 
-1701558272 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/door.cpp
+1704072058 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/door.cpp
 	"door.h"
 
-1694719958 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/elementFactory.cpp
+1703885534 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/elementFactory.cpp
 	"elementFactory.h"
 
 1688251271 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/elemStats.cpp
 	"elemStats.h"
 	"bElem.h"
 
-1702071398 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/explosives.cpp
+1704072127 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/explosives.cpp
 	"explosives.h"
 	<viewPoint.h>
 
-1701468771 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/floorElement.cpp
+1704071846 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/floorElement.cpp
 	"floorElement.h"
 
-1703109979 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/goldenApple.cpp
+1704072212 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/goldenApple.cpp
 	"goldenApple.h"
 
-1702073227 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp
+1703885556 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp
 	"inputManager.h"
 
-1703110157 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp
+1703885563 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp
 	"inventory.h"
 	"bElem.h"
 
-1694719958 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/key.cpp
+1704072147 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/key.cpp
 	"key.h"
 
 1703022151 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/killableElements.cpp
 	"killableElements.h"
 
-1694719958 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/levelLoader.cpp
+1703883939 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/levelLoader.cpp
 	"levelLoader.h"
 
-1694719958 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/levelLoader.h
+1703883952 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/levelLoader.h
 
 1701464993 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/mechanical.cpp
 	"mechanical.h"
 
-1703111887 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monster.cpp
+1704073063 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monster.cpp
 	"monster.h"
 
 1701468299 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/movableElements.cpp
@@ -1989,86 +1986,85 @@
 1688853647 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/nonSteppable.cpp
 	"nonSteppable.h"
 
-1703110961 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/patrollingDrone.cpp
+1704072363 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/patrollingDrone.cpp
 	"patrollingDrone.h"
 
-1703022299 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/plainGun.cpp
+1704072439 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/plainGun.cpp
 	"plainGun.h"
 	"viewPoint.h"
 
-1703110999 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/plainMissile.cpp
+1704072467 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/plainMissile.cpp
 	"plainMissile.h"
 
-1703111044 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/player.cpp
+1704072602 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/player.cpp
 	"player.h"
 
-1703628594 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp
+1703885638 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp
 	"presenter.h"
 
-1703111651 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp
+1703885738 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp
 	"randomLevelGenerator.h"
 
-1694719958 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomWordGen.cpp
+1703885755 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomWordGen.cpp
 	"randomWordGen.h"
 
-1694032927 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/rubbish.cpp
+1704072521 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/rubbish.cpp
 	"rubbish.h"
 
-1703111057 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/simpleBomb.cpp
+1704072640 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/simpleBomb.cpp
 	"simpleBomb.h"
 
-1701036717 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/soundManager.cpp
+1703884134 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/soundManager.cpp
 	"soundManager.h"
 
-1703111104 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/stackedElement.cpp
+1704072708 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/stackedElement.cpp
 	"stackedElement.h"
 
-1703110989 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/stackedElement.h
+1704072719 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/stackedElement.h
 	<bElem.h>
 	<vector>
 	<memory>
 
-1701468531 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/teleport.cpp
+1704073594 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/teleport.cpp
 	"teleport.h"
 
 1688854197 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/usable.cpp
 	"usable.h"
 
-1694719958 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/videoElementDef.cpp
+1703884083 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/videoElementDef.cpp
 	"videoElementDef.h"
 	"elements.h"
 
-1694032976 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/wall.cpp
+1704072848 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/wall.cpp
 	"wall.h"
 
-1703105034 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/puppetMasterFR.h
+1704072683 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/puppetMasterFR.h
 	<bElem.h>
-	<killableElements.h>
 
 1701469337 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monsterBrain.cpp
 	"monsterBrain.h"
 
 1701469195 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/monsterBrain.h
 
-1703021655 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/puppetMasterFR.cpp
+1704072674 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/puppetMasterFR.cpp
 	"puppetMasterFR.h"
 	"viewPoint.h"
 
-1703024958 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElemAttr.cpp
+1703885461 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElemAttr.cpp
 	"../include/bElemAttr.h"
 	"../include/bElem.h"
 	"../include/inventory.h"
 
-1697569837 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElemAttr.h
+1703883111 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElemAttr.h
 	<memory>
 	"../include/configManager.h"
 
-1703629631 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElemStats.h
+1703883119 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElemStats.h
 	"../include/commons.h"
 	<memory>
 	<unordered_map>
 
-1703629612 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElemStats.cpp
+1703885474 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElemStats.cpp
 	"bElemStats.h"
 	"../include/bElem.h"
 
@@ -2080,7 +2076,7 @@
 	"characterStats.h"
 	"bElem.h"
 
-1694719958 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/videoDriver.h
+1703883076 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/videoDriver.h
 	<allegro5/allegro5.h>
 	<vector>
 	<unordered_map>
@@ -2091,25 +2087,25 @@
 	"configManager.h"
 	<allegro5/allegro_image.h>
 
-1701468844 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bouba.cpp
+1703885480 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bouba.cpp
 	"bouba.h"
 
-1701469949 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bouba.h
+1703883126 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bouba.h
 	<bElem.h>
 
-1701469105 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/kiki.cpp
+1703885571 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/kiki.cpp
 	"kiki.h"
 
-1701470245 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/kiki.h
+1703883824 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/kiki.h
 	<bElem.h>
 
-1694719958 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/videoDriver.cpp
+1703884089 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/videoDriver.cpp
 	"videoDriver.h"
 
-1701202648 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/viewPoint.cpp
+1703884079 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/viewPoint.cpp
 	"viewPoint.h"
 
-1699182797 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/viewPoint.h
+1703883041 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/viewPoint.h
 	"commons.h"
 	"elements.h"
 	<mutex>
@@ -2153,19 +2149,19 @@
 	<boost/mpl/list.hpp>
 	<memory>
 
-1702935561 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bazooka.h
+1704071661 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bazooka.h
 	"commons.h"
 	<plainGun.h>
 	<bazookaMissile.h>
 	<viewPoint.h>
 
-1703110395 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bazookaMissile.h
+1704071676 /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bazookaMissile.h
 	"commons.h"
 	<explosives.h>
 
-1702935550 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bazooka.cpp
+1704071457 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bazooka.cpp
 	"bazooka.h"
 
-1703110435 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bazookaMissile.cpp
+1704071728 source:/home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bazookaMissile.cpp
 	"bazookaMissile.h"
 

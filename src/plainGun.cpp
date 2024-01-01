@@ -53,20 +53,12 @@ plainGun::plainGun():bElem()
 }
 bool plainGun::additionalProvisioning(int subtype, std::shared_ptr<plainGun>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
-}
-
-bool plainGun::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
-
-bool plainGun::additionalProvisioning(int subtype,int typeId)
-{
-    bool r= bElem::additionalProvisioning(subtype,typeId);
+    if(!bElem::additionalProvisioning(subtype,sbe))
+        return false;
     this->registerLiveElement(shared_from_this());
-    return r;
+    return true;
 }
+
 
 
 int plainGun::getType() const

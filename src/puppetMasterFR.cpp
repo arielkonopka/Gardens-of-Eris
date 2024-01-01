@@ -183,18 +183,10 @@ int puppetMasterFR::getType() const
 
 bool puppetMasterFR::additionalProvisioning(int subtype, std::shared_ptr<puppetMasterFR>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
+    return bElem::additionalProvisioning(subtype,sbe);
 }
 
-bool puppetMasterFR::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
 
-bool puppetMasterFR::additionalProvisioning(int subtype,int typeId)
-{
-    return bElem::additionalProvisioning(subtype,typeId);
-}
 
 
 

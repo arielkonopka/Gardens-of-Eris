@@ -43,8 +43,7 @@ public:
     virtual std::shared_ptr<bElem> createProjectible(std::shared_ptr<bElem> who);
 
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<plainGun> sbe);
-    virtual bool additionalProvisioning();
-    virtual bool additionalProvisioning(int subtype,int typeId);
+
 
 private:
     int ammo=1+(bElem::randomNumberGenerator()%_plainGunAmmo);

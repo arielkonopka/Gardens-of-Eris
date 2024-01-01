@@ -40,8 +40,6 @@ public:
     bool interact(std::shared_ptr<bElem> who);
     bool mechanics();
     goldenApple();
-    bool additionalProvisioning(int subtype,int typeId) final;
-    bool additionalProvisioning() final;
     oState disposeElement() final;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<goldenApple> sbe);
     bool collectOnAction(bool collected, std::shared_ptr<bElem> who);

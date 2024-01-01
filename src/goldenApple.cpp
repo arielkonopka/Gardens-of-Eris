@@ -67,23 +67,18 @@ goldenApple::goldenApple() :  explosives()
 {
 }
 
-bool goldenApple::additionalProvisioning()
+
+bool goldenApple::additionalProvisioning(int subtype, std::shared_ptr<goldenApple>sbe)
 {
-    return this->additionalProvisioning(0,this->getType());
-}
-bool goldenApple::additionalProvisioning(int subtype, int typeId)
-{
-    bElem::additionalProvisioning(subtype,typeId);
+    if(!bElem::additionalProvisioning(subtype,sbe))
+        return false;
     if(subtype==0)
     {
         goldenApple::apples.push_back(shared_from_this());
     }
     goldenApple::appleNumber=goldenApple::apples.size();
     return true;
-}
-bool goldenApple::additionalProvisioning(int subtype, std::shared_ptr<goldenApple>sbe)
-{
-    return this->additionalProvisioning(subtype,sbe->getType());
+
 }
 
 

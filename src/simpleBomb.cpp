@@ -30,21 +30,11 @@ simpleBomb::simpleBomb(std::shared_ptr<chamber>board):explosives(board)
 
 bool simpleBomb::additionalProvisioning(int subtype, std::shared_ptr<simpleBomb>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
+    return bElem::additionalProvisioning(subtype,sbe);
 }
 float simpleBomb::getViewRadius() const
 {
     return 4.5;
-}
-
-bool simpleBomb::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
-
-bool simpleBomb::additionalProvisioning(int subtype,int typeId)
-{
-    return bElem::additionalProvisioning(subtype,typeId);
 }
 
 bool simpleBomb::hurt(int points)

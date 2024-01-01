@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2023, Ariel Konopka
  *
@@ -38,9 +37,6 @@ public:
     explicit key(std::shared_ptr<chamber> board,int x,int y);
     explicit key(std::shared_ptr<chamber> board,int subtype);
     bool additionalProvisioning(int subtype,std::shared_ptr<key> key);
-    bool additionalProvisioning(int subtype,int typeId);
-    bool additionalProvisioning();
-
     key();
 
 

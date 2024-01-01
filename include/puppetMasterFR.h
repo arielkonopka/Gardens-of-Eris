@@ -37,8 +37,6 @@ public:
     virtual bool mechanics();
     int getType() const;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<puppetMasterFR> sbe);
-    virtual bool additionalProvisioning();
-    virtual bool additionalProvisioning(int subtype,int typeId);
     bool collectOnAction(bool c, std::shared_ptr<bElem> who);
 protected:
 

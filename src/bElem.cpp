@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2023, Ariel Konopka
  *
@@ -622,20 +621,18 @@ std::shared_ptr<bElemStats> bElem::getStats() const
 }
 
 
-bool bElem::additionalProvisioning(int subtype,int  typeId)
-{
-    this->attrs=std::make_shared<bElemAttr>(shared_from_this(),typeId,subtype);
-    return  true;
-}
 
-bool bElem::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
+
 
 bool bElem::additionalProvisioning(int subtype, std::shared_ptr<bElem>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
+    bool r=false;
+    std::call_once(this->_provOnce,[&]()
+    {
+        this->attrs=std::make_shared<bElemAttr>(shared_from_this(),this->getType(),subtype);
+        r=true;
+    });
+    return  r;
 }
 
 int bElem::getTypeInDirection(direction di)

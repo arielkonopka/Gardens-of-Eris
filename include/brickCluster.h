@@ -36,9 +36,9 @@ public:
     brickCluster();
     virtual ~brickCluster()=default;
     int getType() const;
-    bool additionalProvisioning() ;
+
     bool additionalProvisioning(int subtype,std::shared_ptr<brickCluster> sbe) ;
-    bool additionalProvisioning(int subtype,int typeId) ;
+
 
 };
 

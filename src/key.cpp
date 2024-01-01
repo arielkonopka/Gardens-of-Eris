@@ -42,14 +42,6 @@ key::key() : bElem()
 }
 bool key::additionalProvisioning(int subtype, std::shared_ptr<key>key)
 {
-    return this->additionalProvisioning(subtype,key->getType());
-}
-bool key::additionalProvisioning(int subtype, int typeId)
-{
-    return bElem::additionalProvisioning(subtype,typeId);
+    return bElem::additionalProvisioning(subtype,key);
 }
 
-bool key::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}

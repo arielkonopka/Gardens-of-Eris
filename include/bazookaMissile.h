@@ -34,8 +34,7 @@ class bazookaMissile : public explosives
         explicit bazookaMissile();
         bool mechanics();
         virtual ~bazookaMissile() = default;
-        virtual bool additionalProvisioning();
-        virtual bool additionalProvisioning(int subtype,int typeId);
+
         virtual bool additionalProvisioning(int subtype,std::shared_ptr<bazookaMissile> sbe);
     protected:
         int steps=0;
