@@ -29,10 +29,7 @@
 class puppetMasterFR :   public bElem
 {
 public:
-    puppetMasterFR();
-    puppetMasterFR(std::shared_ptr<chamber> board);
-
-    //i  virtual void setCollected(std::shared_ptr<bElem> who);
+    puppetMasterFR()=default;
     virtual ~puppetMasterFR()=default;
     virtual bool mechanics();
     int getType() const;

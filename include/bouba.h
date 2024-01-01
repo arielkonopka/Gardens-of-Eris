@@ -30,7 +30,7 @@
 class bouba : public bElem
 {
     public:
-        bouba();
+        bouba()=default;
         virtual ~bouba()=default;
 
     protected:

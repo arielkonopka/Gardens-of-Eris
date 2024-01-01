@@ -22,10 +22,7 @@
 
 #include "bazookaMissile.h"
 
-bazookaMissile::bazookaMissile():explosives()
-{
 
-}
 
 bool bazookaMissile::mechanics()
 {

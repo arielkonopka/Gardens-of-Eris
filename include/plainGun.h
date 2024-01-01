@@ -33,17 +33,11 @@ public:
 
     virtual int getType() const;
     virtual bool use(std::shared_ptr<bElem> who);
-    plainGun();
-    explicit plainGun(std::shared_ptr<chamber> board);
-    explicit plainGun(std::shared_ptr<chamber> board,int newSubtype);
+    plainGun()=default;
     virtual bool mechanics();
     virtual ~plainGun() =default;
-  //  virtual bool readyToShoot();
-
     virtual std::shared_ptr<bElem> createProjectible(std::shared_ptr<bElem> who);
-
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<plainGun> sbe);
-
 
 private:
     int ammo=1+(bElem::randomNumberGenerator()%_plainGunAmmo);

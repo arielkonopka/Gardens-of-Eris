@@ -30,7 +30,7 @@
 class bazooka : public plainGun
 {
     public:
-        bazooka();
+        bazooka()=default;
         virtual ~bazooka()=default;
         virtual int getType() const;
         virtual std::shared_ptr<bElem> createProjectible(std::shared_ptr<bElem> who);

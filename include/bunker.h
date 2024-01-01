@@ -34,7 +34,6 @@ class bunker : public bElem
 public:
 
     bunker();
-    explicit bunker(std::shared_ptr<chamber> board);
     virtual ~bunker() = default;
     bool mechanics() final;
     direction findLongestShot();

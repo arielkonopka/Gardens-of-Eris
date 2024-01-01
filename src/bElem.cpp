@@ -35,12 +35,11 @@ std::mutex bElem::mechanicMutex;
 
 bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_mutex())
 {
-
+    static std::once_flag _of;
     this->status=std::make_shared<bElemStats>();
-
     this->getStats()->setMyDirection(UP);
     this->getStats()->setFacing(UP);
-    if (!bElem::randomNumberGeneratorInitialized)
+    std::call_once(_of,[]()
     {
         std::random_device rd;
         std::array<int,4> seedData;
@@ -48,14 +47,10 @@ bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_m
         std::seed_seq seq(std::begin(seedData), std::end(seedData));
         bElem::randomNumberGenerator.seed(seq);
         bElem::randomNumberGeneratorInitialized=true;
-    }
+    });
 }
 
-bElem::bElem(std::shared_ptr<chamber> board) : bElem()
-{
-//    this->attachedBoard = board;
-    this->setBoard(board);
-}
+
 
 
 
@@ -342,8 +337,10 @@ coords bElem::getAbsCoords(direction dir) const
 std::shared_ptr<bElem> bElem::getElementInDirection(direction di)
 {
     coords mycoords = this->getAbsCoords(di);
-    if (mycoords == NOCOORDS || this->attachedBoard.expired())
+    if (this->attachedBoard.expired())
         return nullptr;
+    if (di==NODIRECTION)
+        return shared_from_this();
     return this->attachedBoard.lock()->getElement(mycoords.x, mycoords.y);
 }
 

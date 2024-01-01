@@ -36,10 +36,9 @@ public:
     bool kill() final;
     bool destroy() final;
     bool hurt(int points);
-    explicit goldenApple(std::shared_ptr<chamber> board);
     bool interact(std::shared_ptr<bElem> who);
     bool mechanics();
-    goldenApple();
+    goldenApple()=default;
     oState disposeElement() final;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<goldenApple> sbe);
     bool collectOnAction(bool collected, std::shared_ptr<bElem> who);

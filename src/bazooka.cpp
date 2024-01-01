@@ -23,9 +23,6 @@
 
 #include "bazooka.h"
 
-bazooka::bazooka():plainGun()
-{
-}
 
 
 

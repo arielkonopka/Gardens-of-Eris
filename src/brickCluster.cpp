@@ -24,14 +24,6 @@
 
 
 
-brickCluster::brickCluster(std::shared_ptr<chamber> board) : brickCluster()
-{
-    this->setBoard(board);
-}
-brickCluster::brickCluster() : bElem()
-{
-}
-
 int brickCluster::getType() const
 
 {

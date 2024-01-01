@@ -66,7 +66,6 @@ public:
     virtual sNeighboorhood getSteppableNeighboorhood();
 
     bElem();
-    explicit bElem(std::shared_ptr<chamber> board);
     bElem(const bElem &) = delete;
     virtual ~bElem()=default;
 

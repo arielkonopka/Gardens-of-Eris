@@ -22,21 +22,11 @@
 #include "plainMissile.h"
 
 
-plainMissile::plainMissile(std::shared_ptr<chamber> mychamber) : plainMissile()
-{
-    this->setBoard(mychamber);
-}
-
-plainMissile::plainMissile(std::shared_ptr<chamber> mychamber, int energy) : plainMissile(mychamber)
-{
-}
 plainMissile::plainMissile():bElem()
 {
     this->getStats()->setWaiting(_plainMissileSpeed);
     this->getStats()->setMyDirection(UP);
     this->getStats()->setMoved(0);
-
-
 }
 
 bool plainMissile::additionalProvisioning(int subtype, std::shared_ptr<plainMissile>sbe)
@@ -75,19 +65,11 @@ bool plainMissile::stepOnAction(bool step, std::shared_ptr<bElem>who)
     return true;
 }
 
-
-
-
-
-
 bool plainMissile::mechanics()
 {
-    bool res;
+    if(!bElem::mechanics())
+        return false;
     std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
-    res=bElem::mechanics();
-    if(!res) return false;
-    if(this->getStats()->isDying() || this->getStats()->isMoving() || this->getStats()->isWaiting())
-        return true;
     std::shared_ptr<bElem> myel=this->getElementInDirection(this->getStats()->getMyDirection());
     if(myel==nullptr || myel->getStats()->isDying() || myel->getStats()->isTeleporting() || myel->getStats()->isDestroying())
     {
@@ -113,7 +95,6 @@ bool plainMissile::mechanics()
                 sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
                 if (dw!=0)
                     sowner->getStats()->setPoints(TOTAL,sowner->getStats()->getPoints(TOTAL)+dw);
-
             }
         }
         else
@@ -133,11 +114,8 @@ bool plainMissile::mechanics()
     }
     if(myel->getStats()->isDying()|| myel->getStats()->isDestroying()) // if next element in path is already dying, just disappear.
         this->disposeElement();
-    this->kill();
+    else
+        this->kill();
     return true;
 
 }
-
-
-
-

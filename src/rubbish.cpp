@@ -23,14 +23,6 @@
 #include "rubbish.h"
 
 
-rubbish::rubbish():bElem()
-{
-
-}
-rubbish::rubbish(std::shared_ptr<chamber> board):bElem()
-{
-    this->setBoard(board);
-}
 
 
 int rubbish::getType() const

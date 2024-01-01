@@ -31,7 +31,7 @@ class bazookaMissile : public explosives
 {
     public:
         int getType() const;
-        explicit bazookaMissile();
+        bazookaMissile()=default;
         bool mechanics();
         virtual ~bazookaMissile() = default;
 

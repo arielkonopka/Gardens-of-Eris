@@ -22,21 +22,6 @@
 #include "patrollingDrone.h"
 
 
-patrollingDrone::patrollingDrone(std::shared_ptr<chamber> board) : patrollingDrone()
-{
-    this->setBoard(board);
-}
-
-
-patrollingDrone::patrollingDrone() : bElem()
-{
-
-    //  this->getAttrs()->setSubtype(0);
-    // this->setInventory(std::make_shared<inventory>());
-
-}
-
-
 bool patrollingDrone::additionalProvisioning(int subtype, std::shared_ptr<patrollingDrone>sbe)
 {
      if(!bElem::additionalProvisioning(subtype,sbe))
@@ -49,7 +34,6 @@ float patrollingDrone::getViewRadius() const
 {
     return 5.0;
 }
-
 
 /*
     We will request brain on interaction

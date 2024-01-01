@@ -29,8 +29,7 @@ class rubbish:  public bElem
 {
 public:
 
-    rubbish();
-    explicit rubbish(std::shared_ptr<chamber> board);
+    rubbish()=default;
     virtual ~rubbish() = default;
     bool mechanics() final;
     int getType()  const ;

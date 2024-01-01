@@ -22,14 +22,7 @@
 #include "explosives.h"
 #include <viewPoint.h>
 
-explosives::explosives(std::shared_ptr<chamber> board) : explosives()
-{
-    this->setBoard(board);
-}
 
-explosives::explosives() : bElem()
-{
-}
 
 bool explosives::additionalProvisioning(int subtype, std::shared_ptr<explosives>sbe)
 {

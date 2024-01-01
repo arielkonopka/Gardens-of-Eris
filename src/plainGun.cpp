@@ -24,14 +24,8 @@
 #include "viewPoint.h"
 
 
-plainGun::plainGun(std::shared_ptr<chamber> board): plainGun()
-{
-    this->setBoard(board);
-}
 
-plainGun::plainGun(std::shared_ptr<chamber>  board, int newSubtype): plainGun(board)
-{
-}
+
 
 std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
 {
@@ -47,10 +41,7 @@ std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
     return pm;
 }
 
-plainGun::plainGun():bElem()
-{
 
-}
 bool plainGun::additionalProvisioning(int subtype, std::shared_ptr<plainGun>sbe)
 {
     if(!bElem::additionalProvisioning(subtype,sbe))

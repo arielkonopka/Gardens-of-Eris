@@ -21,15 +21,6 @@
  */
 #include "stackedElement.h"
 
-stackedElement::stackedElement():bElem()
-{
-    //ctor
-}
-stackedElement::stackedElement(std::shared_ptr<chamber> board):stackedElement()
-{
-    this->setBoard(board);
-}
-
 
 
 bool stackedElement::additionalProvisioning(int st, std::shared_ptr<stackedElement>sbe)
