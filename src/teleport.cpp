@@ -23,19 +23,7 @@
 
 std::vector<std::weak_ptr<teleport>> teleport::allTeleporters;
 
-teleport::teleport(std::shared_ptr<chamber> board) : teleport()
-{
-    this->setBoard(board);
-}
-teleport::teleport(std::shared_ptr<chamber> board, int newSubtype) : teleport(board)
-{
 
-}
-
-teleport::teleport() : bElem()
-{
-
-}
 
 bool teleport::additionalProvisioning(int value,std::shared_ptr<teleport> t)
 {

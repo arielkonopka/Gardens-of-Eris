@@ -32,8 +32,7 @@
 class brickCluster: public bElem
 {
 public:
-    brickCluster(std::shared_ptr<chamber> board);
-    brickCluster();
+    brickCluster()=default;
     virtual ~brickCluster()=default;
     int getType() const;
 

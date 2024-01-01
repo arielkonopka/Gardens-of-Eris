@@ -30,8 +30,7 @@ class floorElement : public bElem
 {
 public:
 
-    floorElement();
-    explicit floorElement(std::shared_ptr<chamber> board);
+    floorElement()=default;
     virtual ~floorElement()=default;
     virtual  int getType() const;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<floorElement> sbe);

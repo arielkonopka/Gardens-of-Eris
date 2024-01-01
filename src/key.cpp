@@ -28,18 +28,9 @@ int key::getType() const
     return _key;
 }
 
-key::key(std::shared_ptr<chamber> board) : key()
-{
-    this->setBoard(board);
-}
-key::key(std::shared_ptr<chamber> board, int subtype) : key(board)
-{
 
-}
 
-key::key() : bElem()
-{
-}
+
 bool key::additionalProvisioning(int subtype, std::shared_ptr<key>key)
 {
     return bElem::additionalProvisioning(subtype,key);

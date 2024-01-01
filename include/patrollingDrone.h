@@ -31,8 +31,7 @@ class patrollingDrone : public bElem
 {
 public:
 
-    patrollingDrone();
-    explicit patrollingDrone(std::shared_ptr<chamber> board);
+    patrollingDrone()=default;
     virtual ~patrollingDrone()=default;
     virtual bool interact(std::shared_ptr<bElem> who);
     int getType() const;

@@ -32,9 +32,7 @@ class monster : public bElem
 {
 public:
 
-    monster();
-    explicit monster(std::shared_ptr<chamber> board);
-    explicit monster(std::shared_ptr<chamber> board,int newSubtype);
+    monster()=default;
     virtual ~monster()=default;
     int getType() const;
     virtual bool mechanics();

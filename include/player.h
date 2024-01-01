@@ -33,11 +33,10 @@
 class player : public bElem
 {
 public:
-    player();
-    explicit player(std::shared_ptr<chamber> board);
+    player()=default;
+
     ~player() final=default;
     static unsigned int countVisitedPlayers() ;
-
     static std::shared_ptr<bElem> getActivePlayer();
     bool stepOnElement(std::shared_ptr<bElem> step);
     bool mechanics() final;
@@ -46,7 +45,6 @@ public:
     int getAnimPh() const;
     bool shootGun();
     oState disposeElement() final;
-
     float getViewRadius() const;
     bool additionalProvisioning(int subtype,std::shared_ptr<player> sbe) ;
 

@@ -25,14 +25,6 @@
 
 
 
-puppetMasterFR::puppetMasterFR(std::shared_ptr<chamber> board) :  puppetMasterFR()
-{
-    this->setBoard(board);
-}
-
-puppetMasterFR::puppetMasterFR() :   bElem()
-{
-}
 
 
 bool puppetMasterFR::collectOnAction(bool c, std::shared_ptr<bElem>who)

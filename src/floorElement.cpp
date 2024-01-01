@@ -21,18 +21,6 @@
  */
 #include "floorElement.h"
 
-floorElement::floorElement(): bElem()
-{
-    //ctor
-}
-
-floorElement::floorElement(std::shared_ptr<chamber> board) : floorElement()
-{
-    this->setBoard(board);
-}
-
-
-
 
 int floorElement::getType() const
 {

@@ -41,15 +41,7 @@ int door::getType() const
     return _door;
 }
 
-door::door() : bElem()
-{
-}
-door::door(std::shared_ptr<chamber> board) : door()
-{
 
-    this->setBoard(board);
-
-}
 
 bool door::additionalProvisioning(int subtype, std::shared_ptr<door>sbe)
 {

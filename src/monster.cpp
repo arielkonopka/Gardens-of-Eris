@@ -23,17 +23,7 @@
 
 
 
-monster::monster(std::shared_ptr<chamber> board) : monster()
-{
-    this->setBoard(board);
-}
 
-monster::monster(std::shared_ptr<chamber> board, int newSubtype) : monster(board)
-{
-}
-monster::monster() : bElem()
-{
-}
 
 bool monster::additionalProvisioning(int subtype, std::shared_ptr<monster>sbe)
 {

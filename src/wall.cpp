@@ -22,20 +22,6 @@
 #include "wall.h"
 
 
-wall::wall(std::shared_ptr<chamber> board) : wall()
-{
-    this->setBoard(board);
-}
-
-wall::wall(std::shared_ptr<chamber> board, int subtype) : wall(board)
-{
-
-  //  this->getAttrs()->setSubtype(subtype);
-}
-
-wall::wall() : bElem()
-{
-}
 
 
 bool wall::additionalProvisioning(int subtype, std::shared_ptr<wall>sbe)

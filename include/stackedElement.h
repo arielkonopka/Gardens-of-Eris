@@ -31,11 +31,10 @@
 class stackedElement : public bElem
 {
 public:
-    stackedElement();
+    stackedElement() = default;
     virtual ~stackedElement()=default;
     virtual bool stepOnElement(std::shared_ptr<bElem> step);
     virtual std::shared_ptr<bElem> removeElement();
-    stackedElement(std::shared_ptr<chamber> board);
     void linkAnElement(std::shared_ptr<stackedElement> newBottom);
     void setController(std::shared_ptr<bElem> controller);
     std::shared_ptr<bElem> getController();

@@ -59,13 +59,7 @@ bool goldenApple::destroy()
     return false;
 }
 
-goldenApple::goldenApple(std::shared_ptr<chamber> board) : goldenApple()
-{
-    this->setBoard(board);
-}
-goldenApple::goldenApple() :  explosives()
-{
-}
+
 
 
 bool goldenApple::additionalProvisioning(int subtype, std::shared_ptr<goldenApple>sbe)

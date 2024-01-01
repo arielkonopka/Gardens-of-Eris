@@ -31,9 +31,7 @@ class teleport : public bElem
 {
 public:
     int getType() const;
-    teleport();
-    explicit teleport(std::shared_ptr<chamber> board);
-    explicit teleport(std::shared_ptr<chamber> board,int newSubtype);
+    teleport()=default;
     virtual ~teleport()=default;
     bool interact(std::shared_ptr<bElem> who) final;
     virtual bool teleportIt(std::shared_ptr<bElem> who);

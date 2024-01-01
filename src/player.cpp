@@ -25,15 +25,7 @@ std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
 //std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
 std::shared_ptr<bElem> player::activePlayer = nullptr;
 
-player::player(std::shared_ptr<chamber> board) : player()
-{
 
-    this->setBoard(board);
-}
-
-player::player() : bElem()
-{
-}
 
 bool player::additionalProvisioning(int subtype, std::shared_ptr<player>sbe)
 {

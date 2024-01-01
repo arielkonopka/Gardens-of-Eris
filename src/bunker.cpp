@@ -23,18 +23,8 @@
 #include "bunker.h"
 #include <elementFactory.h>
 
-bunker::bunker(std::shared_ptr<chamber> board):bunker()
-{
-    this->setBoard(board);
-    this->myGun->setBoard(board);
-
-
-
-}
-
 bunker::bunker(): bElem(), myGun(elementFactory::generateAnElement<plainGun>(nullptr,1))
 {
-
 }
 
 
