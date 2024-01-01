@@ -36,22 +36,16 @@ bunker::bunker(): bElem(), myGun(elementFactory::generateAnElement<plainGun>(nul
 {
 
 }
-bool bunker::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
 
-bool bunker::additionalProvisioning(int subtype, int typeId)
-{
-    this->registerLiveElement(shared_from_this());
-    this->myGun->getStats()->setCollector(shared_from_this());
-     this->myGun->getStats()->setCollected(true);
-    return bElem::additionalProvisioning(subtype,typeId);;
-}
 
 bool bunker::additionalProvisioning(int subtype, std::shared_ptr<bunker>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
+    if(!bElem::additionalProvisioning(subtype,sbe))
+        return false;
+    this->registerLiveElement(shared_from_this());
+    this->myGun->getStats()->setCollector(shared_from_this());
+     this->myGun->getStats()->setCollected(true);
+    return true;
 }
 
 

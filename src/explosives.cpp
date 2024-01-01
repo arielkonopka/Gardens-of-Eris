@@ -33,20 +33,9 @@ explosives::explosives() : bElem()
 
 bool explosives::additionalProvisioning(int subtype, std::shared_ptr<explosives>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
+    return bElem::additionalProvisioning(subtype,sbe);
 }
 
-bool explosives::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-
-}
-
-bool explosives::additionalProvisioning(int subtype, int typeId)
-{
-
-    return bElem::additionalProvisioning(subtype,typeId);
-}
 
 bool explosives::explode(float radius)
 {

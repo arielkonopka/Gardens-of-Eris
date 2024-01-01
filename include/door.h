@@ -42,8 +42,7 @@ public:
 
     virtual ~door()=default;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<door> sbe);
-    virtual bool additionalProvisioning();
-    virtual bool additionalProvisioning(int subtype,int typeId);
+
 private:
     void _alignWithOpen();
 //   int interacted=-1;

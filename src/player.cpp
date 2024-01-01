@@ -35,11 +35,13 @@ player::player() : bElem()
 {
 }
 
-bool player::additionalProvisioning(int subtype,int typeId)
+bool player::additionalProvisioning(int subtype, std::shared_ptr<player>sbe)
 {
-    bElem::additionalProvisioning(subtype, typeId);
+
+    if(!bElem::additionalProvisioning(subtype, sbe))
+        return false;
     this->getAttrs()->setCollect(true);
-    this->getAttrs()->setEnergy(125);
+    this->getAttrs()->setEnergy(105);
     this->provisioned = true;
     this->registerLiveElement(shared_from_this());
     if ( this->getBoard() && player::activePlayer==nullptr)
@@ -56,16 +58,6 @@ bool player::additionalProvisioning(int subtype,int typeId)
     }
 
     return true;
-}
-
-
-bool player::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
-bool player::additionalProvisioning(int subtype, std::shared_ptr<player>sbe)
-{
-    return this->additionalProvisioning(subtype,sbe->getType());
 }
 
 std::shared_ptr<bElem> player::getActivePlayer()

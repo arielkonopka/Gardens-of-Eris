@@ -121,8 +121,7 @@ public:
     virtual int getTypeInDirection(direction di);
     virtual void setStatsOwner(std::shared_ptr<bElem> owner);
 
-    virtual bool additionalProvisioning();
-    virtual bool additionalProvisioning(int subtype,int typeId);
+
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<bElem> sbe);
 
     void playSound(std::string eventType,std::string event);
@@ -130,7 +129,7 @@ private:
     std::shared_ptr<bElemStats> status;
     std::shared_ptr<bElemAttr> attrs;
 
-
+    std::once_flag _provOnce;
     void ps(std::shared_ptr<bElem> who,std::string eventType,std::string event);
     bool provisioned=false;
 

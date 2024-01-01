@@ -26,17 +26,7 @@ patrollingDrone::patrollingDrone(std::shared_ptr<chamber> board) : patrollingDro
 {
     this->setBoard(board);
 }
-bool patrollingDrone::additionalProvisioning(int subtype,int typeId)
-{
-    bool res= bElem::additionalProvisioning(subtype,typeId);
-    this->getAttrs()->setCollect(true);
-    this->getAttrs()->setEnergy((1024*bElem::randomNumberGenerator())%155);
-    return res;
-}
-bool patrollingDrone::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
+
 
 patrollingDrone::patrollingDrone() : bElem()
 {
@@ -49,7 +39,11 @@ patrollingDrone::patrollingDrone() : bElem()
 
 bool patrollingDrone::additionalProvisioning(int subtype, std::shared_ptr<patrollingDrone>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
+     if(!bElem::additionalProvisioning(subtype,sbe))
+        return false;
+    this->getAttrs()->setCollect(true);
+    this->getAttrs()->setEnergy((1024*bElem::randomNumberGenerator())%155);
+    return true;
 }
 float patrollingDrone::getViewRadius() const
 {

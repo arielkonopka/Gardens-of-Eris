@@ -46,8 +46,7 @@ public:
     int getAnimPh() const;
     bool shootGun();
     oState disposeElement() final;
-    bool additionalProvisioning() final;
-    bool additionalProvisioning(int subtype,int typeId) ;
+
     float getViewRadius() const;
     bool additionalProvisioning(int subtype,std::shared_ptr<player> sbe) ;
 

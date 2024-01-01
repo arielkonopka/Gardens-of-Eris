@@ -94,7 +94,6 @@
 		<Unit filename="include/inventory.h" />
 		<Unit filename="include/key.h" />
 		<Unit filename="include/kiki.h" />
-		<Unit filename="include/killableElements.h" />
 		<Unit filename="include/levelLoader.h" />
 		<Unit filename="include/monster.h" />
 		<Unit filename="include/objectTypes.h" />
@@ -139,7 +138,6 @@
 		<Unit filename="src/inventory.cpp" />
 		<Unit filename="src/key.cpp" />
 		<Unit filename="src/kiki.cpp" />
-		<Unit filename="src/killableElements.cpp" />
 		<Unit filename="src/levelLoader.cpp" />
 		<Unit filename="src/monster.cpp" />
 		<Unit filename="src/patrollingDrone.cpp" />

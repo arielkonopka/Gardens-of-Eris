@@ -40,8 +40,6 @@ public:
     virtual bool mechanics();
     virtual bool checkNeigh();
     virtual bool steppableNeigh();
-    bool additionalProvisioning(int subtype,int typeId);
-    bool additionalProvisioning();
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<monster> sbe);
 
 private:

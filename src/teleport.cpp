@@ -39,22 +39,14 @@ teleport::teleport() : bElem()
 
 bool teleport::additionalProvisioning(int value,std::shared_ptr<teleport> t)
 {
-    this->additionalProvisioning(value,t->getType());
+    if(!bElem::additionalProvisioning(value,t))
+        return false;
     this->connectionsMade = false;
     teleport::allTeleporters.push_back(t);
     return true;
 
 }
 
-bool teleport::additionalProvisioning()
-{
-   return  this->additionalProvisioning(0,this->getType());
-}
-
-bool teleport::additionalProvisioning(int subtype,int typeId)
-{
-    return bElem::additionalProvisioning(subtype,typeId);
-}
 
 
 /* here we will try to teleport an object to the becon connected to this teleporter. if the becon is not yet established, randomly choose one */
@@ -86,6 +78,15 @@ bool teleport::createConnectionsWithinSUbtype()
             t->connectionsMade = true;
             candidates.push_back(t);
         }
+    }
+    if(candidates.size()>2 && this->getAttrs()->getSubtype()>0)
+    for(int c=0;c<5555;c++)
+    {
+        int p=bElem::randomNumberGenerator()%(candidates.size()-1);
+        std::shared_ptr<teleport> t=candidates[p];
+        candidates[p]=candidates[p+1];
+        candidates[p+1]=t;
+
     }
     for (unsigned int c = 0; c < candidates.size() - 1; c++)
     {

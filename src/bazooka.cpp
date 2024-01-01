@@ -47,17 +47,9 @@ std::shared_ptr<bElem> bazooka::createProjectible(std::shared_ptr<bElem>who)
     pm->registerLiveElement(pm);
     return pm;
 }
-bool bazooka::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
 
-bool bazooka::additionalProvisioning(int subtype, int typeId)
-{
-    return plainGun::additionalProvisioning(subtype,typeId);;
-}
 
 bool bazooka::additionalProvisioning(int subtype, std::shared_ptr<bazooka>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
+    return bElem::additionalProvisioning(subtype,sbe);
 }

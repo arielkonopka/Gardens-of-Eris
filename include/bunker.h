@@ -41,8 +41,7 @@ public:
     virtual bool selfAlign();
     int getType() const;
     bool interact(std::shared_ptr<bElem> Who) final;
-    virtual bool additionalProvisioning();
-    virtual bool additionalProvisioning(int subtype,int typeId);
+
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<bunker> sbe);
 private:
     std::shared_ptr<bElem> activatedBy=nullptr;

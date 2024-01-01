@@ -41,19 +41,13 @@ plainMissile::plainMissile():bElem()
 
 bool plainMissile::additionalProvisioning(int subtype, std::shared_ptr<plainMissile>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
-}
-
-bool plainMissile::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
-
-bool plainMissile::additionalProvisioning(int subtype,int typeId)
-{
+    if(!bElem::additionalProvisioning(subtype,sbe))
+        return false;
     this->registerLiveElement(shared_from_this());
-    return bElem::additionalProvisioning(subtype,typeId);
+    return true;
 }
+
+
 
 
 int plainMissile::getType() const

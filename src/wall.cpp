@@ -40,13 +40,9 @@ wall::wall() : bElem()
 
 bool wall::additionalProvisioning(int subtype, std::shared_ptr<wall>sbe)
 {
-    return this->additionalProvisioning(subtype,sbe->getType());
+    return bElem::additionalProvisioning(subtype,sbe);
 }
 
-bool wall::additionalProvisioning(int subtype,int typeId)
-{
-    return bElem::additionalProvisioning(subtype,typeId);
-}
 
 
 
@@ -67,10 +63,7 @@ std::shared_ptr<bElem> wall::removeElement()
     return res;
 }
 
-bool wall::additionalProvisioning()
-{
-    return this->additionalProvisioning(0,this->getType());
-}
+
 
 int wall::getType() const
 {
