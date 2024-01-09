@@ -86,6 +86,7 @@ public:
     virtual bool removeCollectibleFromInventory(unsigned long int instance);
     virtual std::shared_ptr<bElem> retrieveCollectibleFromInventory(unsigned long int instanceId,bool removeIt);
     virtual bool findInInventory(unsigned long int instanceId);
+    bool runLives();
     std::vector<std::shared_ptr<bElem>> weapons;
     std::vector<std::shared_ptr<bElem>> mods;
     std::vector<std::shared_ptr<bElem>> tokens;

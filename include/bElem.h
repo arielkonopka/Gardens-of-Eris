@@ -81,6 +81,7 @@ public:
     virtual bool kill();
     virtual bool hurt(int points);
     virtual bool isSteppableDirection(direction di) const;
+    bool isSteppableInMyDirection() const;
     virtual std::shared_ptr<bElem> getElementInDirection(direction di);
     virtual coords getAbsCoords(direction dir) const;
     virtual  int getType() const;
@@ -105,10 +106,6 @@ public:
     virtual bool use(std::shared_ptr<bElem> use);
     virtual bool interact(std::shared_ptr<bElem> who);
 
-
-
-    static std::vector<std::shared_ptr<bElem>> liveElems;
-
     static void tick();
     static unsigned int getCntr() ;
 
@@ -124,6 +121,8 @@ public:
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<bElem> sbe);
 
     void playSound(std::string eventType,std::string event);
+
+//   static std::vector<unsigned long int> toDeregister;
 private:
     std::shared_ptr<bElemStats> status;
     std::shared_ptr<bElemAttr> attrs;
@@ -140,7 +139,7 @@ private:
     //  struct _cfg eConfig;
     //  struct _eStatus state;
     std::vector<std::shared_ptr<bElem>> lockers;
-    static std::vector<int> toDeregister;
+
     static std::vector<std::shared_ptr<bElem>> toDispose;
 };
 

@@ -105,8 +105,12 @@ bool teleport::teleportIt(std::shared_ptr<bElem> who)
         direction d = (direction)((dir + c) % 4);
         if (this->isSteppableDirection(d))
         {
-            who->stepOnElement(this->getElementInDirection(d));
-            return true;
+            bool am=who->getStats()->hasActivatedMechanics();
+            if(am)
+                who->deregisterLiveElement(who->getStats()->getInstanceId());
+           who->stepOnElement(this->getElementInDirection(d));
+           if(am) who->registerLiveElement(who);
+           return true;
         }
     }
     this->theOtherEnd->teleportIt(who);

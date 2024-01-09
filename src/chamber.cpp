@@ -50,7 +50,7 @@ void chamber::createFloor()
         std::vector<int> v2(this->height,555);
         this->visitedElements.push_back(v2);
 
-        std::vector<std::shared_ptr<bElem>> v;
+        std::vector<std::shared_ptr<bElemContainer>> v;
         for (int d = 0; d < this->height; d++)
         {
 
@@ -63,11 +63,11 @@ void chamber::createFloor()
 #ifdef _VerbousMode_
             std::cout << "Create an object to place\n";
 #endif
-            std::shared_ptr<bElem> b = elementFactory::generateAnElement<floorElement>(shared_from_this(),subtype);
-            b->getStats()->setMyPosition((coords)
-            {
-                c, d
-            });
+            auto bec=std::make_shared<bElemContainer>();
+            bec->element=elementFactory::generateAnElement<floorElement>(shared_from_this(),subtype);
+            bec->element->setBoard(shared_from_this());
+            bec->element->getStats()->setMyPosition((coords){c,d});
+            bec->element->getAttrs()->setSubtype(subtype);
 #ifdef _VerbousMode_
             std::cout << "created id " << b->getStats()->getInstanceId() << "\n";
 #endif
@@ -75,7 +75,7 @@ void chamber::createFloor()
 #ifdef _VerbousMode_
             std::cout << "Push object into column vector id " << b->getStats()->getInstanceId() << "\n";
 #endif
-            v.push_back(b);
+            v.push_back(bec);
         }
         this->chamberArray.push_back(v);
 #ifdef _VerbousMode_
@@ -95,7 +95,7 @@ coords chamber::getSizeOfChamber()
     };
 }
 
-chamber::chamber(int x, int y) : std::enable_shared_from_this<chamber>(), width(x), height(y)
+chamber::chamber(int x, int y) : std::enable_shared_from_this<chamber>(), width(x), height(y), SEMutex(al_create_mutex_recursive()),IdMutex(al_create_mutex_recursive()),VisMutex(al_create_mutex_recursive())
 {
     std::shared_ptr<randomWordGen> rwg = std::make_shared<randomWordGen>();
     this->setInstanceId(chamber::lastid++);
@@ -118,25 +118,16 @@ colour chamber::getChColour()
 
 chamber::~chamber()
 {
-    /*    std::cout<<"Destroy chamber: "<<this->getStats()->getInstanceId()<<"\n";
-        for (unsigned int cX=0; cX<this->chamberArray.size(); cX++)
-        {
-           this->chamberArray[cX].clear();
-        }
-        this->chamberArray.clear();
 
-        */
 }
 
 std::string chamber::getName()
 {
-//   std::lock_guard<std::mutex> guard(this->chmutex);
     return this->chamberName;
 }
 
 std::shared_ptr<bElem> chamber::getElement(coords point)
 {
-    //  std::lock_guard<std::mutex> guard(this->chmutex);
     return this->getElement(point.x, point.y);
 }
 bool chamber::visitPosition(coords point)
@@ -144,6 +135,7 @@ bool chamber::visitPosition(coords point)
     bool res=false;
     if(point==NOCOORDS)
         return false;
+    al_lock_mutex(this->VisMutex);
     const int vradius=player::getActivePlayer()->getViewRadius()/2;
     int x0=((point.x-vradius)<0)?0:((point.x-vradius>=this->width)?this->width-1:point.x-vradius);
     int y0=((point.y-vradius)<0)?0:((point.y-vradius>=this->height)?this->height-1:point.y-vradius);
@@ -153,7 +145,10 @@ bool chamber::visitPosition(coords point)
     {
         for(int y=y0; y<=y1; y++)
         {
-            float distance=point.distance((coords){x,y});
+            float distance=point.distance((coords)
+            {
+                x,y
+            });
             if (distance<=vradius && this->visitedElements[x][y]!=0)
             {
                 res=true;
@@ -162,14 +157,17 @@ bool chamber::visitPosition(coords point)
 
         }
     }
-
+    al_unlock_mutex(this->VisMutex);
     return res;
 
 }
 void chamber::setVisible(coords point,int v)
 {
+
+    al_lock_mutex(this->VisMutex);
     if(point.x>=0 && point.y>=0 && point.x<this->width && point.y<this->height)
         this->visitedElements[point.x][point.y]=v;
+    al_unlock_mutex(this->VisMutex);
 }
 
 
@@ -183,7 +181,6 @@ int chamber::isVisible(int x, int y)
 
 int chamber::isVisible(coords point)
 {
-    // std::lock_guard<std::mutex> guard(this->chmutex);
     if(point.x<this->width && point.y<this->height && point.x>=0 && point.y>=0)
         return this->visitedElements[point.x][point.y];
     return false;
@@ -199,29 +196,61 @@ std::shared_ptr<bElem> chamber::getElement(int x, int y)
         return nullptr;
     if ((unsigned int)x >= this->chamberArray.size() || (unsigned int)y >= this->chamberArray[x].size())
         return nullptr;
-    return this->chamberArray[x][y];
+    return this->chamberArray[x][y]->element;
 }
 
 void chamber::setElement(int x, int y, std::shared_ptr<bElem> elem)
 {
     if (x < 0 || x > this->width - 1 || y < 0 || y > this->height - 1)
         return;
-    this->chamberArray[x][y] = elem;
+    al_lock_mutex(this->chamberArray[x][y]->eMutex);
+    this->chamberArray[x][y]->element = elem;
+    elem->setBoard(shared_from_this());
+    al_unlock_mutex(this->chamberArray[x][y]->eMutex);
+
 }
 
 void chamber::setElement(coords point, std::shared_ptr<bElem> elem)
 {
-
     this->setElement(point.x, point.y, elem);
 }
 
 int chamber::getInstanceId()
 {
-    //  std::lock_guard<std::mutex> guard(this->chmutex);
     return this->instanceid;
 }
 
 void chamber::setInstanceId(int id)
 {
+    al_lock_mutex(this->IdMutex);
     this->instanceid = id;
+    al_unlock_mutex(this->IdMutex);
 }
+
+bool chamber::registerLiveElem(std::shared_ptr<bElem>in)
+{
+
+    auto iid=in->getStats()->getInstanceId();
+
+    if(!in->getBoard())
+        return false;
+    for(unsigned int c=0; c<in->getBoard()->toDeregister.size();)
+        if(in->getBoard()->toDeregister[c]==iid)
+            in->getBoard()->toDeregister.erase(in->getBoard()->toDeregister.begin()+c);
+        else c++;
+
+    this->liveElems.push_back(in);
+    return true;
+}
+
+bool chamber::deregisterLiveElem(std::shared_ptr<bElem>in)
+{
+  if(in->getStats()->hasActivatedMechanics()&& in->getBoard())
+        in->getBoard()->toDeregister.push_back(in->getStats()->getInstanceId());
+    in->getStats()->setActivatedMechanics(false);
+    return true;
+}
+
+
+
+

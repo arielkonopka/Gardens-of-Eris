@@ -37,8 +37,9 @@ class bazookaMissile : public explosives
 
         virtual bool additionalProvisioning(int subtype,std::shared_ptr<bazookaMissile> sbe);
     protected:
-        int steps=0;
+
     private:
+        int steps=0;
 };
 
 #endif // BAZOOKAMISSILE_H

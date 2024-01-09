@@ -27,17 +27,38 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <thread>
 
 #include "commons.h"
 #include "elements.h"
 #include "presenter.h"
 #include "randomLevelGenerator.h"
 #include "soundManager.h"
+
+bool finish=false;
+void createChambers()
+{
+    randomLevelGenerator* rndl;
+    for (int cnt=5; cnt>0; cnt--)
+    {
+        for(int c2=0; c2<5; c2++)
+        {
+            rndl=new randomLevelGenerator(333,333);
+            rndl->generateLevel(cnt);
+            if(finish)
+                return;
+        }
+    }
+}
+
+
+
+
 int main( int argc, char * argv[] )
 {
-    bool finish=false;
 
-    randomLevelGenerator* rndl=new randomLevelGenerator(250,250);
+
+    randomLevelGenerator* rndl=new randomLevelGenerator(333,333);
     presenter::presenter *myPresenter=new presenter::presenter(rndl->mychamber);
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
@@ -52,18 +73,11 @@ int main( int argc, char * argv[] )
     soundManager::getInstance()->setupSong(7,1, {0,0,0},4,false);
     soundManager::getInstance()->setupSong(8,0, {0,0,0},5,false);
     soundManager::getInstance()->setupSong(9,0, {0,0,0},6,false);
-
     rndl->generateLevel(10);
-    for (int cnt=3; cnt<=7; cnt++)
-    {
-        rndl=new randomLevelGenerator((cnt*100)/2+(rndl->gen()%10)*5,(cnt*100)/2+(rndl->gen()%10)*5);
-        rndl->generateLevel(8-cnt);
-    }
-
-
+    /// generate the remaining leveldata in the background, so the user would not be greeted with a delay.
+    std::thread nt=std::thread(&createChambers);
+    nt.detach();
     soundManager::getInstance()->enableSound();
-
-
     while(!finish)
     {
         int reason=0;

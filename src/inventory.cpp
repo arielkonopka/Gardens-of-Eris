@@ -160,6 +160,25 @@ bool inventory::removeActiveWeapon()
 }
 
 
+bool inventory::runLives()
+{
+    auto rl=[](std::vector<std::shared_ptr<bElem>> in)
+    {
+        for(auto e:in)
+        {
+            if(e->getStats()->hasActivatedMechanics())
+                e->mechanics();
+        }
+    };
+    rl(this->usables);
+    rl(this->tokens);
+    rl(this->keys);
+    rl(this->weapons);
+    rl(this->mods);
+    return true;
+}
+
+
 std::shared_ptr<bElem> inventory::getActiveWeapon()
 {
     if (this->weapons.size()<=0)
