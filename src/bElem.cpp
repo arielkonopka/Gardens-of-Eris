@@ -24,16 +24,16 @@
 #include "rubbish.h"
 #include "elements.h"
 #include <algorithm>
-std::vector<std::shared_ptr<bElem>> bElem::liveElems;
+//std::vector<std::shared_ptr<bElem>> bElem::liveElems;
 std::vector<std::shared_ptr<bElem>> bElem::toDispose;
-std::vector<int> bElem::toDeregister;
+//std::vector<unsigned long int> bElem::toDeregister;
 unsigned int bElem::sTaterCounter = 5;
 int bElem::instances = 0;
 bool bElem::randomNumberGeneratorInitialized = false;
 std::mt19937 bElem::randomNumberGenerator;
 std::mutex bElem::mechanicMutex;
 
-bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_mutex())
+bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_mutex_recursive())
 {
     static std::once_flag _of;
     this->status=std::make_shared<bElemStats>();
@@ -63,21 +63,21 @@ coords bElem::getOffset() const
 
     if(this->getStats()->isMoving() && this->getStats()->getMovingTotalTime()>0)
     {
-        switch(this->getStats()->getMyDirection())
+        switch (this->getStats()->getMyDirection())
         {
-        case(UP):
-            res.y=((this->getStats()->getMoved())*ry)/this->getStats()->getMovingTotalTime();
+        case UP:
+            res.y=(this->getStats()->getMoved()*ry)/this->getStats()->getMovingTotalTime();
             break;
-        case (DOWN):
-            res.y=-((this->getStats()->getMoved())*ry)/this->getStats()->getMovingTotalTime();
+        case DOWN:
+            res.y=-(this->getStats()->getMoved()*ry)/this->getStats()->getMovingTotalTime();
             break;
-        case(LEFT):
-            res.x=((this->getStats()->getMoved())*rx)/this->getStats()->getMovingTotalTime();
+        case LEFT:
+            res.x=(this->getStats()->getMoved()*rx)/this->getStats()->getMovingTotalTime();
             break;
-        case(RIGHT):
-            res.x=-((this->getStats()->getMoved())*rx)/this->getStats()->getMovingTotalTime();
+        case RIGHT:
+            res.x=-(this->getStats()->getMoved()*rx)/this->getStats()->getMovingTotalTime();
             break;
-        case (NODIRECTION):
+        case NODIRECTION:
             res.x=0;
             res.y=0;
             break;
@@ -107,7 +107,7 @@ std::shared_ptr<chamber> bElem::getBoard() const
 void bElem::setBoard(std::shared_ptr<chamber> board)
 {
     this->attachedBoard = board;
-    if (this->provisioned && this->getAttrs()->canCollect())
+    if (this->getAttrs() && this->getAttrs()->canCollect())
     {
         this->getAttrs()->getInventory()->updateBoard();
     }
@@ -147,7 +147,6 @@ bool bElem::dropItem(unsigned long int  instanceId)
 */
 bool bElem::stepOnElement(std::shared_ptr<bElem> step)
 {
-//std::cout<<"SO."<<step->getType()<<","<<this->getType()<<",";
     auto elig = [](std::shared_ptr<bElem> step) -> bool
     {
         if (!step || !step->getAttrs()->isSteppable() || !step->getBoard() || step->getStats()->isDisposed() || step->getStats()->getMyPosition() == NOCOORDS)
@@ -155,11 +154,12 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
         else
             return true;
     };
-    // std::cout<<" * QualifiedToStep?\n";
-    if(this->getStats()->isDisposed())
+    if(this->getStats()->isDisposed() || !elig(step))
         return false;
-    if(!elig(step))
-        return false;
+
+    std::shared_ptr<bElem> myself=shared_from_this();
+    std::shared_ptr<bElem> s0;
+
     if(step->getAttrs()->isCollectible() && this->getAttrs()->canCollect())
     {
         std::shared_ptr<bElem> s2=step->getStats()->getSteppingOn();
@@ -169,15 +169,10 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
         step=s2;
         return step?this->stepOnElement(step):false;
     };
-    std::shared_ptr<bElem> myself=shared_from_this();
-    if(this->getStats()->getSteppingOn() || this->getStats()->hasParent() || this->getStats()->isCollected())
-    {
-        std::shared_ptr<bElem> st=this->getStats()->getSteppingOn();
-        myself=this->removeElement();
-        if(st)
-            st->stepOnAction(false,myself);
-    }
-    std::shared_ptr<bElem> s0;
+    std::shared_ptr<bElem> st=this->getStats()->getSteppingOn();
+    myself=this->removeElement();
+    if(st)
+        st->stepOnAction(false,myself);
     bool hp=step->getStats()->hasParent();
     this->setBoard(step->getBoard());
     this->getStats()->setMyPosition(step->getStats()->getMyPosition());
@@ -191,7 +186,6 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
     }
     else
     {
-        //std::cout<<"   ** no\n";
         this->getBoard()->setElement(this->getStats()->getMyPosition(),shared_from_this());
     }
     step->stepOnAction(true,shared_from_this());
@@ -268,11 +262,13 @@ oState bElem::disposeElement()
     {
         return ERROR;
     }
-    this->removeElement();
+    /// We first deal with the activated mechanics, as it will depend on the board attached to the element.
     if (this->getStats()->hasActivatedMechanics())
     {
         this->deregisterLiveElement(this->getStats()->getInstanceId());
     }
+    this->removeElement();
+
     if(this->getAttrs()->canCollect())
     {
         if (this->getType() == _rubishType )
@@ -459,9 +455,10 @@ bool bElem::mechanics()
     return true;
 }
 
-
-
-
+bool bElem::isSteppableInMyDirection() const
+{
+    return this->isSteppableDirection(this->getStats()->getMyDirection());
+}
 
 bool bElem::isSteppableDirection(direction di) const
 {
@@ -755,23 +752,22 @@ bool bElem::dragInDirectionSpeed(direction dragIntoDirection, int speed)
 
 void bElem::registerLiveElement(std::shared_ptr<bElem> who)
 {
-
-    int iid=who->getStats()->getInstanceId();
-    for(unsigned int c=0; c<bElem::toDeregister.size();)
-        if(bElem::toDeregister[c]==iid)
-            bElem::toDeregister.erase(bElem::toDeregister.begin()+c);
-        else c++;
-    if (this->getStats()->hasActivatedMechanics())
+    if (who->getStats()->hasActivatedMechanics())
         return;
-    this->getStats()->setActivatedMechanics(true);
-    bElem::liveElems.push_back(who);
+    who->getStats()->setActivatedMechanics(true);
+    if(who->getBoard())
+        who->getBoard()->registerLiveElem(who);
+
 }
 
 void bElem::deregisterLiveElement(int instanceId)
 {
-    if(this->getStats()->hasActivatedMechanics())
-        bElem::toDeregister.push_back(instanceId);
-    this->getStats()->setActivatedMechanics(false);
+
+    if(this->getStats()->hasActivatedMechanics() && this->getBoard())
+    {
+        this->getBoard()->toDeregister.push_back(instanceId);
+        this->getStats()->setActivatedMechanics(false);
+    }
 }
 
 void bElem::mechLock()
@@ -787,7 +783,12 @@ void bElem::mechUnlock()
 void bElem::runLiveElements()
 {
     bElem::tick();
+    std::shared_ptr<bElem> ap=player::getActivePlayer();
+    std::shared_ptr<chamber> cchmbr=(player::getActivePlayer())?player::getActivePlayer()->getBoard():nullptr;
     std::vector<std::shared_ptr<bElem>>::iterator p;
+    /// No active player, no game
+    if(!cchmbr)
+        return;
     // We will check the elements, that are dying, and chek, if should we remove the ones, that are stale.
     for(unsigned int  c=0 ; c<bElem::toDispose.size();)
     {
@@ -801,51 +802,42 @@ void bElem::runLiveElements()
         }
         else c++;
     }
-
-
-    for (unsigned long int instId : bElem::toDeregister)
+    for (unsigned long int c=0; c<cchmbr->toDeregister.size();)
     {
-        auto it = std::ranges::find_if(bElem::liveElems.begin(), bElem::liveElems.end(), [instId](std::shared_ptr<bElem> elem)
+        auto instId=cchmbr->toDeregister[c];
+        auto it = std::ranges::find_if(cchmbr->liveElems.begin(), cchmbr->liveElems.end(), [instId](std::shared_ptr<bElem> elem)
         {
-            return elem->getStats()->getInstanceId() == instId;
+            return elem && (elem->getStats()->getInstanceId() == instId);
         });
 
-        if (it != bElem::liveElems.end())
+        if (it != cchmbr->liveElems.end())
         {
-            bElem::liveElems.erase(it);
+            cchmbr->liveElems.erase(it);
+            cchmbr->toDeregister.erase(cchmbr->toDeregister.begin()+c);
         }
+        else c++;
     }
-    bElem::toDeregister.clear();
-    bool gotPlayer=player::getActivePlayer()!=nullptr;
-    if(!gotPlayer || (gotPlayer && !player::getActivePlayer()->getBoard())) // No active player? No animation!
+    cchmbr->toDeregister.clear();
+    for (unsigned int p = 0; p < cchmbr->liveElems.size();)
     {
-        bElem::mechLock();
-        for (unsigned int p = 0; p < bElem::liveElems.size(); p++)
+        if(cchmbr->liveElems[p]->getStats()->isDisposed() || cchmbr->liveElems[p]->getType()==_player)
+            cchmbr->liveElems.erase(cchmbr->liveElems.begin()+p);
+        else
         {
-            bElem::liveElems[p]->mechanics();
+            cchmbr->liveElems[p]->mechanics();
+            if(cchmbr->liveElems[p]->getAttrs()->canCollect())
+                cchmbr->liveElems[p]->getAttrs()->getInventory()->runLives();
+            p++;
         }
-        bElem::mechUnlock();
-        return;
-    }
 
-    int chamberId=player::getActivePlayer()->getBoard()->getInstanceId();
-    for (unsigned int p = 0; p < bElem::liveElems.size(); p++)
-    {
-        if(bElem::liveElems[p].get()!=nullptr)
-        {
-            std::shared_ptr<bElem> collector=bElem::liveElems[p]->getStats()->getCollector().lock();
-            if (bElem::liveElems[p]->getStats()->getMyPosition() != NOCOORDS && bElem::liveElems[p]->getBoard() && bElem::liveElems[p]->getBoard()->getInstanceId()==chamberId)
-            {
-                bElem::liveElems[p]->mechanics();
-            }
-            else if (bElem::liveElems[p]->getStats()->isCollected() && collector && collector->getBoard() && collector->getBoard()->getInstanceId()==chamberId)
-            {
-                bElem::liveElems[p]->mechanics();
-            }
-            else if (bElem::randomNumberGenerator()%555==5)
-                bElem::liveElems[p]->mechanics(); /// once in a while all objects will be moving
-        }
+
     }
+    ap->mechanics();
+    if(ap->getAttrs()->canCollect())
+        ap->getAttrs()->getInventory()->runLives();
+    return;
+
+
 
 }
 
@@ -892,9 +884,11 @@ bool bElem::lockThisObject(std::shared_ptr<bElem> who)
 
 bool bElem::unlockThisObject(std::shared_ptr<bElem> who)
 {
+    static ALLEGRO_MUTEX *elementMutex=al_create_mutex_recursive();
+    al_lock_mutex(elementMutex);
     for (unsigned int cnt = 0; cnt < this->lockers.size();)
     {
-        if (this->lockers.at(cnt)->getStats()->getInstanceId() == who->getStats()->getInstanceId())
+        if (!this->lockers.at(cnt) || this->lockers.at(cnt)->getStats()->getInstanceId() == who->getStats()->getInstanceId())
         {
             this->lockers.erase(this->lockers.begin() + cnt);
         }
@@ -903,13 +897,17 @@ bool bElem::unlockThisObject(std::shared_ptr<bElem> who)
             cnt++;
         }
     }
+    al_unlock_mutex(elementMutex);
     return true;
 }
 
 
 void bElem::setStatsOwner(std::shared_ptr<bElem> owner)
 {
+    static ALLEGRO_MUTEX *SEMutex=al_create_mutex_recursive();
+    al_lock_mutex(SEMutex);
     this->getStats()->setStatsOwner(owner);
+    al_unlock_mutex(SEMutex);
 }
 
 

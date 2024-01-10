@@ -48,6 +48,7 @@ private:
     bool connectionsMade=false;
     bool checked=false;
     std::shared_ptr<teleport> theOtherEnd;
+    std::vector<std::shared_ptr<teleport>> candidates;
 };
 
 #endif // TELEPORT_H

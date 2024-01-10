@@ -39,7 +39,7 @@ bool goldenApple::hurt(int points)
         this->getAttrs()->setInteractive(true);
         for (unsigned int cnt = 0; cnt < goldenApple::apples.size();)
         {
-            if (goldenApple::apples[cnt]->getStats()->getInstanceId() == this->getStats()->getInstanceId())
+            if (!goldenApple::apples[cnt] || goldenApple::apples[cnt]->getStats()->getInstanceId() == this->getStats()->getInstanceId())
             {
                 goldenApple::apples.erase(goldenApple::apples.begin() + cnt);
             }
@@ -151,6 +151,7 @@ bool goldenApple::collectOnAction(bool collected, std::shared_ptr<bElem>who)
     {
         this->getStats()->setActive(false);
         this->deregisterLiveElement(this->getStats()->getInstanceId());
+        this->getStats()->setActivatedMechanics(false);
     }
     bool r=bElem::collectOnAction(collected,who);
     return r;

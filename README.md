@@ -228,9 +228,9 @@ There are control switches that modify sound handling:
  * stacking - If we allow multiple sounds, do we let them play, or should we stop the sound currently playing and start anew upon request (false), or permit all instances to play while avoiding collisions by applying a delay if the previous sound did not have the chance to play?
 
 ## TODO
-
-- Add sound gain on music and samples
-- Add new type of a gun, that would shoot bombs - grenade launcher
+- Refactor the engine, to have only elements on the same board to be active. This will make a lot ot things very tricky, especially teleporting elements between boards with active elements in the inventory.
+- Add sound gain on music and samples _done_
+- Add new type of a gun, that would shoot bombs - grenade launcher _done_
 - Add landmine, a steppable, that would kill you
 - Add a bot and a camera, when a player is near a camera, all bots are notified about the position
 - Add fire/electric door that can be switched with a switch (indestructable)

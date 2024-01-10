@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2023, Ariel Konopka
  *
@@ -28,50 +27,73 @@
 #include <memory>
 #include <thread>
 #include <mutex>
-
-typedef struct color {
+#include <allegro5/allegro5.h>
+#include <bElemContainer.h>
+typedef struct color
+{
     int r;
     int g;
     int b;
     int a;
-    } colour;
+} colour;
 class bElem;
 //using boost::multi_array;
+
+
+
 class chamber: public std::enable_shared_from_this<chamber>
 {
-    public:
-        static std::shared_ptr<chamber> makeNewChamber(coords csize);
-        bool visitPosition(int x, int y) { return this->visitPosition((coords){x,y}); };
-        bool visitPosition(coords point);
-        int isVisible(int x, int y) ;
-        int isVisible(coords point);
-        void setVisible(coords point,int v);
+public:
 
-        int width;
-        int height;
-        coords player;
-        std::shared_ptr<bElem> getElement(int x, int y);
-        std::shared_ptr<bElem> getElement(coords point);
-        void setElement(int x, int y, std::shared_ptr<bElem> elem);
-        void setElement(coords point,std::shared_ptr<bElem> elem);
-        explicit chamber(int x,int y);
-        explicit chamber(coords csize);
-        ~chamber();
-        int getInstanceId();
-        std::string getName();
-        colour getChColour();
-        coords getSizeOfChamber();
-    private:
-  //      float visibilityRadius=7.8;
-        std::vector<std::vector<int>> visitedElements;
-        void createFloor();
-        std::vector<std::vector<std::shared_ptr<bElem>>> chamberArray;
-        colour chamberColour;
-        std::string chamberName;
-        void setInstanceId(int id);
-        int instanceid;
-        static int lastid;
-        std::mutex chmutex;
+    static std::shared_ptr<chamber> makeNewChamber(coords csize);
+    bool visitPosition(int x, int y)
+    {
+        return this->visitPosition((coords)
+        {
+            x,y
+        });
+    };
+    bool visitPosition(coords point);
+    int isVisible(int x, int y) ;
+    int isVisible(coords point);
+    void setVisible(coords point,int v);
+
+    int width;
+    int height;
+    coords player;
+    std::shared_ptr<bElem> getElement(int x, int y);
+    std::shared_ptr<bElem> getElement(coords point);
+    void setElement(int x, int y, std::shared_ptr<bElem> elem);
+    void setElement(coords point,std::shared_ptr<bElem> elem);
+    explicit chamber(int x,int y);
+    explicit chamber(coords csize);
+    ~chamber();
+    int getInstanceId();
+    std::string getName();
+    colour getChColour();
+    coords getSizeOfChamber();
+
+    bool registerLiveElem(std::shared_ptr<bElem> in);
+    bool deregisterLiveElem(std::shared_ptr<bElem>in);
+    std::vector<std::shared_ptr<bElem>> liveElems;
+    std::vector<unsigned long int> toDeregister;
+
+
+private:
+
+    ALLEGRO_MUTEX *SEMutex=nullptr;
+    ALLEGRO_MUTEX *IdMutex=nullptr;
+    ALLEGRO_MUTEX *VisMutex=nullptr;
+    std::vector<std::vector<int>> visitedElements;
+    void createFloor();
+    std::vector<std::vector<std::shared_ptr<bElemContainer>>> chamberArray;
+    colour chamberColour;
+    std::string chamberName;
+    void setInstanceId(int id);
+    int instanceid;
+    static int lastid;
+    std::mutex chmutex;
+
 };
 
 #endif // CHAMBER_H

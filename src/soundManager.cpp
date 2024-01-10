@@ -535,7 +535,7 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
 void soundManager::playSong(int songNo)
 {
     ALint buffersProcessed = 0;
-    float newVol=this->registeredMusic[songNo].gain+(555/((float)this->listenerPos.distance(this->registeredMusic[songNo].position)));
+    float newVol=(1.5*this->registeredMusic[songNo].gain/std::log(1+this->listenerPos.distance(this->registeredMusic[songNo].position)));
     newVol=(this->registeredMusic[songNo].variableVol)?std::min((float)1.0,newVol):this->registeredMusic[songNo].gain;
     alGetSourcei(this->registeredMusic[songNo].source, AL_BUFFERS_PROCESSED, &buffersProcessed);
     alSourcef(this->registeredMusic[songNo].source, AL_GAIN, newVol);
