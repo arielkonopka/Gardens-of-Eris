@@ -43,7 +43,7 @@ void createChambers()
     {
         for(int c2=0; c2<5; c2++)
         {
-            rndl=new randomLevelGenerator(333,333);
+            rndl=new randomLevelGenerator(555,555);
             rndl->generateLevel(cnt);
             if(finish)
                 return;
@@ -58,7 +58,7 @@ int main( int argc, char * argv[] )
 {
 
 
-    randomLevelGenerator* rndl=new randomLevelGenerator(333,333);
+    randomLevelGenerator* rndl=new randomLevelGenerator(555,555);
     presenter::presenter *myPresenter=new presenter::presenter(rndl->mychamber);
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();

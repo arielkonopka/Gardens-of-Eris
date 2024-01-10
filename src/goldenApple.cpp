@@ -107,7 +107,6 @@ bool goldenApple::kill()
 }
 bool goldenApple::mechanics()
 {
-    std::cout<<" * appleMEch\n";
     if (!this->getStats()->isActive() || !explosives::mechanics())
         return false;
     std::shared_ptr<bElem> _owner=this->getStats()->getCollector().lock();
