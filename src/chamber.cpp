@@ -201,7 +201,7 @@ std::shared_ptr<bElem> chamber::getElement(int x, int y)
 
 void chamber::setElement(int x, int y, std::shared_ptr<bElem> elem)
 {
-    if (x < 0 || x > this->width - 1 || y < 0 || y > this->height - 1)
+    if (!elem || x < 0 || x > this->width - 1 || y < 0 || y > this->height - 1)
         return;
     al_lock_mutex(this->chamberArray[x][y]->eMutex);
     this->chamberArray[x][y]->element = elem;

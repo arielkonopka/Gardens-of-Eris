@@ -539,7 +539,7 @@ std::shared_ptr<bElem> bElem::removeElement()
     std::cout<<" * check if we removed the last element on a board\n";
 #endif
 
-    if(_chmbr->getElement(_pos).get()==nullptr) /// This rather should not happen, but we fix the situation, when we remove the last element, and a null is created, we create a new floor element.
+    if(_chmbr && _chmbr->getElement(_pos).get()==nullptr) /// This rather should not happen, but we fix the situation, when we remove the last element, and a null is created, we create a new floor element.
     {
 #ifdef _VerbousMode_
         std::cout<<"  ** yes we did\n";
