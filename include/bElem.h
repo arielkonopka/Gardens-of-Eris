@@ -33,7 +33,6 @@
 #include "inventory.h"
 #include "chamber.h"
 #include "videoElementDef.h"
-//
 #include "soundManager.h"
 #include "bElemStats.h"
 #include "bElemAttr.h"
@@ -116,8 +115,6 @@ public:
 
     virtual int getTypeInDirection(direction di);
     virtual void setStatsOwner(std::shared_ptr<bElem> owner);
-
-
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<bElem> sbe);
 
     void playSound(std::string eventType,std::string event);
@@ -136,10 +133,7 @@ private:
     static std::mutex mechanicMutex;
     static int instances;
     static unsigned int sTaterCounter;
-    //  struct _cfg eConfig;
-    //  struct _eStatus state;
     std::vector<std::shared_ptr<bElem>> lockers;
-
     static std::vector<std::shared_ptr<bElem>> toDispose;
 };
 

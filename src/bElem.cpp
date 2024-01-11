@@ -484,14 +484,10 @@ bool bElem::isSteppableDirection(direction di) const
  */
 std::shared_ptr<bElem> bElem::removeElement()
 {
-#ifdef _VerbousMode_
-    std::cout<<" * isDisposed?\n";
-#endif
+    coords _pos=this->getStats()->getMyPosition();
+    std::shared_ptr<chamber> _chmbr=this->getBoard();
     if(this->getStats()->isDisposed())
         return nullptr;
-#ifdef _VerbousMode_
-    std::cout<<" * isCollected?\n";
-#endif
 
     if(this->getStats()->isCollected())
     {
@@ -499,26 +495,13 @@ std::shared_ptr<bElem> bElem::removeElement()
         collector->getAttrs()->getInventory()->removeCollectibleFromInventory(this->getStats()->getInstanceId());
         return shared_from_this();
     }
-#ifdef _VerbousMode_
-    std::cout<<" * has position and board, newly created?\n";
-#endif
-    if (this->getStats()->getMyPosition()==NOCOORDS  || !this->getBoard())
+    if (this->getStats()->getMyPosition()==NOCOORDS  || !_chmbr)
     {
         return shared_from_this(); // it is not yet placed on a board.
     }
-#ifdef _VerbousMode_
-    std::cout<<" * remove\n";
-#endif
-    coords _pos=this->getStats()->getMyPosition();
-    std::shared_ptr<chamber> _chmbr=this->getBoard();
-#ifdef _VerbousMode_
-    std::cout<<" * has parent\n";
-#endif
+
     if(this->getStats()->hasParent())
     {
-#ifdef _VerbousMode_
-        std::cout<<"  ** yes\n";
-#endif
         std::shared_ptr<bElem> p=this->getStats()->getStandingOn().lock();
         p->getStats()->setSteppingOn(this->getStats()->getSteppingOn());
         if(this->getStats()->getSteppingOn())
@@ -526,27 +509,17 @@ std::shared_ptr<bElem> bElem::removeElement()
     }
     else
     {
-#ifdef _VerbousMode_
-        std::cout<<"  ** no\n";
-#endif
         std::shared_ptr<bElem> _Stp=this->getStats()->getSteppingOn();
-        this->getBoard()->setElement(this->getStats()->getMyPosition(),_Stp);
-        //_Stp->stepOnAction(false,nullptr);
-        if(_Stp)
+        _chmbr->setElement(_pos,_Stp);
+        if(_Stp){
             _Stp->getStats()->setHasParent(false); /// this is how we do "unstomp" now.
-    }
-#ifdef _VerbousMode_
-    std::cout<<" * check if we removed the last element on a board\n";
-#endif
-
-    if(_chmbr && _chmbr->getElement(_pos).get()==nullptr) /// This rather should not happen, but we fix the situation, when we remove the last element, and a null is created, we create a new floor element.
-    {
-#ifdef _VerbousMode_
-        std::cout<<"  ** yes we did\n";
-#endif
-        std::shared_ptr<bElem> nf=elementFactory::generateAnElement<floorElement>(_chmbr,1);
-        nf->getStats()->setMyPosition(_pos);
-        _chmbr->setElement(_pos,nf);
+        }
+        else  /// This rather should not happen, but we fix the situation, when we remove the last element, and a null is created, we create a new floor element.
+        {
+            std::shared_ptr<bElem> nf=elementFactory::generateAnElement<floorElement>(_chmbr,555);
+            nf->getStats()->setMyPosition(_pos);
+            _chmbr->setElement(_pos,nf);
+        }
     }
     this->setBoard(nullptr);
     this->getStats()->setMyPosition(NOCOORDS);
