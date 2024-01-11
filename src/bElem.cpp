@@ -366,10 +366,8 @@ bool bElem::interact(std::shared_ptr<bElem> who)
 
 bool bElem::destroy()
 {
-    // std::cout<<" be1\n";
     if (this->getAttrs()->isDestroyable() || this->getAttrs()->isSteppable() || this->getAttrs()->isKillable())
     {
-        //   std::cout<<"  be2\n";
         if (this->getStats()->isDying())
         {
             this->getStats()->setKilled(0);
@@ -511,7 +509,8 @@ std::shared_ptr<bElem> bElem::removeElement()
     {
         std::shared_ptr<bElem> _Stp=this->getStats()->getSteppingOn();
         _chmbr->setElement(_pos,_Stp);
-        if(_Stp){
+        if(_Stp)
+        {
             _Stp->getStats()->setHasParent(false); /// this is how we do "unstomp" now.
         }
         else  /// This rather should not happen, but we fix the situation, when we remove the last element, and a null is created, we create a new floor element.
