@@ -22,7 +22,11 @@
  * - test the projectible propelling movement - separate list of elements, in case of some children using different scheme, like homing missiles.
  */
 BOOST_AUTO_TEST_SUITE(GunsTests)
+auto preClean=[]()
+{
+    while (player::getActivePlayer()) player::getActivePlayer()->disposeElement();
 
+};
 
 typedef boost::mpl::list<plainGun,bazooka> basicTestedElements;
 typedef boost::mpl::list<plainGun,bazooka> propellingProjectibles;
@@ -73,10 +77,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( useWithoutCollecting, T, basicTestedElements)
 {
     coords csize= {20,20};
     coords p1= {5,5},p1_= {6,5};
+    coords ploc= {10,10};
     direction dir=DOWN,dir1=UP;
+    inputManager::getInstance(true);
     std::shared_ptr<chamber> chmbr=chamber::makeNewChamber(csize);
     std::shared_ptr<T> elem=elementFactory::generateAnElement<T>(chmbr,1);
     std::shared_ptr<bElem> be=elementFactory::generateAnElement<bElem>(chmbr,0);
+    preClean();
+    std::shared_ptr<bElem> pl=elementFactory::generateAnElement<player>(chmbr,0);
+    pl->getStats()->setActive(true);
+    pl->stepOnElement(chmbr->getElement(ploc));
+
     be->stepOnElement(chmbr->getElement(p1_));
     be->getStats()->setFacing(dir1);
     be->getStats()->setMyDirection(dir1);
@@ -92,6 +103,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( useWithoutCollecting, T, basicTestedElements)
     for(int c=0; c<1000; c++) bElem::runLiveElements();
     BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir)->getType()==_floorType);
     BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()==_floorType);
+    std::cout<<"type: "<<chmbr->getElement(p1)->getElementInDirection(dir)->getType()<<"\n";
     BOOST_CHECK(chmbr->getElement(p1)->getElementInDirection(dir)->getType()==_floorType);
     BOOST_CHECK(chmbr->getElement(p1)->getElementInDirection(dir1)->getType()==_floorType);
     BOOST_CHECK(elem->use(be));
@@ -116,10 +128,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( useCollectedGun, T, basicTestedElements)
 {
     coords csize= {20,20};
     coords p1= {5,5},p1_= {6,5};
+    coords ploc={10,10};
     direction dir=DOWN,dir1=UP;
+    inputManager::getInstance(true);
+    preClean();
     std::shared_ptr<chamber> chmbr=chamber::makeNewChamber(csize);
     std::shared_ptr<T> elem=elementFactory::generateAnElement<T>(chmbr,0);
     std::shared_ptr<bElem> be=elementFactory::generateAnElement<bElem>(chmbr,0);
+    std::shared_ptr<bElem> pl=elementFactory::generateAnElement<player>(chmbr,0);
+    pl->getStats()->setActive(true);
+    pl->stepOnElement(chmbr->getElement(ploc));
     be->stepOnElement(chmbr->getElement(p1_));
     be->getAttrs()->setCollect(true);
     be->getStats()->setFacing(dir1);

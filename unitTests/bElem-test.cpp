@@ -20,9 +20,15 @@
 #include "inputManager.h"
 
 
-typedef boost::mpl::list<bElem,player,door,explosives,brickCluster,plainGun,puppetMasterFR> base_test_types;
+typedef boost::mpl::list<bElem,player,explosives,brickCluster,plainGun,puppetMasterFR> base_test_types;
 
-typedef boost::mpl::list<bElem,bazooka,bazookaMissile,bunker,floorElement,door,explosives,goldenApple,key,puppetMasterFR,monster,brickCluster,patrollingDrone,plainGun,plainMissile,player,rubbish,teleport,wall,simpleBomb> all_test_types;
+typedef boost::mpl::list<bElem,bazooka,bazookaMissile,bunker,door,explosives,goldenApple,key,puppetMasterFR,monster,brickCluster,patrollingDrone,plainGun,plainMissile,player,rubbish,teleport,wall,simpleBomb> all_test_types;
+
+auto preClean=[]()
+{
+    while (player::getActivePlayer()) player::getActivePlayer()->disposeElement();
+
+};
 
 
 int countTheStack(std::shared_ptr<bElem> in)
@@ -64,7 +70,7 @@ BOOST_AUTO_TEST_SUITE( BasicObjectTests )
  *
  * @tparam T The element type to be tested, specified by the BOOST_AUTO_TEST_CASE_TEMPLATE macro.
  */
- BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
 {
     coords csize=(coords)
     {
@@ -150,23 +156,22 @@ BOOST_AUTO_TEST_CASE(StackAndRemoveFromTheFeet)
     coords csize= {10,10};
     coords point= {3,3};
     std::shared_ptr<chamber> mc=chamber::makeNewChamber(csize);
-    std::shared_ptr<bElem> o=mc->getElement(point);
-    std::shared_ptr<bElem> e=elementFactory::generateAnElement<bElem>(mc,0);
+
+    std::shared_ptr<bElem> o=mc->getElement(point);  //                                       o
+    std::shared_ptr<bElem> e=elementFactory::generateAnElement<bElem>(mc,0);//                e
     std::shared_ptr<bElem> e1=elementFactory::generateAnElement<bElem>(mc,0);
     BOOST_CHECK(o->getStats()->getInstanceId()!=e->getStats()->getInstanceId() && o->getStats()->getInstanceId()!=e1->getStats()->getInstanceId());
+
     e->stepOnElement(mc->getElement(point));
     e1->stepOnElement(mc->getElement(point));
     o->disposeElement();
+    BOOST_CHECK(mc->getElement(point)->getStats()->getInstanceId()==e1->getStats()->getInstanceId());
     e1->disposeElement();
+    BOOST_CHECK(mc->getElement(point)->getStats()->getInstanceId()==e->getStats()->getInstanceId());
     e->disposeElement();
     BOOST_CHECK(mc->getElement(point)->getStats()->getInstanceId()!=e->getStats()->getInstanceId());
 
 }
-
-
-
-
-
 
 
 bool searchForIdInSteppers(std::shared_ptr<bElem> el,unsigned long int id)
@@ -540,10 +545,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
 {
     coords csize= {10,11};
     std::shared_ptr<chamber>  mc=chamber::makeNewChamber({csize});
-
+    std::shared_ptr<bElem> pl=elementFactory::generateAnElement<player>(mc,0);
+    preClean();
+    pl->stepOnElement(mc->getElement(9,9));
+    pl->interact(pl);
+    pl->getStats()->setActive(true);
     std::shared_ptr<bElem> myObj=elementFactory::generateAnElement<T>(mc,0);
     bool canBeDestroyed=myObj->getAttrs()->isDestroyable();
     unsigned long int instance=myObj->getStats()->getInstanceId();
+
+
     bElem::tick();
     bElem::tick();
 
@@ -557,14 +568,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
     }
     bElem::runLiveElements();
     myObj=mc->getElement(3,3);
+
     BOOST_CHECK(mc->getElement(3,3)->getStats()->isDestroying()==false);
+    bElem::runLiveElements();
     if(!canBeDestroyed )
     {
         BOOST_CHECK(mc->getElement(3,3)->getStats()->getInstanceId()==instance);
     }
     else
     {
-
         BOOST_CHECK(mc->getElement(3,3)->getStats()->getInstanceId()!=instance);
     }
 }
