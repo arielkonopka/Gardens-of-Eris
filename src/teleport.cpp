@@ -40,7 +40,7 @@ bool teleport::additionalProvisioning(int value,std::shared_ptr<teleport> t)
 /* here we will try to teleport an object to the becon connected to this teleporter. if the becon is not yet established, randomly choose one */
 bool teleport::interact(std::shared_ptr<bElem> who)
 {
-    bool r=false;
+    bool r=true;
     if (!bElem::interact(who))
         return false;
     this->playSound("Teleport", "Teleporting");
@@ -48,7 +48,6 @@ bool teleport::interact(std::shared_ptr<bElem> who)
         this->createConnectionsWithinSUbtype();
     if (this->theOtherEnd) r=this->theOtherEnd->teleportIt(who);
     else if(this->candidates.size()>0) this->candidates[0]->teleportIt(who);
-
     return r;
 }
 

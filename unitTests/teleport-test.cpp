@@ -10,6 +10,16 @@
 #include <boost/mpl/list.hpp>
 #include <memory>
 
+
+auto preClean=[](std::shared_ptr<chamber> ch,coords point)
+{
+    inputManager::getInstance(true);
+    while (player::getActivePlayer()) player::getActivePlayer()->disposeElement();
+    std::shared_ptr<bElem> pl=elementFactory::generateAnElement<player>(ch,0);
+    pl->getStats()->setActive(true);
+    pl->stepOnElement(ch->getElement(point));
+
+};
 BOOST_AUTO_TEST_SUITE( TeleportObjectTests )
 
 BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
@@ -25,7 +35,6 @@ BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
     bElem::tick();
     tel1->stepOnElement(mc->getElement(3,3));
     BOOST_CHECK(tel1->interact(transportedE)==true);
-    // bElem::tick();
     std::cout<<"teleporting1:"<<mc->getElement(2,3)->getStats()->isTeleporting();
     BOOST_CHECK(mc->getElement(2,3)->getStats()->getInstanceId()!=transportedE->getStats()->getInstanceId());
     BOOST_CHECK(mc->getElement(2,3)->getStats()->isTeleporting()==true);
@@ -48,8 +57,11 @@ BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
 BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
 {
     coords crds;
+    coords csize={10,10};
+    coords ppoint={9,9};
     coords nc= {5,4};
-    std::shared_ptr<chamber> mc=chamber::makeNewChamber({6,6});
+    std::shared_ptr<chamber> mc=chamber::makeNewChamber(csize);
+    preClean(mc,ppoint);
     std::shared_ptr<teleport> tel1=elementFactory::generateAnElement<teleport>(mc,0);
     std::shared_ptr<teleport>  tel2=elementFactory::generateAnElement<teleport>(mc,0);
     std::shared_ptr<bElem> transportEl=elementFactory::generateAnElement<bElem>(mc,0);
@@ -64,8 +76,8 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
     BOOST_CHECK( crds==nc );
     BOOST_CHECK(transportEl->getStats()->getInstanceId()==mc->getElement(5,4)->getStats()->getInstanceId());
     BOOST_CHECK(transportEl->getStats()->isTeleporting()==true);
-    for(int c=0; c<_teleportationTime+10; c++)
-        bElem::tick();
+    for(int c=0; c<1000; c++)
+        bElem::runLiveElements();
     BOOST_CHECK(transportEl->getStats()->isTeleporting()==false);
     transportEl->getStats()->setMyDirection(LEFT);
     BOOST_CHECK(tel2->interact(transportEl)==true);
@@ -80,8 +92,8 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
 {
     std::shared_ptr<chamber> mc=chamber::makeNewChamber({8,8});
     coords ncrds;
-    coords t1crds={2,3};
-    coords t2crds={3,4};
+    coords t1crds= {2,3};
+    coords t2crds= {3,4};
     std::shared_ptr<teleport>  tel1=elementFactory::generateAnElement<teleport>(mc,0);
     std::shared_ptr<teleport>  tel2=elementFactory::generateAnElement<teleport>(mc,1);
     std::shared_ptr<bElem> _tr1=elementFactory::generateAnElement<bElem>(mc,0);
@@ -107,9 +119,10 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
 BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
 {
     std::shared_ptr<chamber> mc=chamber::makeNewChamber({10,10});
-    coords pointA={3,5};
-    coords pointAt={2,5};
-    coords pointB={5,5};
+    coords pointA= {3,5};
+    coords pointAt= {2,5};
+    coords pointB= {5,5};
+    preClean(mc,{9,9});
     std::shared_ptr<bElem> tel1,tel2,transported;
     bElem::tick();
     transported=elementFactory::generateAnElement<bElem>(mc,0);
@@ -125,7 +138,7 @@ BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
     BOOST_CHECK(tel1->getStats()->hasActivatedMechanics()==true);
     BOOST_CHECK(transported->getStats()->getMyPosition()==pointA);
     BOOST_CHECK(mc->getElement(pointA)->getStats()->getInstanceId()==transported->getStats()->getInstanceId());
-    for(int c=0;c<_teleportStandTime;c++)
+    for(int c=0; c<_teleportStandTime; c++)
     {
         BOOST_CHECK(transported->getStats()->isTeleporting()==false);
         bElem::runLiveElements();
