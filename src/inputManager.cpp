@@ -69,7 +69,7 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         switch (ev->joystick.button)
         {
         case 5:
-        case 4:
+
             this->pressed_keys[ALLEGRO_KEY_RSHIFT]=true;
             break;
         case 6:
@@ -93,7 +93,7 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         case 8:
             this->pressed_keys[ALLEGRO_KEY_R]=true;
             break;
-        case 10:
+        case 4:
             this->pressed_keys[ALLEGRO_KEY_SPACE]=true;
             break;
 
@@ -104,7 +104,6 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         switch (ev->joystick.button)
         {
         case 5:
-        case 4:
             this->pressed_keys[ALLEGRO_KEY_RSHIFT]=false;
             break;
         case 6:
@@ -128,7 +127,7 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         case 8:
             this->pressed_keys[ALLEGRO_KEY_R]=false;
             break;
-        case 10:
+        case 4:
             this->pressed_keys[ALLEGRO_KEY_SPACE]=false;
             break;
 

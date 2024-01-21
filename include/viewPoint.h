@@ -26,8 +26,17 @@
 #include "elements.h"
 #include <mutex>
 #include <memory>
+#include <ranges>
+class vpPoint
+{
+public:
+    vpPoint()=default;
+    ~vpPoint()=default;
+    int x;
+    int y;
+    int radius;
 
-
+};
 
 class viewPoint
 {
@@ -42,7 +51,7 @@ public:
     coords getViewPointOffset();
     int calculateObscured(coords point);
     int calculateObscured(coords point,int divider);
-
+    std::vector<vpPoint> getViewPoints();
     bool isPointVisible(coords point);
 
 protected:

@@ -48,12 +48,12 @@ bool bElemStats::isDisposed() const
 
 void bElemStats::setDisposed(bool value)
 {
-    if(this->disposed==false) // operation is one way, beware, if you set it to disposed, it will stay this way
-        this->disposed=value;
-    if(this->disposed)
-    {
+    if (!this->disposed) // operation is one way, beware, if you set it to disposed, it will stay this way
+        this->disposed = value;
+
+    if (this->disposed)
         this->setMyPosition(NOCOORDS);
-    }
+
 }
 
 bool bElemStats::hasActivatedMechanics() const

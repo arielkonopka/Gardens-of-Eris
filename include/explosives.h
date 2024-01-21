@@ -32,8 +32,6 @@ public:
 
     explosives()=default;
     virtual ~explosives()=default;
-
-    virtual bool explode();
     virtual bool explode(float radius);
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<explosives> sbe);
 private:

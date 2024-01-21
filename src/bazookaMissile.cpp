@@ -45,8 +45,7 @@ bool bazookaMissile::mechanics()
         if(sowner)
         {
             sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
-            if(beEnergy!=0)
-                sowner->getStats()->setPoints(TOTAL,sowner->getStats()->getPoints(TOTAL)+beEnergy);
+            sowner->getStats()->setPoints(TOTAL,sowner->getStats()->getPoints(TOTAL)+beEnergy);
         }
     }
 
@@ -55,11 +54,12 @@ bool bazookaMissile::mechanics()
 
 int bazookaMissile::getType() const
 {
+
     return _bazookaMissileType;
 }
 
 
-bool bazookaMissile::additionalProvisioning(int subtype, std::shared_ptr<bazookaMissile>sbe)
+bool bazookaMissile::additionalProvisioning(int subtype, std::shared_ptr<bazookaMissile> sbe)
 {
     return explosives::additionalProvisioning(subtype,sbe);
 }

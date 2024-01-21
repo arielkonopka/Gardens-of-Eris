@@ -164,7 +164,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
         //we draw vertical line
         for (int a=y1; a<=y2; a++)
         {
-            if (this->mychamber->getElement(c+2,a) && a!=d && this->mychamber->getElement(c,a)->getAttrs()->isSteppable()==true && this->mychamber->getElement(c+2,a)->getAttrs()->isSteppable()==true)
+            if (this->mychamber->getElement(c+2,a) && a!=d && this->mychamber->getElement(c,a)->getAttrs()->isSteppable() && this->mychamber->getElement(c+2,a)->getAttrs()->isSteppable())
             {
                 if (a<d+2)
                 {
@@ -220,7 +220,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
                 continue;
             }
 
-            if (a!=c && this->mychamber->getElement(a,d)->getAttrs()->isSteppable()==true && this->mychamber->getElement(a,d+2)->getAttrs()->isSteppable()==true)
+            if (a!=c && this->mychamber->getElement(a,d)->getAttrs()->isSteppable() && this->mychamber->getElement(a,d+2)->getAttrs()->isSteppable())
             {
                 if (a<c+2)
                 {
@@ -239,7 +239,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
         }
         for (int cnt=0; cnt<holes; cnt++)
         {
-            if (doorPlaces1.size()>0)
+            if (!doorPlaces1.empty())
             {
                 int rnd=this->gen()%(doorPlaces1.size());
                 this->mychamber->getElement(doorPlaces1[rnd],d+1)->disposeElement();
@@ -250,7 +250,7 @@ chamberArea* randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2,in
         for (int cnt=0; cnt<holes; cnt++)
         {
 
-            if (doorPlaces2.size()>0)
+            if (!doorPlaces2.empty())
             {
                 int rnd=this->gen()%(doorPlaces2.size());
                 this->mychamber->getElement(doorPlaces2[rnd],d+1)->disposeElement();
@@ -394,7 +394,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     for(unsigned int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
     chamberArea::foundAreas.clear();
     this->headNode->findChambersCloseToSurface(demandedSurface,tolerance);
-    if (chamberArea::foundAreas.size()<=0)
+    if (chamberArea::foundAreas.empty())
     {
         std::cout<<"Found areas is empty!\n";
         return false;

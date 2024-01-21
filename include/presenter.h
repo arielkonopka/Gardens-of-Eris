@@ -44,6 +44,7 @@
 #include <videoDriver.h>
 #include <mutex>
 #include <viewPoint.h>
+#include <allegro5/allegro_primitives.h>
 
 
 #define _offsetX 64
@@ -85,7 +86,7 @@ public:
 
 
 private:
-
+    void shaderthing();
     void drawCloak();
     bool fin=false;
     bool mStarted=false;
@@ -119,6 +120,12 @@ private:
     void mechanicLoop();
 
     ALLEGRO_DISPLAY* display;
+    std::vector<coords> poses;
+    std::vector<float> radiuses;
+    ALLEGRO_BITMAP *pointsTexture;
+    int pointsTextureWidth = 2;
+    int pointsTextureHeight = 100;
+    ALLEGRO_SHADER *shader;
 
     ALLEGRO_BITMAP *sprites;
     typedef struct movingSprite

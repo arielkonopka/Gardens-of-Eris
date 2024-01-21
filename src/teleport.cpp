@@ -47,7 +47,10 @@ bool teleport::interact(std::shared_ptr<bElem> who)
     if (!this->theOtherEnd)
         this->createConnectionsWithinSUbtype();
     if (this->theOtherEnd) r=this->theOtherEnd->teleportIt(who);
-    else if(this->candidates.size()>0) this->candidates[0]->teleportIt(who);
+    else if(!this->candidates.empty()) {
+            r=this->candidates[0]->teleportIt(who);
+
+    } else r=this->teleportIt(who);
     return r;
 }
 
@@ -104,16 +107,16 @@ bool teleport::teleportIt(std::shared_ptr<bElem> who)
         direction d = (direction)((dir + c) % 4);
         if (this->isSteppableDirection(d))
         {
-            bool am=who->getStats()->hasActivatedMechanics();
-            if(am) who->deregisterLiveElement(who->getStats()->getInstanceId());
+         //   bool am=who->getStats()->hasActivatedMechanics();
+          //  if(am) who->deregisterLiveElement(who->getStats()->getInstanceId());
             who->stepOnElement(this->getElementInDirection(d));
-            if(am) who->registerLiveElement(who);
+         //   if(am) who->registerLiveElement(who);
             return true;
         }
     }
-    if (!this->theOtherEnd)
-        this->createConnectionsWithinSUbtype();
-    if (this->theOtherEnd) this->theOtherEnd->teleportIt(who);
+//    if (!this->theOtherEnd)
+//        this->createConnectionsWithinSUbtype();
+    this->interact(who);
     return false;
 }
 
