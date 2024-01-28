@@ -86,7 +86,7 @@ public:
 
 
 private:
-    void shaderthing();
+    void shaderthing(int x, int y);
     void drawCloak();
     bool fin=false;
     bool mStarted=false;
@@ -117,10 +117,9 @@ private:
     _cp_gameReasonOut presentGamePlay();
     std::shared_ptr<chamber> _cp_attachedBoard;
     ALLEGRO_TIMER* alTimer;
-    void mechanicLoop();
 
     ALLEGRO_DISPLAY* display;
-    std::vector<coords> poses;
+
     std::vector<float> radiuses;
     ALLEGRO_BITMAP *pointsTexture;
     int pointsTextureWidth = 2;
@@ -138,6 +137,7 @@ private:
 
     std::thread myThread;
     std::mutex presenter_mutex;
+    std::vector<coords> poses;
 
 };
 

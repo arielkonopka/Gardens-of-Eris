@@ -821,6 +821,50 @@
              "maxAmmo":10
           }
         ]
+,
+        "Samples": [
+          {
+             "SubType": -1,
+             "stEvents": [ {
+                  "EventType": "Shoot",
+                  "eventData": [
+                    {
+                       "Event": "Shoot",
+                       "fname": "data/sounds/nioseThing_shoot.ogg",
+                       "allowMulti": true,
+                       "stacking":true,
+                       "name": "Shoot sound",
+                       "description": "(cc)Ariel Konopka",
+                       "modeOfAction": 0,
+                       "gain": 0.01
+                    }
+                  ]
+               }
+             ]
+          },
+          {
+             "SubType": -1,
+             "stEvents": [
+               {
+                  "EventType": "Found",
+                  "eventData": [
+                    {
+                       "Event": "Collect",
+                       "fname": "data/sounds/panzerfaust_ready_to_shoot.ogg",
+                       "name": "Collect gun sound",
+                       "description": "panzerfaust ready to shoot in basque langue",
+                       "allowMulti": false,
+                       "gain":0.7,
+                       "modeOfAction": 0
+                    }
+                  ]
+               }
+             ]
+          }
+        ]
+
+
+
         
      }
      

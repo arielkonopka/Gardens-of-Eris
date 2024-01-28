@@ -185,7 +185,7 @@ std::vector<vpPoint> viewPoint::getViewPoints(coords start, coords end)
        if(be.expired() || be.lock()->getStats()->isDisposed()) return false;
        std::shared_ptr<bElem> b_=be.lock();
        coords bcoords=(b_->getStats()->isCollected())?((b_->getStats()->getCollector().expired() || b_->getStats()->getCollector().lock()->getStats()->isDisposed())?NOCOORDS:b_->getStats()->getCollector().lock()->getStats()->getMyPosition()):b_->getStats()->getMyPosition();
-        return b_->getBoard() && b_->getBoard()->getInstanceId()==ownerId && bcoords.x>=start.x && bcoords.x<=end.x && bcoords.y>=start.y && bcoords.y<=end.y; /// We consider only elements on the same boards the view owner
+        return b_->getBoard() && b_->getBoard()->getInstanceId()==ownerId && bcoords.x>=start.x-10 && bcoords.x<=end.x+10 && bcoords.y>=start.y-10 && bcoords.y<=end.y+10; /// We consider only elements on the same boards the view owner
     }) | std::views::transform([&](auto e){
         vpPoint vp;
         std::shared_ptr<bElem> b_=e.lock();

@@ -155,7 +155,12 @@ bool inventory::removeActiveWeapon()
         return false;
     }
     this->decrementTokenNumber({this->weapons.at(this->wPos)->getType(),this->weapons.at(this->wPos)->getAttrs()->getSubtype()});
-    this->weapons.at(this->wPos)->disposeElement();
+
+   std::shared_ptr<bElem> be_=this->weapons.at(this->wPos);
+    this->weapons.erase(this->weapons.begin()+this->wPos);
+    this->wPos=this->wPos%this->weapons.size();
+
+    be_->disposeElement();
     return true;
 }
 
