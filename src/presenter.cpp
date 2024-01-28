@@ -37,6 +37,7 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
         exit(0);
 
     }
+
     this->alTimer = al_create_timer(1.0 / 50);
     this->evQueue= al_create_event_queue();
     al_register_event_source(this->evQueue, al_get_timer_event_source(this->alTimer));
@@ -60,7 +61,7 @@ bool presenter::initializeDisplay()
 {
     ALLEGRO_MONITOR_INFO info;
     //  al_set_new_display_flags(ALLEGRO_FULLSCREEN);
-    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 ); //ma| ALLEGRO_FULLSCREEN);
+    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 |ALLEGRO_PROGRAMMABLE_PIPELINE); //ma| ALLEGRO_FULLSCREEN);
     al_inhibit_screensaver(true);
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
     al_get_monitor_info(0, &info);
@@ -70,6 +71,24 @@ bool presenter::initializeDisplay()
     this->internalBitmap=al_create_bitmap(this->scrWidth+64,this->scrHeight+64);
     this->cloakBitmap=al_create_bitmap(this->scrWidth+128,this->scrHeight+128);
     this->statsStripe=al_create_bitmap(this->scrWidth,this->scrHeight/3);
+    this->pointsTexture = al_create_bitmap(this->pointsTextureWidth, this->pointsTextureHeight);
+    this->shader = al_create_shader(ALLEGRO_SHADER_GLSL);
+    const char *pixelShaderSource = "data/shaders/pixelShader.glps";
+    const char *vertexShaderSource="data/shaders/vertexShader.glvs";
+    std::string s1;
+    s1=(al_attach_shader_source_file(this->shader, ALLEGRO_VERTEX_SHADER, vertexShaderSource))?"Vertex success":"Vertex failure";
+    std::cout<<s1<<"\n";
+    std::cout << "Vertex Shader Log: " << al_get_shader_log(this->shader) << " "<<al_get_errno()<<std::endl;
+    s1=(al_attach_shader_source_file(this->shader, ALLEGRO_PIXEL_SHADER, pixelShaderSource))?"Pixel success":"Pixel failure";
+    std::cout<<s1<<"\n";
+
+    std::cout << "Pixel Shader Log: " << al_get_shader_log(this->shader) << " "<<al_get_errno()<<std::endl;
+
+    std::string c=(al_build_shader(this->shader))?"Success":"Failure";
+    std::cout<<c<<"\n";
+    al_init_primitives_addon();
+
+
     return true;
 
 }
@@ -217,7 +236,7 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
         draw_sprite();
         return res;
     }
-     if(elem->getStats()->isFadingIn())
+    if(elem->getStats()->isFadingIn())
     {
         coords=ve->fadingIn[elem->getAnimPh()%(ve->fadingIn.size())];
         draw_sprite();
@@ -317,7 +336,7 @@ void presenter::showGameField()
     };
     int offX=0,offY=0;
     std::vector<movingSprite> mSprites;
-
+  //  al_use_shader(nullptr);
     std::shared_ptr<bElem> player=player::getActivePlayer();
     // Calculate LeftUpper corner of the viewpoint
     //BEGIN:upperLeft
@@ -335,7 +354,9 @@ void presenter::showGameField()
     offY=(this->positionOnScreen.y % this->sHeight);
     soundManager::getInstance()->setListenerVelocity({d.x*555,0,d.y*555});
     this->prepareStatsThing();
+
     al_set_target_bitmap(this->internalBitmap);
+
     colour c=this->_cp_attachedBoard->getChColour();
     al_clear_to_color(al_map_rgba(c.r,c.g,c.b,c.a));
     /***
@@ -345,7 +366,7 @@ void presenter::showGameField()
     /***
     draw only visible elements, walls are always visible.
     ***/
-
+    this->poses.clear();
     if(player->getBoard().get()!=nullptr)
     {
         for(x=0; x<this->scrTilesX+1; x++)
@@ -356,6 +377,11 @@ void presenter::showGameField()
                     x+this->previousPosition.x,y+this->previousPosition.y
                 };
                 std::shared_ptr<bElem> elemToDisplay=player->getBoard()->getElement(np);
+                if(viewPoint::get_instance()->calculateObscured(np)==0)
+                {
+                    this->radiuses.push_back(elemToDisplay->getViewRadius());
+                    this->poses.push_back({x*64,y*64});
+                }
                 if(player->getBoard()->isVisible(np)>=255 && !viewPoint::get_instance()->isPointVisible(np))
                     continue; // this element is not even discovered yet
                 if(elemToDisplay.get()!=nullptr)
@@ -387,14 +413,46 @@ void presenter::showGameField()
     /***
     Draw the cloak on the game field
     ***/
-    this->drawCloak();
-    bElem::mechUnlock();
+        bElem::mechUnlock();
+    float verts[]={-1.0,1.0,0.0, 
+                   1.0,1.0,0.0,
+                   1.0,-1.0,0.0,
+                   -1.0,-1.0,0.0 };
+
+//    this->drawCloak();
     al_set_target_bitmap(al_get_backbuffer(display));
+
+
+
     al_clear_to_color(al_map_rgba(15,25,45,255));
-    al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
     al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
+    this->shaderthing();
+    //al_set_shader_sampler("internalBitmap", this->internalBitmap,0);
+    //al_set_shader_float_vector("vertices",3,verts,4);
+    al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
+    //al_draw_filled_rectangle(_offsetX,_offsetY/2,_offsetX+this->bsWidth,this->bsHeight+_offsetY/2, al_map_rgba(255,255,255,255));
     al_flip_display();
+    al_use_shader(nullptr);
+
+
 }
+
+void presenter::shaderthing()
+{
+    float texWidth=this->scrWidth+64,texHeight=this->scrHeight+64;
+    auto vps=viewPoint::get_instance()->getViewPoints();
+    if(vps.empty())
+        return;
+
+    al_use_shader(this->shader);
+    al_set_shader_float("texWidth", texWidth);
+    al_set_shader_float("texHeight", texHeight);
+
+
+
+}
+
+
 
 void presenter::drawCloak()
 {

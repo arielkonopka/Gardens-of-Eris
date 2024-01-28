@@ -124,23 +124,26 @@ int viewPoint::calculateObscured(const coords point,int divider)
         {
             viewPoints.erase(viewPoints.begin()+c);
             continue;
-        } else if(wp->getBoard() && wp->getBoard()->getInstanceId()==ownerId)
+        }
+        else if(wp->getBoard() && wp->getBoard()->getInstanceId()==ownerId)
         {
             radius = wp->getViewRadius()*divider;
-            coords viewPointPos = (wp->getStats()->getMyPosition()*divider) + (wp->getOffset()*divider)/64+dh;
+            coords viewPointPos = (wp->getStats()->getMyPosition()*divider) + (wp->getOffset()*divider)/64+(dh*(8+4+2))/16;
             float dist=viewPointPos.distance(point);
             if(dist>radius && dist<radius+0.8 && obscured>1024)
             {
                 obscured=1024;
             }
-            else if(dist<=radius/3)
+            else if(dist<=0.001)
             {
                 obscured=0;
             }
+            else if(dist<=radius/3)
+            {
+                obscured=1;
+            }
             else if (dist<=radius)
             {
-           //     hradius=2*radius/3;
-           //     float hdist=dist-hradius;
                 int dst2 = (255*dist/radius);
                 obscured=std::min(obscured,dst2);
             }
@@ -166,5 +169,29 @@ viewPoint* viewPoint::get_instance()
 
 }
 
+std::vector<vpPoint> viewPoint::getViewPoints()
+{
+
+    auto owner = getOwner();
+    int ownerId;
+    if(!owner)
+        ownerId=-1;
+    else
+        ownerId = owner->getBoard()->getInstanceId();
+    auto resA=std::views::filter(this->viewPoints,[&](std::weak_ptr<bElem> be)
+    {
+       if(be.expired()) return false;
+        return be.lock()->getBoard() && be.lock()->getBoard()->getInstanceId()==ownerId;
+    }) | std::views::transform([](auto e){
+        std::shared_ptr<bElem> be = e.lock();
+        vpPoint vp;
+        vp.x = be->getStats()->getMyPosition().x;
+        vp.y = be->getStats()->getMyPosition().y;
+        vp.radius = be->getViewRadius();
+        return vp;
+    }) |std::views::common;
+    auto result=std::vector(resA.begin(), resA.end());
+    return result;
+}
 
 

@@ -92,7 +92,7 @@
 #define confFname1 "./data/skins.json"
 #define confFname2 "./GoEoOL/data/skins.json"
 
-const static int _dividerCloak=4;
+const static int _dividerCloak=8;
 
 
 /**

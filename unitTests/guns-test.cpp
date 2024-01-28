@@ -24,6 +24,7 @@
 BOOST_AUTO_TEST_SUITE(GunsTests)
 auto preClean=[]()
 {
+    inputManager::getInstance(true);
     while (player::getActivePlayer()) player::getActivePlayer()->disposeElement();
 
 };

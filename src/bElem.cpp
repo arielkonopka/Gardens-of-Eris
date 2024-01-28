@@ -156,10 +156,8 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
     };
     if(this->getStats()->isDisposed() || !elig(step))
         return false;
-
-    std::shared_ptr<bElem> myself=shared_from_this();
+    bool chamberChange=!(step->getBoard()==this->getBoard());
     std::shared_ptr<bElem> s0;
-
     if(step->getAttrs()->isCollectible() && this->getAttrs()->canCollect())
     {
         std::shared_ptr<bElem> s2=step->getStats()->getSteppingOn();
@@ -167,12 +165,20 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
             return false;
         this->collect(step);
         step=s2;
-        return step?this->stepOnElement(step):false;
-    };
+        if (step) {
+            return this->stepOnElement(step);
+        } else {
+            return false;
+        }
+    }
     std::shared_ptr<bElem> st=this->getStats()->getSteppingOn();
-    myself=this->removeElement();
+    if(chamberChange && this->getStats()->hasActivatedMechanics())
+        this->deregisterLiveElement(this->getStats()->getInstanceId());
+    else
+        chamberChange=false;
+    this->removeElement();
     if(st)
-        st->stepOnAction(false,myself);
+        st->stepOnAction(false,shared_from_this());
     bool hp=step->getStats()->hasParent();
     this->setBoard(step->getBoard());
     this->getStats()->setMyPosition(step->getStats()->getMyPosition());
@@ -181,13 +187,15 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
     step->getStats()->setStandingOn(shared_from_this());
     if(hp)
     {
-        s0->getStats()->setSteppingOn(myself);
+        s0->getStats()->setSteppingOn(shared_from_this());
         this->getStats()->setStandingOn(s0);
     }
     else
     {
         this->getBoard()->setElement(this->getStats()->getMyPosition(),shared_from_this());
     }
+    if(chamberChange)
+        this->registerLiveElement(shared_from_this());
     step->stepOnAction(true,shared_from_this());
     return true;
 }
@@ -197,7 +205,7 @@ oState bElem::disposeElementUnsafe()
     oState res = DISPOSED;
     std::shared_ptr<chamber> myBoard = this->getBoard();
     coords mycoords = this->getStats()->getMyPosition();
-    if (this->getStats()->isDisposed() == true)
+    if (this->getStats()->isDisposed() )
         return ERROR;
     if (this->getStats()->hasActivatedMechanics())
         this->deregisterLiveElement(this->getStats()->getInstanceId());
@@ -216,7 +224,7 @@ oState bElem::disposeElementUnsafe()
             res = nullptrREACHED;
         }
 
-        if (this->getType() != _stash && this->getAttrs()->canCollect() && this->getAttrs()->getInventory()->isEmpty() == false && this->getType() != _rubishType && this->getType() != _plainMissile && this->getType() != _plainGun)
+        if (this->getType() != _stash && this->getAttrs()->canCollect() && !this->getAttrs()->getInventory()->isEmpty()  && this->getType() != _rubishType && this->getType() != _plainMissile && this->getType() != _plainGun)
         {
             std::shared_ptr<bElem> stash = elementFactory::generateAnElement<rubbish>(myBoard,0);
             stash->getAttrs()->setInventory(this->getAttrs()->getInventory());
@@ -254,7 +262,7 @@ oState bElem::disposeElementUnsafe()
 
 oState bElem::disposeElement()
 {
-    std::shared_ptr<bElem> t = shared_from_this();
+    //std::shared_ptr<bElem> t = shared_from_this();
     std::shared_ptr<bElem> stash = nullptr;
     std::shared_ptr<chamber> _myBoard=this->getBoard();
     coords oCoords = this->getStats()->getMyPosition();
@@ -629,10 +637,10 @@ sNeighboorhood bElem::getSteppableNeighboorhood()
         direction d = (direction)(c1 % 4);
         direction d1 = (direction)((c1 + 1) % 4);
         std::shared_ptr<bElem> e = this->getElementInDirection(d);
-        std::shared_ptr<bElem> e1 = nullptr;
+
         if (e)
         {
-            e1 = e->getElementInDirection(d1);
+            auto e1 = e->getElementInDirection(d1);
             myNeigh.nTypes[c] = e->getType();
             myNeigh.steppable[c] = e->getAttrs()->isSteppable();
             myNeigh.steppableClose[c / 2] = myNeigh.steppable[c];

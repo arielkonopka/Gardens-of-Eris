@@ -24,7 +24,7 @@
 
 
 
-bool explosives::additionalProvisioning(int subtype, std::shared_ptr<explosives>sbe)
+bool explosives::additionalProvisioning(int subtype, std::shared_ptr<explosives> sbe)
 {
     return bElem::additionalProvisioning(subtype,sbe);
 }
@@ -36,17 +36,17 @@ bool explosives::explode(float radius)
     {
         coords mc=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getMyPosition():this->getStats()->getMyPosition();
         std::shared_ptr<chamber> brd = (this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getBoard():this->getBoard();
-        int xs=std::max(0,(int)(mc.x-radius));
-        int xe=std::min(brd->width-1,(int)(mc.x+radius));
-        int ys=std::max(0,(int)(mc.y-radius));
-        int ye=std::min(brd->height-1,(int)(mc.y+radius));
+        int xs=std::max(0,(int)(mc.x-(int)radius));
+        int xe=std::min(brd->width-1,(int)(mc.x+(int)radius));
+        int ys=std::max(0,(int)(mc.y-(int)radius));
+        int ye=std::min(brd->height-1,(int)(mc.y+(int)radius));
         this->playSound("Explosives","Explode");
         std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
         if(sowner)
         {
             for(int _direction=0; _direction<4; _direction++)
             {
-                direction dr=(direction)_direction;
+                auto dr=(direction)_direction;
                 std::shared_ptr<bElem> inDir=this->getElementInDirection(dr);
                 if(inDir && (inDir->getAttrs()->isDestroyable() || inDir->getAttrs()->isKillable()))
                 {
@@ -83,9 +83,4 @@ bool explosives::explode(float radius)
 }
 
 
-bool explosives::explode()
-{
-    this->explode(1.5);
 
-    return true;
-}

@@ -31,7 +31,7 @@ bool simpleBomb::additionalProvisioning(int subtype, std::shared_ptr<simpleBomb>
 }
 float simpleBomb::getViewRadius() const
 {
-    return 4.5;
+    return 1;
 }
 
 bool simpleBomb::hurt(int points)
