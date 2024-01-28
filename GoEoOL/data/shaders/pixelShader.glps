@@ -1,12 +1,31 @@
 #ifdef GL_ES
 precision mediump float;
 #endif
-uniform sampler2D al_tex;
 
+uniform sampler2D al_tex;
+uniform vec3 viewPoints[100]; // Zakładam, że masz maksymalnie 50 punktów widokowych, dostosuj to do swoich potrzeb
+uniform float texWidth;
+uniform float texHeight;
+uniform int pnum;
 varying vec4 varying_color;
 varying vec2 varying_texcoord;
+
 void main()
 {
-   vec4 tmp = varying_color* texture2D(al_tex, varying_texcoord);
-   gl_FragColor = tmp;
+    vec4 tmp = varying_color * texture2D(al_tex, varying_texcoord);
+    float alpha = 0.0; // Domyślnie maksymalna widoczność
+    vec2 mycoords= vec2(((varying_texcoord.x)*texWidth), ((1.0-varying_texcoord.y)*texHeight));
+    for (int i = 0; i < pnum;i++ ) {
+        vec2 fogCoord = vec2(viewPoints[i].x , viewPoints[i].y );
+        float distanceToViewPoint = distance(fogCoord, mycoords);
+        float fogStart = 0.0;
+        float fogEnd =viewPoints[i].z;
+        float smst=1.0-smoothstep(fogStart, fogEnd, distanceToViewPoint);
+        alpha = max(alpha, smst);
+
+    }
+    alpha=min(1.0,(max(0.05,alpha)));
+    tmp*=alpha;
+    tmp.w=alpha;
+    gl_FragColor = tmp;
 }
