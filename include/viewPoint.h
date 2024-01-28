@@ -34,7 +34,7 @@ public:
     ~vpPoint()=default;
     int x;
     int y;
-    int radius;
+    float radius;
 
 };
 
@@ -51,7 +51,7 @@ public:
     coords getViewPointOffset();
     int calculateObscured(coords point);
     int calculateObscured(coords point,int divider);
-    std::vector<vpPoint> getViewPoints();
+    std::vector<vpPoint> getViewPoints(coords start, coords end);
     bool isPointVisible(coords point);
 
 protected:
