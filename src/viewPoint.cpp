@@ -27,6 +27,7 @@ viewPoint* viewPoint::instance=nullptr;
 
 bool viewPoint::isElementInVector(const std::vector<std::weak_ptr<bElem>>& vec, const std::shared_ptr<bElem>& elem)
 {
+    if(vec.empty()) return false;
     return std::any_of(vec.begin(), vec.end(), [&elem](const std::weak_ptr<bElem>& wp)
     {
         return !wp.expired() && wp.lock()->getStats()->getInstanceId() == elem->getStats()->getInstanceId();
@@ -134,13 +135,13 @@ int viewPoint::calculateObscured(const coords point,int divider)
             {
                 obscured=1024;
             }
-            else if(dist<=0.001)
+            else if(dist<=0.3)
             {
                 obscured=0;
             }
             else if(dist<=radius/3)
             {
-                obscured=1;
+                obscured=5;
             }
             else if (dist<=radius)
             {
@@ -169,7 +170,7 @@ viewPoint* viewPoint::get_instance()
 
 }
 
-std::vector<vpPoint> viewPoint::getViewPoints()
+std::vector<vpPoint> viewPoint::getViewPoints(coords start, coords end)
 {
 
     auto owner = getOwner();
@@ -180,17 +181,25 @@ std::vector<vpPoint> viewPoint::getViewPoints()
         ownerId = owner->getBoard()->getInstanceId();
     auto resA=std::views::filter(this->viewPoints,[&](std::weak_ptr<bElem> be)
     {
-       if(be.expired()) return false;
-        return be.lock()->getBoard() && be.lock()->getBoard()->getInstanceId()==ownerId;
-    }) | std::views::transform([](auto e){
-        std::shared_ptr<bElem> be = e.lock();
+
+       if(be.expired() || be.lock()->getStats()->isDisposed()) return false;
+       std::shared_ptr<bElem> b_=be.lock();
+       coords bcoords=(b_->getStats()->isCollected())?((b_->getStats()->getCollector().expired() || b_->getStats()->getCollector().lock()->getStats()->isDisposed())?NOCOORDS:b_->getStats()->getCollector().lock()->getStats()->getMyPosition()):b_->getStats()->getMyPosition();
+        return b_->getBoard() && b_->getBoard()->getInstanceId()==ownerId && bcoords.x>=start.x && bcoords.x<=end.x && bcoords.y>=start.y && bcoords.y<=end.y; /// We consider only elements on the same boards the view owner
+    }) | std::views::transform([&](auto e){
         vpPoint vp;
-        vp.x = be->getStats()->getMyPosition().x;
-        vp.y = be->getStats()->getMyPosition().y;
-        vp.radius = be->getViewRadius();
+        std::shared_ptr<bElem> b_=e.lock();
+
+        // we try to address a situation, where a viewpoint element was collected.
+        coords bcoords=(b_->getStats()->isCollected())?((b_->getStats()->getCollector().expired() || b_->getStats()->getCollector().lock()->getStats()->isDisposed())?NOCOORDS:b_->getStats()->getCollector().lock()->getStats()->getMyPosition()):b_->getStats()->getMyPosition();
+        bcoords=bcoords-start-coords{1,1};
+        vp.x = (bcoords.x*64)+b_->getOffset().x;
+        vp.y = (bcoords.y*64)+b_->getOffset().y;
+        vp.radius = b_->getViewRadius()*64;
         return vp;
     }) |std::views::common;
     auto result=std::vector(resA.begin(), resA.end());
+
     return result;
 }
 

@@ -367,7 +367,8 @@ void presenter::showGameField()
     draw only visible elements, walls are always visible.
     ***/
     this->poses.clear();
-    if(player->getBoard().get()!=nullptr)
+    this->radiuses.clear();
+    if(player->getBoard())
     {
         for(x=0; x<this->scrTilesX+1; x++)
             for(y=0; y<this->scrTilesY+1; y++)
@@ -377,14 +378,14 @@ void presenter::showGameField()
                     x+this->previousPosition.x,y+this->previousPosition.y
                 };
                 std::shared_ptr<bElem> elemToDisplay=player->getBoard()->getElement(np);
-                if(viewPoint::get_instance()->calculateObscured(np)==0)
+                if(viewPoint::get_instance()->calculateObscured(np)<1 )
                 {
-                    this->radiuses.push_back(elemToDisplay->getViewRadius());
-                    this->poses.push_back({x*64,y*64});
+              //      this->radiuses.push_back(elemToDisplay->getViewRadius()*64);
+             //       this->poses.push_back({(x-1)*64+elemToDisplay->getOffset().x,(y-1)*64+elemToDisplay->getOffset().y});
                 }
                 if(player->getBoard()->isVisible(np)>=255 && !viewPoint::get_instance()->isPointVisible(np))
                     continue; // this element is not even discovered yet
-                if(elemToDisplay.get()!=nullptr)
+                if(elemToDisplay)
                 {
                     if (this->showObjectTile(x,y,0,0,elemToDisplay,false,0))
                         mSprites.push_back({x,y,elemToDisplay});
@@ -399,6 +400,7 @@ void presenter::showGameField()
     for(unsigned int cnt=0; cnt<mSprites.size(); cnt++)
     {
         movingSprite ms=mSprites.at(cnt);
+
         if(ms.elem->getStats()->getInstanceId()==player->getStats()->getInstanceId())
         {
             px=ms.x;
@@ -414,19 +416,15 @@ void presenter::showGameField()
     Draw the cloak on the game field
     ***/
         bElem::mechUnlock();
-    float verts[]={-1.0,1.0,0.0, 
-                   1.0,1.0,0.0,
-                   1.0,-1.0,0.0,
-                   -1.0,-1.0,0.0 };
 
-//    this->drawCloak();
+
     al_set_target_bitmap(al_get_backbuffer(display));
-
 
 
     al_clear_to_color(al_map_rgba(15,25,45,255));
     al_draw_bitmap_region(this->statsStripe,0,0,this->bsWidth-1,128,_offsetX,this->bsHeight+(_offsetY/2),0);
-    this->shaderthing();
+    this->shaderthing(offX,offY);
+
     //al_set_shader_sampler("internalBitmap", this->internalBitmap,0);
     //al_set_shader_float_vector("vertices",3,verts,4);
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
@@ -437,18 +435,27 @@ void presenter::showGameField()
 
 }
 
-void presenter::shaderthing()
-{
-    float texWidth=this->scrWidth+64,texHeight=this->scrHeight+64;
-    auto vps=viewPoint::get_instance()->getViewPoints();
-    if(vps.empty())
-        return;
+void presenter::shaderthing(int _x, int _y) {
+    float texWidth = this->bsWidth, texHeight = this->bsHeight;
+    float points[300];
+    std::fill(std::begin(points), std::end(points), 0.0f);
+    auto rads=viewPoint::get_instance()->getViewPoints(this->previousPosition,this->previousPosition+(coords){scrTilesX+1,scrTilesY+1});
+    int i=0;
+    for (auto c:rads)
+    {
+        points[i++]=c.x;
+        points[i++]=c.y;
+        points[i++]=c.radius;
+        if(i>=299) break;
+    };
+
+
 
     al_use_shader(this->shader);
+    al_set_shader_float_vector("viewPoints", 3, points, 100);
     al_set_shader_float("texWidth", texWidth);
     al_set_shader_float("texHeight", texHeight);
-
-
+    al_set_shader_int("pnum",std::min(i,100));
 
 }
 
@@ -541,37 +548,12 @@ void presenter::eyeCandy(int flavour)
     }
 }
 
-void presenter::mechanicLoop()
-{
-    while(!this->fin)
-    {
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(25));
-        {
-            std::lock_guard<std::mutex> guard(this->presenter_mutex);
-            if (player::getActivePlayer().get()!=nullptr)
-                this->showGameField();
-            else
-            {
-                std::cout<<"Player not created!\n";
-                //this->showSplash();
-                this->fin=true;
-            }
-        }
-    }
-}
 
 int presenter::presentEverything()
 {
     std::shared_ptr<bElem> currentPlayer=nullptr;
     ALLEGRO_EVENT event;
     controlItem cItem;
-    if(!this->mStarted)
-    {
-        this->mStarted=true;
-        std::thread nt=std::thread(&presenter::mechanicLoop, this);
-        nt.detach();
-    }
 
     al_start_timer(this->alTimer);
     while(!this->fin)
@@ -599,6 +581,14 @@ int presenter::presentEverything()
 
             }
             bElem::runLiveElements();
+            if (player::getActivePlayer().get()!=nullptr)
+                this->showGameField();
+            else
+            {
+                std::cout<<"Player not created!\n";
+                //this->showSplash();
+                this->fin=true;
+            }
         }
         else
         {

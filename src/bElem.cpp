@@ -277,7 +277,7 @@ oState bElem::disposeElement()
     }
     this->removeElement();
 
-    if(this->getAttrs()->canCollect())
+    if(this->getAttrs() && this->getAttrs()->canCollect())
     {
         if (this->getType() == _rubishType )
         {
