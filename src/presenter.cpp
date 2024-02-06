@@ -436,7 +436,7 @@ void presenter::showGameField()
 }
 
 void presenter::shaderthing(int _x, int _y) {
-    float texWidth = this->bsWidth, texHeight = this->bsHeight;
+    float texWidth = this->scrWidth, texHeight = this->scrHeight;
     float points[300];
     std::fill(std::begin(points), std::end(points), 0.0f);
     auto rads=viewPoint::get_instance()->getViewPoints(this->previousPosition,this->previousPosition+(coords){scrTilesX+1,scrTilesY+1});
