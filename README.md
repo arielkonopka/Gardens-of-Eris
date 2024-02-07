@@ -32,7 +32,7 @@ I wouldn't need to design the levels
 In the meantime, I've discovered a third reason:
 
 I can test the game quite swiftly, without the need for loading and saving level data. Of course, I'll eventually have to implement that feature.
-[Feel free to check out a relatively recent video of the gameplay.](https://youtu.be/X4SFUldNLq8)
+[Feel free to check out a relatively recent video of the gameplay.](https://youtu.be/sntxioo-ZFc?si=E77h_9FG4BRN3sUD)
 
 ## The game story
 
@@ -271,6 +271,7 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 ## ChangeLog
+* Introduced a GL pixelshader that now renders our cloak
 * Did some cleaning up, especially the singletons. Now they are more or less written in compliant way, at least should be thread safe.
 * removed two unneded classes: movableElements and mechanical and non steppable
 * Extended the interface, now we can drop usables, like broken apples, and we also see the broken apple, and how much more energy does it have
