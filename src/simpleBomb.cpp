@@ -29,10 +29,7 @@ bool simpleBomb::additionalProvisioning(int subtype, std::shared_ptr<simpleBomb>
 {
     return bElem::additionalProvisioning(subtype,sbe);
 }
-float simpleBomb::getViewRadius() const
-{
-    return 1;
-}
+
 
 bool simpleBomb::hurt(int points)
 {

@@ -62,6 +62,7 @@ private:
     std::weak_ptr<bElem> _owner;
     std::vector<std::weak_ptr<bElem>> viewPoints;
     static std::once_flag once;
+    coords tilesize=NOCOORDS;
 };
 
 

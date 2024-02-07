@@ -852,7 +852,7 @@
                        "Event": "Collect",
                        "fname": "data/sounds/panzerfaust_ready_to_shoot.ogg",
                        "name": "Collect gun sound",
-                       "description": "panzerfaust ready to shoot in basque langue",
+                       "description": "Panzerfaust prest dago tirokatu behar",
                        "allowMulti": false,
                        "gain":0.7,
                        "modeOfAction": 0

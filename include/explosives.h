@@ -33,8 +33,10 @@ public:
     explosives()=default;
     virtual ~explosives()=default;
     virtual bool explode(float radius);
+    virtual float getViewRadius() const;
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<explosives> sbe);
 private:
+    float radius=1.5;
 };
 
 #endif // EXPLOSIVES_H

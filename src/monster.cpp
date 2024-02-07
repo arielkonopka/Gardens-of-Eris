@@ -34,17 +34,18 @@ bool monster::additionalProvisioning(int subtype, std::shared_ptr<monster>sbe)
         this->rotA = 1;
         this->rotB = 3;
     }
-    if (bElem::randomNumberGenerator() % 5 >=2 )
+    if (bElem::randomNumberGenerator() % 55 >5 )
     {
-        if(bElem::randomNumberGenerator()%2==0)
+        if(bElem::randomNumberGenerator()%55>15)
             this->weapon = elementFactory::generateAnElement<plainGun>(this->getBoard(),1);
         else
             this->weapon=elementFactory::generateAnElement<bazooka>(this->getBoard(),1);
-        this->weapon->getAttrs()->setEnergy(((bElem::randomNumberGenerator()*555)%5)*5);
+        this->weapon->getAttrs()->setEnergy(((bElem::randomNumberGenerator()*555)%55)*5);
         this->weapon->getAttrs()->setAmmo(5 * (5 + bElem::randomNumberGenerator() % 55));
         this->weapon->getAttrs()->setMaxEnergy(5*5*5);
         this->weapon->getStats()->setCollected(true);
         this->weapon->getStats()->setCollector(shared_from_this());
+        this->weapon->getStats()->setStatsOwner(shared_from_this());
 
     }
     this->registerLiveElement(shared_from_this());
@@ -77,7 +78,7 @@ bool monster::checkNeigh()
         direction d = (direction)c;
         std::shared_ptr<bElem> e = this->getElementInDirection(d);
         ;
-        if (e == nullptr)
+        if (!e)
             continue;
 #ifdef _VerbousMode_
         std::cout<<"  ** CHK isCollectible\n";
@@ -87,7 +88,7 @@ bool monster::checkNeigh()
             this->collect(e);
             this->getStats()->setWaiting(_mov_delay);
             r = true;
-            continue;
+            return true;
         }
 #ifdef _VerbousMode_
         std::cout<<"  ** CHK isCollectible done\n";
@@ -185,12 +186,14 @@ bool monster::mechanics()
     {
         if (this->isSteppableDirection(this->getStats()->getFacing()))
         {
+            this->inited=true;
             return this->moveInDirection(oldDir);
         }
-        this->getStats()->setMyDirection((direction)((((int)oldDir) + rotB) % 4));
+        this->getStats()->setMyDirection((direction)((((int)this->getStats()->getMyDirection()) +( (int)rotB)) % 4));
         this->getStats()->setFacing(this->getStats()->getMyDirection());
-        oldDir = this->getStats()->getMyDirection();
-        this->inited = true;
+        this->getStats()->setWaiting(_mov_delay);
+        this->inited = false;
+        return true;
     }
     this->checkNeigh();
     if (this->getStats()->isWaiting())

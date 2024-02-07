@@ -32,12 +32,14 @@ bool viewPoint::isElementInVector(const std::vector<std::weak_ptr<bElem>>& vec, 
     {
         return !wp.expired() && wp.lock()->getStats()->getInstanceId() == elem->getStats()->getInstanceId();
     });
+
 }
 
 
 
 void viewPoint::setOwner(std::shared_ptr<bElem> owner)
 {
+    if(!owner || owner->getStats()->isDisposed()) return;
     this->addViewPoint(owner);
     std::mutex my_mutex;
     std::lock_guard<std::mutex> lock(my_mutex);
@@ -62,7 +64,7 @@ std::shared_ptr<bElem> viewPoint::getOwner()
 coords viewPoint::getViewPoint()
 {
     std::shared_ptr<bElem> be=this->getOwner();
-    if(be && be->getStats()->getMyPosition()!=NOCOORDS)
+    if(be && !be->getStats()->isDisposed() && be->getStats()->getMyPosition()!=NOCOORDS)
         return be->getStats()->getMyPosition();
     else
     {
@@ -165,6 +167,7 @@ viewPoint* viewPoint::get_instance()
     std::call_once(once, []()
     {
         viewPoint::instance = new viewPoint();
+        viewPoint::instance->tilesize=(coords){configManager::getInstance()->getConfig()->tileWidth,configManager::getInstance()->getConfig()->tileHeight};
     });
     return viewPoint::instance;
 
@@ -192,10 +195,11 @@ std::vector<vpPoint> viewPoint::getViewPoints(coords start, coords end)
 
         // we try to address a situation, where a viewpoint element was collected.
         coords bcoords=(b_->getStats()->isCollected())?((b_->getStats()->getCollector().expired() || b_->getStats()->getCollector().lock()->getStats()->isDisposed())?NOCOORDS:b_->getStats()->getCollector().lock()->getStats()->getMyPosition()):b_->getStats()->getMyPosition();
-        bcoords=bcoords-start-coords{1,1};
-        vp.x = (bcoords.x*64)+b_->getOffset().x;
-        vp.y = (bcoords.y*64)+b_->getOffset().y;
-        vp.radius = b_->getViewRadius()*64;
+        coords ofs=(bcoords!=NOCOORDS)?b_->getOffset():(coords){0,0};
+        bcoords=bcoords-start;
+        vp.x = (bcoords.x*this->tilesize.x)+ofs.x;
+        vp.y = (bcoords.y*this->tilesize.y)+ofs.y;
+        vp.radius =(ofs!=NOCOORDS)? b_->getViewRadius()*this->tilesize.x:-1;
         return vp;
     }) |std::views::common;
     auto result=std::vector(resA.begin(), resA.end());

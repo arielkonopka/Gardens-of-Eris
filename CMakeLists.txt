@@ -29,6 +29,7 @@ target_link_libraries(GardenOfEris
     allegro_image
     allegro_font
     allegro_ttf
+    allegro_primitives
     m
     openal
     sndfile
@@ -68,6 +69,7 @@ foreach(TEST_SOURCE_FILE ${TEST_SOURCE_FILES})
         allegro_image
         allegro_font
         allegro_ttf
+	allegro_primitives
         m
         openal
         sndfile

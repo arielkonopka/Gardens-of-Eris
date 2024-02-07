@@ -158,7 +158,10 @@ bool inventory::removeActiveWeapon()
 
    std::shared_ptr<bElem> be_=this->weapons.at(this->wPos);
     this->weapons.erase(this->weapons.begin()+this->wPos);
-    this->wPos=this->wPos%this->weapons.size();
+    if(!this->weapons.empty())
+        this->wPos=this->wPos%this->weapons.size();
+    else
+        this->wPos=0;
 
     be_->disposeElement();
     return true;
@@ -188,7 +191,10 @@ std::shared_ptr<bElem> inventory::getActiveWeapon()
 {
     if (this->weapons.size()<=0)
         return nullptr;
-    this->wPos=this->wPos%this->weapons.size();
+    if(this->weapons.empty())
+        this->wPos=0;
+    else
+        this->wPos=this->wPos%this->weapons.size();
     if (this->weapons[this->wPos]->getAttrs()->getAmmo()<=0 || !this->weapons[this->wPos]->getStats()->isCollected())
     {
         this->removeActiveWeapon();
@@ -199,6 +205,8 @@ std::shared_ptr<bElem> inventory::getActiveWeapon()
 int inventory::cycleElement(std::vector<std::shared_ptr<bElem>>& vec, int& pos)
 {
     int p=pos;
+    if(vec.empty())
+        return 0;
     vec[p]->getStats()->setActive(false);
     p=(p+1) % vec.size();
     vec[p]->getStats()->setActive(true);
