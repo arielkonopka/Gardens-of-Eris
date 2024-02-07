@@ -39,6 +39,7 @@ bool viewPoint::isElementInVector(const std::vector<std::weak_ptr<bElem>>& vec, 
 
 void viewPoint::setOwner(std::shared_ptr<bElem> owner)
 {
+    if(!owner || owner->getStats()->isDisposed()) return;
     this->addViewPoint(owner);
     std::mutex my_mutex;
     std::lock_guard<std::mutex> lock(my_mutex);
@@ -63,7 +64,7 @@ std::shared_ptr<bElem> viewPoint::getOwner()
 coords viewPoint::getViewPoint()
 {
     std::shared_ptr<bElem> be=this->getOwner();
-    if(be && be->getStats()->getMyPosition()!=NOCOORDS)
+    if(be && !be->getStats()->isDisposed() && be->getStats()->getMyPosition()!=NOCOORDS)
         return be->getStats()->getMyPosition();
     else
     {

@@ -32,6 +32,7 @@ bool explosives::additionalProvisioning(int subtype, std::shared_ptr<explosives>
 
 bool explosives::explode(float radius)
 {
+    this->radius=radius*2.5;
     if(!this->getStats()->isDisposed() && !this->getStats()->isDestroying())
     {
         coords mc=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getMyPosition():this->getStats()->getMyPosition();
@@ -74,7 +75,7 @@ bool explosives::explode(float radius)
                     bElem::destroy();
                     continue;
                 }
-                if(std::round(mc.distance(ccrd))<=radius)
+               if(std::round(mc.distance(ccrd))<=radius)
                     brd->getElement(ccrd)->destroy();
             }
         }
@@ -82,5 +83,8 @@ bool explosives::explode(float radius)
     return true;
 }
 
-
+float explosives::getViewRadius() const
+{
+    return this->radius;
+}
 

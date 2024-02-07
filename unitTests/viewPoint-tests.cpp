@@ -28,10 +28,34 @@
 #define BOOST_TEST_MODULE Fixtures
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
+#include <viewPoint.h>
+#include "bElem.h"
+#include "elementFactory.h"
 #include <memory>
 BOOST_AUTO_TEST_SUITE( ViewPointTests )
-    BOOST_AUTO_TEST_CASE( TBC)
+    BOOST_AUTO_TEST_CASE( CheckEmptyViewPoint)
     {
+        BOOST_CHECK(viewPoint::get_instance()->getViewPoint()==NOCOORDS);
+        BOOST_CHECK(viewPoint::get_instance()->getViewPointOffset()==NOCOORDS);
+    }
+    BOOST_AUTO_TEST_CASE(CheckAddOwner)
+    {
+        coords csize={50,50};
+        coords point={10,10};
+        std::shared_ptr<chamber> ch=chamber::makeNewChamber(csize);
+        std::shared_ptr<bElem> be=elementFactory::generateAnElement<bElem>(ch,0);
+        std::shared_ptr<bElem> be2=elementFactory::generateAnElement<bElem>(ch,0);
+
+        be->stepOnElement(ch->getElement(point));
+        be2->stepOnElement(ch->getElement(point+1));
+        BOOST_CHECK(viewPoint::get_instance()->getViewPoint()==NOCOORDS);
+
+        viewPoint::get_instance()->setOwner(be);
+        BOOST_CHECK(viewPoint::get_instance()->getViewPoint()==point);
+        be->stepOnElement(ch->getElement(point+2));
+        BOOST_CHECK(viewPoint::get_instance()->getViewPoint()==point+2);
+        be->disposeElement();
+        BOOST_CHECK(viewPoint::get_instance()->getViewPoint()==NOCOORDS);
 
     }
 BOOST_AUTO_TEST_SUITE_END()

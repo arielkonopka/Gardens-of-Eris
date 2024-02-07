@@ -37,7 +37,6 @@ public:
     virtual int getType() const;
     virtual bool mechanics();
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<simpleBomb> sbe);
-    float getViewRadius() const;
 private:
     bool triggered=false;
 };
