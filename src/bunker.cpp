@@ -56,7 +56,7 @@ bool bunker::mechanics()
     }
     for(int c=0; c<4; c++)
     {
-        direction d=(direction)c;
+        dir::direction d=(dir::direction)c;
         std::shared_ptr<bElem> e=this->getElementInDirection(d);
         int dd=0;
         while(e && ++dd<this->brange)
@@ -86,21 +86,21 @@ bool bunker::interact(std::shared_ptr<bElem> Who)
     return true;
 }
 
-direction bunker::findLongestShot()
+dir::direction bunker::findLongestShot()
 {
     int dir=0;
     int longest=0;
-    direction longestDir=UP;
+    dir::direction longestDir=dir::direction::UP;
     std::shared_ptr<bElem> element;
     int routes[]= {0,0,0,0};
     for(dir=0; dir<4; dir++)
     {
-        element=this->getElementInDirection((direction)(dir));
+        element=this->getElementInDirection((dir::direction)(dir));
         if(element.get()==nullptr) continue;
         while(element->getAttrs()->isSteppable()==true)
         {
             routes[dir]++;
-            element=element->getElementInDirection((direction)(dir));
+            element=element->getElementInDirection((dir::direction)(dir));
             if (element.get()==nullptr)
                 break;
         }
@@ -114,7 +114,7 @@ direction bunker::findLongestShot()
         if(routes[dir]>longest)
         {
             longest=routes[dir];
-            longestDir=(direction)((dir));
+            longestDir=(dir::direction)dir;
         }
     }
     return longestDir;

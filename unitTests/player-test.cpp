@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
     BOOST_CHECK(pGun->getAttrs()->isCollectible());
     BOOST_CHECK(plr->getAttrs()->getInventory()->getActiveWeapon() != nullptr);
     BOOST_CHECK(plr->getAttrs()->getInventory()->getActiveWeapon()->getStats()->getInstanceId() == pGun->getStats()->getInstanceId());
-    plr->getStats()->setMyDirection(UP);
+    plr->getStats()->setMyDirection(dir::direction::UP);
     for (int c = 0; c < 555; c++)
     {
         std::shared_ptr<bElem> wep = plr->getAttrs()->getInventory()->getActiveWeapon();
@@ -256,7 +256,7 @@ void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
     BOOST_CHECK(p.get() != nullptr);
     if (!p)
         return;
-    controlItem ctItem;
+    controlItem ctItem=cntrlItm;
     coords c0, c1;
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
@@ -266,7 +266,7 @@ void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
         bElem::runLiveElements();
 
     ctItem.type = -1;
-    ctItem.dir = NODIRECTION;
+    ctItem.dir = dir::direction::NODIRECTION;
     inputManager::getInstance()->setControlItem( ctItem);
 
     for (int c = 0; c < 100; c++)
@@ -329,7 +329,7 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
         {
             controlItem ci2;
             ci2.type = 6;
-            ci2.dir=NODIRECTION;
+            ci2.dir=dir::direction::NODIRECTION;
             inputManager::getInstance()->setControlItem( ci2);
             checkplayerKilled();
             p = elementFactory::generateAnElement<player>(mc,0);
@@ -340,13 +340,13 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
             continue;
         }
         ci.type = c;
-        ci.dir = UP;
+        ci.dir = dir::direction::UP;
         controlPlayer(mc, ci);
-        ci.dir = DOWN;
+        ci.dir = dir::direction::DOWN;
         controlPlayer(mc, ci);
-        ci.dir = LEFT;
+        ci.dir = dir::direction::LEFT;
         controlPlayer(mc, ci);
-        ci.dir = RIGHT;
+        ci.dir = dir::direction::RIGHT;
         controlPlayer(mc, ci);
     }
 }

@@ -350,7 +350,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDestroyingTheWholeChamber,T,all_test_ty
             be=elementFactory::generateAnElement<T>(mc,x);
             BOOST_CHECK(mc->getElement(x,y)!=nullptr);
             be->stepOnElement(mc->getElement(x,y));
-            be->getStats()->setMyDirection(UP);
+            be->getStats()->setMyDirection(dir::direction::UP);
             BOOST_CHECK(be->getStats()->getInstanceId()==mc->getElement(x,y)->getStats()->getInstanceId());
             be->getStats()->setActive(true);
             BOOST_CHECK(be->getStats()->isActive());

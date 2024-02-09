@@ -328,23 +328,23 @@ void bElemStats::setMyPosition(coords value)
     this->myPosition=value;
 }
 
-direction bElemStats::getMyDirection() const
+dir::direction bElemStats::getMyDirection() const
 {
     return this->myDirection;
 }
 
-void bElemStats::setMyDirection(direction value)
+void bElemStats::setMyDirection(dir::direction value)
 {
     this->myDirection=value;
 }
 
-direction bElemStats::getFacing() const
+dir::direction bElemStats::getFacing() const
 {
     return this->facing;
 }
 
 
-void bElemStats::setFacing(direction value)
+void bElemStats::setFacing(dir::direction value)
 {
     this->facing=value;
 }

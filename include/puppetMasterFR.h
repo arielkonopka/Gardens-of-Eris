@@ -40,7 +40,7 @@ protected:
 private:
     bool collectorMechanics();
     bool mechanicsPatrollingDrone();
-    std::shared_ptr<bElem> findObjectInDirection(direction dir);
+    std::shared_ptr<bElem> findObjectInDirection(dir::direction dir);
 
 
 };

@@ -36,7 +36,7 @@ public:
     bunker();
     virtual ~bunker() = default;
     bool mechanics() final;
-    direction findLongestShot();
+    dir::direction findLongestShot();
     virtual bool selfAlign();
     int getType() const;
     bool interact(std::shared_ptr<bElem> Who) final;

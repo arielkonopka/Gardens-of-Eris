@@ -37,8 +37,8 @@ bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_m
 {
     static std::once_flag _of;
     this->status=std::make_shared<bElemStats>();
-    this->getStats()->setMyDirection(UP);
-    this->getStats()->setFacing(UP);
+    this->getStats()->setMyDirection(dir::direction::UP);
+    this->getStats()->setFacing(this->getStats()->getMyDirection());
     std::call_once(_of,[]()
     {
         std::random_device rd;
@@ -60,32 +60,13 @@ coords bElem::getOffset() const
     coords res= {0,0};
     int rx=configManager::getInstance()->getConfig()->tileWidth;
     int ry=configManager::getInstance()->getConfig()->tileHeight;
-
     if(this->getStats()->isMoving() && this->getStats()->getMovingTotalTime()>0)
     {
-        switch (this->getStats()->getMyDirection())
-        {
-        case UP:
-            res.y=(this->getStats()->getMoved()*ry)/this->getStats()->getMovingTotalTime();
-            break;
-        case DOWN:
-            res.y=-(this->getStats()->getMoved()*ry)/this->getStats()->getMovingTotalTime();
-            break;
-        case LEFT:
-            res.x=(this->getStats()->getMoved()*rx)/this->getStats()->getMovingTotalTime();
-            break;
-        case RIGHT:
-            res.x=-(this->getStats()->getMoved()*rx)/this->getStats()->getMovingTotalTime();
-            break;
-        case NODIRECTION:
-            res.x=0;
-            res.y=0;
-            break;
-        }
+        coords interm={(this->getStats()->getMoved()*rx)/this->getStats()->getMovingTotalTime(),(this->getStats()->getMoved()*ry)/this->getStats()->getMovingTotalTime()};
+        res=dir::dirToCoords(this->getStats()->getMyDirection())*interm*(-1);
     }
     return res;
 }
-
 
 bool bElem::collectOnAction(bool collected, std::shared_ptr<bElem>who)
 {
@@ -122,14 +103,15 @@ bool bElem::dropItem(unsigned long int  instanceId)
     if(!item)
         return false;
     item->collectOnAction(false,shared_from_this());
-    for(int c=1; c<5; c++)
+    for(auto d:dir::allDirections)
     {
-        direction d_=(direction)(((int)this->getStats()->getMyDirection()+c)%4);
-        if(this->isSteppableDirection(d_))
+        coords dir=dir::dirToCoords(d);
+
+        if(this->isSteppableDirection(dir))
         {
             if (this->getType()==_player)
                 item->playSound("Drop","Item");
-            item->stepOnElement(this->getElementInDirection(d_));
+            item->stepOnElement(this->getElementInDirection(dir));
             return true;
         }
     }
@@ -239,9 +221,9 @@ oState bElem::disposeElementUnsafe()
                 bool stashed = false;
                 for (int c = 0; c < 4; c++)
                 {
-                    if (myBoard->getElement(mycoords)->isSteppableDirection((direction)c))
+                    if (myBoard->getElement(mycoords)->isSteppableDirection((dir::direction)c))
                     {
-                        stash->stepOnElement(myBoard->getElement(mycoords)->getElementInDirection((direction)c));
+                        stash->stepOnElement(myBoard->getElement(mycoords)->getElementInDirection((dir::direction)c));
                         stashed = true;
                         break;
                     }
@@ -308,46 +290,33 @@ oState bElem::disposeElement()
  * This method returns absolute coordinates, when asked for coordinates of the next cell in a direction from the elements's standpoint, should be resistant for non-provisioned units
  * better use those on a board though
  */
-coords bElem::getAbsCoords(direction dir) const
+coords bElem::getAbsCoords(coords dir) const
 {
-    coords res = this->getStats()->getMyPosition();
-    std::shared_ptr<chamber> brd=this->attachedBoard.lock();
-    if (this->attachedBoard.expired())
-        return NOCOORDS;
-    switch (dir)
-    {
-    case UP:
-        res.y--;
-        break;
-    case DOWN:
-        res.y++;
-        break;
-    case LEFT:
-        res.x--;
-        break;
-    case RIGHT:
-        res.x++;
-        break;
-    case NODIRECTION:
-        break;
-    }
-    if (res.y >= brd->height || res.y < 0 || res.x >= brd->width || res.x < 0)
-    {
-        return NOCOORDS;
-    }
+   if(this->getStats()->getMyPosition()==NOCOORDS || !this->getBoard())
+       return NOCOORDS;
+    coords res=(this->getStats()->getMyPosition()+dir).validate((coords){this->getBoard()->width,this->getBoard()->height});
     return res;
 }
 
-std::shared_ptr<bElem> bElem::getElementInDirection(direction di)
+
+coords bElem::getAbsCoords(dir::direction dir) const
 {
-    coords mycoords = this->getAbsCoords(di);
-    if (this->attachedBoard.expired())
-        return nullptr;
-    if (di==NODIRECTION)
-        return shared_from_this();
-    return this->attachedBoard.lock()->getElement(mycoords.x, mycoords.y);
+    return this->getAbsCoords(dir::dirToCoords(dir));
 }
 
+std::shared_ptr<bElem> bElem::getElementInDirection(dir::direction di)
+{
+   return this->getElementInDirection(dir::dirToCoords(di));
+}
+std::shared_ptr<bElem> bElem::getElementInDirection(coords di)
+{
+    coords crd=this->getAbsCoords(di);
+    if (this->attachedBoard.expired() || crd==NOCOORDS || this->getStats()->getMyPosition()==NOCOORDS)
+        return nullptr;
+    if (di==(coords){0,0})
+        return shared_from_this();
+    return this->attachedBoard.lock()->getElement(crd);
+}
 
 
 ALLEGRO_MUTEX *bElem::getMyMutex()
@@ -466,16 +435,17 @@ bool bElem::isSteppableInMyDirection() const
     return this->isSteppableDirection(this->getStats()->getMyDirection());
 }
 
-bool bElem::isSteppableDirection(direction di) const
+bool bElem::isSteppableDirection(coords di) const
 {
-    coords tmpcoords;
-    tmpcoords = this->getAbsCoords(di);
-    std::shared_ptr<chamber> brd=this->attachedBoard.lock();
-    if (!(tmpcoords == NOCOORDS) && brd && brd->getElement(tmpcoords))
-    {
-        return brd->getElement(tmpcoords)->getAttrs()->isSteppable();
-    }
-    return false;
+    coords crd=this->getAbsCoords(di);
+    if (this->attachedBoard.expired() || crd==NOCOORDS || this->getStats()->getMyPosition()==NOCOORDS)
+        return false;
+   return (this->attachedBoard.lock()->getElement(crd)) &&
+          this->attachedBoard.lock()->getElement(crd)->getAttrs()->isSteppable();
+}
+bool bElem::isSteppableDirection(dir::direction di) const
+{
+    return this->isSteppableDirection(dir::dirToCoords(di));
 }
 
 /**
@@ -609,7 +579,7 @@ bool bElem::additionalProvisioning(int subtype, std::shared_ptr<bElem>sbe)
     return  r;
 }
 
-int bElem::getTypeInDirection(direction di)
+int bElem::getTypeInDirection(dir::direction di)
 {
     std::shared_ptr<bElem> e = this->getElementInDirection(di);
     if (e.get() != nullptr)
@@ -634,8 +604,8 @@ sNeighboorhood bElem::getSteppableNeighboorhood()
     for (int c = 0; c < 8; c += 2)
     {
         int c1 = c / 2;
-        direction d = (direction)(c1 % 4);
-        direction d1 = (direction)((c1 + 1) % 4);
+        dir::direction d = (dir::direction)(c1 % 4);
+        dir::direction d1 = (dir::direction)((c1 + 1) % 4);
         std::shared_ptr<bElem> e = this->getElementInDirection(d);
 
         if (e)
@@ -667,10 +637,10 @@ sNeighboorhood bElem::getSteppableNeighboorhood()
     return myNeigh;
 }
 
-bool bElem::moveInDirectionSpeed(direction dir, int speed)
+bool bElem::moveInDirectionSpeed(dir::direction dir, int speed)
 {
     std::shared_ptr<bElem> stepOn=this->getElementInDirection(dir);
-    if (stepOn.get()==nullptr || this->getStats()->isMoving() || this->getStats()->isDying() || this->getStats()->isTeleporting() || this->getStats()->isDestroying() || dir==NODIRECTION)
+    if (stepOn.get()==nullptr || this->getStats()->isMoving() || this->getStats()->isDying() || this->getStats()->isTeleporting() || this->getStats()->isDestroying() || dir==dir::direction::NODIRECTION)
         return false;
     std::shared_ptr<bElem> stepOn2=stepOn->getElementInDirection(dir);
     this->getStats()->setMyDirection(dir);
@@ -699,25 +669,25 @@ bool bElem::moveInDirectionSpeed(direction dir, int speed)
     }
     return false;
 }
-bool bElem::moveInDirection(direction d)
+bool bElem::moveInDirection(dir::direction d)
 {
     return this->moveInDirectionSpeed(d,_mov_delay);
 }
-bool bElem::dragInDirection(direction dragIntoDirection)
+bool bElem::dragInDirection(dir::direction dragIntoDirection)
 {
     return this->dragInDirectionSpeed(dragIntoDirection,_mov_delay*2);
 }
 
-bool bElem::dragInDirectionSpeed(direction dragIntoDirection, int speed)
+bool bElem::dragInDirectionSpeed(dir::direction dragIntoDirection, int speed)
 {
-    direction objFromDir=(direction)((((int)dragIntoDirection)+2)%4);
-    direction d2=dragIntoDirection;
+    dir::direction objFromDir=(dir::direction)((((int)dragIntoDirection)+2)%4);
+    dir::direction d2=dragIntoDirection;
     std::shared_ptr<bElem> draggedObj=this->getElementInDirection(objFromDir);
     if(draggedObj.get()==nullptr)
         return false;
     if(!draggedObj->getAttrs()->isMovable())
     {
-        d2=(direction)((((int)this->getStats()->getMyDirection())+2)%4);
+        d2=(dir::direction)((((int)this->getStats()->getMyDirection())+2)%4);
         draggedObj=this->getElementInDirection(d2);
         d2=this->getStats()->getMyDirection();
         if(draggedObj.get()==nullptr || !draggedObj->getAttrs()->isMovable())
@@ -920,6 +890,11 @@ void bElem::ps(std::shared_ptr<bElem>who, std::string eventType, std::string eve
     coords3d vel= {(who->getOffset().x)?32:0, 0,(who->getOffset().y>0)?32:0};
     if(!who || !who->getBoard()) return;
     soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,this->getStats()->getInstanceId(),this->getType(),this->getAttrs()->getSubtype(),eventType,event);
+}
+
+void bElem::stopMySounds()
+{
+    soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
 }
 
 

@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE(KillTest)
     BOOST_CHECK(goldenAppleObj->getStats()->isDestroying());
     for(int x=0; x<4; x++)
     {
-        BOOST_CHECK(goldenAppleObj->getElementInDirection((direction)x)->getStats()->isDestroying());
-        BOOST_CHECK(goldenAppleObj->getElementInDirection((direction)x)->getElementInDirection((direction)((x+3)%4))->getStats()->isDestroying());
+        BOOST_CHECK(goldenAppleObj->getElementInDirection((dir::direction)x) && goldenAppleObj->getElementInDirection((dir::direction)x)->getStats()->isDestroying());
+        BOOST_CHECK(goldenAppleObj->getElementInDirection((dir::direction)x) && goldenAppleObj->getElementInDirection((dir::direction)x)->getElementInDirection((dir::direction)((x+3)%4))->getStats()->isDestroying());
     }
     goldenAppleObj->disposeElement();
 }
@@ -93,8 +93,8 @@ BOOST_AUTO_TEST_CASE(DestroyTest)
     BOOST_CHECK(goldenAppleObj->getStats()->isDestroying());
     for(int x=0; x<4; x++)
     {
-        BOOST_CHECK(goldenAppleObj->getElementInDirection((direction)x)->getStats()->isDestroying());
-        BOOST_CHECK(goldenAppleObj->getElementInDirection((direction)x)->getElementInDirection((direction)((x+3)%4))->getStats()->isDestroying());
+        BOOST_CHECK(goldenAppleObj->getElementInDirection((dir::direction)x)->getStats()->isDestroying());
+        BOOST_CHECK(goldenAppleObj->getElementInDirection((dir::direction)x)->getElementInDirection((dir::direction)((x+3)%4))->getStats()->isDestroying());
     }
     goldenAppleObj->disposeElement();
 }

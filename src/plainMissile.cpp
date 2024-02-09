@@ -25,7 +25,7 @@
 plainMissile::plainMissile():bElem()
 {
     this->getStats()->setWaiting(_plainMissileSpeed);
-    this->getStats()->setMyDirection(UP);
+    this->getStats()->setMyDirection(dir::direction::UP);
     this->getStats()->setMoved(0);
 }
 

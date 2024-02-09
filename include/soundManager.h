@@ -105,7 +105,7 @@ class soundManager
 public:
     ~soundManager();
     static soundManager* getInstance();
-    void registerSound(int chamberId,coords3d position,coords3d velocity,int elId,int typeId,int subtypeId,std::string eventType,std::string event);
+    std::shared_ptr<stNode> registerSound(int chamberId,coords3d position,coords3d velocity,int elId,int typeId,int subtypeId,std::string eventType,std::string event);
     void registerMusic(int musicNo,int chamberId, coords3d position);
     void setListenerPosition(coords3d pos);
     void setListenerVelocity(coords3d pos);

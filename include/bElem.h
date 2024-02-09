@@ -72,17 +72,20 @@ public:
     virtual std::shared_ptr<chamber> getBoard() const;
     virtual bool selfAlign();
     virtual bool stepOnElement(std::shared_ptr<bElem> step);
-    virtual bool moveInDirection(direction d);
-    virtual bool moveInDirectionSpeed(direction dir, int speed);
-    virtual bool dragInDirection(direction dragIntoDirection);
-    virtual bool dragInDirectionSpeed(direction dragIntoDirection,int speed);
+    virtual bool moveInDirection(dir::direction d);
+    virtual bool moveInDirectionSpeed(dir::direction dir, int speed);
+    virtual bool dragInDirection(dir::direction dragIntoDirection);
+    virtual bool dragInDirectionSpeed(dir::direction dragIntoDirection,int speed);
     virtual bool destroy();
     virtual bool kill();
     virtual bool hurt(int points);
-    virtual bool isSteppableDirection(direction di) const;
+    virtual bool isSteppableDirection(dir::direction di) const;
+    virtual bool isSteppableDirection(coords di) const;
     bool isSteppableInMyDirection() const;
-    virtual std::shared_ptr<bElem> getElementInDirection(direction di);
-    virtual coords getAbsCoords(direction dir) const;
+    virtual std::shared_ptr<bElem> getElementInDirection(dir::direction di) ;
+    virtual std::shared_ptr<bElem> getElementInDirection(coords di) ;
+    virtual coords getAbsCoords(dir::direction dir) const;
+    virtual coords getAbsCoords(coords dir) const;
     virtual  int getType() const;
     virtual int getAnimPh() const;
     std::shared_ptr<bElemAttr> getAttrs() const;
@@ -113,11 +116,12 @@ public:
     virtual bool lockThisObject(std::shared_ptr<bElem> who);
     virtual bool unlockThisObject(std::shared_ptr<bElem> who);
 
-    virtual int getTypeInDirection(direction di);
+    virtual int getTypeInDirection(dir::direction di);
     virtual void setStatsOwner(std::shared_ptr<bElem> owner);
     virtual bool additionalProvisioning(int subtype,std::shared_ptr<bElem> sbe);
 
     void playSound(std::string eventType,std::string event);
+    void stopMySounds();
 
 //   static std::vector<unsigned long int> toDeregister;
 private:

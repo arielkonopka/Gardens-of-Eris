@@ -74,14 +74,14 @@ bool puppetMasterFR::mechanics()
 bool puppetMasterFR::collectorMechanics()
 {
     std::shared_ptr<bElem> _collector=this->getStats()->getCollector().lock();
-    direction _d=_collector->getStats()->getMyDirection();
-    direction d=_d;
-    direction _d1=(direction)(((int)(_d)+1)%4);
-    direction _d2=(direction)(((int)(_d)+3)%4);
-    direction _d3=(this->randomNumberGenerator()%2==0)?_d1:_d2;
+    dir::direction _d=_collector->getStats()->getMyDirection();
+    dir::direction d=_d;
+    dir::direction _d1=(dir::direction)(((int)(_d)+1)%4);
+    dir::direction _d2=(dir::direction)(((int)(_d)+3)%4);
+    dir::direction _d3=(this->randomNumberGenerator()%2==0)?_d1:_d2;
     for(int c=0; c<4; c++)
     {
-        d=(direction)(((int)_d+c)%4);
+        d=(dir::direction)(((int)_d+c)%4);
         switch((int)d-(int)_d)
         {
 
@@ -111,7 +111,7 @@ bool puppetMasterFR::collectorMechanics()
     return false;
 }
 
-std::shared_ptr<bElem> puppetMasterFR::findObjectInDirection(direction dir)
+std::shared_ptr<bElem> puppetMasterFR::findObjectInDirection(dir::direction dir)
 {
     std::shared_ptr<bElem> b = this->getStats()->getCollector().lock();
     b=b->getElementInDirection(dir);
@@ -125,9 +125,9 @@ std::shared_ptr<bElem> puppetMasterFR::findObjectInDirection(direction dir)
 bool puppetMasterFR::mechanicsPatrollingDrone()
 {
     std::shared_ptr<bElem> collector = this->getStats()->getCollector().lock();
-    direction cdir = collector->getStats()->getMyDirection();
-    direction pdir1 = (direction)((((int)cdir) + 1) % 4);
-    direction pdir2 = (direction)((((int)cdir) + 3) % 4);
+    dir::direction cdir = collector->getStats()->getMyDirection();
+    dir::direction pdir1 = (dir::direction)((((int)cdir) + 1) % 4);
+    dir::direction pdir2 = (dir::direction)((((int)cdir) + 3) % 4);
     bool b1 = false, b2 = false;
     if (collector->getElementInDirection(pdir1))
         b1 = collector->getElementInDirection(pdir1)->getAttrs()->isSteppable();
@@ -158,7 +158,7 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
     }
     else
     {
-        direction ndir=(bElem::randomNumberGenerator()%2==0)?pdir2:pdir1;
+        dir::direction ndir=(bElem::randomNumberGenerator()%2==0)?pdir2:pdir1;
         collector->getStats()->setMyDirection(ndir);
         collector->getStats()->setFacing(ndir);
     }

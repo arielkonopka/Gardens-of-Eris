@@ -47,7 +47,7 @@ bool explosives::explode(float radius)
         {
             for(int _direction=0; _direction<4; _direction++)
             {
-                auto dr=(direction)_direction;
+                auto dr=(dir::direction)_direction;
                 std::shared_ptr<bElem> inDir=this->getElementInDirection(dr);
                 if(inDir && (inDir->getAttrs()->isDestroyable() || inDir->getAttrs()->isKillable()))
                 {

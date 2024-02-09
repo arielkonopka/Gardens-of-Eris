@@ -29,6 +29,7 @@
 #include <stddef.h>
 #include <memory>
 #include <vector>
+#include <array>
 #include "elementFactory.h"
 #include <cmath>
 
@@ -73,6 +74,7 @@
 #define _plainMissileEnergy 100
 #define _plainGunCharge 10
 
+#define _boubaType 555
 
 #define _dexterityLevels 64
 
@@ -86,7 +88,7 @@
 
 
 #define _interactedTime 10
-#define NOCOORDS   ((coords){-1,-1})
+#define NOCOORDS   ((coords){-65535,-65535})
 #define NOSTATS ((stats){-1,-1,-1,-1})
 
 #define confFname1 "./data/skins.json"
@@ -135,6 +137,21 @@ const static int _dividerCloak=8;
 typedef struct coords
 {
     int x=-1,y=-1;
+
+    inline coords validate (coords bottom)
+    {
+        if (x<0 || x>=bottom.x || y<0 || y>=bottom.y)
+            return NOCOORDS;
+        return (coords){x,y};
+    }
+    inline coords rotLeft()
+    {
+        return (coords){-y,x};
+    }
+    inline coords rotRight()
+    {
+        return (coords){y,-x};
+    }
     inline bool operator==(coords a) const
     {
         if (a.x==x && a.y==y)
@@ -184,13 +201,21 @@ typedef struct coords
             x%a.x,y%a.y
         };
     }
-    inline coords operator*(int a)
+    inline coords operator*(coords a)
     {
         return (coords)
         {
-            x*a,y*a
+            x*a.x,y*a.y
         };
     }
+    inline coords operator*(int a)
+    {
+        return (coords)
+                {
+                        x*a,y*a
+                };
+    }
+
     inline coords operator+(int a)
     {
         return (coords)
@@ -217,12 +242,39 @@ typedef struct coords
 } coords;
 
 /**
- * @enum direction
+ * @class enum dir::direction
  *
  * @brief An enumeration representing cardinal directions.
  * This is used in various operations, including movement and interaction.
+ * There is a dirToCoords function provided
  */
-typedef enum { UP=0,LEFT=1,DOWN=2,RIGHT=3,NODIRECTION=5} direction;
+namespace dir
+{
+    enum class direction {UP=0,LEFT=1,DOWN=2,RIGHT=3,NODIRECTION=4};
+    const std::array<direction,5> allDirections={direction::UP,direction::LEFT,direction::DOWN,direction::RIGHT,direction::NODIRECTION};
+    const std::array<coords, 5> directionToCoordsMap = {
+            (coords){0, -1},  // UP
+            (coords){-1, 0},  // LEFT
+            (coords){0, 1},   // DOWN
+            (coords){1, 0},    // RIGHT
+            (coords){0,0},      //NOP
+      };
+    /**
+     * @brief dirToCoords, allows easily calculate new position
+     * just add direction vector to location
+     * @param d
+     * @return coords - direction vector
+     */
+    inline coords dirToCoords(direction d){
+        return directionToCoordsMap[(int)d];
+    }
+
+}
+
+
+
+
+
 
 /**
  * @struct controlItem
@@ -241,7 +293,7 @@ typedef enum { UP=0,LEFT=1,DOWN=2,RIGHT=3,NODIRECTION=5} direction;
 typedef struct controlItem
 {
     int type; /*-1 - nocommand, 0-move,1-shoot,2-interact,3-gun cycle,4-use element in inventory,5 - cycle inventory,6 - die, 7 - exit */
-    direction dir;
+    dir::direction dir;
 
 } controlItem;
 
