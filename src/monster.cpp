@@ -75,7 +75,7 @@ bool monster::checkNeigh()
     bool r = false;
     for (int c = 0; c < 4; c++)
     {
-        direction d = (direction)c;
+        dir::direction d = (dir::direction)c;
         std::shared_ptr<bElem> e = this->getElementInDirection(d);
         ;
         if (!e)
@@ -114,7 +114,7 @@ bool monster::checkNeigh()
             while (e != nullptr) // this is the "mostervision"
             {
 
-                if (e->getType() == _stash || e->getType() == _rubishType || (e->getType()==_goldenAppleType && e->getAttrs()->getSubtype()!=0) || e->getAttrs()->isWeapon()) // take the direction towards remainings from other objects, broken apples or guns
+                if (e->getType() == _stash || e->getType() == _rubishType || (e->getType()==_goldenAppleType && e->getAttrs()->getSubtype()!=0) || e->getAttrs()->isWeapon()) // take the dir::direction towards remainings from other objects, broken apples or guns
                 {
                     this->getStats()->setMyDirection(d);
                     this->getStats()->setFacing(d);
@@ -142,7 +142,7 @@ bool monster::checkNeigh()
                     break;
                 }
                 // if it is something interesting, go and fetch it
-                if (e->getType() == _stash || e->getType() == _rubishType || (e->getType()==_goldenAppleType && e->getAttrs()->getSubtype()!=0) || e->getAttrs()->isWeapon()) // take the direction towards remainings from other objects, broken apples or guns
+                if (e->getType() == _stash || e->getType() == _rubishType || (e->getType()==_goldenAppleType && e->getAttrs()->getSubtype()!=0) || e->getAttrs()->isWeapon()) // take the dir::direction towards remainings from other objects, broken apples or guns
                 {
                     this->getStats()->setMyDirection(d);
                     this->getStats()->setFacing(d);
@@ -173,34 +173,16 @@ bool monster::checkNeigh()
 bool monster::mechanics()
 {
 
-    direction newDir = NODIRECTION;
-    direction oldDir = (direction)(((int)this->getStats()->getMyDirection()) % 4);
+    dir::direction newDir = dir::direction::NODIRECTION;
+    dir::direction oldDir = (dir::direction)(((int)this->getStats()->getMyDirection()) % 4);
     if (!bElem::mechanics())
         return false;
-//    std::cout<<"   * CHK seppableNeigh\n";
-    if (this->steppableNeigh())
-        this->inited = false;
-//    std::cout<<"   * CHK seppableNeigh done\n";
-
-    if (!this->inited)
-    {
-        if (this->isSteppableDirection(this->getStats()->getFacing()))
-        {
-            this->inited=true;
-            return this->moveInDirection(oldDir);
-        }
-        this->getStats()->setMyDirection((direction)((((int)this->getStats()->getMyDirection()) +( (int)rotB)) % 4));
-        this->getStats()->setFacing(this->getStats()->getMyDirection());
-        this->getStats()->setWaiting(_mov_delay);
-        this->inited = false;
-        return true;
-    }
     this->checkNeigh();
     if (this->getStats()->isWaiting())
         return true;
     for (int c = 0; c < 4; c++)
     {
-        newDir = (direction)((((int)oldDir) + rotA) % 4);
+        newDir = (dir::direction)((((int)oldDir) + rotA) % 4);
         if (this->isSteppableDirection(newDir))
         {
             this->getStats()->setFacing(newDir);
@@ -209,7 +191,7 @@ bool monster::mechanics()
         }
         else
         {
-            oldDir = (direction)((((int)oldDir) + rotB) % 4);
+            oldDir = (dir::direction)((((int)oldDir) + rotB) % 4);
         }
     }
     return true;

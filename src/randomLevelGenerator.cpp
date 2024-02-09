@@ -365,7 +365,7 @@ bool randomLevelGenerator::generateLevel(int holes)
 
     }
 
-    for(int c=0; c<5; c++)
+    for(int c=0; c<50; c++)
     {
         elementsToChooseFrom.push_back({_brickClusterType,0,1,0,3});
         elementsToChooseFrom.push_back({_key,0,1,0,3});

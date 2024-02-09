@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( useWithoutCollecting, T, basicTestedElements)
     coords csize= {20,20};
     coords p1= {5,5},p1_= {6,5};
     coords ploc= {10,10};
-    direction dir=DOWN,dir1=UP;
+    dir::direction dir=dir::direction::DOWN,dir1=dir::direction::UP;
     inputManager::getInstance(true);
     std::shared_ptr<chamber> chmbr=chamber::makeNewChamber(csize);
     std::shared_ptr<T> elem=elementFactory::generateAnElement<T>(chmbr,1);
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( useCollectedGun, T, basicTestedElements)
     coords csize= {20,20};
     coords p1= {5,5},p1_= {6,5};
     coords ploc={10,10};
-    direction dir=DOWN,dir1=UP;
+    dir::direction dir=dir::direction::DOWN,dir1=dir::direction::UP;
     inputManager::getInstance(true);
     preClean();
     std::shared_ptr<chamber> chmbr=chamber::makeNewChamber(csize);
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( useCollectedGun, T, basicTestedElements)
     for(int c=0; c<1000; c++) bElem::runLiveElements();
     for(int c=0; c<4; c++)
     {
-        direction d=(direction)c;
+        dir::direction d=(dir::direction)c;
         BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(d)->getType()==_floorType);
     }
     BOOST_CHECK(elem->use(be));

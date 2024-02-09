@@ -32,7 +32,8 @@ class bouba : public bElem
     public:
         bouba()=default;
         virtual ~bouba()=default;
-
+        bool destroy() final;
+        virtual int getType() const;
     protected:
 
     private:

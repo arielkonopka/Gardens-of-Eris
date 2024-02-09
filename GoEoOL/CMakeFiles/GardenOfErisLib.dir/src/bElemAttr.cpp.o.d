@@ -1,9 +1,7 @@
-CMakeFiles/GardenOfErisLib.dir/src/bunker.cpp.o: \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bunker.cpp \
+CMakeFiles/GardenOfErisLib.dir/src/bElemAttr.cpp.o: \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElemAttr.cpp \
  /usr/include/stdc-predef.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bunker.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/commons.h \
- /usr/lib/gcc/x86_64-linux-gnu/12/include/stddef.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/bElemAttr.h \
  /usr/include/c++/12/memory /usr/include/c++/12/bits/stl_algobase.h \
  /usr/include/x86_64-linux-gnu/c++/12/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/12/bits/os_defines.h \
@@ -66,6 +64,7 @@ CMakeFiles/GardenOfErisLib.dir/src/bunker.cpp.o: \
  /usr/include/c++/12/cwchar /usr/include/wchar.h \
  /usr/include/x86_64-linux-gnu/bits/floatn.h \
  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
+ /usr/lib/gcc/x86_64-linux-gnu/12/include/stddef.h \
  /usr/lib/gcc/x86_64-linux-gnu/12/include/stdarg.h \
  /usr/include/x86_64-linux-gnu/bits/types/wint_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h \
@@ -196,75 +195,16 @@ CMakeFiles/GardenOfErisLib.dir/src/bunker.cpp.o: \
  /usr/include/c++/12/bits/ranges_algobase.h \
  /usr/include/c++/12/bits/uses_allocator_args.h \
  /usr/include/c++/12/pstl/glue_memory_defs.h \
- /usr/include/c++/12/pstl/execution_defs.h /usr/include/c++/12/vector \
- /usr/include/c++/12/bits/stl_vector.h \
- /usr/include/c++/12/bits/stl_bvector.h \
- /usr/include/c++/12/bits/vector.tcc /usr/include/c++/12/array \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/elementFactory.h \
+ /usr/include/c++/12/pstl/execution_defs.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/../include/configManager.h \
  /usr/include/c++/12/istream /usr/include/c++/12/bits/istream.tcc \
- /usr/include/c++/12/iostream /usr/include/c++/12/cmath \
- /usr/include/math.h /usr/include/x86_64-linux-gnu/bits/math-vector.h \
- /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
- /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
- /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
- /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
- /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
- /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
- /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
- /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
- /usr/include/c++/12/bits/specfun.h /usr/include/c++/12/limits \
- /usr/include/c++/12/tr1/gamma.tcc \
- /usr/include/c++/12/tr1/special_function_util.h \
- /usr/include/c++/12/tr1/bessel_function.tcc \
- /usr/include/c++/12/tr1/beta_function.tcc \
- /usr/include/c++/12/tr1/ell_integral.tcc \
- /usr/include/c++/12/tr1/exp_integral.tcc \
- /usr/include/c++/12/tr1/hypergeometric.tcc \
- /usr/include/c++/12/tr1/legendre_function.tcc \
- /usr/include/c++/12/tr1/modified_bessel_func.tcc \
- /usr/include/c++/12/tr1/poly_hermite.tcc \
- /usr/include/c++/12/tr1/poly_laguerre.tcc \
- /usr/include/c++/12/tr1/riemann_zeta.tcc \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/plainGun.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/videoElementDef.h \
- /usr/include/allegro5/allegro5.h /usr/include/allegro5/allegro.h \
- /usr/include/allegro5/base.h /usr/include/c++/12/stdlib.h \
- /usr/include/string.h /usr/include/strings.h \
- /usr/include/allegro5/internal/alconfig.h \
- /usr/include/x86_64-linux-gnu/allegro5/platform/alplatf.h \
- /usr/include/allegro5/platform/alucfg.h /usr/include/fcntl.h \
- /usr/include/x86_64-linux-gnu/bits/fcntl.h \
- /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
- /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
- /usr/include/linux/falloc.h /usr/include/x86_64-linux-gnu/bits/stat.h \
- /usr/include/x86_64-linux-gnu/bits/struct_stat.h \
- /usr/include/allegro5/platform/astdint.h /usr/include/inttypes.h \
- /usr/include/allegro5/platform/astdbool.h /usr/include/allegro5/altime.h \
- /usr/include/allegro5/bitmap.h /usr/include/allegro5/color.h \
- /usr/include/allegro5/bitmap_draw.h /usr/include/allegro5/bitmap_io.h \
- /usr/include/allegro5/file.h /usr/include/allegro5/path.h \
- /usr/include/allegro5/utf8.h /usr/include/allegro5/bitmap_lock.h \
- /usr/include/allegro5/blender.h /usr/include/allegro5/clipboard.h \
- /usr/include/allegro5/display.h /usr/include/allegro5/events.h \
- /usr/include/allegro5/config.h /usr/include/allegro5/cpu.h \
- /usr/include/allegro5/debug.h /usr/include/assert.h \
- /usr/include/allegro5/drawing.h /usr/include/allegro5/error.h \
- /usr/include/allegro5/fixed.h /usr/include/allegro5/fmaths.h \
- /usr/include/allegro5/inline/fmaths.inl /usr/include/allegro5/fshook.h \
- /usr/include/allegro5/fullscreen_mode.h /usr/include/allegro5/haptic.h \
- /usr/include/allegro5/joystick.h /usr/include/allegro5/keyboard.h \
- /usr/include/allegro5/keycodes.h /usr/include/allegro5/mouse.h \
- /usr/include/allegro5/touch_input.h /usr/include/allegro5/memory.h \
- /usr/include/allegro5/monitor.h /usr/include/allegro5/mouse_cursor.h \
- /usr/include/allegro5/render_state.h /usr/include/allegro5/shader.h \
- /usr/include/allegro5/transformations.h /usr/include/allegro5/system.h \
- /usr/include/allegro5/threads.h /usr/include/allegro5/timer.h \
- /usr/include/allegro5/tls.h /usr/include/allegro5/alcompat.h \
- /usr/include/allegro5/platform/alunix.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/configManager.h \
- /usr/include/rapidjson/document.h /usr/include/rapidjson/reader.h \
- /usr/include/rapidjson/allocators.h /usr/include/rapidjson/rapidjson.h \
- /usr/include/c++/12/cstring /usr/include/c++/12/cassert \
+ /usr/include/c++/12/vector /usr/include/c++/12/bits/stl_vector.h \
+ /usr/include/c++/12/bits/stl_bvector.h \
+ /usr/include/c++/12/bits/vector.tcc /usr/include/rapidjson/document.h \
+ /usr/include/rapidjson/reader.h /usr/include/rapidjson/allocators.h \
+ /usr/include/rapidjson/rapidjson.h /usr/include/c++/12/cstring \
+ /usr/include/string.h /usr/include/strings.h /usr/include/inttypes.h \
+ /usr/include/c++/12/cassert /usr/include/assert.h \
  /usr/include/rapidjson/stream.h /usr/include/rapidjson/encodings.h \
  /usr/include/rapidjson/encodedstream.h \
  /usr/include/rapidjson/memorystream.h \
@@ -277,7 +217,7 @@ CMakeFiles/GardenOfErisLib.dir/src/bunker.cpp.o: \
  /usr/include/rapidjson/internal/ieee754.h \
  /usr/include/rapidjson/internal/biginteger.h \
  /usr/include/rapidjson/internal/diyfp.h \
- /usr/include/rapidjson/internal/pow10.h \
+ /usr/include/rapidjson/internal/pow10.h /usr/include/c++/12/limits \
  /usr/include/rapidjson/error/error.h /usr/include/rapidjson/rapidjson.h \
  /usr/include/rapidjson/internal/strfunc.h \
  /usr/include/rapidjson/stream.h /usr/include/c++/12/iterator \
@@ -288,13 +228,73 @@ CMakeFiles/GardenOfErisLib.dir/src/bunker.cpp.o: \
  /usr/include/rapidjson/internal/itoa.h \
  /usr/include/rapidjson/stringbuffer.h \
  /usr/include/rapidjson/filereadstream.h \
- /usr/include/rapidjson/stringbuffer.h /usr/include/c++/12/map \
- /usr/include/c++/12/bits/stl_tree.h \
+ /usr/include/rapidjson/stringbuffer.h /usr/include/c++/12/iostream \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/../include/videoElementDef.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/../include/commons.h \
+ /usr/include/c++/12/array \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/../include/elementFactory.h \
+ /usr/include/c++/12/cmath /usr/include/math.h \
+ /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+ /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+ /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+ /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+ /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+ /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+ /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+ /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
+ /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
+ /usr/include/c++/12/bits/specfun.h /usr/include/c++/12/tr1/gamma.tcc \
+ /usr/include/c++/12/tr1/special_function_util.h \
+ /usr/include/c++/12/tr1/bessel_function.tcc \
+ /usr/include/c++/12/tr1/beta_function.tcc \
+ /usr/include/c++/12/tr1/ell_integral.tcc \
+ /usr/include/c++/12/tr1/exp_integral.tcc \
+ /usr/include/c++/12/tr1/hypergeometric.tcc \
+ /usr/include/c++/12/tr1/legendre_function.tcc \
+ /usr/include/c++/12/tr1/modified_bessel_func.tcc \
+ /usr/include/c++/12/tr1/poly_hermite.tcc \
+ /usr/include/c++/12/tr1/poly_laguerre.tcc \
+ /usr/include/c++/12/tr1/riemann_zeta.tcc \
+ /usr/include/allegro5/allegro5.h /usr/include/allegro5/allegro.h \
+ /usr/include/allegro5/base.h /usr/include/c++/12/stdlib.h \
+ /usr/include/allegro5/internal/alconfig.h \
+ /usr/include/x86_64-linux-gnu/allegro5/platform/alplatf.h \
+ /usr/include/allegro5/platform/alucfg.h /usr/include/fcntl.h \
+ /usr/include/x86_64-linux-gnu/bits/fcntl.h \
+ /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
+ /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
+ /usr/include/linux/falloc.h /usr/include/x86_64-linux-gnu/bits/stat.h \
+ /usr/include/x86_64-linux-gnu/bits/struct_stat.h \
+ /usr/include/allegro5/platform/astdint.h \
+ /usr/include/allegro5/platform/astdbool.h /usr/include/allegro5/altime.h \
+ /usr/include/allegro5/bitmap.h /usr/include/allegro5/color.h \
+ /usr/include/allegro5/bitmap_draw.h /usr/include/allegro5/bitmap_io.h \
+ /usr/include/allegro5/file.h /usr/include/allegro5/path.h \
+ /usr/include/allegro5/utf8.h /usr/include/allegro5/bitmap_lock.h \
+ /usr/include/allegro5/blender.h /usr/include/allegro5/clipboard.h \
+ /usr/include/allegro5/display.h /usr/include/allegro5/events.h \
+ /usr/include/allegro5/config.h /usr/include/allegro5/cpu.h \
+ /usr/include/allegro5/debug.h /usr/include/allegro5/drawing.h \
+ /usr/include/allegro5/error.h /usr/include/allegro5/fixed.h \
+ /usr/include/allegro5/fmaths.h /usr/include/allegro5/inline/fmaths.inl \
+ /usr/include/allegro5/fshook.h /usr/include/allegro5/fullscreen_mode.h \
+ /usr/include/allegro5/haptic.h /usr/include/allegro5/joystick.h \
+ /usr/include/allegro5/keyboard.h /usr/include/allegro5/keycodes.h \
+ /usr/include/allegro5/mouse.h /usr/include/allegro5/touch_input.h \
+ /usr/include/allegro5/memory.h /usr/include/allegro5/monitor.h \
+ /usr/include/allegro5/mouse_cursor.h \
+ /usr/include/allegro5/render_state.h /usr/include/allegro5/shader.h \
+ /usr/include/allegro5/transformations.h /usr/include/allegro5/system.h \
+ /usr/include/allegro5/threads.h /usr/include/allegro5/timer.h \
+ /usr/include/allegro5/tls.h /usr/include/allegro5/alcompat.h \
+ /usr/include/allegro5/platform/alunix.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/../include/configManager.h \
+ /usr/include/c++/12/map /usr/include/c++/12/bits/stl_tree.h \
  /usr/include/c++/12/bits/node_handle.h \
  /usr/include/c++/12/bits/stl_map.h \
  /usr/include/c++/12/bits/stl_multimap.h \
  /usr/include/c++/12/bits/erase_if.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/inputManager.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/../include/inputManager.h \
  /usr/include/allegro5/allegro.h \
  /usr/include/allegro5/allegro_primitives.h /usr/include/c++/12/mutex \
  /usr/include/c++/12/bits/chrono.h /usr/include/c++/12/ratio \
@@ -307,9 +307,8 @@ CMakeFiles/GardenOfErisLib.dir/src/bunker.cpp.o: \
  /usr/include/c++/12/bits/this_thread_sleep.h \
  /usr/include/x86_64-linux-gnu/sys/time.h /usr/include/semaphore.h \
  /usr/include/x86_64-linux-gnu/bits/semaphore.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/objectTypes.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/plainMissile.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElem.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/../include/objectTypes.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/bElem.h \
  /usr/include/c++/12/chrono /usr/include/c++/12/sstream \
  /usr/include/c++/12/bits/sstream.tcc /usr/include/c++/12/random \
  /usr/include/c++/12/bits/random.h \
@@ -324,23 +323,26 @@ CMakeFiles/GardenOfErisLib.dir/src/bunker.cpp.o: \
  /usr/include/c++/12/bits/ranges_algo.h \
  /usr/include/c++/12/bits/ranges_util.h \
  /usr/include/c++/12/pstl/glue_algorithm_defs.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/inventory.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/chamber.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/randomWordGen.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/commons.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/objectTypes.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/inventory.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/chamber.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/randomWordGen.h \
  /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElemContainer.h \
  /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/commons.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/soundManager.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/videoElementDef.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/soundManager.h \
  /usr/include/AL/al.h /usr/include/AL/alc.h /usr/include/AL/alext.h \
  /usr/include/AL/alc.h /usr/include/AL/al.h /usr/include/AL/efx.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/configManager.h \
  /usr/include/sndfile.h /usr/include/c++/12/deque \
  /usr/include/c++/12/bits/stl_deque.h /usr/include/c++/12/bits/deque.tcc \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElemStats.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/../include/commons.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/bElem.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/bElemStats.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/../include/commons.h \
  /usr/include/c++/12/unordered_map /usr/include/c++/12/bits/hashtable.h \
  /usr/include/c++/12/bits/hashtable_policy.h \
  /usr/include/c++/12/bits/enable_special_members.h \
  /usr/include/c++/12/bits/unordered_map.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElemAttr.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/../include/configManager.h \
- /usr/include/c++/12/math.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/elementFactory.h
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/bElemAttr.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/../include/inventory.h

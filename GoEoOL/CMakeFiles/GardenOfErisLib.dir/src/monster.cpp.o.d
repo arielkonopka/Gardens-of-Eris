@@ -201,7 +201,7 @@ CMakeFiles/GardenOfErisLib.dir/src/monster.cpp.o: \
  /usr/include/c++/12/pstl/execution_defs.h /usr/include/c++/12/vector \
  /usr/include/c++/12/bits/stl_vector.h \
  /usr/include/c++/12/bits/stl_bvector.h \
- /usr/include/c++/12/bits/vector.tcc \
+ /usr/include/c++/12/bits/vector.tcc /usr/include/c++/12/array \
  /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/elementFactory.h \
  /usr/include/c++/12/istream /usr/include/c++/12/bits/istream.tcc \
  /usr/include/c++/12/iostream /usr/include/c++/12/cmath \
@@ -321,8 +321,7 @@ CMakeFiles/GardenOfErisLib.dir/src/monster.cpp.o: \
  /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/plainGun.h \
  /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/plainMissile.h \
  /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElem.h \
- /usr/include/c++/12/array /usr/include/c++/12/algorithm \
- /usr/include/c++/12/bits/stl_algo.h \
+ /usr/include/c++/12/algorithm /usr/include/c++/12/bits/stl_algo.h \
  /usr/include/c++/12/bits/algorithmfwd.h \
  /usr/include/c++/12/bits/stl_heap.h \
  /usr/include/c++/12/bits/ranges_algo.h \

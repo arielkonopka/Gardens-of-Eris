@@ -37,7 +37,7 @@ inputManager::~inputManager()
 }
 controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
 {
-    direction dir=DOWN;
+    dir::direction dir=dir::direction::NODIRECTION;
     int type=-1;
 
     switch (ev->type)
@@ -155,21 +155,21 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
     if (this->pressed_keys[ALLEGRO_KEY_W] || this->pressed_keys[ALLEGRO_KEY_UP])
     {
         type=0;
-        dir=UP;
+        dir=dir::direction::UP;
     }
     if (this->pressed_keys[ALLEGRO_KEY_S] || this->pressed_keys[ALLEGRO_KEY_DOWN] )
     {
         type=0;
-        dir=DOWN;
+        dir=dir::direction::DOWN;
     }
     if (this->pressed_keys[ALLEGRO_KEY_A] || this->pressed_keys[ALLEGRO_KEY_LEFT])
     {
         type=0;
-        dir=LEFT;
+        dir=dir::direction::LEFT;
     }
     if (this->pressed_keys[ALLEGRO_KEY_D] || this->pressed_keys[ALLEGRO_KEY_RIGHT])
     {
-        dir=RIGHT;
+        dir=dir::direction::RIGHT;
         type=0;
     }
     if ((this->pressed_keys[ALLEGRO_KEY_RSHIFT] || this->pressed_keys[ALLEGRO_KEY_LSHIFT]) && type>=0)

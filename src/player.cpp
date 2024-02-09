@@ -166,19 +166,19 @@ bool player::mechanics()
     coords3d vel;
     switch (this->getStats()->getMyDirection())
     {
-    case UP:
+        case dir::direction::UP:
         vel = {0, 0, -1};
         break;
-    case LEFT:
+    case dir::direction::LEFT:
         vel = {-1, 0, 0};
         break;
-    case RIGHT:
+    case dir::direction::RIGHT:
         vel = {1, 0, 0};
         break;
-    case DOWN:
+    case dir::direction::DOWN:
         vel = {0, 0, 1};
         break;
-    case NODIRECTION:
+    case dir::direction::NODIRECTION:
         vel = {0, 0, 0};
     }
     soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId());
@@ -230,7 +230,7 @@ bool player::mechanics()
     case 4:
         if (this->dragInDirection(currentCtrlItem.dir))
         {
-            this->getStats()->setFacing((direction)(((int)this->getStats()->getMyDirection() + 2) % 4)); /* we face backwards while dragging */
+            this->getStats()->setFacing((dir::direction)(((int)this->getStats()->getMyDirection() + 2) % 4)); /* we face backwards while dragging */
         }
         else if (this->moveInDirection(currentCtrlItem.dir))
         {

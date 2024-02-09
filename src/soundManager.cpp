@@ -185,7 +185,7 @@ void soundManager::enableSound()
     this->active=true;
 }
 
-void soundManager::registerSound(int chamberId, coords3d position,coords3d velocity,int elId,int typeId, int subtypeId, std::string eventType, std::string event)
+std::shared_ptr<stNode> soundManager::registerSound(int chamberId, coords3d position,coords3d velocity,int elId,int typeId, int subtypeId, std::string eventType, std::string event)
 {
 
     alGetError();
@@ -202,7 +202,7 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
             || (this->sndRegister[elId][typeId][eventType][event].r && this->gc->samples[typeId][subtypeId][eventType][event].allowMulti==false)
        )
     {
-        return;
+        return nullptr;
     }
 
     if(this->samplesLoaded[typeId][subtypeId][eventType][event].get()==nullptr )
@@ -213,7 +213,7 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
         {
             ALuint bid=this->loadSample(this->gc->samples[typeId][subtypeId][eventType][event].fname);
             if(bid==0)
-                return;
+                return nullptr;
             this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].r=true;
             this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].buffer=bid;
         }
@@ -261,7 +261,7 @@ void soundManager::registerSound(int chamberId, coords3d position,coords3d veloc
     alSourcei(srcNode->source,AL_LOOPING,(srcNode->mode==0)?AL_FALSE:AL_TRUE);
     this->sndRegister[elId][typeId][eventType][event].r=true;
     this->sndRegister[elId][typeId][eventType][event].stn=srcNode;
-    return;
+    return srcNode;
 };
 
 

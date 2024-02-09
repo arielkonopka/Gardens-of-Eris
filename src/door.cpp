@@ -84,7 +84,7 @@ bool door::stepOnAction(bool step, std::shared_ptr<bElem>who)
             this->getAttrs()->setSteppable(this->getAttrs()->isOpen());
             this->getAttrs()->setLocked(true);
             this->playSound("Door", (this->getAttrs()->isOpen()) ? "Unlock" : "Lock");
-            this->getStats()->setFacing((!this->getAttrs()->isOpen()) ? UP : LEFT);
+            this->getStats()->setFacing((!this->getAttrs()->isOpen()) ? dir::direction::UP : dir::direction::LEFT);
         }
     }
     return true;
@@ -93,7 +93,7 @@ bool door::stepOnAction(bool step, std::shared_ptr<bElem>who)
 
 void door::_alignWithOpen()
 {
-    this->getStats()->setFacing((!this->getAttrs()->isOpen()) ? UP : LEFT);
+    this->getStats()->setFacing((!this->getAttrs()->isOpen()) ? dir::direction::UP : dir::direction::LEFT);
     this->getAttrs()->setSteppable(this->getAttrs()->isOpen());
 
 }

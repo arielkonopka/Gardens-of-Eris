@@ -1,7 +1,7 @@
-CMakeFiles/GardenOfErisLib.dir/src/videoDriver.cpp.o: \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/videoDriver.cpp \
+CMakeFiles/GardenOfErisLib.dir/src/bElemContainer.cpp.o: \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElemContainer.cpp \
  /usr/include/stdc-predef.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/videoDriver.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElemContainer.h \
  /usr/include/allegro5/allegro5.h /usr/include/allegro5/allegro.h \
  /usr/include/allegro5/base.h /usr/include/errno.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -112,8 +112,9 @@ CMakeFiles/GardenOfErisLib.dir/src/videoDriver.cpp.o: \
  /usr/include/allegro5/transformations.h /usr/include/allegro5/system.h \
  /usr/include/allegro5/threads.h /usr/include/allegro5/timer.h \
  /usr/include/allegro5/tls.h /usr/include/allegro5/alcompat.h \
- /usr/include/allegro5/platform/alunix.h /usr/include/c++/12/vector \
- /usr/include/c++/12/bits/stl_algobase.h \
+ /usr/include/allegro5/platform/alunix.h \
+ /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/commons.h \
+ /usr/include/c++/12/memory /usr/include/c++/12/bits/stl_algobase.h \
  /usr/include/c++/12/bits/functexcept.h \
  /usr/include/c++/12/bits/exception_defines.h \
  /usr/include/c++/12/bits/cpp_type_traits.h \
@@ -141,29 +142,16 @@ CMakeFiles/GardenOfErisLib.dir/src/videoDriver.cpp.o: \
  /usr/include/c++/12/bits/stl_uninitialized.h \
  /usr/include/c++/12/ext/alloc_traits.h \
  /usr/include/c++/12/bits/alloc_traits.h \
- /usr/include/c++/12/bits/stl_vector.h \
- /usr/include/c++/12/initializer_list \
- /usr/include/c++/12/bits/stl_bvector.h \
- /usr/include/c++/12/bits/functional_hash.h \
- /usr/include/c++/12/bits/hash_bytes.h /usr/include/c++/12/bits/refwrap.h \
+ /usr/include/c++/12/bits/stl_tempbuf.h \
+ /usr/include/c++/12/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/12/bits/align.h /usr/include/c++/12/bit \
+ /usr/include/c++/12/bits/uses_allocator.h \
+ /usr/include/c++/12/bits/unique_ptr.h /usr/include/c++/12/tuple \
  /usr/include/c++/12/bits/invoke.h \
  /usr/include/c++/12/bits/stl_function.h \
  /usr/include/c++/12/backward/binders.h \
- /usr/include/c++/12/bits/range_access.h \
- /usr/include/c++/12/bits/vector.tcc /usr/include/c++/12/unordered_map \
- /usr/include/c++/12/ext/aligned_buffer.h \
- /usr/include/c++/12/bits/hashtable.h \
- /usr/include/c++/12/bits/hashtable_policy.h /usr/include/c++/12/tuple \
- /usr/include/c++/12/bits/uses_allocator.h \
- /usr/include/c++/12/bits/enable_special_members.h \
- /usr/include/c++/12/bits/node_handle.h \
- /usr/include/c++/12/bits/unordered_map.h \
- /usr/include/c++/12/bits/erase_if.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/commons.h \
- /usr/include/c++/12/memory /usr/include/c++/12/bits/stl_tempbuf.h \
- /usr/include/c++/12/bits/stl_raw_storage_iter.h \
- /usr/include/c++/12/bits/align.h /usr/include/c++/12/bit \
- /usr/include/c++/12/bits/unique_ptr.h /usr/include/c++/12/ostream \
+ /usr/include/c++/12/bits/functional_hash.h \
+ /usr/include/c++/12/bits/hash_bytes.h /usr/include/c++/12/ostream \
  /usr/include/c++/12/ios /usr/include/c++/12/iosfwd \
  /usr/include/c++/12/bits/stringfwd.h /usr/include/c++/12/bits/postypes.h \
  /usr/include/c++/12/cwchar /usr/include/wchar.h \
@@ -195,6 +183,9 @@ CMakeFiles/GardenOfErisLib.dir/src/videoDriver.cpp.o: \
  /usr/include/c++/12/bits/locale_classes.h /usr/include/c++/12/string \
  /usr/include/c++/12/bits/ostream_insert.h \
  /usr/include/c++/12/bits/cxxabi_forced.h \
+ /usr/include/c++/12/bits/refwrap.h \
+ /usr/include/c++/12/bits/range_access.h \
+ /usr/include/c++/12/initializer_list \
  /usr/include/c++/12/bits/basic_string.h /usr/include/c++/12/string_view \
  /usr/include/c++/12/bits/ranges_base.h \
  /usr/include/c++/12/bits/max_size_type.h /usr/include/c++/12/numbers \
@@ -225,6 +216,7 @@ CMakeFiles/GardenOfErisLib.dir/src/videoDriver.cpp.o: \
  /usr/include/c++/12/bits/shared_ptr.h \
  /usr/include/c++/12/bits/shared_ptr_base.h \
  /usr/include/c++/12/bits/allocated_ptr.h \
+ /usr/include/c++/12/ext/aligned_buffer.h \
  /usr/include/c++/12/ext/concurrence.h \
  /usr/include/c++/12/bits/shared_ptr_atomic.h \
  /usr/include/c++/12/bits/atomic_base.h \
@@ -240,7 +232,10 @@ CMakeFiles/GardenOfErisLib.dir/src/videoDriver.cpp.o: \
  /usr/include/c++/12/bits/ranges_algobase.h \
  /usr/include/c++/12/bits/uses_allocator_args.h \
  /usr/include/c++/12/pstl/glue_memory_defs.h \
- /usr/include/c++/12/pstl/execution_defs.h /usr/include/c++/12/array \
+ /usr/include/c++/12/pstl/execution_defs.h /usr/include/c++/12/vector \
+ /usr/include/c++/12/bits/stl_vector.h \
+ /usr/include/c++/12/bits/stl_bvector.h \
+ /usr/include/c++/12/bits/vector.tcc /usr/include/c++/12/array \
  /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/elementFactory.h \
  /usr/include/c++/12/istream /usr/include/c++/12/bits/istream.tcc \
  /usr/include/c++/12/iostream /usr/include/c++/12/cmath \
@@ -265,50 +260,4 @@ CMakeFiles/GardenOfErisLib.dir/src/videoDriver.cpp.o: \
  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
  /usr/include/c++/12/tr1/poly_hermite.tcc \
  /usr/include/c++/12/tr1/poly_laguerre.tcc \
- /usr/include/c++/12/tr1/riemann_zeta.tcc /usr/include/c++/12/mutex \
- /usr/include/c++/12/bits/chrono.h /usr/include/c++/12/ratio \
- /usr/include/c++/12/ctime /usr/include/c++/12/bits/parse_numbers.h \
- /usr/include/c++/12/bits/unique_lock.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/videoElementDef.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/configManager.h \
- /usr/include/rapidjson/document.h /usr/include/rapidjson/reader.h \
- /usr/include/rapidjson/allocators.h /usr/include/rapidjson/rapidjson.h \
- /usr/include/c++/12/cstring /usr/include/c++/12/cassert \
- /usr/include/rapidjson/stream.h /usr/include/rapidjson/encodings.h \
- /usr/include/rapidjson/encodedstream.h \
- /usr/include/rapidjson/memorystream.h \
- /usr/include/rapidjson/internal/meta.h \
- /usr/include/rapidjson/rapidjson.h \
- /usr/include/rapidjson/internal/stack.h \
- /usr/include/rapidjson/allocators.h \
- /usr/include/rapidjson/internal/swap.h \
- /usr/include/rapidjson/internal/strtod.h \
- /usr/include/rapidjson/internal/ieee754.h \
- /usr/include/rapidjson/internal/biginteger.h \
- /usr/include/rapidjson/internal/diyfp.h \
- /usr/include/rapidjson/internal/pow10.h \
- /usr/include/rapidjson/error/error.h /usr/include/rapidjson/rapidjson.h \
- /usr/include/rapidjson/internal/strfunc.h \
- /usr/include/rapidjson/stream.h /usr/include/c++/12/iterator \
- /usr/include/c++/12/bits/stream_iterator.h /usr/include/c++/12/utility \
- /usr/include/c++/12/bits/stl_relops.h /usr/include/rapidjson/writer.h \
- /usr/include/rapidjson/internal/dtoa.h \
- /usr/include/rapidjson/internal/itoa.h \
- /usr/include/rapidjson/internal/itoa.h \
- /usr/include/rapidjson/stringbuffer.h \
- /usr/include/rapidjson/filereadstream.h \
- /usr/include/rapidjson/stringbuffer.h /usr/include/c++/12/map \
- /usr/include/c++/12/bits/stl_tree.h /usr/include/c++/12/bits/stl_map.h \
- /usr/include/c++/12/bits/stl_multimap.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/inputManager.h \
- /usr/include/allegro5/allegro.h \
- /usr/include/allegro5/allegro_primitives.h /usr/include/c++/12/thread \
- /usr/include/c++/12/stop_token /usr/include/c++/12/atomic \
- /usr/include/c++/12/bits/std_thread.h /usr/include/c++/12/semaphore \
- /usr/include/c++/12/bits/semaphore_base.h \
- /usr/include/c++/12/bits/atomic_timed_wait.h \
- /usr/include/c++/12/bits/this_thread_sleep.h \
- /usr/include/x86_64-linux-gnu/sys/time.h /usr/include/semaphore.h \
- /usr/include/x86_64-linux-gnu/bits/semaphore.h \
- /home/c/git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/objectTypes.h \
- /usr/include/allegro5/allegro_image.h
+ /usr/include/c++/12/tr1/riemann_zeta.tcc

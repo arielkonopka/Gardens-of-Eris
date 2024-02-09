@@ -41,29 +41,36 @@ bool teleport::additionalProvisioning(int value,std::shared_ptr<teleport> t)
 bool teleport::interact(std::shared_ptr<bElem> who)
 {
     bool r=true;
-    if (!bElem::interact(who))
+    if (!bElem::interact(who) )
         return false;
-    this->playSound("Teleport", "Teleporting");
     if (!this->theOtherEnd)
         this->createConnectionsWithinSUbtype();
-    if (this->theOtherEnd) r=this->theOtherEnd->teleportIt(who);
-    else if(!this->candidates.empty()) {
+    if (this->getStats()->getMyDirection()==dir::direction::LEFT)
+        return r;
+    this->playSound("Teleport", "Teleporting");
+    if (this->theOtherEnd)
+        r=this->theOtherEnd->teleportIt(who);
+    else
+        if(!this->candidates.empty())
+        {
             r=this->candidates[0]->teleportIt(who);
-
-    } else r=this->teleportIt(who);
+        }
+        else
+            r=this->teleportIt(who);
     return r;
 }
 
 //// ChangeME to something cool!
 bool teleport::createConnectionsWithinSUbtype()
 {
-
     for (unsigned int c = 0; c < teleport::allTeleporters.size(); c++)
     {
         std::shared_ptr<teleport> t=teleport::allTeleporters[c].lock();
         if (!teleport::allTeleporters[c].expired() && t->getAttrs()->getSubtype() == this->getAttrs()->getSubtype())
         {
+
             candidates.push_back(t);
+
         }
     }
 
@@ -79,9 +86,15 @@ bool teleport::createConnectionsWithinSUbtype()
 
     for (unsigned int c = 0; c < candidates.size() - 1; c++)
     {
+        if(c%2==0) {
+            candidates[c]->getStats()->setFacing(dir::direction::LEFT );
+        } else
+        {
+            candidates[c]->getStats()->setFacing(dir::direction::UP);
+        }
+        candidates[c]->getStats()->setMyDirection(candidates[c]->getStats()->getFacing());
         candidates[c]->theOtherEnd = candidates[c + 1];
     }
-
     // candidates[candidates.size() - 1]->theOtherEnd = candidates[0];
     return true;
 }
@@ -95,46 +108,45 @@ int teleport::getType() const
 // Teleport to this becon
 bool teleport::teleportIt(std::shared_ptr<bElem> who)
 {
-    int dir = (int)who->getStats()->getMyDirection();
-    if (this->getStats()->isWaiting())
+    if (this->getStats()->isWaiting() || !this->getBoard())
         return false;
     this->getStats()->setWaiting(50);
     who->getStats()->setTelInProgress(_teleportationTime);
     if (who->getStats()->getSteppingOn() != nullptr)
         who->getStats()->getSteppingOn()->getStats()->setTelInProgress(_teleportationTime);
-    for (int c = 0; c < 4; c++)
+    std::vector<std::shared_ptr<bElem>> spots;
+    for (auto d:dir::allDirections)
     {
-        direction d = (direction)((dir + c) % 4);
         if (this->isSteppableDirection(d))
-        {
-         //   bool am=who->getStats()->hasActivatedMechanics();
-          //  if(am) who->deregisterLiveElement(who->getStats()->getInstanceId());
-            who->stepOnElement(this->getElementInDirection(d));
-         //   if(am) who->registerLiveElement(who);
-            return true;
-        }
+            spots.push_back(this->getElementInDirection(d));
     }
-//    if (!this->theOtherEnd)
-//        this->createConnectionsWithinSUbtype();
-    this->interact(who);
+    if(spots.empty())
+        this->interact(who);
+    else
+    {
+        std::shared_ptr<bElem> spot = spots[this->randomNumberGenerator() % spots.size()];
+        who->stepOnElement(spot);
+        return true;
+    }
+
+        this->interact(who);
     return false;
 }
 
 bool teleport::stepOnAction(bool step, std::shared_ptr<bElem>who)
 {
     bElem::stepOnAction(step,who);
-    if(step)
+    this->playSound("Teleport", "HummingSound");
+
+    if(step && !who->getStats()->isTeleporting())
     {
         this->getStats()->setWaiting(_teleportStandTime);
         this->registerLiveElement(shared_from_this());
-
-
     }
     else
     {
         if(this->getStats()->hasActivatedMechanics())
             this->deregisterLiveElement(this->getStats()->getInstanceId());
-
     }
     return true;
 }
@@ -144,17 +156,13 @@ bool teleport::stepOnAction(bool step, std::shared_ptr<bElem>who)
 
 bool teleport::mechanics()
 {
-
-    if (!this->getStats()->isWaiting())
+    if(!bElem::mechanics())
+        return false;
+    if (!this->getStats()->isWaiting() && this->getStats()->hasParent() && this->getStats()->getMyDirection()!=dir::direction::LEFT)
     {
-        if (this->getStats()->hasParent())
-        {
             this->interact(this->getStats()->getStandingOn().lock());
-            //  this->deregisterLiveElement(this->getStats()->getInstanceId());
-        }
     };
-    this->playSound("Teleport", "HummingSound");
-    return bElem::mechanics();
+    return true;
 }
 
 bool teleport::removeFromAllTeleporters()

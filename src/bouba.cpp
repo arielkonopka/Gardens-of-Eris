@@ -22,4 +22,15 @@
 
 #include "bouba.h"
 
+/**
+ * @brief bouba is a boss kinda object. So it is in reality indestructible. Destroying the element will only take the damage of one fith of the energy.
+ * It would take plenty of bazooka shots to kill an average boss like bouba.
+ * @return returns result of hurt method
+ */
+bool bouba::destroy() {
+    return this->hurt(this->getAttrs()->getEnergy()/5);
+}
 
+int bouba::getType() const {
+    return _boubaType;
+}

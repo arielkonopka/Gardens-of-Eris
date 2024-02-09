@@ -44,7 +44,7 @@ public:
     int getDestroyed() const;
     unsigned int getDestTimeBeg() const;
     unsigned int getDestTimeReq() const;
-    direction getFacing() const;
+    dir::direction getFacing() const;
     int getInteracted() const;
     unsigned int getKillTimeBeg() const;
     unsigned int getKillTimeReq() const;
@@ -56,7 +56,7 @@ public:
     std::weak_ptr<bElem> getStandingOn();
     std::weak_ptr<bElem> getStatsOwner() const;
     int getMoved() const;
-    direction getMyDirection() const;
+    dir::direction getMyDirection() const;
     coords getMyPosition() ;
     int getTaterCounter() const;
     int getWaiting() const;
@@ -78,7 +78,7 @@ public:
     void setDestroyed(int value);
     void setDestTimeBeg(unsigned int value);
     void setDestTimeReq(unsigned int value);
-    void setFacing(direction value);
+    void setFacing(dir::direction value);
     void setInteracted(unsigned int value);
     void setKillTimeBeg(unsigned int value);
     void setKillTimeReq(unsigned int value);
@@ -89,7 +89,7 @@ public:
     void setSteppingOn(std::shared_ptr<bElem> value);
     void setStandingOn(std::weak_ptr<bElem> value);
     void setMoved(int value);
-    void setMyDirection(direction value);
+    void setMyDirection(dir::direction value);
     void setMyPosition(coords value);
     void setTaterCounter(int value);
     void setWaiting(int value);
@@ -163,8 +163,8 @@ private:
     int ammo = 0;
     int killed = -1;
     coords myPosition = NOCOORDS;
-    direction myDirection = NODIRECTION;
-    direction facing = NODIRECTION;
+    dir::direction myDirection = dir::direction::NODIRECTION;
+    dir::direction facing = dir::direction::NODIRECTION;
 
     std::shared_ptr<bElem> steppingOn = nullptr;
     std::weak_ptr<bElem> standingOn;
