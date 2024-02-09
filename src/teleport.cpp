@@ -63,7 +63,6 @@ bool teleport::interact(std::shared_ptr<bElem> who)
 //// ChangeME to something cool!
 bool teleport::createConnectionsWithinSUbtype()
 {
-    int c0=0;
     for (unsigned int c = 0; c < teleport::allTeleporters.size(); c++)
     {
         std::shared_ptr<teleport> t=teleport::allTeleporters[c].lock();
@@ -71,7 +70,7 @@ bool teleport::createConnectionsWithinSUbtype()
         {
 
             candidates.push_back(t);
-            c0++;
+
         }
     }
 
@@ -88,9 +87,12 @@ bool teleport::createConnectionsWithinSUbtype()
     for (unsigned int c = 0; c < candidates.size() - 1; c++)
     {
         if(c%2==0) {
-            candidates[c]->getStats()->setFacing((c0 % 2 == 0) ? dir::direction::LEFT : dir::direction::UP);
-            candidates[c]->getStats()->setMyDirection(candidates[c]->getStats()->getFacing());
+            candidates[c]->getStats()->setFacing(dir::direction::LEFT );
+        } else
+        {
+            candidates[c]->getStats()->setFacing(dir::direction::UP);
         }
+        candidates[c]->getStats()->setMyDirection(candidates[c]->getStats()->getFacing());
         candidates[c]->theOtherEnd = candidates[c + 1];
     }
     // candidates[candidates.size() - 1]->theOtherEnd = candidates[0];
