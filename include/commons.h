@@ -361,9 +361,9 @@ typedef struct neighboorhood
 
 using coords3d=struct crd3d
 {
-    int x=-1;
-    int y=-1;
-    int z=-1;
+    float x=-1;
+    float y=-1;
+    float z=-1;
     inline bool operator==(crd3d a) const
     {
         if (a.x==x && a.y==y && a.z==z)

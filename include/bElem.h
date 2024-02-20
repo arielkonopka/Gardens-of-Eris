@@ -111,6 +111,7 @@ public:
     static void tick();
     static unsigned int getCntr() ;
 
+    std::shared_ptr<bElem> findInDir(dir::direction dir);
 
     virtual bool isLocked();
     virtual bool lockThisObject(std::shared_ptr<bElem> who);

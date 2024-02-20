@@ -26,7 +26,7 @@
 
 namespace presenter
 {
-presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spacing(0),previousPosition({0,0}),positionOnScreen({0,0})
+presenter::presenter(): sWidth(0),sHeight(0),spacing(0),previousPosition({0,0}),positionOnScreen({0,0})
 {
     ALLEGRO_MONITOR_INFO info;
     al_init();
@@ -41,7 +41,7 @@ presenter::presenter(std::shared_ptr<chamber> board): sWidth(0),sHeight(0),spaci
     this->alTimer = al_create_timer(1.0 / 50);
     this->evQueue= al_create_event_queue();
     al_register_event_source(this->evQueue, al_get_timer_event_source(this->alTimer));
-    this->_cp_attachedBoard=board;
+  //  this->_cp_attachedBoard=board;
     al_get_monitor_info(0, &info);
     this->scrWidth = info.x2-50; /* Assume this is 1366 */
     this->scrHeight= info.y2-50; /* Assume this is 768 */
@@ -73,7 +73,7 @@ bool presenter::initializeDisplay()
     this->statsStripe=al_create_bitmap(this->scrWidth,this->scrHeight/3);
     this->pointsTexture = al_create_bitmap(this->pointsTextureWidth, this->pointsTextureHeight);
     this->shader = al_create_shader(ALLEGRO_SHADER_GLSL);
-    const char *pixelShaderSource = "data/shaders/pixelShader.glps";
+    const char *pixelShaderSource = "data/shaders/pixelShader2.glps";
     const char *vertexShaderSource="data/shaders/vertexShader.glvs";
     std::string s1;
     s1=(al_attach_shader_source_file(this->shader, ALLEGRO_VERTEX_SHADER, vertexShaderSource))?"Vertex success":"Vertex failure";
@@ -352,7 +352,7 @@ void presenter::showGameField()
     this->previousPosition.y=this->positionOnScreen.y/this->sHeight;
     offX=(this->positionOnScreen.x % this->sWidth);
     offY=(this->positionOnScreen.y % this->sHeight);
-    soundManager::getInstance()->setListenerVelocity({d.x*555,0,d.y*555});
+    soundManager::getInstance()->setListenerVelocity({(float)d.x,(float)d.y,0.0f});
     this->prepareStatsThing();
 
     al_set_target_bitmap(this->internalBitmap);
@@ -569,7 +569,7 @@ int presenter::presentEverything()
         {
             std::lock_guard<std::mutex> guard(this->presenter_mutex);
             currentPlayer=player::getActivePlayer();
-            this->_cp_attachedBoard->player=NOCOORDS;
+            //this->_cp_attachedBoard->player=NOCOORDS;
             if(currentPlayer.get()!=nullptr)
             {
                 this->_cp_attachedBoard=player::getActivePlayer()->getBoard();

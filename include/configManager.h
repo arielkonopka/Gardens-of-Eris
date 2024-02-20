@@ -103,7 +103,7 @@ typedef struct gameConfig
 {
     std::string FontFile,spriteFile,splashScr;
     int sndFifoSize=0;
-    int soundDistance=1005;
+    int soundDistance=250;
     int tileWidth,tileHeight;
 
     int spacing; //We use spacing in the sprite png file, just for our comfort

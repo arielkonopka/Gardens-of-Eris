@@ -85,8 +85,8 @@ bool plainGun::use(std::shared_ptr<bElem> who)
             c3d.x=who->getStats()->getMyPosition().x*32+who->getOffset().x;
             c3d.z=who->getStats()->getMyPosition().y*32+who->getOffset().y;
             c3d.y=50;
-            coords3d vel= {who->getOffset().x,0,who->getOffset().y};
-            soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,this->getStats()->getInstanceId(),this->getType(),this->getAttrs()->getSubtype(),"Shoot","Shoot");
+            coords3d vel= {(float)who->getOffset().x,0.0f,(float)who->getOffset().y};
+            this->playSound("use","shoot");
             if (myel->getAttrs()->isSteppable()==true)
             {
                 this->createProjectible(who);

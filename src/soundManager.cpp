@@ -53,7 +53,7 @@ soundManager::soundManager()
             srcNode->source=source;
             srcNode->isRegistered=false;
             alSourcei(srcNode->source, AL_SOURCE_RELATIVE, AL_TRUE);
-            alSourcef(srcNode->source, AL_MAX_DISTANCE, 3200.0f); // we want to hear from the distance 100 elements 100*32=3200
+            alSourcef(srcNode->source, AL_MAX_DISTANCE, 0.8f); // we want to hear from the distance 10 elements 10*32=3200
             alSourcef(srcNode->source, AL_REFERENCE_DISTANCE, 0.5f);
             alSourcef(srcNode->source,AL_ROLLOFF_FACTOR,4.0f);
             alSourcef(srcNode->source, AL_PITCH, 1.0f);
@@ -170,7 +170,7 @@ void soundManager::stopSoundsByElementId(int elId)
             continue;
         }
 
-        float newVolume = 32*(n->gain/(n->position.distance(this->listenerPos)));
+        float newVolume = (n->gain/(n->position.distance(this->listenerPos)));
         alSourcef(n->source, AL_GAIN, (newVolume>2)?2.0:newVolume);
 
     }
@@ -256,7 +256,7 @@ std::shared_ptr<stNode> soundManager::registerSound(int chamberId, coords3d posi
     srcNode->event=event;
     srcNode->gain=this->gc->samples[typeId][subtypeId][eventType][event].gain;
     srcNode->soundSpace=chamberId;
-    float newVolume = 32*(srcNode->gain/(position.distance(this->listenerPos)));
+    float newVolume = (srcNode->gain/(position.distance(this->listenerPos)));
     alSourcef(srcNode->source, AL_GAIN, (newVolume>2)?2.0:newVolume);
     alSourcei(srcNode->source,AL_LOOPING,(srcNode->mode==0)?AL_FALSE:AL_TRUE);
     this->sndRegister[elId][typeId][eventType][event].r=true;
@@ -282,8 +282,12 @@ int soundManager::findNearestMusic()
     int dst=65535;
     int no=-1;
     for(unsigned int c=0; c<this->registeredMusic.size(); c++)
-    {
+    { // we could check it in the same time, but then we would have to apply priority
         if(this->registeredMusic[c].chamberId==this->currSoundSpace && (no<0 || dst>this->listenerPos.distance(this->registeredMusic[c].position)))
+        {
+            no=c;
+            dst=this->listenerPos.distance(this->registeredMusic[c].position);
+        } else if (this->registeredMusic[c].chamberId==-1 && (no<0 || dst>this->listenerPos.distance(this->registeredMusic[c].position)))
         {
             no=c;
             dst=this->listenerPos.distance(this->registeredMusic[c].position);
@@ -475,68 +479,72 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
         return -1;
     }
     /* we deal with the problem of code and configuration mismatch */
-    if (songNo<0 || this->gc->music.size()<(unsigned int)songNo)
-        songNo=bElem::randomNumberGenerator()%this->gc->music.size();
-    {
-        muNode muNd;
-        muNd.songNo=songNo;
-        muNd.musicFile=sf_open(this->gc->music[songNo].filename.c_str(), SFM_READ, &(muNd.musFileinfo));
-        if(!muNd.musicFile)
-        {
-
-            std::cout<<"Music file cannot be open "<<this->gc->music[songNo].filename<<"!\n";
-            return -1;
-        }
-        if(muNd.musFileinfo.frames < 1 || muNd.musFileinfo.frames > (sf_count_t)(INT_MAX/sizeof(short))/muNd.musFileinfo.channels)
-        {
-            sf_close(muNd.musicFile); /* file contains no data */
-            return -1;
-        }
-        muNd.format = this->determineFormat(muNd.musFileinfo,muNd.musicFile);
-        if(!muNd.format)
-        {
-            sf_close(muNd.musicFile);
-            return -1;
-        }
-        ALuint source;
-        source = 0;
-        alGenSources(1, &source);
-        muNd.source=source;
-        muNd.position=position;
-        muNd.chamberId=chamberId;
-        muNd.gain=this->gc->music[songNo].gain;
-        muNd.bElemInstanceId=bElemInstanceId;
-        alSource3f(source,AL_POSITION,(float)position.x,(float)position.y,(float)position.z);
-        alSourcef(source,AL_GAIN,std::min(muNd.gain,(float)1.0));
-        const int buffersNum=3;
-        alGenBuffers(buffersNum, &muNd.Abuffers[0]);
-        for(int n=0; n<buffersNum; n++)
-        {
-            std::vector<short> buff(65536);
-            int num_frames = sf_readf_short(muNd.musicFile, buff.data(), buff.size()/muNd.musFileinfo.channels);
-            if(num_frames < 1)
-                break;
-            alBufferData(muNd.Abuffers[n],muNd.format,buff.data(),buff.size()*sizeof(short),muNd.musFileinfo.samplerate);
-        }
-        alSourceQueueBuffers(muNd.source,buffersNum,&muNd.Abuffers[0]);
-        muNd.isRegistered=true;
-        muNd.variableVol=vaiableVolume;
-        // alSourcePlay(muNd.source);
-        //      alSourcef(muNd.source, AL_GAIN, 0.10f);
-        std::lock_guard<std::mutex> guard(this->snd_mutex);
-
-        this->registeredMusic.push_back(muNd);
-        return this->registeredMusic.size()-1;
-
+    if (songNo<0 || this->gc->music.size()<(unsigned int)songNo) {
+        songNo = bElem::randomNumberGenerator() % this->gc->music.size();
     }
+    muNode muNd;
+    muNd.bElemInstanceId=bElemInstanceId;
+    muNd.variableVol=vaiableVolume;
+    muNd.songNo=songNo;
+    muNd.position=position;
+    muNd.chamberId=chamberId;
+    muNd.musicFile=sf_open(this->gc->music[songNo].filename.c_str(), SFM_READ, &(muNd.musFileinfo));
+    if(!muNd.musicFile)
+    {
+        std::cout<<"Music file cannot be open "<<this->gc->music[songNo].filename<<"!\n";
+        return -1;
+    }
+    if(muNd.musFileinfo.frames < 1 || muNd.musFileinfo.frames > (sf_count_t)(INT_MAX/sizeof(short))/muNd.musFileinfo.channels)
+    {
+        sf_close(muNd.musicFile); /* music file contains no data */
+        return -1;
+    }
+    muNd.format = this->determineFormat(muNd.musFileinfo,muNd.musicFile);
+    if(!muNd.format)
+    {
+        sf_close(muNd.musicFile);
+        return -1;
+    }
+    ALuint source;
+    source = 0;
+    alGenSources(1, &source);
+    muNd.source=source;
+
+    muNd.gain=this->gc->music[songNo].gain;
+    alSource3f(source,AL_POSITION,(float)position.x,(float)position.y,(float)position.z);
+    alSourcef(source,AL_GAIN,std::min(muNd.gain,(float)1.0));
+    const int buffersNum=3;
+    alGenBuffers(buffersNum, &muNd.Abuffers[0]);
+    for(int n=0; n<buffersNum; n++)
+    {
+        std::vector<short> buff(65536);
+        int num_frames = sf_readf_short(muNd.musicFile, buff.data(), buff.size()/muNd.musFileinfo.channels);
+        if(num_frames < 1)
+            break;
+        alBufferData(muNd.Abuffers[n],muNd.format,buff.data(),buff.size()*sizeof(short),muNd.musFileinfo.samplerate);
+    }
+    alSourceQueueBuffers(muNd.source,buffersNum,&muNd.Abuffers[0]);
+    muNd.isRegistered=true;
+
+
+    // alSourcePlay(muNd.source);
+    //      alSourcef(muNd.source, AL_GAIN, 0.10f);
+
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
+
+     this->registeredMusic.push_back(muNd);
+
+     return this->registeredMusic.size()-1;
+
+
 }
 
 
 void soundManager::playSong(int songNo)
 {
     ALint buffersProcessed = 0;
-    float newVol=(1.5*this->registeredMusic[songNo].gain/std::log(1+this->listenerPos.distance(this->registeredMusic[songNo].position)));
-    newVol=(this->registeredMusic[songNo].variableVol)?std::min((float)1.0,newVol):this->registeredMusic[songNo].gain;
+    float newVol=(this->registeredMusic[songNo].gain/(0.01+this->listenerPos.distance(this->registeredMusic[songNo].position)));
+    newVol=(this->registeredMusic[songNo].variableVol)?std::min((float)this->registeredMusic[songNo].gain,newVol):this->registeredMusic[songNo].gain;
     alGetSourcei(this->registeredMusic[songNo].source, AL_BUFFERS_PROCESSED, &buffersProcessed);
     alSourcef(this->registeredMusic[songNo].source, AL_GAIN, newVol);
     if(buffersProcessed <= 0)

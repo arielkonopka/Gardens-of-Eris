@@ -30,9 +30,13 @@ bool teleport::additionalProvisioning(int value,std::shared_ptr<teleport> t)
     if(!bElem::additionalProvisioning(value,t))
         return false;
     this->connectionsMade = false;
+    if (teleport::allTeleporters.empty())
+    {
+        t->getStats()->setFacing(dir::direction::LEFT);
+        t->getStats()->setMyDirection(t->getStats()->getFacing());
+    }
     teleport::allTeleporters.push_back(t);
     return true;
-
 }
 
 
@@ -138,7 +142,7 @@ bool teleport::stepOnAction(bool step, std::shared_ptr<bElem>who)
     bElem::stepOnAction(step,who);
     this->playSound("Teleport", "HummingSound");
 
-    if(step && !who->getStats()->isTeleporting())
+    if(step && !who->getStats()->isTeleporting() && !this->getStats()->isTeleporting())
     {
         this->getStats()->setWaiting(_teleportStandTime);
         this->registerLiveElement(shared_from_this());
@@ -161,6 +165,7 @@ bool teleport::mechanics()
     if (!this->getStats()->isWaiting() && this->getStats()->hasParent() && this->getStats()->getMyDirection()!=dir::direction::LEFT)
     {
             this->interact(this->getStats()->getStandingOn().lock());
+            this->deregisterLiveElement(this->getStats()->getInstanceId());
     };
     return true;
 }
@@ -200,6 +205,15 @@ oState teleport::disposeElementUnsafe()
 {
     this->removeFromAllTeleporters();
     return bElem::disposeElementUnsafe();
+}
+
+bool teleport::stepOnElement(std::shared_ptr<bElem> step) {
+    if(!bElem::stepOnElement(step))
+        return false;
+    if(this->getAttrs()->getSubtype()==0)
+        soundManager::getInstance()->setupSong(this->getStats()->getInstanceId(),1, {(float)this->getStats()->getMyPosition().x,(float)this->getStats()->getMyPosition().y, 0.0f},this->getBoard()->getInstanceId(),true);
+
+    return bElem::stepOnElement(step);
 }
 
 
