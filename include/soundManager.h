@@ -66,7 +66,7 @@ using muNode=struct _mudNode
     coords3d position;
     int chamberId;
     ALenum format;
-    bool variableVol=false;
+    bool variableVol=true;
     float gain=1.0;
     unsigned int bElemInstanceId=0;
 };

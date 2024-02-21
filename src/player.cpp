@@ -129,10 +129,7 @@ bool player::interact(std::shared_ptr<bElem> who)
 bool player::stepOnElement(std::shared_ptr<bElem> step)
 {
     bool r = bElem::stepOnElement(step);
-    bool st=false;
-    if (this->getBoard().get() != nullptr && this->getStats()->isActive())
-        st=this->getBoard()->visitPosition(this->getStats()->getMyPosition()); // we visit the position.
-    if(st)
+    if (this->getBoard() && this->getStats()->isActive() && this->getBoard()->visitPosition(this->getStats()->getMyPosition()))
     {
         this->getStats()->setStats(STEPS,this->getStats()->getStats(STEPS)+(bElem::randomNumberGenerator()%2));
         this->vRadius=2+(std::log(this->getStats()->getStats(STEPS))/2);
@@ -160,14 +157,14 @@ bool player::mechanics()
     this->getBoard()->player.x = this->getStats()->getMyPosition().x;
     this->getBoard()->player.y = this->getStats()->getMyPosition().y;
     coords3d c3d;
-    c3d.x = this->getStats()->getMyPosition().x * 32 + this->getOffset().x;
-    c3d.z = this->getStats()->getMyPosition().y * 32 + this->getOffset().y;
-    c3d.y = 50;
+    c3d.x = (float)this->getStats()->getMyPosition().x;
+    c3d.y = (float)this->getStats()->getMyPosition().y;
+    c3d.z = 5;
     coords3d vel;
     switch (this->getStats()->getMyDirection())
     {
         case dir::direction::UP:
-        vel = {0, 0, -1};
+        vel = {0, -1, 0};
         break;
     case dir::direction::LEFT:
         vel = {-1, 0, 0};
@@ -176,13 +173,14 @@ bool player::mechanics()
         vel = {1, 0, 0};
         break;
     case dir::direction::DOWN:
-        vel = {0, 0, 1};
+        vel = {0, 1, 0};
         break;
     case dir::direction::NODIRECTION:
         vel = {0, 0, 0};
     }
+
     soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId());
-    soundManager::getInstance()->setListenerOrientation({0, -10, 0});
+    soundManager::getInstance()->setListenerOrientation({0, 0, -1});
     soundManager::getInstance()->setListenerPosition(c3d);
     if (!res)
         return false;

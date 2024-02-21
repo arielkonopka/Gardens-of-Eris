@@ -69,7 +69,7 @@ enum class _cp_gameReasonOut { LOST=0, USERREQ=1, PAUSE=2, TELEPORTREQ=3 };
 class presenter
 {
 public:
-    presenter(std::shared_ptr<chamber> board);
+    presenter();
     ~presenter() = default;
     bool initializeDisplay();
     int presentEverything();

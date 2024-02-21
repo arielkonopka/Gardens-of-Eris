@@ -111,7 +111,7 @@ bool monster::checkNeigh()
 #endif
         if (this->weapon.get()!=nullptr  || this->getAttrs()->canCollect()) //
         {
-            while (e != nullptr) // this is the "mostervision"
+            while (e != nullptr) // this is the "monstervision"
             {
 
                 if (e->getType() == _stash || e->getType() == _rubishType || (e->getType()==_goldenAppleType && e->getAttrs()->getSubtype()!=0) || e->getAttrs()->isWeapon()) // take the dir::direction towards remainings from other objects, broken apples or guns
@@ -173,28 +173,19 @@ bool monster::checkNeigh()
 bool monster::mechanics()
 {
 
-    dir::direction newDir = dir::direction::NODIRECTION;
-    dir::direction oldDir = (dir::direction)(((int)this->getStats()->getMyDirection()) % 4);
+    //dir::direction newDir = dir::direction::NODIRECTION;
+    dir::direction newDir = (dir::direction)(((int)this->getStats()->getMyDirection()+1) % 4);
     if (!bElem::mechanics())
         return false;
-    this->checkNeigh();
+    if(this->checkNeigh()) return true;
     if (this->getStats()->isWaiting())
         return true;
-    for (int c = 0; c < 4; c++)
-    {
-        newDir = (dir::direction)((((int)oldDir) + rotA) % 4);
-        if (this->isSteppableDirection(newDir))
-        {
-            this->getStats()->setFacing(newDir);
-            this->moveInDirection(newDir);
-            return true;
-        }
-        else
-        {
-            oldDir = (dir::direction)((((int)oldDir) + rotB) % 4);
-        }
-    }
-    return true;
+   if(this->moveInDirection(this->getStats()->getMyDirection()))
+       return true;
+   this->getStats()->setMyDirection(newDir);
+   this->getStats()->setFacing(newDir);
+   this->getStats()->setWaiting(5);
+   return true;
 }
 
 bool monster::steppableNeigh()

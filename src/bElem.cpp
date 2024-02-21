@@ -884,10 +884,10 @@ void bElem::playSound(std::string eventType, std::string event)
 void bElem::ps(std::shared_ptr<bElem>who, std::string eventType, std::string event)
 {
     coords3d c3d;
-    c3d.x=who->getStats()->getMyPosition().x*32+who->getOffset().x;
-    c3d.z=who->getStats()->getMyPosition().y*32+who->getOffset().y;
-    c3d.y=0;
-    coords3d vel= {(who->getOffset().x)?32:0, 0,(who->getOffset().y>0)?32:0};
+    c3d.x=(float)who->getStats()->getMyPosition().x;
+    c3d.y=(float)who->getStats()->getMyPosition().y;
+    c3d.z=0.0f;
+    coords3d vel= {(who->getOffset().x)?0.5f:0.0f,(who->getOffset().y>0)?0.5f:0.0f,0.0f};
     if(!who || !who->getBoard()) return;
     soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),c3d,vel,this->getStats()->getInstanceId(),this->getType(),this->getAttrs()->getSubtype(),eventType,event);
 }
@@ -895,6 +895,15 @@ void bElem::ps(std::shared_ptr<bElem>who, std::string eventType, std::string eve
 void bElem::stopMySounds()
 {
     soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
+}
+
+std::shared_ptr<bElem> bElem::findInDir(dir::direction dir) {
+    std::shared_ptr<bElem> r=this->getElementInDirection(dir);
+    while(r && r->getAttrs()->isSteppable() && !r->getAttrs()->isCollectible())
+    {
+        r=r->getElementInDirection(dir);
+    }
+    return r;
 }
 
 
