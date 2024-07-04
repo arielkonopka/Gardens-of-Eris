@@ -33,6 +33,8 @@
 class player : public bElem
 {
 public:
+    using bElem::additionalProvisioning;
+
     player()=default;
 
     ~player() final=default;

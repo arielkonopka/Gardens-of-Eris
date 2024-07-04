@@ -33,6 +33,7 @@ bool teleport::additionalProvisioning(int value,std::shared_ptr<teleport> t)
     if (teleport::allTeleporters.empty())
     {
         t->getStats()->setFacing(dir::direction::LEFT);
+        soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
         t->getStats()->setMyDirection(t->getStats()->getFacing());
     }
     teleport::allTeleporters.push_back(t);
@@ -92,6 +93,7 @@ bool teleport::createConnectionsWithinSUbtype()
     {
         if(c%2==0) {
             candidates[c]->getStats()->setFacing(dir::direction::LEFT );
+
         } else
         {
             candidates[c]->getStats()->setFacing(dir::direction::UP);
@@ -210,7 +212,7 @@ oState teleport::disposeElementUnsafe()
 bool teleport::stepOnElement(std::shared_ptr<bElem> step) {
     if(!bElem::stepOnElement(step))
         return false;
-    if(this->getAttrs()->getSubtype()==0)
+    if(this->getAttrs()->getSubtype()==0 && this->getStats()->getFacing()!=dir::direction::LEFT)
         soundManager::getInstance()->setupSong(this->getStats()->getInstanceId(),1, {(float)this->getStats()->getMyPosition().x,(float)this->getStats()->getMyPosition().y, 0.0f},this->getBoard()->getInstanceId(),true);
 
     return bElem::stepOnElement(step);

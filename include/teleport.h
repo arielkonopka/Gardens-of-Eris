@@ -30,6 +30,8 @@
 class teleport : public bElem
 {
 public:
+    using bElem::additionalProvisioning;
+
     int getType() const;
     teleport()=default;
     virtual ~teleport()=default;

@@ -75,6 +75,7 @@
 #define _plainGunCharge 10
 
 #define _boubaType 555
+#define _kikiType 556
 
 #define _dexterityLevels 64
 

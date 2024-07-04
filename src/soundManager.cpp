@@ -331,21 +331,21 @@ std::shared_ptr<stNode> soundManager::getSndNode()
 
 void soundManager::setListenerPosition(coords3d pos)
 {
-    alListener3f(AL_POSITION, (float)pos.x, (float)pos.y, (float)pos.z);
+    alListener3f(AL_POSITION, (float)pos.x/1024.0, (float)pos.y/1024.0, (float)pos.z/1024.0);
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->listenerPos=pos;
 }
 
 void soundManager::setListenerOrientation(coords3d pos)
 {
-    ALfloat listenerOri[] = { (float)pos.x, (float)pos.y, (float)pos.z,0.0,0.0,1.0};
+    ALfloat listenerOri[] = { (float)pos.x/1024.0, (float)pos.y/1024.0, (float)pos.z/1024.0,0.0,0.0,1.0};
     alListenerfv(AL_ORIENTATION, listenerOri);
 
 }
 
 void soundManager::setListenerVelocity(coords3d pos)
 {
-    alListener3f(AL_VELOCITY, (float)pos.x, (float)pos.y, (float)pos.z);
+    alListener3f(AL_VELOCITY, (float)pos.x/1024.0, (float)pos.y/1024.0, (float)pos.z/1024.0);
 }
 
 
@@ -358,11 +358,11 @@ void soundManager::setListenerChamber(int chamberId)
 
 void soundManager::setSoundVelocity(std::shared_ptr<stNode>  snd, coords3d pos)
 {
-    alSource3f(snd->source,AL_VELOCITY,(float)pos.x,(float)pos.y,(float)pos.z);
+    alSource3f(snd->source,AL_VELOCITY,(float)pos.x/1024.0,(float)pos.y/1024.0,(float)pos.z/1024.0);
 }
 void soundManager::setSoundPosition(std::shared_ptr<stNode> snd, coords3d pos)
 {
-    alSource3f(snd->source,AL_POSITION,(float)pos.x,(float)pos.y,(float)pos.z);
+    alSource3f(snd->source,AL_POSITION,(float)pos.x/1024.0,(float)pos.y/1024.0,(float)pos.z/1024.0);
 }
 
 
@@ -504,14 +504,14 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
     {
         sf_close(muNd.musicFile);
         return -1;
-    }
+    };
     ALuint source;
     source = 0;
     alGenSources(1, &source);
     muNd.source=source;
 
     muNd.gain=this->gc->music[songNo].gain;
-    alSource3f(source,AL_POSITION,(float)position.x,(float)position.y,(float)position.z);
+    alSource3f(source,AL_POSITION,(float)position.x/1024.0,(float)position.y/1024.0,(float)position.z/1024.0);
     alSourcef(source,AL_GAIN,std::min(muNd.gain,(float)1.0));
     const int buffersNum=3;
     alGenBuffers(buffersNum, &muNd.Abuffers[0]);
@@ -596,7 +596,7 @@ void soundManager::moveSong( int songNo, coords3d newPosition,int newChamber)
     this->registeredMusic[songNo].position = newPosition;
     this->registeredMusic[songNo].chamberId=newChamber;
     alSource3f(this->registeredMusic[songNo].source, AL_POSITION,
-               (float)newPosition.x, (float)newPosition.y, (float)newPosition.z);
+               (float)newPosition.x/1024.0, newPosition.y/1024.0, (float)newPosition.z/1024.0);
 }
 
 void soundManager::threadLoop()

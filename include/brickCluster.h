@@ -32,6 +32,8 @@
 class brickCluster: public bElem
 {
 public:
+    using bElem::additionalProvisioning;
+
     brickCluster()=default;
     virtual ~brickCluster()=default;
     int getType() const;

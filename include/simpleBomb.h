@@ -28,6 +28,7 @@
 class simpleBomb: public explosives
 {
 public:
+    using bElem::additionalProvisioning;
 
     simpleBomb()=default;
     virtual ~simpleBomb()=default;
@@ -36,7 +37,7 @@ public:
     virtual bool destroy();
     virtual int getType() const;
     virtual bool mechanics();
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<simpleBomb> sbe);
+    bool additionalProvisioning(int subtype,std::shared_ptr<simpleBomb> sbe);
 private:
     bool triggered=false;
 };

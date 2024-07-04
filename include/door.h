@@ -32,6 +32,7 @@
 class door : public bElem
 {
 public:
+    using bElem::additionalProvisioning;
 
     virtual int getType() const;
     door()=default;
@@ -40,7 +41,7 @@ public:
     virtual bool interact(std::shared_ptr<bElem> who);
 
     virtual ~door()=default;
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<door> sbe);
+    bool additionalProvisioning(int subtype,std::shared_ptr<door> sbe);
 
 private:
     void _alignWithOpen();

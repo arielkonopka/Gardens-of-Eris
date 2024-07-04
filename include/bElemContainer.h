@@ -19,7 +19,7 @@ public:
     bool addOnTop(std::shared_ptr<bElem>);
     bool removeFromTop();
     bool addOnPos(int pos,std::shared_ptr<bElem>);
-
+    bool removeOnPos(int pos);
 
 
 private:

@@ -29,11 +29,13 @@
 class puppetMasterFR :   public bElem
 {
 public:
+    using bElem::additionalProvisioning;
+
     puppetMasterFR()=default;
     virtual ~puppetMasterFR()=default;
     virtual bool mechanics();
     int getType() const;
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<puppetMasterFR> sbe);
+    bool additionalProvisioning(int subtype,std::shared_ptr<puppetMasterFR> sbe);
     bool collectOnAction(bool c, std::shared_ptr<bElem> who);
 protected:
 

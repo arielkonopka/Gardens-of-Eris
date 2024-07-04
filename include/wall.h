@@ -32,13 +32,14 @@
 class wall : public bElem
 {
 public:
+    using bElem::additionalProvisioning;
 
     wall()=default;
     virtual ~wall()=default;
     bool stepOnElement(std::shared_ptr<bElem> elem);
     std::shared_ptr<bElem> removeElement();
     int getType() const;
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<wall> sbe);
+    bool additionalProvisioning(int subtype,std::shared_ptr<wall> sbe);
 
 };
 

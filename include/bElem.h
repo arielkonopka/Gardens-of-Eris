@@ -50,7 +50,9 @@ using oState = enum ost { DISPOSED = 0,
 
 class bElem : public  std::enable_shared_from_this<bElem>
 {
+
 public:
+
     /*
      * these three templates below generate objects. I added them because I need bidirectional connection with everything
      */
@@ -119,7 +121,7 @@ public:
 
     virtual int getTypeInDirection(dir::direction di);
     virtual void setStatsOwner(std::shared_ptr<bElem> owner);
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<bElem> sbe);
+    bool additionalProvisioning(int subtype,std::shared_ptr<bElem> sbe);
 
     void playSound(std::string eventType,std::string event);
     void stopMySounds();
