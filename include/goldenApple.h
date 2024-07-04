@@ -30,6 +30,8 @@
 class goldenApple : public explosives
 {
 public:
+    using bElem::additionalProvisioning;
+
     static std::shared_ptr<bElem> getApple(int num);
     static  int getAppleNumber();
     int getType() const;
@@ -40,7 +42,7 @@ public:
     bool mechanics();
     goldenApple()=default;
     oState disposeElement() final;
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<goldenApple> sbe);
+    bool additionalProvisioning(int subtype,std::shared_ptr<goldenApple> sbe);
     bool collectOnAction(bool collected, std::shared_ptr<bElem> who);
 
 private:

@@ -25,3 +25,23 @@ kiki::kiki()
 {
     //ctor
 }
+
+bool kiki::additionalProvisioning(int stype, std::shared_ptr<kiki> myself) {
+    return false;
+}
+
+bool kiki::kill() {
+    return bElem::kill();
+}
+
+bool kiki::destroy() {
+    return bElem::destroy();
+}
+
+bool kiki::mechanics() {
+    return bElem::mechanics();
+}
+
+int kiki::getType() const {
+    return _kikiType;
+}

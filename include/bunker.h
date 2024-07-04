@@ -32,6 +32,7 @@
 class bunker : public bElem
 {
 public:
+    using bElem::additionalProvisioning;
 
     bunker();
     virtual ~bunker() = default;

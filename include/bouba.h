@@ -24,17 +24,22 @@
 #ifndef BOUBA_H
 #define BOUBA_H
 
-#include <bElem.h>
+#include <explosives.h>
 
 
-class bouba : public bElem
+class bouba :  public explosives
 {
     public:
-        bouba()=default;
+       using bElem::additionalProvisioning;
+
+    bouba()=default;
         virtual ~bouba()=default;
         bool destroy() final;
+        bool kill() final;
+        bool mechanics() final;
+        bool interact(std::shared_ptr<bElem> who) final;
         virtual int getType() const;
-    protected:
+        bool additionalProvisioning(int subtype,std::shared_ptr<bouba> sbe);
 
     private:
 };

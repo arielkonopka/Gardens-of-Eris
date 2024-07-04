@@ -61,5 +61,5 @@ int bazookaMissile::getType() const
 
 bool bazookaMissile::additionalProvisioning(int subtype, std::shared_ptr<bazookaMissile> sbe)
 {
-    return explosives::additionalProvisioning(subtype,sbe);
+    return explosives::additionalProvisioning(subtype,std::static_pointer_cast<explosives>(sbe));
 }

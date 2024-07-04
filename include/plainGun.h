@@ -30,6 +30,7 @@
 class plainGun : public bElem
 {
 public:
+    using bElem::additionalProvisioning;
 
     virtual int getType() const;
     virtual bool use(std::shared_ptr<bElem> who);
@@ -37,7 +38,7 @@ public:
     virtual bool mechanics();
     virtual ~plainGun() =default;
     virtual std::shared_ptr<bElem> createProjectible(std::shared_ptr<bElem> who);
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<plainGun> sbe);
+    bool additionalProvisioning(int subtype,std::shared_ptr<plainGun> sbe);
 
 private:
     int ammo=1+(bElem::randomNumberGenerator()%_plainGunAmmo);

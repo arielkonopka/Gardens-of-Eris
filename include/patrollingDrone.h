@@ -30,13 +30,14 @@
 class patrollingDrone : public bElem
 {
 public:
+    using bElem::additionalProvisioning;
 
     patrollingDrone()=default;
     virtual ~patrollingDrone()=default;
     virtual bool interact(std::shared_ptr<bElem> who);
     int getType() const;
     float getViewRadius() const;
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<patrollingDrone> sbe);
+    bool additionalProvisioning(int subtype,std::shared_ptr<patrollingDrone> sbe);
 
 private:
     bool brained=false;

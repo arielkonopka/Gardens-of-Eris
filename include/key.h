@@ -31,6 +31,8 @@ class key : public bElem
 {
 
 public:
+    using bElem::additionalProvisioning;
+
     key()=default;
     virtual ~key()=default;
     virtual int getType() const;

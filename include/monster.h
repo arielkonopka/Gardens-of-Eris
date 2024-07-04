@@ -31,6 +31,7 @@
 class monster : public bElem
 {
 public:
+    using bElem::additionalProvisioning;
 
     monster()=default;
     virtual ~monster()=default;
@@ -38,7 +39,7 @@ public:
     virtual bool mechanics();
     virtual bool checkNeigh();
     virtual bool steppableNeigh();
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<monster> sbe);
+    bool additionalProvisioning(int subtype,std::shared_ptr<monster> sbe);
 
 private:
     std::shared_ptr<plainGun> weapon=nullptr;

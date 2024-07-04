@@ -31,8 +31,15 @@
 class kiki : public bElem
 {
     public:
-        kiki();
+    using bElem::additionalProvisioning;
+
+    kiki();
         virtual ~kiki()=default;
+        bool  additionalProvisioning(int stype,std::shared_ptr<kiki> myself);
+        bool kill() final;
+        bool destroy() final;
+        bool mechanics() final;
+        virtual int getType() const;
 
     protected:
 

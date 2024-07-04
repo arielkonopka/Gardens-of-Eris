@@ -73,7 +73,7 @@ bool presenter::initializeDisplay()
     this->statsStripe=al_create_bitmap(this->scrWidth,this->scrHeight/3);
     this->pointsTexture = al_create_bitmap(this->pointsTextureWidth, this->pointsTextureHeight);
     this->shader = al_create_shader(ALLEGRO_SHADER_GLSL);
-    const char *pixelShaderSource = "data/shaders/pixelShader2.glps";
+    const char *pixelShaderSource = "data/shaders/pixelShader.glps";
     const char *vertexShaderSource="data/shaders/vertexShader.glvs";
     std::string s1;
     s1=(al_attach_shader_source_file(this->shader, ALLEGRO_VERTEX_SHADER, vertexShaderSource))?"Vertex success":"Vertex failure";

@@ -34,3 +34,18 @@ bool bouba::destroy() {
 int bouba::getType() const {
     return _boubaType;
 }
+
+bool bouba::interact(std::shared_ptr<bElem> who) {
+    return bElem::interact(who);
+}
+
+bool bouba::kill() {
+    bool r;
+    if( r=bElem::kill())
+        this->explode(3.5);
+    return r;
+}
+
+bool bouba::mechanics() {
+    return bElem::mechanics();
+}

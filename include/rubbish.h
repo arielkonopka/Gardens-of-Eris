@@ -28,13 +28,14 @@
 class rubbish:  public bElem
 {
 public:
+    using bElem::additionalProvisioning;
 
     rubbish()=default;
     virtual ~rubbish() = default;
     bool mechanics() final;
     int getType()  const ;
 
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<rubbish> sbe);
+    bool additionalProvisioning(int subtype,std::shared_ptr<rubbish> sbe);
 
 };
 
