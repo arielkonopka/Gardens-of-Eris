@@ -133,8 +133,6 @@ private:
 
     std::once_flag _provOnce;
     void ps(std::shared_ptr<bElem> who,std::string eventType,std::string event);
-    bool provisioned=false;
-
     std::weak_ptr<chamber> attachedBoard;
     ALLEGRO_MUTEX *elementMutex = nullptr;
     static std::mutex mechanicMutex;

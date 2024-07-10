@@ -33,7 +33,7 @@ bool teleport::additionalProvisioning(int value,std::shared_ptr<teleport> t)
     if (teleport::allTeleporters.empty())
     {
         t->getStats()->setFacing(dir::direction::LEFT);
-        soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
+      //  soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
         t->getStats()->setMyDirection(t->getStats()->getFacing());
     }
     teleport::allTeleporters.push_back(t);
@@ -56,29 +56,33 @@ bool teleport::interact(std::shared_ptr<bElem> who)
     if (this->theOtherEnd)
         r=this->theOtherEnd->teleportIt(who);
     else
-        if(!this->candidates.empty())
-        {
-            r=this->candidates[0]->teleportIt(who);
-        }
-        else
-            r=this->teleportIt(who);
+        r=this->teleportIt(who);
     return r;
 }
 
-//// ChangeME to something cool!
+/***
+ * @brief Find a partner for a teleport
+ * this methid will select a random counterpart for our teleport, and set it up. the counterpart will become a receiver, in case it is a teleporter of subtype==0,
+ * the music started by it will be stopped.
+ * @return always true;
+ */
 bool teleport::createConnectionsWithinSUbtype()
 {
-    for (unsigned int c = 0; c < teleport::allTeleporters.size(); c++)
-    {
-        std::shared_ptr<teleport> t=teleport::allTeleporters[c].lock();
-        if (!teleport::allTeleporters[c].expired() && t->getAttrs()->getSubtype() == this->getAttrs()->getSubtype())
-        {
-
-            candidates.push_back(t);
-
+    std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport>& wp) {
+        if (auto sp = wp.lock()) {
+            return sp->getStats()->getInstanceId() == this->getStats()->getInstanceId();
+        }
+        return true;
+    });
+    candidates.clear();
+    for (const auto& tel : teleport::allTeleporters) {
+        if (tel.expired()) continue;
+        if (auto t = tel.lock()) {
+            if (t->getAttrs()->getSubtype() == this->getAttrs()->getSubtype() && t->getStats()->getInstanceId() != this->getStats()->getInstanceId()) {
+                candidates.push_back(t);
+            }
         }
     }
-
     if(candidates.size()>2 && this->getAttrs()->getSubtype()>0)
         for(int c=0; c<5555; c++)
         {
@@ -86,25 +90,15 @@ bool teleport::createConnectionsWithinSUbtype()
             std::shared_ptr<teleport> t=candidates[p];
             candidates[p]=candidates[p+1];
             candidates[p+1]=t;
-
         }
-
-    for (unsigned int c = 0; c < candidates.size() - 1; c++)
-    {
-        if(c%2==0) {
-            candidates[c]->getStats()->setFacing(dir::direction::LEFT );
-
-        } else
-        {
-            candidates[c]->getStats()->setFacing(dir::direction::UP);
-        }
-        candidates[c]->getStats()->setMyDirection(candidates[c]->getStats()->getFacing());
-        candidates[c]->theOtherEnd = candidates[c + 1];
-    }
-    // candidates[candidates.size() - 1]->theOtherEnd = candidates[0];
+    this->theOtherEnd=candidates[0];
+    this->theOtherEnd->getStats()->setFacing(dir::direction::LEFT);
+    this->theOtherEnd->getStats()->setMyDirection(this->getStats()->getFacing());
+    soundManager::getInstance()->pauseSong(this->theOtherEnd->getStats()->getInstanceId());
+   // soundManager::getInstance()->pauseSong(this->getStats()->getInstanceId());
+    this->candidates.clear();
     return true;
 }
-////////////////
 
 int teleport::getType() const
 {
@@ -212,10 +206,17 @@ oState teleport::disposeElementUnsafe()
 bool teleport::stepOnElement(std::shared_ptr<bElem> step) {
     if(!bElem::stepOnElement(step))
         return false;
-    if(this->getAttrs()->getSubtype()==0 && this->getStats()->getFacing()!=dir::direction::LEFT)
-        soundManager::getInstance()->setupSong(this->getStats()->getInstanceId(),1, {(float)this->getStats()->getMyPosition().x,(float)this->getStats()->getMyPosition().y, 0.0f},this->getBoard()->getInstanceId(),true);
+    if(this->getAttrs()->getSubtype()==0)
+    {
+        soundManager::getInstance()->setupSong(this->getStats()->getInstanceId(), 1,
+                                           {(float) this->getStats()->getMyPosition().x,
+                                            (float) this->getStats()->getMyPosition().y, 0.0f},
+                                           this->getBoard()->getInstanceId(), true);
 
-    return bElem::stepOnElement(step);
+        if(this->getStats()->getMyDirection()==dir::direction::LEFT)
+            soundManager::getInstance()->pauseSong(this->getStats()->getInstanceId());
+    }
+    return true;
 }
 
 

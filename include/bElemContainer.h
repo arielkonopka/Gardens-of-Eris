@@ -13,16 +13,17 @@ public:
     bElemContainer();
     ~bElemContainer();
 
-    std::shared_ptr<bElem> element;
     ALLEGRO_MUTEX* eMutex;
-    /*TODO we will introduce here a vector of elements, to keep the ones, we step on.*/
-    bool addOnTop(std::shared_ptr<bElem>);
-    bool removeFromTop();
-    bool addOnPos(int pos,std::shared_ptr<bElem>);
-    bool removeOnPos(int pos);
+
+    std::shared_ptr<bElem> element;
+    bool addOnTop(std::shared_ptr<bElem> element);
+    std::shared_ptr<bElem> removeFromTop();
+    bool addOnPos(int pos,std::shared_ptr<bElem> element);
+    std::shared_ptr<bElem>  removeOnPos(unsigned int pos);
 
 
 private:
+
     std::vector<std::shared_ptr<bElem>> eCollection;
 
 
