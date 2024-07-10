@@ -89,9 +89,10 @@ soundManager *soundManager::getInstance()
 /*
  * Stop all sound efx of an element, we stop it by id.
 */
-void soundManager::stopSoundsByElementId(int elId)
+void soundManager::stopSoundsByElementId(unsigned int elId)
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
+    this->pauseSong(elId);
     for(unsigned int c=0; c<this->registeredSounds.size(); c++)
     {
         std::shared_ptr<stNode> n=this->registeredSounds[c];
@@ -118,23 +119,20 @@ void soundManager::stopSoundsByElementId(int elId)
  */void soundManager::checkQueue()
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
-    if (this->cnt!=bElem::getCntr())
-    {
-        this->cnt=bElem::getCntr();
-    }
+    this->cnt=bElem::getCntr();
     int nm=this->findNearestMusic();
-
-    if(nm>=0 && nm!=this->currentMusic)
+    if(nm!=this->currentMusic)
     {
-        //this->currentMusic=this->currentMusic%his->registeredMusic.size()
-        if(this->currentMusic>=0)
+        if (this->currentMusic >= 0)
             alSourcePause(this->registeredMusic[this->currentMusic].source);
-        this->currentMusic=nm;
-        if(this->currentMusic>=0)
+        if (nm >= 0)
+        {
+            this->currentMusic = nm;
             alSourcePlay(this->registeredMusic[this->currentMusic].source);
-
-    };
+        };
+    }
     /**/
+    if(this->currentMusic>=0)
     {
         this->playSong(this->currentMusic);
     }
@@ -281,17 +279,16 @@ int soundManager::findNearestMusic()
 {
     int dst=65535;
     int no=-1;
+
     for(unsigned int c=0; c<this->registeredMusic.size(); c++)
     { // we could check it in the same time, but then we would have to apply priority
-        if(this->registeredMusic[c].chamberId==this->currSoundSpace && (no<0 || dst>this->listenerPos.distance(this->registeredMusic[c].position)))
-        {
-            no=c;
-            dst=this->listenerPos.distance(this->registeredMusic[c].position);
-        } else if (this->registeredMusic[c].chamberId==-1 && (no<0 || dst>this->listenerPos.distance(this->registeredMusic[c].position)))
-        {
-            no=c;
-            dst=this->listenerPos.distance(this->registeredMusic[c].position);
-        }
+        auto tmpdist=this->listenerPos.distance(this->registeredMusic[c].position);
+        if(this->registeredMusic[c].isRegistered && this->registeredMusic[c].delayed<=0)
+            if  ((this->registeredMusic[c].chamberId==this->currSoundSpace || this->registeredMusic[c].chamberId==-1) && (no<0 || dst>tmpdist))
+            {
+                no=c;
+                dst=tmpdist;
+            }
     }
     return no;
 }
@@ -338,7 +335,7 @@ void soundManager::setListenerPosition(coords3d pos)
 
 void soundManager::setListenerOrientation(coords3d pos)
 {
-    ALfloat listenerOri[] = { (float)pos.x/1024.0, (float)pos.y/1024.0, (float)pos.z/1024.0,0.0,0.0,1.0};
+    ALfloat listenerOri[] = { (float)(pos.x/1024.0), (float)(pos.y/1024.0), (float)(pos.z/1024.0),0.0,0.0,1.0};
     alListenerfv(AL_ORIENTATION, listenerOri);
 
 }
@@ -475,7 +472,6 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
     /* no music configured? */
     if (this->gc->music.size()<=0 || this->isSongConfigured(songNo,position,chamberId))
     {
-        std::cout<<"No music configured!\n";
         return -1;
     }
     /* we deal with the problem of code and configuration mismatch */
@@ -483,8 +479,10 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
         songNo = bElem::randomNumberGenerator() % this->gc->music.size();
     }
     muNode muNd;
+    ALuint source;
     muNd.bElemInstanceId=bElemInstanceId;
     muNd.variableVol=vaiableVolume;
+    muNd.delayed=0;
     muNd.songNo=songNo;
     muNd.position=position;
     muNd.chamberId=chamberId;
@@ -504,12 +502,10 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
     {
         sf_close(muNd.musicFile);
         return -1;
-    };
-    ALuint source;
+    }
     source = 0;
     alGenSources(1, &source);
     muNd.source=source;
-
     muNd.gain=this->gc->music[songNo].gain;
     alSource3f(source,AL_POSITION,(float)position.x/1024.0,(float)position.y/1024.0,(float)position.z/1024.0);
     alSourcef(source,AL_GAIN,std::min(muNd.gain,(float)1.0));
@@ -525,11 +521,6 @@ int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d pos
     }
     alSourceQueueBuffers(muNd.source,buffersNum,&muNd.Abuffers[0]);
     muNd.isRegistered=true;
-
-
-    // alSourcePlay(muNd.source);
-    //      alSourcef(muNd.source, AL_GAIN, 0.10f);
-
     std::lock_guard<std::mutex> guard(this->snd_mutex);
 
      this->registeredMusic.push_back(muNd);
@@ -547,8 +538,10 @@ void soundManager::playSong(int songNo)
     newVol=(this->registeredMusic[songNo].variableVol)?std::min((float)this->registeredMusic[songNo].gain,newVol):this->registeredMusic[songNo].gain;
     alGetSourcei(this->registeredMusic[songNo].source, AL_BUFFERS_PROCESSED, &buffersProcessed);
     alSourcef(this->registeredMusic[songNo].source, AL_GAIN, newVol);
-    if(buffersProcessed <= 0)
+    if(buffersProcessed <= 0 || !this->registeredMusic[songNo].isRegistered || this->registeredMusic[songNo].delayed>0)
+    {
         return;
+    }
 
     while(buffersProcessed--)
     {
@@ -605,6 +598,34 @@ void soundManager::threadLoop()
     {
         this->checkQueue();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
+void soundManager::pauseSong(unsigned int bElemInstanceId)
+{
+    for(unsigned int c=0;c<this->registeredMusic.size();c++)
+    {
+        if(this->registeredMusic[c].bElemInstanceId==bElemInstanceId)
+        {
+            this->registeredMusic[c].isRegistered=false;
+            this->registeredMusic[c].delayed=555;
+        }
+
+    }
+}
+
+void soundManager::resumeSong(unsigned int bElemInstanceId)
+{
+    if(bElemInstanceId<0)
+        return;
+    for(unsigned int c=0;c<this->registeredMusic.size();c++)
+    {
+        if(this->registeredMusic[c].bElemInstanceId==bElemInstanceId)
+        {
+            this->registeredMusic[c].isRegistered=true;
+            this->registeredMusic[c].delayed=0;
+        }
+
     }
 }
 

@@ -29,6 +29,8 @@
 #include <stddef.h>
 #include <memory>
 #include <vector>
+#include <algorithm>
+
 #include <array>
 #include "elementFactory.h"
 #include <cmath>

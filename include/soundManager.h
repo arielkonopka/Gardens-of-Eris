@@ -79,7 +79,7 @@ using stNode=struct sndNode
     ALuint source;
     int mode;
     int soundSpace;
-    int elId=0;
+    unsigned int elId=0;
     int elType=0;
     std::string eventType;
     std::string event;
@@ -112,8 +112,10 @@ public:
     void setListenerChamber(int chamberId);
     void setListenerOrientation(coords3d pos);
     void enableSound();
-    void stopSoundsByElementId(int elId);
+    void stopSoundsByElementId(unsigned int elId);
     int setupSong(unsigned int bElemInstanceId,int songNo,coords3d position,int chamberId,bool vaiableVolume);
+    void pauseSong(unsigned int bElemInstanceId);
+    void resumeSong(unsigned int bElemInstanceId);
     void playSong(int songNo);
     void moveSong(int songNo, coords3d newPosition,int newChamber);
 private:
