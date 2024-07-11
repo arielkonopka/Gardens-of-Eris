@@ -160,7 +160,7 @@ When an apple is unbeschädigt, it acts as a collectible token that must be gath
 ## Teleporters
 Every new teleporter is added to a vector (in reality, it's a vector of pointers, so it is). As soon as our player interacts with a teleporter, we're checkin' if it has an attached link to its corresponding teleporter mate. We take a gander at the type of the teleporter, and we follow these steps:
 
- * If there's no established link, we pick a random teleporter from our list and remove the interacted one. 
+ * If there's no established link, we pick a random teleporter from our list and remove the interacted one along with the chosen one. We set the chosen one to be "LEFT" (it will become a receiver) and pause its song. We could unpause them, but I don't think it makes sense.. 
  * We then set the chosen teleporter as the other end of the connection. 
  * Once the other end is all set up, we inspect the teleporter for any steppable fields. 
  * If we find one, 
@@ -228,9 +228,11 @@ There are control switches that modify sound handling:
  * stacking - If we allow multiple sounds, do we let them play, or should we stop the sound currently playing and start anew upon request (false), or permit all instances to play while avoiding collisions by applying a delay if the previous sound did not have the chance to play?
 
 ## TODO
-- Refactor the engine, to have only elements on the same board to be active. This will make a lot ot things very tricky, especially teleporting elements between boards with active elements in the inventory.
-- Add sound gain on music and samples _done_
-- Add new type of a gun, that would shoot bombs - grenade launcher _done_
+- Refactor sound engine
+- Refactor chamber, to contain bElem container, which then would have the stepOnElement routines???
+~~- Refactor the engine, to have only elements on the same board to be active. This will make a lot ot things very tricky, especially teleporting elements between boards with active elements in the inventory.~~
+~~- Add sound gain on music and samples~~
+~~- Add new type of a gun, that would shoot bombs - grenade launcher~~
 - Add landmine, a steppable, that would kill you
 - Add a bot and a camera, when a player is near a camera, all bots are notified about the position
 - Add fire/electric door that can be switched with a switch (indestructable)
@@ -271,6 +273,8 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 ## ChangeLog
+* Teleporters now are all active at the beginning, then the ones that are chosen to be the receiver, get inactivated, and their music stops, if they are of type 0 (interchamber teleports)
+* Added normalization of the sounf effects coordinates, velocities and position of the listener. 
 * Introduced a GL pixelshader that now renders our cloak
 * Did some cleaning up, especially the singletons. Now they are more or less written in compliant way, at least should be thread safe.
 * removed two unneded classes: movableElements and mechanical and non steppable

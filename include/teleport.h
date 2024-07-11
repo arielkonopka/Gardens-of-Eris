@@ -53,6 +53,7 @@ private:
     std::shared_ptr<teleport> theOtherEnd;
     std::vector<std::shared_ptr<teleport>> candidates;
     unsigned int songId=0;
+    static std::once_flag _onceFlag;
 };
 
 #endif // TELEPORT_H
