@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 #include "teleport.h"
-std::once_flag teleportdd::_onceFlag;
+std::once_flag teleport::_onceFlag;
 
 std::vector<std::weak_ptr<teleport>> teleport::allTeleporters;
 
