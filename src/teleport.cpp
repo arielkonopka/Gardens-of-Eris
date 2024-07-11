@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "teleport.h"
+std::once_flag teleportdd::_onceFlag;
 
 std::vector<std::weak_ptr<teleport>> teleport::allTeleporters;
 
@@ -30,12 +31,12 @@ bool teleport::additionalProvisioning(int value,std::shared_ptr<teleport> t)
     if(!bElem::additionalProvisioning(value,t))
         return false;
     this->connectionsMade = false;
-    if (teleport::allTeleporters.empty())
+    if (teleport::allTeleporters.empty() && t->getAttrs()->getSubtype()==0)
     {
         t->getStats()->setFacing(dir::direction::LEFT);
-      //  soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
         t->getStats()->setMyDirection(t->getStats()->getFacing());
-    }
+   }
+
     teleport::allTeleporters.push_back(t);
     return true;
 }
@@ -46,12 +47,11 @@ bool teleport::additionalProvisioning(int value,std::shared_ptr<teleport> t)
 bool teleport::interact(std::shared_ptr<bElem> who)
 {
     bool r=true;
-    if (!bElem::interact(who) )
+    if (!bElem::interact(who) || this->getStats()->getMyDirection()==dir::direction::LEFT )
         return false;
     if (!this->theOtherEnd)
         this->createConnectionsWithinSUbtype();
-    if (this->getStats()->getMyDirection()==dir::direction::LEFT)
-        return r;
+
     this->playSound("Teleport", "Teleporting");
     if (this->theOtherEnd)
         r=this->theOtherEnd->teleportIt(who);
@@ -68,6 +68,10 @@ bool teleport::interact(std::shared_ptr<bElem> who)
  */
 bool teleport::createConnectionsWithinSUbtype()
 {
+    /// We do this only once, as soon as the first level is created. we can get away with this construct, because we know, that the first mirror is a receiver, and will be inactive.
+    /// therefire we have to remove it from all teleporters vector.
+    std::call_once(teleport::_onceFlag,[](){ teleport::allTeleporters.erase(teleport::allTeleporters.begin());});
+
     std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport>& wp) {
         if (auto sp = wp.lock()) {
             return sp->getStats()->getInstanceId() == this->getStats()->getInstanceId();
@@ -92,10 +96,16 @@ bool teleport::createConnectionsWithinSUbtype()
             candidates[p+1]=t;
         }
     this->theOtherEnd=candidates[0];
+    std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport>& wp) {
+        if (auto sp = wp.lock()) {
+            return sp->getStats()->getInstanceId() == this->theOtherEnd->getStats()->getInstanceId();
+        }
+        return true;
+    });
     this->theOtherEnd->getStats()->setFacing(dir::direction::LEFT);
-    this->theOtherEnd->getStats()->setMyDirection(this->getStats()->getFacing());
+    this->theOtherEnd->getStats()->setMyDirection(this->theOtherEnd->getStats()->getFacing());
+    this->theOtherEnd->theOtherEnd= static_cast<std::shared_ptr<teleport>>(this);
     soundManager::getInstance()->pauseSong(this->theOtherEnd->getStats()->getInstanceId());
-   // soundManager::getInstance()->pauseSong(this->getStats()->getInstanceId());
     this->candidates.clear();
     return true;
 }
@@ -137,7 +147,8 @@ bool teleport::stepOnAction(bool step, std::shared_ptr<bElem>who)
 {
     bElem::stepOnAction(step,who);
     this->playSound("Teleport", "HummingSound");
-
+    if(this->getStats()->getMyDirection()==dir::direction::LEFT)
+        return false;
     if(step && !who->getStats()->isTeleporting() && !this->getStats()->isTeleporting())
     {
         this->getStats()->setWaiting(_teleportStandTime);
