@@ -90,24 +90,27 @@ bool teleport::createConnectionsWithinSUbtype()
     if(candidates.size()>2 && this->getAttrs()->getSubtype()>0)
         for(int c=0; c<5555; c++)
         {
-            int p=bElem::randomNumberGenerator()%(candidates.size()-1);
+            int p=bElem::randomNumberGenerator()%(candidates.size()-2);
             std::shared_ptr<teleport> t=candidates[p];
             candidates[p]=candidates[p+1];
             candidates[p+1]=t;
         }
-    this->theOtherEnd=candidates[0];
-    std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport>& wp) {
-        if (auto sp = wp.lock()) {
-            return sp->getStats()->getInstanceId() == this->theOtherEnd->getStats()->getInstanceId();
-        }
+    if(!candidates.empty()) {
+        this->theOtherEnd = candidates[0];
+        std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport> &wp) {
+            if (auto sp = wp.lock()) {
+                return sp->getStats()->getInstanceId() == this->theOtherEnd->getStats()->getInstanceId();
+            }
+            return true;
+        });
+        this->theOtherEnd->getStats()->setFacing(dir::direction::LEFT);
+        this->theOtherEnd->getStats()->setMyDirection(this->theOtherEnd->getStats()->getFacing());
+        this->theOtherEnd->theOtherEnd = static_cast<std::shared_ptr<teleport>>(this);
+        soundManager::getInstance()->pauseSong(this->theOtherEnd->getStats()->getInstanceId());
+        this->candidates.clear();
         return true;
-    });
-    this->theOtherEnd->getStats()->setFacing(dir::direction::LEFT);
-    this->theOtherEnd->getStats()->setMyDirection(this->theOtherEnd->getStats()->getFacing());
-    this->theOtherEnd->theOtherEnd= static_cast<std::shared_ptr<teleport>>(this);
-    soundManager::getInstance()->pauseSong(this->theOtherEnd->getStats()->getInstanceId());
-    this->candidates.clear();
-    return true;
+    }
+    return false;
 }
 
 int teleport::getType() const

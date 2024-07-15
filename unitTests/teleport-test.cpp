@@ -45,8 +45,10 @@ BOOST_AUTO_TEST_SUITE( TeleportObjectTests )
 
 BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
 {
+
     std::shared_ptr<chamber> mc=chamber::makeNewChamber({5,5});
-    std::shared_ptr<teleport> tel1=elementFactory::generateAnElement<teleport>(mc,0);
+    elementFactory::generateAnElement<teleport>(mc,0);
+    std::shared_ptr<teleport> tel1=elementFactory::generateAnElement<teleport>(mc,1);
     std::shared_ptr<bElem> transportedE=elementFactory::generateAnElement<bElem>(mc,0);
     transportedE->stepOnElement(mc->getElement(2,3));
     //  transportedE->setActive(true);
