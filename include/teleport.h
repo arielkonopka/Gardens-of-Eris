@@ -50,7 +50,7 @@ private:
     bool removeFromAllTeleporters();
     bool connectionsMade=false;
     bool checked=false;
-    std::shared_ptr<teleport> theOtherEnd;
+    std::weak_ptr<teleport> theOtherEnd;
     std::vector<std::shared_ptr<teleport>> candidates;
     unsigned int songId=0;
     static std::once_flag _onceFlag;

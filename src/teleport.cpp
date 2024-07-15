@@ -49,12 +49,12 @@ bool teleport::interact(std::shared_ptr<bElem> who)
     bool r=true;
     if (!bElem::interact(who) || this->getStats()->getMyDirection()==dir::direction::LEFT )
         return false;
-    if (!this->theOtherEnd)
+    if (this->theOtherEnd.expired())
         this->createConnectionsWithinSUbtype();
 
     this->playSound("Teleport", "Teleporting");
-    if (this->theOtherEnd)
-        r=this->theOtherEnd->teleportIt(who);
+    if (!this->theOtherEnd.expired())
+        r=this->theOtherEnd.lock()->teleportIt(who);
     else
         r=this->teleportIt(who);
     return r;
@@ -70,8 +70,8 @@ bool teleport::createConnectionsWithinSUbtype()
 {
     /// We do this only once, as soon as the first level is created. we can get away with this construct, because we know, that the first mirror is a receiver, and will be inactive.
     /// therefire we have to remove it from all teleporters vector.
-    std::call_once(teleport::_onceFlag,[](){ teleport::allTeleporters.erase(teleport::allTeleporters.begin());});
-
+    std::call_once(teleport::_onceFlag,[](){ if (!teleport::allTeleporters.empty()) teleport::allTeleporters.erase(teleport::allTeleporters.begin());});
+    std::shared_ptr<teleport> tmpt,tmpt2;
     std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport>& wp) {
         if (auto sp = wp.lock()) {
             return sp->getStats()->getInstanceId() == this->getStats()->getInstanceId();
@@ -96,17 +96,19 @@ bool teleport::createConnectionsWithinSUbtype()
             candidates[p+1]=t;
         }
     if(!candidates.empty()) {
-        this->theOtherEnd = candidates[0];
+        tmpt= candidates[0];
+        this->theOtherEnd=tmpt;
+        tmpt2 = std::dynamic_pointer_cast<teleport>(shared_from_this()); 
         std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport> &wp) {
             if (auto sp = wp.lock()) {
-                return sp->getStats()->getInstanceId() == this->theOtherEnd->getStats()->getInstanceId();
+                return sp->getStats()->getInstanceId() == tmpt->getStats()->getInstanceId();
             }
             return true;
         });
-        this->theOtherEnd->getStats()->setFacing(dir::direction::LEFT);
-        this->theOtherEnd->getStats()->setMyDirection(this->theOtherEnd->getStats()->getFacing());
-        this->theOtherEnd->theOtherEnd = static_cast<std::shared_ptr<teleport>>(this);
-        soundManager::getInstance()->pauseSong(this->theOtherEnd->getStats()->getInstanceId());
+        tmpt->getStats()->setFacing(dir::direction::LEFT);
+        tmpt->getStats()->setMyDirection(tmpt->getStats()->getFacing());
+        tmpt->theOtherEnd = tmpt2;
+        soundManager::getInstance()->pauseSong(tmpt->getStats()->getInstanceId());
         this->candidates.clear();
         return true;
     }
