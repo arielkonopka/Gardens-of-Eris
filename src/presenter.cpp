@@ -311,7 +311,7 @@ void presenter::prepareStatsThing()
             this->showText(9+(cnt*2),0,0,16,std::to_string(tokens));
         }
     }
-    this->showObjectTile(18,0,0,0,goldenApple::getApple(1),true,_mode_onlyTop);
+    this->showObjectTile(18,0,0,0,goldenApple::getApple(0),true,_mode_onlyTop);
     this->showText(19,0,0,0,std::to_string(goldenApple::getAppleNumber()));
     this->showText(19,0,0,32,std::to_string(aPlayer->getAttrs()->getInventory()->countTokens(_goldenAppleType,0)));
     this->showText(21,0,6,0,"Stats");
