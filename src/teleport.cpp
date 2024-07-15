@@ -98,7 +98,7 @@ bool teleport::createConnectionsWithinSUbtype()
     if(!candidates.empty()) {
         tmpt= candidates[0];
         this->theOtherEnd=tmpt;
-        tmpt2 = std::dynamic_pointer_cast<teleport>(shared_from_this()); // Poprawne użycie shared_from_this
+        tmpt2 = std::dynamic_pointer_cast<teleport>(shared_from_this()); 
         std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport> &wp) {
             if (auto sp = wp.lock()) {
                 return sp->getStats()->getInstanceId() == tmpt->getStats()->getInstanceId();
