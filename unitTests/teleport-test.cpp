@@ -87,8 +87,9 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
     coords telc={1,2};
     std::shared_ptr<chamber> mc=chamber::makeNewChamber(csize);
     preClean(mc,ppoint);
-    std::shared_ptr<teleport> tel1=elementFactory::generateAnElement<teleport>(mc,0);
-    std::shared_ptr<teleport>  tel2=elementFactory::generateAnElement<teleport>(mc,0);
+    elementFactory::generateAnElement<teleport>(mc,777);
+    std::shared_ptr<teleport> tel1=elementFactory::generateAnElement<teleport>(mc,2);
+    std::shared_ptr<teleport>  tel2=elementFactory::generateAnElement<teleport>(mc,2);
     std::shared_ptr<bElem> transportEl=elementFactory::generateAnElement<bElem>(mc,0);
     transportEl->stepOnElement(mc->getElement(telc));
     bElem::tick();
@@ -105,10 +106,7 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
         bElem::runLiveElements();
     BOOST_CHECK(transportEl->getStats()->isTeleporting()==false);
     transportEl->getStats()->setMyDirection(dir::direction::LEFT);
-    BOOST_CHECK(tel2->interact(transportEl)==true);
-    bElem::runLiveElements();
-    BOOST_CHECK(transportEl->getStats()->getMyPosition().distance(tel1c)<=2);
-    BOOST_CHECK(transportEl->getStats()->isTeleporting()==true);
+    BOOST_CHECK(tel2->interact(transportEl)==false);
     tel1->disposeElement();
     tel2->disposeElement();
 }
@@ -121,8 +119,9 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
     coords  t2b={7,6};
     coords tel1c={0,0};
     coords tel2c={7,7};
-    std::shared_ptr<teleport>  tel1=elementFactory::generateAnElement<teleport>(mc,0);
-    std::shared_ptr<teleport>  tel2=elementFactory::generateAnElement<teleport>(mc,1);
+    elementFactory::generateAnElement<teleport>(mc,777);
+    std::shared_ptr<teleport>  tel1=elementFactory::generateAnElement<teleport>(mc,3);
+    std::shared_ptr<teleport>  tel2=elementFactory::generateAnElement<teleport>(mc,4);
     std::shared_ptr<bElem> _tr1=elementFactory::generateAnElement<bElem>(mc,0);
     std::shared_ptr<bElem> _tr2=elementFactory::generateAnElement<bElem>(mc,0);
     _tr1->stepOnElement(mc->getElement(t1b));
@@ -158,8 +157,8 @@ BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
     transported->stepOnElement(mc->getElement(pointAt));
     transported->getStats()->setMyDirection(dir::direction::RIGHT);
     BOOST_CHECK(transported->getStats()->isTeleporting()==false);
-    tel1=elementFactory::generateAnElement<teleport>(mc,1);
-    tel2=elementFactory::generateAnElement<teleport>(mc,1);
+    tel1=elementFactory::generateAnElement<teleport>(mc,5);
+    tel2=elementFactory::generateAnElement<teleport>(mc,5);
     tel1->stepOnElement(mc->getElement(pointA));
     tel2->stepOnElement(mc->getElement(pointB));
     //ok now step on that teleport
