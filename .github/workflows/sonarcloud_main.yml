@@ -28,17 +28,6 @@ jobs:
           dpkg -L libboost-system-dev
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v2
-      - name: Configure build environment
-        run: |
-          export BOOST_ROOT=/usr/include/boost
-          export BOOST_INCLUDEDIR=/usr/include/boost
-          export BOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu
-          echo "BOOST_ROOT=/usr/include/boost" >> $GITHUB_ENV
-          echo "BOOST_INCLUDEDIR=/usr/include/boost" >> $GITHUB_ENV
-          echo "BOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu" >> $GITHUB_ENV
-          echo "::set-env name=BOOST_ROOT::/usr/include/boost"
-          echo "::set-env name=BOOST_INCLUDEDIR::/usr/include/boost"
-          echo "::set-env name=BOOST_LIBRARYDIR::/usr/lib/x86_64-linux-gnu"
       - name: Run build-wrapper
         run: |
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} ./build.sh -sq -a
