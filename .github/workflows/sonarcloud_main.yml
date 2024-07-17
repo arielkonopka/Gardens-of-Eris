@@ -17,10 +17,10 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr libopenal-dev libalut-dev libsndfile1-dev libboost-test-dev libboost-all-dev
-          version: 1.0
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr libopenal-dev libalut-dev libsndfile1-dev libboost-test-dev
       - name: Verify Boost installation
         run: |
           dpkg -L libboost-all-dev
