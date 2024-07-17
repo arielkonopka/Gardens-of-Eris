@@ -10,6 +10,7 @@ jobs:
     name: Build and analyze
     runs-on: ubuntu-latest
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
     steps:      
       - uses: actions/checkout@v3
