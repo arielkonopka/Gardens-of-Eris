@@ -1,16 +1,17 @@
 name: SonarCloud
+
 on:
   push:
     branches:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+
 jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: true
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
     steps:      
       - uses: actions/checkout@v3
@@ -20,8 +21,24 @@ jobs:
         with:
           packages: libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr libopenal-dev libalut-dev libsndfile1-dev libboost-test-dev libboost-all-dev
           version: 1.0
+      - name: Verify Boost installation
+        run: |
+          dpkg -L libboost-all-dev
+          dpkg -L libboost-test-dev
+          dpkg -L libboost-system-dev
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v2
+      - name: Configure build environment
+        run: |
+          export BOOST_ROOT=/usr/include/boost
+          export BOOST_INCLUDEDIR=/usr/include/boost
+          export BOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu
+          echo "BOOST_ROOT=/usr/include/boost" >> $GITHUB_ENV
+          echo "BOOST_INCLUDEDIR=/usr/include/boost" >> $GITHUB_ENV
+          echo "BOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu" >> $GITHUB_ENV
+          echo "::set-env name=BOOST_ROOT::/usr/include/boost"
+          echo "::set-env name=BOOST_INCLUDEDIR::/usr/include/boost"
+          echo "::set-env name=BOOST_LIBRARYDIR::/usr/lib/x86_64-linux-gnu"
       - name: Run build-wrapper
         run: |
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} ./build.sh -sq -a
