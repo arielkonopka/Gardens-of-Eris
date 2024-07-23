@@ -708,9 +708,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TryToCollectAnObjectAndDisposeIt,T,all_test_types)
     mC->disposeElement();
     BOOST_CHECK(mC->getStats()->isDisposed()==true);
     // check the disposed element not present in the board or any inventory
-    for(int a=0; a<mc->width; a++)
+    for(int a=0; a<mc->getSize().x; a++)
     {
-        for(int b=0; b<mc->height; b++)
+        for(int b=0; b<mc->getSize().y; b++)
         {
             BOOST_CHECK(mc->getElement(a,b)->getStats()->getInstanceId()!=mC->getStats()->getInstanceId());
             if(mc->getElement(a,b)->getAttrs()->canCollect())

@@ -29,11 +29,9 @@
 class floorElement : public bElem
 {
 public:
-    using bElem::additionalProvisioning;
     floorElement()=default;
     virtual ~floorElement()=default;
     virtual  int getType() const;
-    bool additionalProvisioning(int subtype,std::shared_ptr<floorElement> sbe);
 };
 
 #endif // FLOOR_H

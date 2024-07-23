@@ -62,9 +62,9 @@ bool goldenApple::destroy()
 
 
 
-bool goldenApple::additionalProvisioning(int subtype, std::shared_ptr<goldenApple>sbe)
+bool goldenApple::additionalProvisioning(int subtype)
 {
-    if(!bElem::additionalProvisioning(subtype,sbe))
+    if(!bElem::additionalProvisioning(subtype))
         return false;
     if(subtype==0)
     {

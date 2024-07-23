@@ -22,9 +22,9 @@
 #include "patrollingDrone.h"
 
 
-bool patrollingDrone::additionalProvisioning(int subtype, std::shared_ptr<patrollingDrone>sbe)
+bool patrollingDrone::additionalProvisioning(int subtype)
 {
-     if(!bElem::additionalProvisioning(subtype,sbe))
+     if(!bElem::additionalProvisioning(subtype))
         return false;
     this->getAttrs()->setCollect(true);
     this->getAttrs()->setEnergy((1024*bElem::randomNumberGenerator())%155);

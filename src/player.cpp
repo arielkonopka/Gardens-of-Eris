@@ -27,10 +27,10 @@ std::shared_ptr<bElem> player::activePlayer = nullptr;
 
 
 
-bool player::additionalProvisioning(int subtype, std::shared_ptr<player>sbe)
+bool player::additionalProvisioning(int subtype)
 {
 
-    if(!bElem::additionalProvisioning(subtype, sbe))
+    if(!bElem::additionalProvisioning(subtype))
         return false;
     this->getAttrs()->setCollect(true);
     this->getAttrs()->setEnergy(105);
@@ -40,7 +40,6 @@ bool player::additionalProvisioning(int subtype, std::shared_ptr<player>sbe)
     {
         this->getStats()->setActive(true);
         this->getStats()->setMarked(true);
-        //player::visitedPlayers.push_back(shared_from_this());
         player::activePlayer=shared_from_this();
         viewPoint::get_instance()->setOwner(player::activePlayer);
     }
@@ -91,8 +90,6 @@ oState player::disposeElement()
     {
         this->getStats()->setActive(false);
         player::activePlayer = nullptr;
-        if(this->getBoard())
-            this->getBoard()->player = NOCOORDS;
     }
     for (unsigned int cnt = 0; cnt < player::visitedPlayers.size();)
     {
@@ -154,8 +151,6 @@ bool player::mechanics()
         return true;
     }
     if(!res || !this->getStats()->isActive()) return res;
-    this->getBoard()->player.x = this->getStats()->getMyPosition().x;
-    this->getBoard()->player.y = this->getStats()->getMyPosition().y;
     coords3d c3d;
     c3d.x = (float)this->getStats()->getMyPosition().x;
     c3d.y = (float)this->getStats()->getMyPosition().y;

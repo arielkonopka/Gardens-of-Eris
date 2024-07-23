@@ -28,8 +28,7 @@
 std::vector<std::shared_ptr<bElem>> bElem::toDispose;
 //std::vector<unsigned long int> bElem::toDeregister;
 unsigned int bElem::sTaterCounter = 5;
-int bElem::instances = 0;
-bool bElem::randomNumberGeneratorInitialized = false;
+
 std::mt19937 bElem::randomNumberGenerator;
 std::mutex bElem::mechanicMutex;
 
@@ -46,7 +45,6 @@ bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_m
         std::generate_n(seedData.data(), seedData.size(), std::ref(rd));
         std::seed_seq seq(std::begin(seedData), std::end(seedData));
         bElem::randomNumberGenerator.seed(seq);
-        bElem::randomNumberGeneratorInitialized=true;
     });
 }
 
@@ -294,7 +292,7 @@ coords bElem::getAbsCoords(coords dir) const
 {
    if(this->getStats()->getMyPosition()==NOCOORDS || !this->getBoard())
        return NOCOORDS;
-    coords res=(this->getStats()->getMyPosition()+dir).validate((coords){this->getBoard()->width,this->getBoard()->height});
+    coords res=(this->getStats()->getMyPosition()+dir).validate(this->getBoard()->getSize());
     return res;
 }
 
@@ -568,7 +566,7 @@ std::shared_ptr<bElemStats> bElem::getStats() const
 
 
 
-bool bElem::additionalProvisioning(int subtype, std::shared_ptr<bElem>sbe)
+bool bElem::additionalProvisioning(int subtype)
 {
     bool r=false;
     std::call_once(this->_provOnce,[&]()

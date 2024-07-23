@@ -39,7 +39,6 @@ public:
     bool stepOnElement(std::shared_ptr<bElem> elem);
     std::shared_ptr<bElem> removeElement();
     int getType() const;
-    bool additionalProvisioning(int subtype,std::shared_ptr<wall> sbe);
 
 };
 

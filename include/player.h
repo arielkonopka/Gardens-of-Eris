@@ -48,7 +48,7 @@ public:
     bool shootGun();
     oState disposeElement() final;
     float getViewRadius() const;
-    bool additionalProvisioning(int subtype,std::shared_ptr<player> sbe) ;
+    bool additionalProvisioning(int subtype) ;
 
 private:
     float vRadius=2;

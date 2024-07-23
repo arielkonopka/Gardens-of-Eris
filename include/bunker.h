@@ -42,7 +42,7 @@ public:
     int getType() const;
     bool interact(std::shared_ptr<bElem> Who) final;
 
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<bunker> sbe);
+    bool additionalProvisioning(int subtype) final;
 private:
     std::shared_ptr<bElem> activatedBy=nullptr;
     int help=0;

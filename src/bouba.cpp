@@ -40,8 +40,8 @@ bool bouba::interact(std::shared_ptr<bElem> who) {
 }
 
 bool bouba::kill() {
-    bool r;
-    if( r=bElem::kill())
+    bool r=bElem::kill();
+    if(r)
         this->explode(3.5);
     return r;
 }

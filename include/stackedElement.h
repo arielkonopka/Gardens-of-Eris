@@ -38,7 +38,7 @@ public:
     void linkAnElement(std::shared_ptr<stackedElement> newBottom);
     void setController(std::shared_ptr<bElem> controller);
     std::shared_ptr<bElem> getController();
-    bool additionalProvisioning(int st,std::shared_ptr<stackedElement> sbe);
+    bool additionalProvisioning(int st);
 
 protected:
 

@@ -39,7 +39,7 @@ public:
     virtual bool mechanics();
     virtual bool checkNeigh();
     virtual bool steppableNeigh();
-    bool additionalProvisioning(int subtype,std::shared_ptr<monster> sbe);
+    bool additionalProvisioning(int subtype) final;
 
 private:
     std::shared_ptr<plainGun> weapon=nullptr;

@@ -43,9 +43,9 @@ int door::getType() const
 
 
 
-bool door::additionalProvisioning(int subtype, std::shared_ptr<door>sbe)
+bool door::additionalProvisioning(int subtype)
 {
-    if (!bElem::additionalProvisioning(subtype,sbe))
+    if (!bElem::additionalProvisioning(subtype))
         return false;
     this->getAttrs()->setSteppable(false);
     this->getAttrs()->setLocked(true);

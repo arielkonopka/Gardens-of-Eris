@@ -102,7 +102,6 @@ public:
     virtual coords getOffset() const;
     virtual bool readyToShoot() const;
     static std::mt19937 randomNumberGenerator;
-    static bool randomNumberGeneratorInitialized;
 
     virtual bool mechanics();
     virtual bool stepOnAction(bool step,std::shared_ptr<bElem> who);
@@ -121,7 +120,7 @@ public:
 
     virtual int getTypeInDirection(dir::direction di);
     virtual void setStatsOwner(std::shared_ptr<bElem> owner);
-    bool additionalProvisioning(int subtype,std::shared_ptr<bElem> sbe);
+    virtual bool additionalProvisioning(int subtype);
 
     void playSound(std::string eventType,std::string event);
     void stopMySounds();
@@ -136,7 +135,6 @@ private:
     std::weak_ptr<chamber> attachedBoard;
     ALLEGRO_MUTEX *elementMutex = nullptr;
     static std::mutex mechanicMutex;
-    static int instances;
     static unsigned int sTaterCounter;
     std::vector<std::shared_ptr<bElem>> lockers;
     static std::vector<std::shared_ptr<bElem>> toDispose;

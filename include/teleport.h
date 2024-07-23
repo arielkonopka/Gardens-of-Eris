@@ -40,7 +40,7 @@ public:
     virtual oState disposeElement();
     virtual oState disposeElementUnsafe();
     virtual bool createConnectionsWithinSUbtype();
-    bool additionalProvisioning(int value,std::shared_ptr<teleport> t);
+    bool additionalProvisioning(int value);
     virtual bool stepOnElement(std::shared_ptr<bElem> step);
     bool mechanics() final;
 

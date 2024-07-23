@@ -24,11 +24,6 @@
 
 
 
-bool wall::additionalProvisioning(int subtype, std::shared_ptr<wall>sbe)
-{
-    return bElem::additionalProvisioning(subtype,sbe);
-}
-
 
 
 

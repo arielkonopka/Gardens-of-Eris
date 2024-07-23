@@ -33,8 +33,3 @@ int brickCluster::getType() const
 
 
 
-bool brickCluster::additionalProvisioning(int subtype, std::shared_ptr<brickCluster>sbe)
-{
-    return bElem::additionalProvisioning(subtype,sbe);
-}
-

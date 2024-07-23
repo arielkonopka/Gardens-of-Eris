@@ -25,10 +25,6 @@
 
 
 
-bool simpleBomb::additionalProvisioning(int subtype, std::shared_ptr<simpleBomb>sbe)
-{
-    return bElem::additionalProvisioning(subtype,sbe);
-}
 
 
 bool simpleBomb::hurt(int points)

@@ -26,18 +26,18 @@ std::vector<std::weak_ptr<teleport>> teleport::allTeleporters;
 
 
 
-bool teleport::additionalProvisioning(int value,std::shared_ptr<teleport> t)
+bool teleport::additionalProvisioning(int value)
 {
-    if(!bElem::additionalProvisioning(value,t))
+    if(!bElem::additionalProvisioning(value))
         return false;
     this->connectionsMade = false;
-    if (teleport::allTeleporters.empty() && t->getAttrs()->getSubtype()==0)
+    if (teleport::allTeleporters.empty() && this->getAttrs()->getSubtype()==0)
     {
-        t->getStats()->setFacing(dir::direction::LEFT);
-        t->getStats()->setMyDirection(t->getStats()->getFacing());
+        this->getStats()->setFacing(dir::direction::LEFT);
+        this->getStats()->setMyDirection(this->getStats()->getFacing());
    }
 
-    teleport::allTeleporters.push_back(t);
+    teleport::allTeleporters.push_back(std::dynamic_pointer_cast<teleport>(shared_from_this()));
     return true;
 }
 
@@ -70,7 +70,7 @@ bool teleport::createConnectionsWithinSUbtype()
 {
     /// We do this only once, as soon as the first level is created. we can get away with this construct, because we know, that the first mirror is a receiver, and will be inactive.
     /// therefire we have to remove it from all teleporters vector.
-    std::call_once(teleport::_onceFlag,[](){ if (!teleport::allTeleporters.empty()) teleport::allTeleporters.erase(teleport::allTeleporters.begin());});
+    if (!teleport::allTeleporters.empty()) std::call_once(teleport::_onceFlag,[](){  teleport::allTeleporters.erase(teleport::allTeleporters.begin());});
     std::shared_ptr<teleport> tmpt,tmpt2;
     std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport>& wp) {
         if (auto sp = wp.lock()) {
@@ -98,7 +98,7 @@ bool teleport::createConnectionsWithinSUbtype()
     if(!candidates.empty()) {
         tmpt= candidates[0];
         this->theOtherEnd=tmpt;
-        tmpt2 = std::dynamic_pointer_cast<teleport>(shared_from_this()); 
+        tmpt2 = std::dynamic_pointer_cast<teleport>(shared_from_this());
         std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport> &wp) {
             if (auto sp = wp.lock()) {
                 return sp->getStats()->getInstanceId() == tmpt->getStats()->getInstanceId();

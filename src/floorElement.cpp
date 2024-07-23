@@ -27,9 +27,3 @@ int floorElement::getType() const
     return _floorType;
 }
 
-bool floorElement::additionalProvisioning(int subtype, std::shared_ptr<floorElement>sbe)
-{
-    return bElem::additionalProvisioning(subtype,sbe);
-}
-
-

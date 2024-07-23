@@ -28,13 +28,13 @@ bunker::bunker(): bElem(), myGun(elementFactory::generateAnElement<plainGun>(nul
 }
 
 
-bool bunker::additionalProvisioning(int subtype, std::shared_ptr<bunker>sbe)
+bool bunker::additionalProvisioning(int subtype)
 {
-    if(!bElem::additionalProvisioning(subtype,sbe))
+    if(!bElem::additionalProvisioning(subtype))
         return false;
     this->registerLiveElement(shared_from_this());
     this->myGun->getStats()->setCollector(shared_from_this());
-     this->myGun->getStats()->setCollected(true);
+    this->myGun->getStats()->setCollected(true);
     return true;
 }
 

@@ -42,9 +42,9 @@ std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
 }
 
 
-bool plainGun::additionalProvisioning(int subtype, std::shared_ptr<plainGun>sbe)
+bool plainGun::additionalProvisioning(int subtype)
 {
-    if(!bElem::additionalProvisioning(subtype,sbe))
+    if(!bElem::additionalProvisioning(subtype))
         return false;
     this->registerLiveElement(shared_from_this());
     return true;
@@ -85,7 +85,6 @@ bool plainGun::use(std::shared_ptr<bElem> who)
             c3d.x=who->getStats()->getMyPosition().x*32+who->getOffset().x;
             c3d.z=who->getStats()->getMyPosition().y*32+who->getOffset().y;
             c3d.y=50;
-            coords3d vel= {(float)who->getOffset().x,0.0f,(float)who->getOffset().y};
             this->playSound("use","shoot");
             if (myel->getAttrs()->isSteppable()==true)
             {

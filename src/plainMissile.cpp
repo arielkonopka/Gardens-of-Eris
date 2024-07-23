@@ -29,9 +29,9 @@ plainMissile::plainMissile():bElem()
     this->getStats()->setMoved(0);
 }
 
-bool plainMissile::additionalProvisioning(int subtype, std::shared_ptr<plainMissile>sbe)
+bool plainMissile::additionalProvisioning(int subtype)
 {
-    if(!bElem::additionalProvisioning(subtype,sbe))
+    if(!bElem::additionalProvisioning(subtype))
         return false;
     this->registerLiveElement(shared_from_this());
     return true;

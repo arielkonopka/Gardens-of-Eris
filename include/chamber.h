@@ -53,18 +53,19 @@ public:
             x,y
         });
     };
+    unsigned int applesCount=0;
     bool visitPosition(coords point);
     int isVisible(int x, int y) ;
     int isVisible(coords point);
     void setVisible(coords point,int v);
 
-    int width;
-    int height;
-    coords player;
+
+ //   coords player;
     std::shared_ptr<bElem> getElement(int x, int y);
     std::shared_ptr<bElem> getElement(coords point);
     void setElement(int x, int y, std::shared_ptr<bElem> elem);
     void setElement(coords point,std::shared_ptr<bElem> elem);
+    coords getSize();
     explicit chamber(int x,int y);
     explicit chamber(coords csize);
     ~chamber();
@@ -80,7 +81,8 @@ public:
 
 
 private:
-
+    int width;
+    int height;
     ALLEGRO_MUTEX *SEMutex=nullptr;
     ALLEGRO_MUTEX *IdMutex=nullptr;
     ALLEGRO_MUTEX *VisMutex=nullptr;

@@ -38,6 +38,9 @@ std::shared_ptr<chamber> chamber::makeNewChamber(coords csize)
     return c;
 }
 
+
+
+
 void chamber::createFloor()
 {
 #ifdef _VerbousMode_
@@ -249,6 +252,11 @@ bool chamber::deregisterLiveElem(std::shared_ptr<bElem>in)
         in->getBoard()->toDeregister.push_back(in->getStats()->getInstanceId());
     in->getStats()->setActivatedMechanics(false);
     return true;
+}
+
+coords chamber::getSize() {
+
+    return coords (this->width,this->height);
 }
 
 

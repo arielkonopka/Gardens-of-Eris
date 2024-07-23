@@ -26,9 +26,7 @@ kiki::kiki()
     //ctor
 }
 
-bool kiki::additionalProvisioning(int stype, std::shared_ptr<kiki> myself) {
-    return false;
-}
+
 
 bool kiki::kill() {
     return bElem::kill();

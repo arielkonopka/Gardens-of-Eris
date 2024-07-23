@@ -46,7 +46,7 @@ std::shared_ptr<bElem> bazooka::createProjectible(std::shared_ptr<bElem>who)
 }
 
 
-bool bazooka::additionalProvisioning(int subtype, std::shared_ptr<bazooka>sbe)
+bool bazooka::additionalProvisioning(int subtype)
 {
-    return bElem::additionalProvisioning(subtype,sbe);
+    return bElem::additionalProvisioning(subtype);
 }
