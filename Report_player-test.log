@@ -1,0 +1,27 @@
+
+Test module "Fixtures" has passed with:
+  6 test cases out of 6 passed
+  60666 assertions out of 60666 passed
+
+  Test suite "PlayerTests" has passed with:
+    6 test cases out of 6 passed
+    60666 assertions out of 60666 passed
+
+    Test case "PlayerTests/GetActivePlayerTest" has passed with:
+      2 assertions out of 2 passed
+
+    Test case "PlayerTests/PlayerShootsGun" has passed with:
+      8 assertions out of 8 passed
+
+    Test case "PlayerTests/PlayerStepsIntoExplodingBomb" has passed with:
+      60000 assertions out of 60000 passed
+
+    Test case "PlayerTests/PlayerActivationOnPlayerDeath" has passed with:
+      600 assertions out of 600 passed
+
+    Test case "PlayerTests/PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestroyedWithBomb" has passed with:
+      7 assertions out of 7 passed
+
+    Test case "PlayerTests/MovePlayer" has passed with:
+      49 assertions out of 49 passed
+

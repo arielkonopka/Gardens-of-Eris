@@ -23,9 +23,9 @@
 
 
 
-bool stackedElement::additionalProvisioning(int st, std::shared_ptr<stackedElement>sbe)
+bool stackedElement::additionalProvisioning(int st)
 {
-    return bElem::additionalProvisioning(st,sbe);
+    return bElem::additionalProvisioning(st);
 }
 
 

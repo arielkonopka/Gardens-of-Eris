@@ -39,7 +39,6 @@ class bouba :  public explosives
         bool mechanics() final;
         bool interact(std::shared_ptr<bElem> who) final;
         virtual int getType() const;
-        bool additionalProvisioning(int subtype,std::shared_ptr<bouba> sbe);
 
     private:
 };

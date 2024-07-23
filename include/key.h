@@ -31,14 +31,9 @@ class key : public bElem
 {
 
 public:
-    using bElem::additionalProvisioning;
-
     key()=default;
     virtual ~key()=default;
     virtual int getType() const;
-    bool additionalProvisioning(int subtype,std::shared_ptr<key> key);
-
-
 };
 
 #endif // KEY_H

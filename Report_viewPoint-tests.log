@@ -1,0 +1,15 @@
+
+Test module "Fixtures" has passed with:
+  2 test cases out of 2 passed
+  6 assertions out of 6 passed
+
+  Test suite "ViewPointTests" has passed with:
+    2 test cases out of 2 passed
+    6 assertions out of 6 passed
+
+    Test case "ViewPointTests/CheckEmptyViewPoint" has passed with:
+      2 assertions out of 2 passed
+
+    Test case "ViewPointTests/CheckAddOwner" has passed with:
+      4 assertions out of 4 passed
+

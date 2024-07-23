@@ -329,20 +329,19 @@ void presenter::showGameField()
 {
 
     int x,y;
+    coords boardsize=coords(0,0);
     coords d;
-    coords halfscreen=(coords)
-    {
-        (this->scrTilesX)/2,(this->scrTilesY)/2
-    };
+    coords halfscreen=coords((this->scrTilesX)/2,(this->scrTilesY)/2);
     int offX=0,offY=0;
     std::vector<movingSprite> mSprites;
-  //  al_use_shader(nullptr);
     std::shared_ptr<bElem> player=player::getActivePlayer();
+    if (player)
+        boardsize=player->getBoard()->getSize();
     // Calculate LeftUpper corner of the viewpoint
-    //BEGIN:upperLeft
+    // BEGIN:upperLeft
     coords b=viewPoint::get_instance()->getViewPoint()-halfscreen;
-    b.x=std::max(0,std::min(player->getBoard()->width-(this->scrTilesX),b.x));
-    b.y=std::max(0,std::min(player->getBoard()->height-(this->scrTilesY),b.y));
+    b.x=std::max(0,std::min(boardsize.x-(this->scrTilesX),b.x));
+    b.y=std::max(0,std::min(boardsize.y-(this->scrTilesY),b.y));
     // END:upperLeft
     d=b-this->previousPosition;
     if (d.x==0 && this->positionOnScreen.x % this->sWidth>0) d.x=-1;
@@ -410,7 +409,7 @@ void presenter::showGameField()
         else
             this->showObjectTile(ms.x,ms.y,0,0,ms.elem,false,1);
     }
-    if(player->getStats()->isMoving() && player->getBoard()->width>viewPoint::get_instance()->getViewPoint().x && viewPoint::get_instance()->getViewPoint().x>=0 && player->getBoard()->height>viewPoint::get_instance()->getViewPoint().y && viewPoint::get_instance()->getViewPoint().y>=0)
+    if(player->getStats()->isMoving() && boardsize.x>viewPoint::get_instance()->getViewPoint().x && viewPoint::get_instance()->getViewPoint().x>=0 && boardsize.y>viewPoint::get_instance()->getViewPoint().y && viewPoint::get_instance()->getViewPoint().y>=0)
         this->showObjectTile(px,py,0,0,player->getBoard()->getElement(player->getStats()->getMyPosition()),false,1);
     /***
     Draw the cloak on the game field

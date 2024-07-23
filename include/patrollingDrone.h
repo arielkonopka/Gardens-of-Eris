@@ -37,7 +37,7 @@ public:
     virtual bool interact(std::shared_ptr<bElem> who);
     int getType() const;
     float getViewRadius() const;
-    bool additionalProvisioning(int subtype,std::shared_ptr<patrollingDrone> sbe);
+    bool additionalProvisioning(int subtype);
 
 private:
     bool brained=false;

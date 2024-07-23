@@ -38,9 +38,9 @@
 #include <vector>
 
 #define _debugRandomGenerator true
-#define Wmin 5
-#define Hmin 5
-#define _iterations 36
+#define Wmin 3
+#define Hmin 4
+#define _iterations 35
 typedef struct elementToPlace
 {
     int eType;

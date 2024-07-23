@@ -31,8 +31,4 @@ int key::getType() const
 
 
 
-bool key::additionalProvisioning(int subtype, std::shared_ptr<key>key)
-{
-    return bElem::additionalProvisioning(subtype,key);
-}
 

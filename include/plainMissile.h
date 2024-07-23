@@ -34,7 +34,7 @@ public:
     plainMissile();
     virtual ~plainMissile()=default;
     virtual bool mechanics();
-    virtual bool additionalProvisioning(int subtype,std::shared_ptr<plainMissile> sbe);
+    virtual bool additionalProvisioning(int subtype);
     bool stepOnAction(bool step, std::shared_ptr<bElem> who);
 private:
    // std::shared_ptr<bElem> statsOwner;

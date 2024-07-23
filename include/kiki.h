@@ -35,7 +35,6 @@ class kiki : public bElem
 
     kiki();
         virtual ~kiki()=default;
-        bool  additionalProvisioning(int stype,std::shared_ptr<kiki> myself);
         bool kill() final;
         bool destroy() final;
         bool mechanics() final;

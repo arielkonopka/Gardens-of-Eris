@@ -32,14 +32,9 @@
 class brickCluster: public bElem
 {
 public:
-    using bElem::additionalProvisioning;
-
     brickCluster()=default;
     virtual ~brickCluster()=default;
     int getType() const;
-
-    bool additionalProvisioning(int subtype,std::shared_ptr<brickCluster> sbe) ;
-
 
 };
 

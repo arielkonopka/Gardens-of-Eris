@@ -41,7 +41,7 @@ public:
     virtual bool interact(std::shared_ptr<bElem> who);
 
     virtual ~door()=default;
-    bool additionalProvisioning(int subtype,std::shared_ptr<door> sbe);
+    bool additionalProvisioning(int subtype);
 
 private:
     void _alignWithOpen();

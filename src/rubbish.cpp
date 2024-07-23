@@ -43,8 +43,4 @@ bool rubbish::mechanics()
 }
 
 
-bool rubbish::additionalProvisioning(int subtype, std::shared_ptr<rubbish>sbe)
-{
-    return bElem::additionalProvisioning(subtype,sbe);
-}
 

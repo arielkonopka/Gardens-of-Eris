@@ -44,11 +44,12 @@ randomLevelGenerator::~randomLevelGenerator()
 int randomLevelGenerator::checkWalls(int x, int y)
 {
     bool  walls[]= {false,false,false,false};
+    coords chambersize=this->mychamber->getSize();
     if (x>0)
     {
         if (this->mychamber->getElement(x-1,y)->getType()==_wallType) walls[0]=true;
     }
-    if (x<this->mychamber->width)
+    if (x<chambersize.x)
     {
         if (this->mychamber->getElement(x+1,y)->getType()==_wallType) walls[1]=true;
 
@@ -57,7 +58,7 @@ int randomLevelGenerator::checkWalls(int x, int y)
     {
         if (this->mychamber->getElement(x,y-1)->getType()==_wallType) walls[2]=true;
     }
-    if (y<this->mychamber->height)
+    if (y<chambersize.y)
     {
         if (this->mychamber->getElement(x,y+1)->getType()==_wallType) walls[3]=true;
 

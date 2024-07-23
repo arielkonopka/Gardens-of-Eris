@@ -24,9 +24,9 @@
 
 
 
-bool explosives::additionalProvisioning(int subtype, std::shared_ptr<explosives> sbe)
+bool explosives::additionalProvisioning(int subtype)
 {
-    return bElem::additionalProvisioning(subtype,sbe);
+    return bElem::additionalProvisioning(subtype);
 }
 
 
@@ -35,12 +35,13 @@ bool explosives::explode(float radius)
     this->radius=radius*2.5;
     if(!this->getStats()->isDisposed() && !this->getStats()->isDestroying())
     {
-        coords mc=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getMyPosition():this->getStats()->getMyPosition();
         std::shared_ptr<chamber> brd = (this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getBoard():this->getBoard();
+        coords bsize=(brd)?brd->getSize():(coords){0,0};
+        coords mc=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getMyPosition():this->getStats()->getMyPosition();
         int xs=std::max(0,(int)(mc.x-(int)radius));
-        int xe=std::min(brd->width-1,(int)(mc.x+(int)radius));
+        int xe=std::min(bsize.x-1,(int)(mc.x+(int)radius));
         int ys=std::max(0,(int)(mc.y-(int)radius));
-        int ye=std::min(brd->height-1,(int)(mc.y+(int)radius));
+        int ye=std::min(bsize.y-1,(int)(mc.y+(int)radius));
         this->playSound("Explosives","Explode");
         std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
         if(sowner)

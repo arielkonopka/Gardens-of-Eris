@@ -38,7 +38,7 @@ public:
     virtual bool mechanics();
     virtual ~plainGun() =default;
     virtual std::shared_ptr<bElem> createProjectible(std::shared_ptr<bElem> who);
-    bool additionalProvisioning(int subtype,std::shared_ptr<plainGun> sbe);
+    bool additionalProvisioning(int subtype);
 
 private:
     int ammo=1+(bElem::randomNumberGenerator()%_plainGunAmmo);

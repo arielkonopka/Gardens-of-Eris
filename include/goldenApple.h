@@ -42,7 +42,7 @@ public:
     bool mechanics();
     goldenApple()=default;
     oState disposeElement() final;
-    bool additionalProvisioning(int subtype,std::shared_ptr<goldenApple> sbe);
+    bool additionalProvisioning(int subtype) final;
     bool collectOnAction(bool collected, std::shared_ptr<bElem> who);
 
 private:

@@ -37,7 +37,6 @@ public:
     virtual bool destroy();
     virtual int getType() const;
     virtual bool mechanics();
-    bool additionalProvisioning(int subtype,std::shared_ptr<simpleBomb> sbe);
 private:
     bool triggered=false;
 };

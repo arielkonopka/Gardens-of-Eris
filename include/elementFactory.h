@@ -40,7 +40,7 @@ public:
     {
         std::shared_ptr<T> l=std::make_shared<T>();
         l->setBoard(board);
-        l->additionalProvisioning(subtype,l);
+        l->additionalProvisioning(subtype);
         return l;
     }
 

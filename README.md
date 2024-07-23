@@ -273,6 +273,7 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 ## ChangeLog
+* Removed that awful requirement for self pointer in additionalProvisioning
 * Teleporter: theOtherEnd is now a weak pointer, this should mitigate problems with teleport destruction from the memory. It the destructed is a receiver, it will be disabled forever, if sender, it will be connected with another available node.
 * Teleporters now are all active at the beginning, then the ones that are chosen to be the receiver, get inactivated, and their music stops, if they are of type 0 (interchamber teleports)
 * Added normalization of the sounf effects coordinates, velocities and position of the listener. 

@@ -35,7 +35,6 @@ public:
     bool mechanics() final;
     int getType()  const ;
 
-    bool additionalProvisioning(int subtype,std::shared_ptr<rubbish> sbe);
 
 };
 

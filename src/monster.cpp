@@ -25,9 +25,9 @@
 
 
 
-bool monster::additionalProvisioning(int subtype, std::shared_ptr<monster>sbe)
+bool monster::additionalProvisioning(int subtype)
 {
-    if(!bElem::additionalProvisioning(subtype,sbe))
+    if(!bElem::additionalProvisioning(subtype))
         return false;
     if (bElem::randomNumberGenerator() % 2 == 0)
     {

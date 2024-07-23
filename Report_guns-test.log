@@ -1,0 +1,33 @@
+
+Test module "Fixtures" has passed with:
+  8 test cases out of 8 passed
+  90 assertions out of 90 passed
+
+  Test suite "GunsTests" has passed with:
+    8 test cases out of 8 passed
+    90 assertions out of 90 passed
+
+    Test case "GunsTests/createAndDestroyWeapon<plainGun>" has passed with:
+      6 assertions out of 6 passed
+
+    Test case "GunsTests/createAndDestroyWeapon<bazooka>" has passed with:
+      6 assertions out of 6 passed
+
+    Test case "GunsTests/collectAGun<plainGun>" has passed with:
+      2 assertions out of 2 passed
+
+    Test case "GunsTests/collectAGun<bazooka>" has passed with:
+      2 assertions out of 2 passed
+
+    Test case "GunsTests/useWithoutCollecting<plainGun>" has passed with:
+      18 assertions out of 18 passed
+
+    Test case "GunsTests/useWithoutCollecting<bazooka>" has passed with:
+      18 assertions out of 18 passed
+
+    Test case "GunsTests/useCollectedGun<plainGun>" has passed with:
+      19 assertions out of 19 passed
+
+    Test case "GunsTests/useCollectedGun<bazooka>" has passed with:
+      19 assertions out of 19 passed
+
