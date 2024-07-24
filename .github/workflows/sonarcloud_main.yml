@@ -12,25 +12,34 @@ jobs:
     name: Build and analyze
     runs-on: ubuntu-latest
     env:
-      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
-    steps:      
+      BUILD_WRAPPER_OUT_DIR: ./buildWrapper/ # Directory where build-wrapper output will be placed
+    steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Create BuildWrapper dir
+        run: |
+          mkdir -p "${{ env.BUILD_WRAPPER_OUT_DIR }}"
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr libopenal-dev libalut-dev libsndfile1-dev libboost-test-dev
+
       - name: Verify Boost installation
         run: |
           dpkg -L libboost-all-dev
           dpkg -L libboost-test-dev
           dpkg -L libboost-system-dev
-      - name: Install sonar-scanner and build-wrapper
-        uses: SonarSource/sonarcloud-github-c-cpp@v2
+
+      - name: Download and install build-wrapper
+        run: |
+          wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+          unzip build-wrapper-linux-x86.zip -d $HOME
+
       - name: Run build-wrapper
         run: |
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} ./build.sh -sq -a
+          $HOME/build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} ./build.sh -sq -a
+
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
