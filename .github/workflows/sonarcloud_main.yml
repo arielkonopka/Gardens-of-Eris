@@ -30,7 +30,9 @@ jobs:
           dpkg -L libboost-all-dev
           dpkg -L libboost-test-dev
           dpkg -L libboost-system-dev
-
+      - name: Install sonar-scanner and build-wrapper
+        uses: SonarSource/sonarcloud-github-c-cpp@v2
+        
       - name: Download and install build-wrapper
         run: |
           wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
