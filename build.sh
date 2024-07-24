@@ -1,10 +1,22 @@
 #!/bin/bash
+
+#
+# As the name implies, prepare a sonar coverage report path
+#
+sonarDirPrepare() {
+    pth=$(dirname `grep 'sonar.coverageReportPaths' sonar-project.properties |cut -f2 -d'='`)
+    if [ -n "${pth}" ] ; then
+	mkdir -p "${pth}" 
+    fi
+    
+}
+
 objPath=./obj/GoE-objects/
 extraflags="-g"
 sonarQ="false"
 defines="" #-D_VerbousMode_" 
 opts="-Wall -std=gnu++20  ${defines} -g -O3 -Og"
-libs="-lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lm -lopenal -lsndfile "
+libs="-lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_primitives -lallegro_ttf -lm -lopenal -lsndfile "
 . ./build.sh.cfg
 
 #rm -rf ${objPath}
@@ -32,6 +44,7 @@ examples:
 	runTests="true"
 	;;
     "-gh")
+	
 	echo "Update repository info"
 	sudo apt update 2>&1 >/dev/null
 	echo "Performming full upgrade on the system"
@@ -42,11 +55,11 @@ examples:
 	sudo apt install -y libopenal-dev libalut-dev libsndfile1-dev
     ;;
     "-sq")
+	sonarDirPrepare
 	extraflags="${extraflags} --coverage -fprofile-abs-path "
 	linkAdditionalFLags=" -lgcov --coverage "
 	runTests="true"
 	sonarQ="true"
-	mkdir -p ${reportPath}/
     ;;
     "-m")
 	shift
