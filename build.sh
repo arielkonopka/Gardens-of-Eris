@@ -53,6 +53,7 @@ examples:
 	sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr
 	echo "Installing openAl and libsndFile"
 	sudo apt install -y libopenal-dev libalut-dev libsndfile1-dev
+	exit 0
     ;;
     "-sq")
 	sonarDirPrepare
