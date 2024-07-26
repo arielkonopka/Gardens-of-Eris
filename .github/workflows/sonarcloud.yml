@@ -23,6 +23,7 @@ jobs:
       - name: Prepare build
         run: |
           cd ./build
+          mkdir -p bw
           cmake -S../ -B./
           cd ..
       - name: Run build-wrapper
@@ -40,4 +41,4 @@ jobs:
           unset SONAR_CFAMILY_CUSTOMTARGETVENDOR
           unset SONAR_CFAMILY_CUSTOMTARGETSYSTEM
           unset SONAR_CFAMILY_CUSTOMTARGETENV
-          sonar-scanner -X --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
+          sonar-scanner -X --define sonar.cfamily.build-wrapper-output="./build/bw"
