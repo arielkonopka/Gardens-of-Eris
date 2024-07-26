@@ -30,7 +30,7 @@ jobs:
           cd ./build     
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} make
           cd ..
-          ./build -sq -a
+          #./build.sh -sq -a
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
