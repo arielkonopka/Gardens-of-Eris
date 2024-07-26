@@ -10,12 +10,11 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-     - uses: awalsh128/cache-apt-pkgs-action@latest
-       with:
-          packages: libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr libopenal-dev libalut-dev libsndfile1-dev libboost-test-dev libboost-all-dev
-          version: 1.0
-     - uses: actions/checkout@v3
-     - name: build game
-       run: ./build.sh -g
-     - name: build tests
-       run: ./build.sh -t 
+     - name: install dependencies
+       run: ./build.sh -gh
+     - name: build everything
+       run: |
+       cd ./build
+       cmake -S../ -B./
+       cmake
+       
