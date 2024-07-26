@@ -17,12 +17,20 @@ jobs:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v2
+      - name: Install dependencies
+        run: |
+          ./build.sh -gh
+      - name: Prepare build
+        run: |
+          cd ./build
+          cmake -S../ -B./
+          cd ..
       - name: Run build-wrapper
         run: |
-          mkdir -p ./bw
-          ./build.sh -gh
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} ./build.sh  -sq -a
-          cat ./bw/build-wrapper-dump.json
+          cd ./build     
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} make
+          cd ..
+          ./build -sq -a
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
