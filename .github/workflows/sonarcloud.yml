@@ -22,6 +22,7 @@ jobs:
           mkdir -p ./bw
           ./build.sh -gh
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} ./build.sh  -sq -a
+          cat ./bw/build-wrapper-dump.json
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
