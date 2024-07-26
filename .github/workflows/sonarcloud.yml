@@ -28,4 +28,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
+          unset SONAR_CFAMILY_CUSTOMTARGETARCH
+          unset SONAR_CFAMILY_CUSTOMTARGETVENDOR
+          unset SONAR_CFAMILY_CUSTOMTARGETSYSTEM
+          unset SONAR_CFAMILY_CUSTOMTARGETENV
           sonar-scanner -X --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
