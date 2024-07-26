@@ -10,11 +10,14 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-     - name: install dependencies
-       run: ./build.sh -gh
-     - name: build everything
-       run: |
-         cd ./build
-         cmake -S../ -B./
-         cmake
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: install dependencies
+        run: ./build.sh -gh 
+      - name: build everything
+        run: |
+           cd ./build
+           cmake -S../ -B./
+           cmake
        
