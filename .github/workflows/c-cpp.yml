@@ -14,7 +14,7 @@ jobs:
        run: ./build.sh -gh
      - name: build everything
        run: |
-       cd ./build
-       cmake -S../ -B./
-       cmake
+         cd ./build
+         cmake -S../ -B./
+         cmake
        
