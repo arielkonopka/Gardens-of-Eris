@@ -29,7 +29,7 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/filereadstream.h>
 #include <rapidjson/stringbuffer.h>
-#include <stddef.h>
+#include <cstddef>
 #include <iostream>
 #include <memory>
 #include "videoElementDef.h"
@@ -40,7 +40,7 @@
 
 // Singleton pattern, we will not have multiple config files, therefore we do not need multiple instances of config manager
 // this class will read the config json file, and expose gathered information to whatever class needing it
-using attributeData=struct _attDat
+using attributeData=struct ErisAttData
 {
     int subType=-1;
     bool killable=false;
@@ -79,7 +79,7 @@ typedef struct spriteData
 using sampleData= struct sampleData
 {
     bool configured=false;
-    std::string fname="";
+    std::string fname;
     std::string name="UNKNOWN";
     std::string description="This sampleData is empty";
     bool stacking=false;
@@ -87,7 +87,7 @@ using sampleData= struct sampleData
     float gain=1.0;
     int modeOfAction=-1; /* 0 - normal - play and forget, 1 - looped until stopped, or lost view, 2 - backwards, 3 - pingloop -forward and backward until stopped, or lost view */
 } ;
-using musicData=struct _musicData
+using musicData=struct ErisMusicData
 {
     bool configured=false;
     std::string filename;
@@ -105,7 +105,7 @@ typedef struct gameConfig
     int sndFifoSize=0;
     int soundDistance=250;
     int tileWidth,tileHeight;
-
+    std::string baseDir;
     int spacing; //We use spacing in the sprite png file, just for our comfort
     std::vector<musicData> music;
     std::vector<std::string> sylables;
@@ -136,8 +136,8 @@ public:
 private:
     static std::once_flag _onceFlag;
     std::shared_ptr<gameConfig> gConfObj;
-    int tileWidth;
-    int tileHeight;
+    int tileWidth=-1;
+    int tileHeight=-1;
     rapidjson::Document skinDefJson;
     static std::shared_ptr<configManager> instance;
 };

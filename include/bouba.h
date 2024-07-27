@@ -32,13 +32,13 @@ class bouba :  public explosives
     public:
        using bElem::additionalProvisioning;
 
-    bouba()=default;
+        bouba()=default;
         virtual ~bouba()=default;
-        bool destroy() final;
-        bool kill() final;
-        bool mechanics() final;
-        bool interact(std::shared_ptr<bElem> who) final;
-        virtual int getType() const;
+        bool destroy() override;
+        bool kill() override;
+        bool mechanics() override;
+        bool interact(std::shared_ptr<bElem> who) override;
+        int getType() const override;
 
     private:
 };

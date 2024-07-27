@@ -29,7 +29,7 @@ std::vector<std::shared_ptr<bElem>> bElem::toDispose;
 //std::vector<unsigned long int> bElem::toDeregister;
 unsigned int bElem::sTaterCounter = 5;
 
-std::mt19937 bElem::randomNumberGenerator;
+std::mt19937 bElem::randomNumberGenerator; // NOLINT(*-msc51-cpp)
 std::mutex bElem::mechanicMutex;
 
 bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_mutex_recursive())
@@ -41,7 +41,7 @@ bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_m
     std::call_once(_of,[]()
     {
         std::random_device rd;
-        std::array<int,4> seedData;
+        std::array<int,4> seedData{};
         std::generate_n(seedData.data(), seedData.size(), std::ref(rd));
         std::seed_seq seq(std::begin(seedData), std::end(seedData));
         bElem::randomNumberGenerator.seed(seq);
@@ -594,7 +594,7 @@ int bElem::getType() const
 /*
 Here we want to avoid the duplication of boundary checking, that is why we use getABSCoords, isSteppableInDirection and getElementInDirection;
 */
-sNeighboorhood bElem::getSteppableNeighboorhood()
+sNeighboorhood bElem::getSteppableNeighborhood()
 {
     sNeighboorhood myNeigh;
     coords up, left, down, right;
@@ -642,18 +642,18 @@ bool bElem::moveInDirectionSpeed(dir::direction dir, int speed)
         return false;
     std::shared_ptr<bElem> stepOn2=stepOn->getElementInDirection(dir);
     this->getStats()->setMyDirection(dir);
-    if (stepOn->getAttrs()->isSteppable()==true)
+    if (stepOn->getAttrs()->isSteppable())
     {
         this->stepOnElement(stepOn);
         this->getStats()->setMoved(speed);
         this->playSound("Move","StepOn");
         return true;
     }
-    else if (this->getAttrs()->canCollect() && stepOn->getAttrs()->isCollectible()==true && this->collect(stepOn))
+    else if (this->getAttrs()->canCollect() && stepOn->getAttrs()->isCollectible() && this->collect(stepOn))
     {
         return true;
     }
-    else if (this->getAttrs()->canPush()==true && stepOn->getAttrs()->canBePushed()==true && stepOn->getAttrs()->isMovable()==true && stepOn2 && stepOn2->getAttrs()->isSteppable() && stepOn->moveInDirectionSpeed(dir,speed+1))
+    else if (this->getAttrs()->canPush() && stepOn->getAttrs()->canBePushed() && stepOn->getAttrs()->isMovable() && stepOn2 && stepOn2->getAttrs()->isSteppable() && stepOn->moveInDirectionSpeed(dir, speed + 1))
     {
 
         this->stepOnElement(this->getElementInDirection(dir));  // move the initiating object
@@ -661,7 +661,7 @@ bool bElem::moveInDirectionSpeed(dir::direction dir, int speed)
         this->playSound("Move","StepOn");
         return true;
     }
-    else  if (this->getAttrs()->isInteractive()==true && stepOn->interact(shared_from_this()))
+    else  if (this->getAttrs()->isInteractive() && stepOn->interact(shared_from_this()))
     {
         return true;
     }
@@ -708,7 +708,7 @@ void bElem::registerLiveElement(std::shared_ptr<bElem> who)
 
 }
 
-void bElem::deregisterLiveElement(int instanceId)
+void bElem::deregisterLiveElement(unsigned int instanceId)
 {
 
     if(this->getStats()->hasActivatedMechanics() && this->getBoard())

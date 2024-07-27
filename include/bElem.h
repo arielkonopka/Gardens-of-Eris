@@ -61,10 +61,10 @@ public:
     static void mechUnlock();
     virtual ALLEGRO_MUTEX *getMyMutex();
     void registerLiveElement(std::shared_ptr<bElem> who);
-    void deregisterLiveElement(int instanceId);
+    void deregisterLiveElement(unsigned int instanceId);
     static void runLiveElements();
 
-    virtual sNeighboorhood getSteppableNeighboorhood();
+    virtual sNeighboorhood getSteppableNeighborhood();
 
     bElem();
     bElem(const bElem &) = delete;
@@ -96,7 +96,7 @@ public:
     virtual  float getViewRadius() const;
     virtual bool collect(std::shared_ptr<bElem> collectible);
     virtual bool dropItem(unsigned long int  instanceId);
-    virtual std::shared_ptr<bElem> removeElement(); // removes element from the board, and returns it for further processing, usefull for eg. for collecting stuff
+    virtual std::shared_ptr<bElem> removeElement(); // removes element from the board, and returns it for further processing, useful for e.g. for collecting stuff
     virtual oState disposeElement();
     virtual oState disposeElementUnsafe();
     virtual coords getOffset() const;

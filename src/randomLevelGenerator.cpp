@@ -454,16 +454,16 @@ bool randomLevelGenerator::generateLevel(int holes)
         for(unsigned int cnt=0; cnt<elementCollection.size(); cnt++) demandedSurface+=elementCollection[cnt].surface*(elementCollection[cnt].number);
         chamberArea::foundAreas.clear();
         this->headNode->findChambersCloseToSurface(demandedSurface,tolerance);
-        if(chamberArea::foundAreas.size()<1)
+        if(chamberArea::foundAreas.empty())
             _ex=true;
-        if(chamberArea::foundAreas.size()>=1)
+        if(!chamberArea::foundAreas.empty())
         {
             int selectedChamberNo=(this->gen()%chamberArea::foundAreas.size());
             this->placeElementCollection(chamberArea::foundAreas[selectedChamberNo],&elementCollection);
             elementCollection.clear();
             if(chamberArea::foundAreas[selectedChamberNo]->parent!=nullptr)
             {
-                if(chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock==false)
+                if(!chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock)
                 {
                     int dice=this->gen()%100;
                     int keyType=this->gen()%10;

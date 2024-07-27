@@ -190,7 +190,7 @@ bool monster::mechanics()
 
 bool monster::steppableNeigh()
 {
-    sNeighboorhood n = this->getSteppableNeighboorhood();
+    sNeighboorhood n = this->getSteppableNeighborhood();
     for (int c = 0; c < 8; c++)
     {
         if (n.steppable[c] == false)
