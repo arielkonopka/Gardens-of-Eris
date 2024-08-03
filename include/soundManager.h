@@ -45,15 +45,15 @@
 using sndHolder=struct sampleS
 {
     bool loaded=false; // By default it is not loaded
-    ALuint buffer;
-    int mode;
+    ALuint buffer=0;
+    int mode=0;
   //  bool allowMulti=false;
 
 
 };
 
 
-using muNode=struct _mudNode
+using muNode=struct mudNode
 {
     bool isRegistered=false;
     int songNo=-1;
@@ -88,16 +88,16 @@ using stNode=struct sndNode
     coords3d velocity;
 };
 
-using regNode=struct _regnd
+using regNode=struct regnd
 {
     bool r=false;
     std::shared_ptr<stNode> stn;
 };
 
-using regSmpFileBuf=struct _rsmpFile
+using regSmpFileBuf=struct rsmpFile
 {
     bool r=false;
-    ALuint buffer;
+    ALuint buffer=0;
 };
 
 class soundManager

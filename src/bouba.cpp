@@ -31,9 +31,7 @@ bool bouba::destroy() {
     return this->hurt(this->getAttrs()->getEnergy()/5);
 }
 
-int bouba::getType() const {
-    return _boubaType;
-}
+
 
 bool bouba::interact(std::shared_ptr<bElem> who) {
     return bElem::interact(who);
@@ -48,4 +46,8 @@ bool bouba::kill() {
 
 bool bouba::mechanics() {
     return bElem::mechanics();
+}
+
+int bouba::getType() const {
+    return _boubaType;
 }

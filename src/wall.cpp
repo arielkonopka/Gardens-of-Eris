@@ -31,20 +31,17 @@
 bool wall::stepOnElement(std::shared_ptr<bElem> elem)
 {
     bool res = bElem::stepOnElement(elem);
-    if (this->getBoard().get() != nullptr)
+    if (this->getBoard())
         this->getBoard()->setVisible(this->getStats()->getMyPosition(), 254);
     return res;
 }
 
 std::shared_ptr<bElem> wall::removeElement()
 {
-    if (this->getBoard().get() != nullptr)
+    if (this->getBoard())
         this->getBoard()->setVisible(this->getStats()->getMyPosition(), 255);
-    std::shared_ptr<bElem> res = bElem::removeElement();
-    return res;
+    return bElem::removeElement();
 }
-
-
 
 int wall::getType() const
 {

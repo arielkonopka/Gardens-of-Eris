@@ -30,7 +30,6 @@ bool teleport::additionalProvisioning(int value)
 {
     if(!bElem::additionalProvisioning(value))
         return false;
-    this->connectionsMade = false;
     if (teleport::allTeleporters.empty() && this->getAttrs()->getSubtype()==0)
     {
         this->getStats()->setFacing(dir::direction::LEFT);
@@ -43,15 +42,14 @@ bool teleport::additionalProvisioning(int value)
 
 
 
-/* here we will try to teleport an object to the becon connected to this teleporter. if the becon is not yet established, randomly choose one */
+/* here we will try to teleport an object to the beacon connected to this teleporter. if the beacon is not yet established, randomly choose one */
 bool teleport::interact(std::shared_ptr<bElem> who)
 {
-    bool r=true;
-    if (!bElem::interact(who) || this->getStats()->getMyDirection()==dir::direction::LEFT )
+    bool r;
+    if (this->getStats()->getMyDirection()==dir::direction::LEFT || !bElem::interact(who))
         return false;
     if (this->theOtherEnd.expired())
-        this->createConnectionsWithinSUbtype();
-
+        this->createConnectionsWithinSubtype();
     this->playSound("Teleport", "Teleporting");
     if (!this->theOtherEnd.expired())
         r=this->theOtherEnd.lock()->teleportIt(who);
@@ -62,14 +60,14 @@ bool teleport::interact(std::shared_ptr<bElem> who)
 
 /***
  * @brief Find a partner for a teleport
- * this methid will select a random counterpart for our teleport, and set it up. the counterpart will become a receiver, in case it is a teleporter of subtype==0,
+ * this method will select a random counterpart for our teleport, and set it up. the counterpart will become a receiver, in case it is a teleporter of subtype==0,
  * the music started by it will be stopped.
  * @return always true;
  */
-bool teleport::createConnectionsWithinSUbtype()
+bool teleport::createConnectionsWithinSubtype()
 {
     /// We do this only once, as soon as the first level is created. we can get away with this construct, because we know, that the first mirror is a receiver, and will be inactive.
-    /// therefire we have to remove it from all teleporters vector.
+    /// therefore we have to remove it from all teleporters vector.
     if (!teleport::allTeleporters.empty()) std::call_once(teleport::_onceFlag,[](){  teleport::allTeleporters.erase(teleport::allTeleporters.begin());});
     std::shared_ptr<teleport> tmpt,tmpt2;
     std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport>& wp) {
@@ -90,7 +88,7 @@ bool teleport::createConnectionsWithinSUbtype()
     if(candidates.size()>2 && this->getAttrs()->getSubtype()>0)
         for(int c=0; c<5555; c++)
         {
-            int p=bElem::randomNumberGenerator()%(candidates.size()-2);
+            unsigned int p=bElem::randomNumberGenerator()%(candidates.size()-2);
             std::shared_ptr<teleport> t=candidates[p];
             candidates[p]=candidates[p+1];
             candidates[p+1]=t;
@@ -136,16 +134,15 @@ bool teleport::teleportIt(std::shared_ptr<bElem> who)
             spots.push_back(this->getElementInDirection(d));
     }
     if(spots.empty())
-        this->interact(who);
+    {
+        who->getStats()->getSteppingOn()->getStats()->setTelInProgress(_teleportationTime);
+        return false;
+    }
     else
     {
-        std::shared_ptr<bElem> spot = spots[this->randomNumberGenerator() % spots.size()];
-        who->stepOnElement(spot);
+        who->stepOnElement(spots.at(teleport::randomNumberGenerator() % spots.size()));
         return true;
     }
-
-        this->interact(who);
-    return false;
 }
 
 bool teleport::stepOnAction(bool step, std::shared_ptr<bElem>who)
@@ -178,20 +175,13 @@ bool teleport::mechanics()
     {
             this->interact(this->getStats()->getStandingOn().lock());
             this->deregisterLiveElement(this->getStats()->getInstanceId());
-    };
+    }
     return true;
 }
 
 bool teleport::removeFromAllTeleporters()
 {
-    for (unsigned int c = 0; c < teleport::allTeleporters.size(); c++)
-    {
-        std::shared_ptr<teleport> t=teleport::allTeleporters[c].lock();
-        if (!teleport::allTeleporters[c].expired() && t->getAttrs()->getSubtype() == this->getAttrs()->getSubtype())
-        {
-            t->connectionsMade = false;
-        }
-    }
+
     for (unsigned int c = 0; c < teleport::allTeleporters.size();)
     {
         std::shared_ptr<teleport> t=teleport::allTeleporters[c].lock();

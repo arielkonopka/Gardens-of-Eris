@@ -32,27 +32,23 @@ class teleport : public bElem
 public:
     using bElem::additionalProvisioning;
 
-    int getType() const;
+    int getType() const override;
     teleport()=default;
-    virtual ~teleport()=default;
-    bool interact(std::shared_ptr<bElem> who) final;
+    ~teleport() override=default;
+    bool interact(std::shared_ptr<bElem> who) override;
     virtual bool teleportIt(std::shared_ptr<bElem> who);
-    virtual oState disposeElement();
-    virtual oState disposeElementUnsafe();
-    virtual bool createConnectionsWithinSUbtype();
-    bool additionalProvisioning(int value);
-    virtual bool stepOnElement(std::shared_ptr<bElem> step);
+    oState disposeElement() override;
+    oState disposeElementUnsafe() override;
+    bool createConnectionsWithinSubtype();
+    bool additionalProvisioning(int value) override;
+    bool stepOnElement(std::shared_ptr<bElem> step) override;
     bool mechanics() final;
-
-    bool stepOnAction(bool step,std::shared_ptr<bElem> who);
+    bool stepOnAction(bool step,std::shared_ptr<bElem> who) override;
 private:
     static std::vector<std::weak_ptr<teleport>> allTeleporters;
     bool removeFromAllTeleporters();
-    bool connectionsMade=false;
-    bool checked=false;
     std::weak_ptr<teleport> theOtherEnd;
     std::vector<std::shared_ptr<teleport>> candidates;
-    unsigned int songId=0;
     static std::once_flag _onceFlag;
 };
 

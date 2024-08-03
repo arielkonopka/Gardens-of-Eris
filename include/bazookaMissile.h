@@ -33,12 +33,12 @@ class bazookaMissile : public explosives
     public:
         using explosives::additionalProvisioning;
 
-        int getType() const;
+        int getType() const override;
         bazookaMissile()=default;
-        bool mechanics();
-        virtual ~bazookaMissile() = default;
+        bool mechanics() override;
+        ~bazookaMissile() override= default;
 
-        bool additionalProvisioning(int subtype);
+        bool additionalProvisioning(int subtype) override;
     protected:
 
     private:

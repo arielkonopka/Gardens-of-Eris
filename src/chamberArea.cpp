@@ -217,7 +217,7 @@ bool chamberArea::checkIfElementIsFree(int x, int y, std::shared_ptr<chamber> my
 {
     if(mychamber->getElement(x,y)->getAttrs()->isSteppable()==false)
         return false;
-    sNeighboorhood neigh=mychamber->getElement(x,y)->getSteppableNeighboorhood();
+    sNeighboorhood neigh= mychamber->getElement(x, y)->getSteppableNeighborhood();
     for(int c=0; c<8; c++)
     {
         if(neigh.nTypes[c]==_door)

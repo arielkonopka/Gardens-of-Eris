@@ -33,11 +33,11 @@ public:
     using bElem::additionalProvisioning;
 
     patrollingDrone()=default;
-    virtual ~patrollingDrone()=default;
-    virtual bool interact(std::shared_ptr<bElem> who);
-    int getType() const;
-    float getViewRadius() const;
-    bool additionalProvisioning(int subtype);
+    ~patrollingDrone() override=default;
+    bool interact(std::shared_ptr<bElem> who) override;
+    int getType() const override;
+    float getViewRadius() const override;
+    bool additionalProvisioning(int subtype) override;
 
 private:
     bool brained=false;
