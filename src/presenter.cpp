@@ -414,7 +414,7 @@ void presenter::showGameField()
     /***
     Draw the cloak on the game field
     ***/
-        bElem::mechUnlock();
+    bElem::mechUnlock();
 
 
     al_set_target_bitmap(al_get_backbuffer(display));
