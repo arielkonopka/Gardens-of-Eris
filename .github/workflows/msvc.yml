@@ -35,8 +35,12 @@ jobs:
           .\vcpkg\vcpkg integrate install
         shell: cmd
 
-      - name: Install Boost using vcpkg
-        run: .\vcpkg\vcpkg install boost
+      - name: Install dependencies using vcpkg
+        run: |
+          .\vcpkg\vcpkg install boost
+          .\vcpkg\vcpkg install allegro
+          .\vcpkg\vcpkg install openal-soft
+          .\vcpkg\vcpkg install libsndfile
         shell: cmd
 
       - name: Configure CMake with vcpkg toolchain
