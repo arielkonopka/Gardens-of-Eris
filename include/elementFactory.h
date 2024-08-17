@@ -33,8 +33,6 @@ class elementFactory
 public:
     elementFactory() = default;
     virtual ~elementFactory() = default;
-
-
     template <class T>
     static std::shared_ptr<T> generateAnElement(std::shared_ptr<chamber> board,int subtype)
     {
@@ -43,8 +41,6 @@ public:
         l->additionalProvisioning(subtype);
         return l;
     }
-
-
 protected:
 
 private:

@@ -35,11 +35,11 @@ public:
     using bElem::additionalProvisioning;
 
     bunker();
-    virtual ~bunker() = default;
+    ~bunker() override = default;
     bool mechanics() final;
     dir::direction findLongestShot();
-    virtual bool selfAlign();
-    int getType() const;
+    bool selfAlign() override;
+    int getType() const override;
     bool interact(std::shared_ptr<bElem> Who) final;
 
     bool additionalProvisioning(int subtype) final;

@@ -34,14 +34,14 @@ class door : public bElem
 public:
     using bElem::additionalProvisioning;
 
-    virtual int getType() const;
+    int getType() const override;
     door()=default;
-    virtual bool stepOnAction(bool step,std::shared_ptr<bElem> who);
-    bool destroy();
-    virtual bool interact(std::shared_ptr<bElem> who);
+    bool stepOnAction(bool step,std::shared_ptr<bElem> who) override;
+    bool destroy() override;
+    bool interact(std::shared_ptr<bElem> who) override;
 
-    virtual ~door()=default;
-    bool additionalProvisioning(int subtype);
+    ~door() override =default;
+    bool additionalProvisioning(int subtype) override;
 
 private:
     void _alignWithOpen();

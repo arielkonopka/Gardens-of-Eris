@@ -34,16 +34,16 @@ public:
 
     static std::shared_ptr<bElem> getApple(int num);
     static  int getAppleNumber();
-    int getType() const;
+    int getType() const override;
     bool kill() final;
     bool destroy() final;
-    bool hurt(int points);
-    bool interact(std::shared_ptr<bElem> who);
-    bool mechanics();
+    bool hurt(int points) override;
+    bool interact(std::shared_ptr<bElem> who) override;
+    bool mechanics() override;
     goldenApple()=default;
     oState disposeElement() final;
     bool additionalProvisioning(int subtype) final;
-    bool collectOnAction(bool collected, std::shared_ptr<bElem> who);
+    bool collectOnAction(bool collected, std::shared_ptr<bElem> who) override;
 
 private:
     static unsigned int appleNumber;

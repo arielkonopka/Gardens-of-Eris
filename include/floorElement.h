@@ -30,8 +30,8 @@ class floorElement : public bElem
 {
 public:
     floorElement()=default;
-    virtual ~floorElement()=default;
-    virtual  int getType() const;
+    ~floorElement() override =default;
+     int getType() const override;
 };
 
 #endif // FLOOR_H
