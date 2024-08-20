@@ -13,9 +13,6 @@ Main branch build status: tests with the game:
 
 [![C/C++ CI](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/c-cpp.yml)
 
-Sonarcloud static analysis:
-
-[![SonarCloud](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonarcloud_main.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonarcloud_main.yml)
 
 ## Why the idea
 
