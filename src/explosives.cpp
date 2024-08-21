@@ -36,7 +36,7 @@ bool explosives::explode(float radius)
     if(!this->getStats()->isDisposed() && !this->getStats()->isDestroying())
     {
         std::shared_ptr<chamber> brd = (this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getBoard():this->getBoard();
-        coords bsize=(brd)?brd->getSize():(coords){0,0};
+        coords bsize=(brd)?brd->getSize():coords(0,0);
         coords mc=(this->getStats()->isCollected())?this->getStats()->getCollector().lock()->getStats()->getMyPosition():this->getStats()->getMyPosition();
         int xs=std::max(0,(int)(mc.x-(int)radius));
         int xe=std::min(bsize.x-1,(int)(mc.x+(int)radius));

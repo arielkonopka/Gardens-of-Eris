@@ -69,7 +69,7 @@ void chamber::createFloor()
             auto bec=std::make_shared<bElemContainer>();
             bec->element=elementFactory::generateAnElement<floorElement>(shared_from_this(),subtype);
             bec->element->setBoard(shared_from_this());
-            bec->element->getStats()->setMyPosition((coords){c,d});
+            bec->element->getStats()->setMyPosition(coords(c,d));
             bec->element->getAttrs()->setSubtype(subtype);
 #ifdef _VerbousMode_
             std::cout << "created id " << b->getStats()->getInstanceId() << "\n";

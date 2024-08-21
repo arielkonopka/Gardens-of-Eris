@@ -311,7 +311,7 @@ std::shared_ptr<bElem> bElem::getElementInDirection(coords di)
     coords crd=this->getAbsCoords(di);
     if (this->attachedBoard.expired() || crd==NOCOORDS || this->getStats()->getMyPosition()==NOCOORDS)
         return nullptr;
-    if (di==(coords){0,0})
+    if (di==coords(0,0))
         return shared_from_this();
     return this->attachedBoard.lock()->getElement(crd);
 }

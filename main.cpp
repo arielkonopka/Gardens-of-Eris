@@ -23,13 +23,7 @@
  */
 
 #include <exception>
-#include <string>
-#include <iostream>
-#include <vector>
-#include <string>
 #include <thread>
-
-#include "commons.h"
 #include "elements.h"
 #include "presenter.h"
 #include "randomLevelGenerator.h"
@@ -43,7 +37,7 @@ void createChambers()
     {
         for(int c2=0; c2<5; c2++)
         {
-            rndl=new randomLevelGenerator(555,555);
+            rndl=new randomLevelGenerator(500,500);
             rndl->generateLevel(cnt);
             if(finish)
                 return;
@@ -56,25 +50,24 @@ void createChambers()
 
 int main( int argc, char * argv[] )
 {
-    presenter::presenter *myPresenter=new presenter::presenter();
+    auto *myPresenter=new presenter::presenter();
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
     myPresenter->showSplash();
-    randomLevelGenerator* rndl=new randomLevelGenerator(555,555);
+    auto rndl=new randomLevelGenerator(500,500);
     soundManager::getInstance()->setupSong(0,0, {0.0f,0.0f,0.0f},0,true);
-    soundManager::getInstance()->setupSong(2,2, {1.0f,130.0f,0.0f},0,true);
-    soundManager::getInstance()->setupSong(3,3, {0.0f,170.0f,0.0f},0,true);
-    soundManager::getInstance()->setupSong(10,5, {550.0f,0.0f,0.0f},0,true);
-    soundManager::getInstance()->setupSong(11,6, {550.0f,550.0f,0.0f},0,true);
-    soundManager::getInstance()->setupSong(12,7, {1.0f,550.0f,0.0f},0,true);
-    soundManager::getInstance()->setupSong(13,8, {250.0f,250.0f,0.0f},0,true);
-    soundManager::getInstance()->setupSong(4,4, {0.0f,0.0f,0.0f},1,false);
-    soundManager::getInstance()->setupSong(5,3, {0.0f,0.0f,0.0f},2,false);
-    soundManager::getInstance()->setupSong(6,2, {0.0f,0.0f,0.0f},3,false);
-//    soundManager::getInstance()->setupSong(7,1, {0.0f,0.0f,0.0f},4,false);
-    soundManager::getInstance()->setupSong(8,0, {0.0f,0.0f,0.0f},5,false);
-    soundManager::getInstance()->setupSong(9,0, {0.0f,0.0f,0.0f},6,false);
-    rndl->generateLevel(10);
+    soundManager::getInstance()->setupSong(2,2, {1.0f,130.0f,0.0f},-1,true);
+    soundManager::getInstance()->setupSong(3,3, {0.0f,170.0f,0.0f},-1,true);
+    soundManager::getInstance()->setupSong(10,5, {550.0f,0.0f,0.0f},-1,true);
+    soundManager::getInstance()->setupSong(11,6, {550.0f,550.0f,0.0f},-1,true);
+    soundManager::getInstance()->setupSong(12,7, {1.0f,550.0f,0.0f},-1,true);
+    soundManager::getInstance()->setupSong(13,8, {250.0f,250.0f,0.0f},-1,true);
+    soundManager::getInstance()->setupSong(4,4, {0.0f,0.0f,0.0f},1,true);
+    soundManager::getInstance()->setupSong(5,3, {0.0f,0.0f,0.0f},2,true);
+    soundManager::getInstance()->setupSong(6,2, {0.0f,0.0f,0.0f},3,true);
+    soundManager::getInstance()->setupSong(8,0, {0.0f,0.0f,0.0f},5,true);
+    soundManager::getInstance()->setupSong(9,0, {0.0f,0.0f,0.0f},6,true);
+    rndl->generateLevel(5);
     /// generate the remaining leveldata in the background, so the user would not be greeted with a delay.
     std::thread nt=std::thread(&createChambers);
     nt.detach();
