@@ -66,10 +66,8 @@ private:
     controlItem translateEvent(ALLEGRO_EVENT* ev);
     inputManager();
     static inputManager* _instance;
-    controlItem lastItem=(controlItem)
-    {
-        0,dir::direction::NODIRECTION
-    };
+    controlItem lastItem=controlItem(0,dir::direction::NODIRECTION);
+
     static std::once_flag once;
     ALLEGRO_EVENT_QUEUE* evQueue;
 

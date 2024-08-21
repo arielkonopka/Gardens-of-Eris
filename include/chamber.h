@@ -44,14 +44,13 @@ class bElem;
 class chamber: public std::enable_shared_from_this<chamber>
 {
 public:
+    chamber(const chamber&) = delete;
+    chamber& operator=(const chamber&) = delete;
 
     static std::shared_ptr<chamber> makeNewChamber(coords csize);
     bool visitPosition(int x, int y)
     {
-        return this->visitPosition((coords)
-        {
-            x,y
-        });
+        return this->visitPosition(coords(x,y));
     };
     unsigned int applesCount=0;
     bool visitPosition(coords point);
