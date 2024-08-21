@@ -167,7 +167,7 @@ viewPoint* viewPoint::get_instance()
     std::call_once(once, []()
     {
         viewPoint::instance = new viewPoint();
-        viewPoint::instance->tilesize=(coords){configManager::getInstance()->getConfig()->tileWidth,configManager::getInstance()->getConfig()->tileHeight};
+        viewPoint::instance->tilesize=coords(configManager::getInstance()->getConfig()->tileWidth,configManager::getInstance()->getConfig()->tileHeight);
     });
     return viewPoint::instance;
 
@@ -195,7 +195,7 @@ std::vector<vpPoint> viewPoint::getViewPoints(coords start, coords end)
 
         // we try to address a situation, where a viewpoint element was collected.
         coords bcoords=(b_->getStats()->isCollected())?((b_->getStats()->getCollector().expired() || b_->getStats()->getCollector().lock()->getStats()->isDisposed())?NOCOORDS:b_->getStats()->getCollector().lock()->getStats()->getMyPosition()):b_->getStats()->getMyPosition();
-        coords ofs=(bcoords!=NOCOORDS)?b_->getOffset():(coords){0,0};
+        coords ofs=(bcoords!=NOCOORDS)?b_->getOffset():coords(0,0);
         bcoords=bcoords-start;
         vp.x = (bcoords.x*this->tilesize.x)+ofs.x;
         vp.y = (bcoords.y*this->tilesize.y)+ofs.y;

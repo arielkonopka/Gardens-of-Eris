@@ -91,8 +91,8 @@
 
 
 #define _interactedTime 10
-#define NOCOORDS   ((coords){-65535,-65535})
-#define NOSTATS ((stats){-1,-1,-1,-1})
+#define NOCOORDS   coords(-65535,-65535)
+#define NOSTATS   stats(-1,-1,-1,-1)
 
 #define confFname1 "./data/skins.json"
 #define confFname2 "./GoEoOL/data/skins.json"
@@ -145,15 +145,15 @@ typedef struct coords
     {
         if (x<0 || x>=bottom.x || y<0 || y>=bottom.y)
             return NOCOORDS;
-        return (coords){x,y};
+        return coords(x,y);
     }
     inline coords rotLeft()
     {
-        return (coords){-y,x};
+        return coords(-y,x);
     }
     inline coords rotRight()
     {
-        return (coords){y,-x};
+        return coords(y,-x);
     }
     inline bool operator==(coords a) const
     {
@@ -173,72 +173,45 @@ typedef struct coords
     }
     inline coords operator+(coords a)
     {
-        return (coords)
-        {
-            x+a.x,y+a.y
-        };
+        return coords(x+a.x,y+a.y);
     }
     inline coords operator-(coords a)
     {
-        return (coords)
-        {
-            x-a.x, y-a.y
-        };
+        return coords(x-a.x, y-a.y);
     }
 
 
     float distance(const coords& a) const
     {
-        coords n=(coords)
-        {
-            x,y
-        }
-        -a;
+        coords n=coords(x,y)-a;
 
         return ::sqrt(static_cast<float>(n.x * n.x + n.y * n.y));
     }
     inline coords operator%(coords a)
     {
-        return (coords)
-        {
-            x%a.x,y%a.y
-        };
+        return coords(x%a.x,y%a.y);
+
     }
     inline coords operator*(coords a)
     {
-        return (coords)
-        {
-            x*a.x,y*a.y
-        };
+        return coords(x*a.x,y*a.y);
     }
     inline coords operator*(int a)
     {
-        return (coords)
-                {
-                        x*a,y*a
-                };
+        return coords(x*a,y*a);
     }
 
     inline coords operator+(int a)
     {
-        return (coords)
-        {
-            x+a,y+a
-        };
+        return coords(x+a,y+a);
     }
     inline coords operator-(int a)
     {
-        return (coords)
-        {
-            x-a,y-a
-        };
+        return coords(x-a,y-a);
     }
     inline coords operator/(int a)
     {
-        return (coords)
-        {
-            (int)round((double)x/a),(int)round((double)y/a)
-        };
+        return coords(int(x/a),int(y/a));
     }
 
 

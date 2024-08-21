@@ -45,7 +45,6 @@ presenter::presenter(): sWidth(0),sHeight(0),spacing(0),previousPosition({0,0}),
     al_get_monitor_info(0, &info);
     this->scrWidth = info.x2-50; /* Assume this is 1366 */
     this->scrHeight= info.y2-50; /* Assume this is 768 */
-    // this->chaosGameTops.push_back((coords){0,0});
     this->chaosGameTops.push_back({0,0});
     this->chaosGameTops.push_back({this->scrWidth/2,this->scrHeight/2});
     this->chaosGameTops.push_back({this->scrWidth,0});
@@ -438,7 +437,7 @@ void presenter::shaderthing(int _x, int _y) {
     float texWidth = this->scrWidth, texHeight = this->scrHeight;
     float points[300];
     std::fill(std::begin(points), std::end(points), 0.0f);
-    auto rads=viewPoint::get_instance()->getViewPoints(this->previousPosition,this->previousPosition+(coords){scrTilesX+1,scrTilesY+1});
+    auto rads=viewPoint::get_instance()->getViewPoints(this->previousPosition,this->previousPosition+coords(scrTilesX+1,scrTilesY+1));
     int i=0;
     for (auto c:rads)
     {
