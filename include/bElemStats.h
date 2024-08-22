@@ -38,7 +38,6 @@ public:
 
     // get methods
     unsigned long int getInstanceId() const;
-    int getAmmo() const;
     int getAnimPhase() const;
     std::weak_ptr<bElem> getCollector() ;
     int getDestroyed() const;
@@ -71,7 +70,6 @@ public:
 
     void setStats(pointsType t,int value );
     // set methods
-    void setAmmo(int value);
     void setAnimPhase(int value);
     void setCollector(std::weak_ptr<bElem> value);
     void setDopped();

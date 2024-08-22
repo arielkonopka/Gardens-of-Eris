@@ -92,10 +92,7 @@ void chamber::createFloor()
 
 coords chamber::getSizeOfChamber()
 {
-    return (coords)
-    {
-        (int)this->chamberArray.size(), (this->chamberArray.size() > 0) ? (int)this->chamberArray[0].size() : -1
-    };
+    return coords((int)this->chamberArray.size(), (this->chamberArray.size() > 0) ? (int)this->chamberArray[0].size() : -1);
 }
 
 chamber::chamber(int x, int y) : std::enable_shared_from_this<chamber>(), width(x), height(y), SEMutex(al_create_mutex_recursive()),IdMutex(al_create_mutex_recursive()),VisMutex(al_create_mutex_recursive())
@@ -148,10 +145,7 @@ bool chamber::visitPosition(coords point)
     {
         for(int y=y0; y<=y1; y++)
         {
-            float distance=point.distance((coords)
-            {
-                x,y
-            });
+            float distance=point.distance(coords(x,y));
             if (distance<=vradius && this->visitedElements[x][y]!=0)
             {
                 res=true;
@@ -176,10 +170,7 @@ void chamber::setVisible(coords point,int v)
 
 int chamber::isVisible(int x, int y)
 {
-    return this->isVisible((coords)
-    {
-        x,y
-    });
+    return this->isVisible(coords(x,y));
 }
 
 int chamber::isVisible(coords point)

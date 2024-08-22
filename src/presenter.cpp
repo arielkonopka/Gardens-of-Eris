@@ -371,10 +371,7 @@ void presenter::showGameField()
         for(x=0; x<this->scrTilesX+1; x++)
             for(y=0; y<this->scrTilesY+1; y++)
             {
-                coords np=(coords)
-                {
-                    x+this->previousPosition.x,y+this->previousPosition.y
-                };
+                coords np=coords(x+this->previousPosition.x,y+this->previousPosition.y);
                 std::shared_ptr<bElem> elemToDisplay=player->getBoard()->getElement(np);
                 if(viewPoint::get_instance()->calculateObscured(np)<1 )
                 {
@@ -473,20 +470,13 @@ void presenter::drawCloak()
             {
                 int nx=x+this->previousPosition.x;
                 int ny=y+this->previousPosition.y;
-                coords np=(coords)
-                {
-                    nx,ny
-                };
-
+                coords np=coords(nx,ny);
                 if(viewPoint::get_instance()->isPointVisible(np))
                 {
                     for(int x1=0; x1<divider; x1++)
                         for(int y1=0; y1<divider; y1++)
                         {
-                            coords np1=(np*divider)+ (coords)
-                            {
-                                x1,y1
-                            };
+                            coords np1=(np*divider)+ coords(x1,y1);
                             obscured=std::min(255,viewPoint::get_instance()->calculateObscured(np1,divider));
                             if(obscured>0)
                             {

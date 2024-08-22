@@ -347,7 +347,6 @@ bool bElem::destroy()
         {
             this->getStats()->setKilled(0);
             this->getStats()->setKillTimeBeg(0);
-            this->getStats()->setKillTimeReq(0);
         }
         this->getStats()->setDestroyed(_defaultDestroyTime);
         if (this->getAttrs()->isDestroyable() || this->getAttrs()->isKillable())
