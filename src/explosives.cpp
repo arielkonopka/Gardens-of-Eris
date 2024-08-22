@@ -63,7 +63,7 @@ bool explosives::explode(float radius)
         {
             for(int y=ys; y<=ye; y++)
             {
-                coords ccrd=(coords) { x,y };
+                coords ccrd=coords(x,y);
                 if(ccrd==mc)
                 {
                     if(this->getStats()->isCollected())

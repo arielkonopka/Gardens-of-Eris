@@ -61,10 +61,7 @@ void configManager::configReload()
         {
             int x = blur[c][0].GetInt();
             int y = blur[c][1].GetInt();
-            this->gConfObj->bluredElement.push_back((coords)
-            {
-                x, y
-            });
+            this->gConfObj->bluredElement.push_back(coords(x, y));
         }
     }
     if(this->skinDefJson.HasMember("BaseDir"))

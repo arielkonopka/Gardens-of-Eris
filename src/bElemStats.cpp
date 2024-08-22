@@ -404,15 +404,6 @@ void bElemStats::setMoved(int value)
     this->moved=this->calculateValueInTime(value);
     this->movingTotalTime=value;
 }
-int bElemStats::getAmmo() const
-{
-    return this->ammo;
-}
-
-void bElemStats::setAmmo(int value)
-{
-    this->ammo=std::max(0,value);
-}
 
 int bElemStats::getFadingOut() const
 {

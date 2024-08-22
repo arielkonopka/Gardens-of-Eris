@@ -190,10 +190,7 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT* ev)
         type=8;
     if(this->pressed_keys[ALLEGRO_KEY_R])
         type=9;
-    this->lastItem=(controlItem)
-    {
-        type,dir
-    };
+    this->lastItem=controlItem(type,dir);
     return this->lastItem;
 }
 controlItem inputManager::getCtrlItem()
