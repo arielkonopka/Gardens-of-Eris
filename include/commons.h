@@ -205,11 +205,11 @@ namespace dir
     enum class direction {UP=0,LEFT=1,DOWN=2,RIGHT=3,NODIRECTION=4};
     const std::array<direction,5> allDirections={direction::UP,direction::LEFT,direction::DOWN,direction::RIGHT,direction::NODIRECTION};
     const std::array<coords, 5> directionToCoordsMap = {
-            (coords){0, -1},  // UP
-            (coords){-1, 0},  // LEFT
-            (coords){0, 1},   // DOWN
-            (coords){1, 0},    // RIGHT
-            (coords){0,0},      //NOP
+            coords(0, -1),  // UP
+            coords(-1, 0),  // LEFT
+            coords(0, 1),   // DOWN
+            coords(1, 0),    // RIGHT
+            coords(0,0),      //NOP
       };
     /**
      * @brief dirToCoords, allows easily calculate new position
