@@ -91,8 +91,7 @@
 
 
 #define _interactedTime 10
-#define NOCOORDS   coords(-65535,-65535)
-#define NOSTATS   stats(-1,-1,-1,-1)
+
 
 #define confFname1 "./data/skins.json"
 #define confFname2 "./GoEoOL/data/skins.json"
@@ -140,21 +139,13 @@ const static int _dividerCloak=8;
 typedef struct coords
 {
     int x=-1,y=-1;
-
     inline coords validate (coords bottom)
     {
         if (x<0 || x>=bottom.x || y<0 || y>=bottom.y)
-            return NOCOORDS;
+            return coords(-65535,65535);
         return coords(x,y);
     }
-    inline coords rotLeft()
-    {
-        return coords(-y,x);
-    }
-    inline coords rotRight()
-    {
-        return coords(y,-x);
-    }
+
     inline bool operator==(coords a) const
     {
         if (a.x==x && a.y==y)
@@ -162,8 +153,6 @@ typedef struct coords
         else
             return false;
     };
-
-
 
     inline bool operator!=(coords a) const
     {
@@ -216,6 +205,7 @@ typedef struct coords
 
 
 } coords;
+const coords NOCOORDS = coords(-65535, -65535);
 
 /**
  * @class enum dir::direction
