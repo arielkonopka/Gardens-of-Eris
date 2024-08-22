@@ -26,7 +26,7 @@
 #define ALLEGRO_UNSTABLE 1
 #define ALLEGRO_SRC
 
-#include <stddef.h>
+#include <cstddef>
 #include <memory>
 #include <vector>
 #include <algorithm>
@@ -35,68 +35,54 @@
 #include "elementFactory.h"
 #include <cmath>
 
-#define _belemType -1
-#define _floorType 0
-#define _stillElemType 1
-#define _rubishType 2
-#define _wallType       4
-#define _movableType    5
-#define _monster 6
-#define _patrollingDrone 7
-#define _puppetMasterType 77
-#define _brickClusterType 8
-#define _player  (100)
-#define _collectible 50
-#define _key 51
-#define _door 52
-#define _plainMissile 201
-#define _plainGun 200
-#define _bunker 250
+constexpr int _belemType=-1;
+constexpr int _floorType=0;
+constexpr int _rubishType=2;
+constexpr int _wallType=4;
+constexpr int _monster=6;
+constexpr int _patrollingDrone=7;
+constexpr int _puppetMasterType=77;
+constexpr int _brickClusterType=8;
+constexpr int _player=100;
 
-#define _bazookaMissileType 205
-#define _bazookaType 204
-#define _bazookaMaxSteps 40
-#define _teleporter 400
-#define _teleportationTime (_mov_delay*15)
-#define _teleportStandTime 55
+constexpr int  _key=51;
+constexpr int  _door=52;
+constexpr int _plainMissile=201;
+constexpr int _plainGun=200;
+constexpr int _bunker=250;
+constexpr int _mov_delay=8;
+constexpr int _bazookaMissileType=205;
+constexpr int  _bazookaType=204;
+constexpr int  _bazookaMaxSteps=40;
+constexpr int  _teleporter=400;
+constexpr int  _teleportationTime=(_mov_delay*15);
+constexpr int  _teleportStandTime=55;
 
-#define _goldenAppleType 900
-#define _stash 600
-#define _explosivesType 601
-#define _simpleBombType 602
+constexpr int _goldenAppleType=900;
+constexpr int _stash=600;
+constexpr int _simpleBombType=602;
+constexpr int _maxWaitingTtime=65535;
+constexpr int _mov_delay_push=9;
 
+constexpr int _plainGunAmmo=10;
+constexpr int _plainMissileSpeed=4;
+constexpr int _bazookaMissileSpeed=4;
+constexpr int _plainGunCharge=10;
 
-#define _maxWaitingTtime 65535
-#define _mov_delay   8
-#define _mov_delay_push   9
+constexpr int _boubaType=555;
+constexpr int _kikiType=556;
 
-#define _plainGunAmmo 10
-#define _plainMissileSpeed 4
-#define _bazookaMissileSpeed 4
-#define _plainMissileEnergy 100
-#define _plainGunCharge 10
-
-#define _boubaType 555
-#define _kikiType 556
-
-#define _dexterityLevels 64
-
-#define _initialDexterity 1
-
-#define _defaultEnergy 80
-#define _defaultKillTime 25
-#define _defaultDestroyTime 99
-
-#define _defaultRecurrenceDepth 35
+constexpr int _defaultKillTime=25;
+constexpr int _defaultDestroyTime=99;
 
 
-#define _interactedTime 10
+constexpr int _interactedTime=10;
 
 
 #define confFname1 "./data/skins.json"
 #define confFname2 "./GoEoOL/data/skins.json"
 
-const static int _dividerCloak=8;
+constexpr static int _dividerCloak=int(8);
 
 
 /**
@@ -113,10 +99,10 @@ const static int _dividerCloak=8;
  * @var int y
  * Vertical position.
  *
- * @fn bool operator==(coords a) const
+ * @fn bool operator==(coords a) constexpr
  * Check if two coordinates are equal. Returns `true` if both `x` and `y` values are equal.
  *
- * @fn bool operator!=(coords a) const
+ * @fn bool operator!=(coords a) constexpr
  * Check if two coordinates are not equal. Returns `true` if `x` or `y` values are different.
  *
  * @fn coords operator+(coords a)
@@ -125,7 +111,7 @@ const static int _dividerCloak=8;
  * @fn coords operator-(coords a)
  * Subtract a coordinate from another. Returns a new `coords` object with `x` and `y` values being the difference of `x` and `y` values of the operands.
  *
- * @fn float distance(const coords& a) const
+ * @fn float distance(constexpr coords& a) constexpr
  * Calculate the Euclidean distance between two points represented by `coords` objects.
  * Returns the square root of the sum of squares of differences in `x` and `y` coordinates.
  *
@@ -205,7 +191,7 @@ typedef struct coords
 
 
 } coords;
-const coords NOCOORDS = coords(-65535, -65535);
+constexpr coords NOCOORDS = coords(-65535, -65535);
 
 /**
  * @class enum dir::direction
