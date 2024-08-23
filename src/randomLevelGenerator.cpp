@@ -66,10 +66,7 @@ int randomLevelGenerator::checkWalls(int x, int y)
     if (walls[0] && walls[1] && walls[2] && !walls[3])
     {
         this->mychamber->getElement(x-1,y)->disposeElement();
-        this->mychamber->setElement((coords)
-        {
-            x,y
-        },elementFactory::generateAnElement<wall>(this->mychamber,0));
+        this->mychamber->setElement(coords(x,y),elementFactory::generateAnElement<wall>(this->mychamber,0));
     }
     if (walls[0] && walls[1] && walls[3] && !walls[2])
     {
