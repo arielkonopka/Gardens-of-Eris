@@ -67,7 +67,7 @@ std::shared_ptr<bElem> player::getActivePlayer()
                 viewPoint::get_instance()->setOwner(plr);
                 player::activePlayer = plr;
                 plr->getStats()->setActive(true);
-                soundManager::getInstance()->setListenerChamber(plr->getBoard()->getInstanceId());
+                soundManager::getInstance()->setListenerChamber(plr->getBoard()->getInstanceId(),plr->getBoard()->getSize());
                 player::visitedPlayers.erase(player::visitedPlayers.begin()+p);
                 break;
             }
@@ -174,7 +174,7 @@ bool player::mechanics()
         vel = {0, 0, 0};
     }
 
-    soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId());
+    soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId(),this->getBoard()->getSize());
     soundManager::getInstance()->setListenerOrientation({0, 0, -1});
     soundManager::getInstance()->setListenerPosition(c3d);
     if (!res)

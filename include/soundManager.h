@@ -109,7 +109,7 @@ public:
     void registerMusic(int musicNo,int chamberId, coords3d position);
     void setListenerPosition(coords3d pos);
     void setListenerVelocity(coords3d pos);
-    void setListenerChamber(int chamberId);
+    void setListenerChamber(int chamberId,coords size);
     void setListenerOrientation(coords3d pos);
     void enableSound();
     void stopSoundsByElementId(unsigned int elId);
@@ -136,7 +136,7 @@ private:
     std::map<int, std::map< int, std::map<std::string,std::map<std::string, std::shared_ptr<sndHolder>>>>> samplesLoaded;
     std::map<std::string,ALuint> sampleBuffers; // Refactor me! - we need to load each file only once.
     std::vector<std::shared_ptr<stNode>> registeredSounds; // the whole sample data, used to register sounds
-    std::map<int,std::map<int,std::map<std::string,std::map<std::string,regNode>>>> sndRegister;
+    std::map<unsigned int,std::map<int,std::map<std::string,std::map<std::string,regNode>>>> sndRegister;
     std::vector<muNode> registeredMusic;
     std::map<std::string,regSmpFileBuf> sampleFile;
     int currSoundSpace=-1;
@@ -150,7 +150,7 @@ private:
     int regSndPos=0;
     int currentMusic=1;
     std::thread myThread;
-
+    coords spaceSize=NOCOORDS;
     static std::once_flag _onceFlag;
 };
 

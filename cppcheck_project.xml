@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<results version="2">
+    <cppcheck version="2.15.0"/>
+    <errors>
+        <error id="containerOutOfBounds" severity="error" msg="Out of bounds access in &amp;#039;directionToCoordsMap[(int)d]&amp;#039;, if &amp;#039;directionToCoordsMap&amp;#039; size is 5 and &amp;#039;(int)d&amp;#039; is 2147483647" verbose="Out of bounds access in &amp;#039;directionToCoordsMap[(int)d]&amp;#039;, if &amp;#039;directionToCoordsMap&amp;#039; size is 5 and &amp;#039;(int)d&amp;#039; is 2147483647" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/commons.h" line="221" info="Access out of bounds"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="445" info="Calling function &amp;#039;dirToCoords&amp;#039;, 1st argument &amp;#039;di&amp;#039; value is 2147483647"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="443" info="Safe checks: Assuming argument has value 2147483647"/>
+        </error>
+        <error id="negativeContainerIndex" severity="warning" msg="Array index -2147483648 is out of bounds." verbose="Array index -2147483648 is out of bounds." cwe="786" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/commons.h" line="221" info="Negative array index"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="445" info="Calling function &amp;#039;dirToCoords&amp;#039;, 1st argument &amp;#039;di&amp;#039; value is -2147483648"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="443" info="Safe checks: Assuming argument has value -2147483648"/>
+        </error>
+        <error id="operatorEqVarError" severity="warning" msg="Member variable &amp;#039;_tType::tokenType&amp;#039; is not assigned a value in &amp;#039;_tType::operator=&amp;#039;." verbose="Member variable &amp;#039;_tType::tokenType&amp;#039; is not assigned a value in &amp;#039;_tType::operator=&amp;#039;." cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/inventory.h" line="37"/>
+        </error>
+        <error id="operatorEqVarError" severity="warning" msg="Member variable &amp;#039;_tType::tokenSubtype&amp;#039; is not assigned a value in &amp;#039;_tType::operator=&amp;#039;." verbose="Member variable &amp;#039;_tType::tokenSubtype&amp;#039; is not assigned a value in &amp;#039;_tType::operator=&amp;#039;." cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/inventory.h" line="37"/>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &amp;#039;videoElementDef&amp;#039; has a constructor with 1 argument that is not explicit." verbose="Class &amp;#039;videoElementDef&amp;#039; has a constructor with 1 argument that is not explicit. Such, so called &amp;quot;Converting constructors&amp;quot;, should in general be explicit for type safety reasons as that prevents unintended implicit conversions." cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/videoElementDef.h" line="49"/>
+        </error>
+        <error id="threadsafety-unsafe-call" severity="warning" msg="exit is MT-unsafe" verbose="exit is MT-unsafe" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/inputManager.h" line="64"/>
+        </error>
+        <error id="uninitMemberVar" severity="warning" msg="Member variable &amp;#039;vpPoint::x&amp;#039; is not initialized in the constructor." verbose="Member variable &amp;#039;vpPoint::x&amp;#039; is not initialized in the constructor. Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior." cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/viewPoint.h" line="33"/>
+        </error>
+        <error id="uninitMemberVar" severity="warning" msg="Member variable &amp;#039;vpPoint::y&amp;#039; is not initialized in the constructor." verbose="Member variable &amp;#039;vpPoint::y&amp;#039; is not initialized in the constructor. Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior." cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/viewPoint.h" line="33"/>
+        </error>
+        <error id="uninitMemberVar" severity="warning" msg="Member variable &amp;#039;vpPoint::radius&amp;#039; is not initialized in the constructor." verbose="Member variable &amp;#039;vpPoint::radius&amp;#039; is not initialized in the constructor. Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior." cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/viewPoint.h" line="33"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &amp;#039;this-&amp;gt;getAttrs()-&amp;gt;isKillable()&amp;#039; is always true" verbose="Condition &amp;#039;this-&amp;gt;getAttrs()-&amp;gt;isKillable()&amp;#039; is always true" cwe="571" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="546" info="Condition &amp;#039;this-&amp;gt;getAttrs()-&amp;gt;isKillable()&amp;#039; is always true"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="542" info="Assuming condition &amp;#039;!this-&amp;gt;getAttrs()-&amp;gt;isKillable()&amp;#039; is false"/>
+        </error>
+        <error id="nullPointerRedundantCheck" severity="warning" msg="Either the condition &amp;#039;!who&amp;#039; is redundant or there is possible null pointer dereference: who." verbose="Either the condition &amp;#039;!who&amp;#039; is redundant or there is possible null pointer dereference: who." cwe="476" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="884" info="Null pointer dereference"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="888" info="Assuming that condition &amp;#039;!who&amp;#039; is not redundant"/>
+        </error>
+        <error id="nullPointerRedundantCheck" severity="warning" msg="Either the condition &amp;#039;!who&amp;#039; is redundant or there is possible null pointer dereference: who." verbose="Either the condition &amp;#039;!who&amp;#039; is redundant or there is possible null pointer dereference: who." cwe="476" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="885" info="Null pointer dereference"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="888" info="Assuming that condition &amp;#039;!who&amp;#039; is not redundant"/>
+        </error>
+        <error id="nullPointerRedundantCheck" severity="warning" msg="Either the condition &amp;#039;!who&amp;#039; is redundant or there is possible null pointer dereference: who." verbose="Either the condition &amp;#039;!who&amp;#039; is redundant or there is possible null pointer dereference: who." cwe="476" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="887" info="Null pointer dereference"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="888" info="Assuming that condition &amp;#039;!who&amp;#039; is not redundant"/>
+        </error>
+        <error id="shadowVariable" severity="style" msg="Local variable &amp;#039;p&amp;#039; shadows outer variable" verbose="Local variable &amp;#039;p&amp;#039; shadows outer variable" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="768" info="Shadow variable"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="735" info="Shadowed declaration"/>
+        </error>
+        <error id="shadowVariable" severity="style" msg="Local variable &amp;#039;elementMutex&amp;#039; shadows outer variable" verbose="Local variable &amp;#039;elementMutex&amp;#039; shadows outer variable" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="834" info="Shadow variable"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElem.h" line="136" info="Shadowed declaration"/>
+        </error>
+        <error id="safeIntegerOverflow" severity="error" msg="Safe checks: Signed integer overflow for expression &amp;#039;((int)dragIntoDirection)+2&amp;#039;." verbose="Safe checks: Signed integer overflow for expression &amp;#039;((int)dragIntoDirection)+2&amp;#039;." cwe="190" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="680" info="Integer overflow"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="678" info="Safe checks: Assuming argument has value 2147483647"/>
+        </error>
+        <error id="threadsafety-threadsafety" severity="warning" msg="Local static object: _of" verbose="Local static object: _of" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="37"/>
+        </error>
+        <error id="threadsafety-threadsafety" severity="warning" msg="Local static variable: elementMutex" verbose="Local static variable: elementMutex" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="834"/>
+        </error>
+        <error id="threadsafety-threadsafety" severity="warning" msg="Local static variable: SEMutex" verbose="Local static variable: SEMutex" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" line="854"/>
+        </error>
+        <error id="uninitMemberVar" severity="warning" msg="Member variable &amp;#039;player::mysound&amp;#039; is not initialized in the constructor." verbose="Member variable &amp;#039;player::mysound&amp;#039; is not initialized in the constructor. Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior." cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElem.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/player.h" line="38"/>
+        </error>
+        <error id="shadowVariable" severity="style" msg="Local variable &amp;#039;owner&amp;#039; shadows outer variable" verbose="Local variable &amp;#039;owner&amp;#039; shadows outer variable" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElemAttr.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bElemAttr.cpp" line="137" info="Shadow variable"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/include/bElemAttr.h" line="87" info="Shadowed declaration"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &amp;#039;be&amp;#039; is always true" verbose="Condition &amp;#039;be&amp;#039; is always true" cwe="571" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bazookaMissile.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bazookaMissile.cpp" line="39" info="Condition &amp;#039;be&amp;#039; is always true"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/bazookaMissile.cpp" line="34" info="Assuming condition &amp;#039;!be&amp;#039; is false"/>
+        </error>
+        <error id="uninitMemberVar" severity="warning" msg="Member variable &amp;#039;chamberArea::surface&amp;#039; is not initialized in the constructor." verbose="Member variable &amp;#039;chamberArea::surface&amp;#039; is not initialized in the constructor. Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior." cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/chamberArea.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/chamberArea.cpp" line="84"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &amp;#039;key&amp;#039; is always true" verbose="Condition &amp;#039;key&amp;#039; is always true" cwe="571" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/door.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/door.cpp" line="134"/>
+        </error>
+        <error id="uninitMemberVarPrivate" severity="warning" msg="Member variable &amp;#039;inputManager::joystick&amp;#039; is not initialized in the constructor." verbose="Member variable &amp;#039;inputManager::joystick&amp;#039; is not initialized in the constructor. Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior." cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp" line="26"/>
+        </error>
+        <error id="uninitMemberVarPrivate" severity="warning" msg="Member variable &amp;#039;inputManager::evQueue&amp;#039; is not initialized in the constructor." verbose="Member variable &amp;#039;inputManager::evQueue&amp;#039; is not initialized in the constructor. Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior." cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp" line="26"/>
+        </error>
+        <error id="localMutex" severity="warning" msg="The lock is ineffective because the mutex is locked at the same scope as the mutex itself." verbose="The lock is ineffective because the mutex is locked at the same scope as the mutex itself." cwe="667" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp" line="220"/>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &amp;#039;evCollected&amp;#039; is assigned a value that is never used." verbose="Variable &amp;#039;evCollected&amp;#039; is assigned a value that is never used." cwe="563" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp" line="207"/>
+        </error>
+        <error id="threadsafety-unsafe-call" severity="warning" msg="exit is MT-unsafe" verbose="exit is MT-unsafe" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp" line="209"/>
+        </error>
+        <error id="threadsafety-unsafe-call" severity="warning" msg="exit is MT-unsafe" verbose="exit is MT-unsafe" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inputManager.cpp" line="221"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &amp;#039;this-&amp;gt;weapons.empty()&amp;#039; is always false" verbose="Condition &amp;#039;this-&amp;gt;weapons.empty()&amp;#039; is always false" cwe="570" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="194" info="Condition &amp;#039;this-&amp;gt;weapons.empty()&amp;#039; is always false"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="192" info="Assuming that condition &amp;#039;this-&amp;gt;weapons.size()&amp;lt;=0&amp;#039; is not redundant"/>
+        </error>
+        <error id="constParameterReference" severity="style" msg="Parameter &amp;#039;w&amp;#039; can be declared as reference to const" verbose="Parameter &amp;#039;w&amp;#039; can be declared as reference to const" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="30"/>
+        </error>
+        <error id="constParameterReference" severity="style" msg="Parameter &amp;#039;vec&amp;#039; can be declared as reference to const" verbose="Parameter &amp;#039;vec&amp;#039; can be declared as reference to const" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="30"/>
+        </error>
+        <error id="constParameterReference" severity="style" msg="Parameter &amp;#039;vec&amp;#039; can be declared as reference to const" verbose="Parameter &amp;#039;vec&amp;#039; can be declared as reference to const" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="205"/>
+        </error>
+        <error id="constParameterReference" severity="style" msg="Parameter &amp;#039;pos&amp;#039; can be declared as reference to const" verbose="Parameter &amp;#039;pos&amp;#039; can be declared as reference to const" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="205"/>
+        </error>
+        <error id="constParameterReference" severity="style" msg="Parameter &amp;#039;_vect1&amp;#039; can be declared as reference to const" verbose="Parameter &amp;#039;_vect1&amp;#039; can be declared as reference to const" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="350"/>
+        </error>
+        <error id="constParameterReference" severity="style" msg="Parameter &amp;#039;v&amp;#039; can be declared as reference to const" verbose="Parameter &amp;#039;v&amp;#039; can be declared as reference to const" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="397"/>
+        </error>
+        <error id="constParameterReference" severity="style" msg="Parameter &amp;#039;_collection&amp;#039; can be declared as reference to const" verbose="Parameter &amp;#039;_collection&amp;#039; can be declared as reference to const" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="434"/>
+        </error>
+        <error id="negativeContainerIndex" severity="warning" msg="Array index -2147483648 is out of bounds." verbose="Array index -2147483648 is out of bounds." cwe="786" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="387" info="Negative array index"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="385" info="Assuming condition is false"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="381" info="Safe checks: Assuming argument has value -2147483648"/>
+        </error>
+        <error id="negativeContainerIndex" severity="warning" msg="Array index -2147483648 is out of bounds." verbose="Array index -2147483648 is out of bounds." cwe="786" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="388" info="Negative array index"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="385" info="Assuming condition is false"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="381" info="Safe checks: Assuming argument has value -2147483648"/>
+        </error>
+        <error id="negativeContainerIndex" severity="warning" msg="Array index -2147483648 is out of bounds." verbose="Array index -2147483648 is out of bounds." cwe="786" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="390" info="Negative array index"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="385" info="Assuming condition is false"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="381" info="Safe checks: Assuming argument has value -2147483648"/>
+        </error>
+        <error id="eraseIteratorOutOfBoundsCond" severity="warning" msg="Either the condition is redundant or function &amp;#039;erase()&amp;#039; is called on the iterator &amp;#039;this-&amp;gt;tokens.begin()+position&amp;#039; which is out of bounds." verbose="Either the condition is redundant or function &amp;#039;erase()&amp;#039; is called on the iterator &amp;#039;this-&amp;gt;tokens.begin()+position&amp;#039; which is out of bounds." cwe="628" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="391"/>
+        </error>
+        <error id="derefInvalidIterator" severity="warning" msg="Possible dereference of an invalid iterator: this-&amp;gt;tokens.begin()+position" verbose="Possible dereference of an invalid iterator: this-&amp;gt;tokens.begin()+position" cwe="825" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="391" info="Dereference of an invalid iterator"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="385" info="Assuming condition is false"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/inventory.cpp" line="381" info="Safe checks: Assuming argument has value -2147483648"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &amp;#039;e-&amp;gt;getType()==_stash&amp;#039; is always false" verbose="Condition &amp;#039;e-&amp;gt;getType()==_stash&amp;#039; is always false" cwe="570" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monster.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monster.cpp" line="145"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &amp;#039;e-&amp;gt;getType()==_rubishType&amp;#039; is always false" verbose="Condition &amp;#039;e-&amp;gt;getType()==_rubishType&amp;#039; is always false" cwe="570" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monster.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monster.cpp" line="145"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &amp;#039;e-&amp;gt;getAttrs()-&amp;gt;isWeapon()&amp;#039; is always false" verbose="Condition &amp;#039;e-&amp;gt;getAttrs()-&amp;gt;isWeapon()&amp;#039; is always false" cwe="570" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monster.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monster.cpp" line="145" info="Condition &amp;#039;e-&amp;gt;getAttrs()-&amp;gt;isWeapon()&amp;#039; is always false"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monster.cpp" line="128" info="Assuming condition is false"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monster.cpp" line="117" info="Assuming that condition &amp;#039;e-&amp;gt;getAttrs()-&amp;gt;isWeapon()&amp;#039; is not redundant"/>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &amp;#039;r&amp;#039; is assigned a value that is never used." verbose="Variable &amp;#039;r&amp;#039; is assigned a value that is never used." cwe="563" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monster.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/monster.cpp" line="90"/>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &amp;#039;c3d.x&amp;#039; is assigned a value that is never used." verbose="Variable &amp;#039;c3d.x&amp;#039; is assigned a value that is never used." cwe="563" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/plainGun.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/plainGun.cpp" line="85"/>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &amp;#039;c3d.z&amp;#039; is assigned a value that is never used." verbose="Variable &amp;#039;c3d.z&amp;#039; is assigned a value that is never used." cwe="563" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/plainGun.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/plainGun.cpp" line="86"/>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &amp;#039;c3d.y&amp;#039; is assigned a value that is never used." verbose="Variable &amp;#039;c3d.y&amp;#039; is assigned a value that is never used." cwe="563" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/plainGun.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/plainGun.cpp" line="87"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &amp;#039;player::activePlayer&amp;#039; is always true" verbose="Condition &amp;#039;player::activePlayer&amp;#039; is always true" cwe="571" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/player.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/player.cpp" line="59"/>
+        </error>
+        <error id="localMutex" severity="warning" msg="The lock is ineffective because the mutex is locked at the same scope as the mutex itself." verbose="The lock is ineffective because the mutex is locked at the same scope as the mutex itself." cwe="667" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/player.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/player.cpp" line="57"/>
+        </error>
+        <error id="arrayIndexOutOfBoundsCond" severity="warning" msg="Either the condition &amp;#039;i&amp;gt;=299&amp;#039; is redundant or the array &amp;#039;points[300]&amp;#039; is accessed at index 300, which is out of bounds." verbose="Either the condition &amp;#039;i&amp;gt;=299&amp;#039; is redundant or the array &amp;#039;points[300]&amp;#039; is accessed at index 300, which is out of bounds." cwe="788" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp" line="443" info="Array index out of bounds"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp" line="442" info="i is incremented&amp;#039;, new value is 300"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp" line="441" info="i is incremented&amp;#039;, new value is 299"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp" line="444" info="Assuming that condition &amp;#039;i&amp;gt;=299&amp;#039; is not redundant"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &amp;#039;!ve&amp;#039; is always false" verbose="Condition &amp;#039;!ve&amp;#039; is always false" cwe="570" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp" line="193"/>
+        </error>
+        <error id="threadsafety-unsafe-call" severity="warning" msg="exit is MT-unsafe" verbose="exit is MT-unsafe" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp" line="37"/>
+        </error>
+        <error id="threadsafety-unsafe-call" severity="warning" msg="exit is MT-unsafe" verbose="exit is MT-unsafe" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/presenter.cpp" line="185"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Return value &amp;#039;this-&amp;gt;mechanicsPatrollingDrone()&amp;#039; is always true" verbose="Return value &amp;#039;this-&amp;gt;mechanicsPatrollingDrone()&amp;#039; is always true" cwe="571" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/puppetMasterFR.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/puppetMasterFR.cpp" line="62" info="Return value &amp;#039;this-&amp;gt;mechanicsPatrollingDrone()&amp;#039; is always true"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/puppetMasterFR.cpp" line="62" info="Calling function &amp;#039;mechanicsPatrollingDrone&amp;#039; returns 1"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Return value &amp;#039;this-&amp;gt;mechanicsPatrollingDrone()&amp;#039; is always true" verbose="Return value &amp;#039;this-&amp;gt;mechanicsPatrollingDrone()&amp;#039; is always true" cwe="571" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/puppetMasterFR.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/puppetMasterFR.cpp" line="65" info="Return value &amp;#039;this-&amp;gt;mechanicsPatrollingDrone()&amp;#039; is always true"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/puppetMasterFR.cpp" line="65" info="Calling function &amp;#039;mechanicsPatrollingDrone&amp;#039; returns 1"/>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &amp;#039;d&amp;#039; is assigned a value that is never used." verbose="Variable &amp;#039;d&amp;#039; is assigned a value that is never used." cwe="563" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/puppetMasterFR.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/puppetMasterFR.cpp" line="78"/>
+        </error>
+        <error id="uninitMemberVar" severity="warning" msg="Member variable &amp;#039;randomLevelGenerator::headNode&amp;#039; is not initialized in the constructor." verbose="Member variable &amp;#039;randomLevelGenerator::headNode&amp;#039; is not initialized in the constructor. Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior." cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="25"/>
+        </error>
+        <error id="redundantInitialization" severity="style" msg="Redundant initialization for &amp;#039;c&amp;#039;. The initialized value is overwritten before it is read." verbose="Redundant initialization for &amp;#039;c&amp;#039;. The initialized value is overwritten before it is read." cwe="563" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="113" info="c is overwritten"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="106" info="c is initialized"/>
+        </error>
+        <error id="redundantInitialization" severity="style" msg="Redundant initialization for &amp;#039;d&amp;#039;. The initialized value is overwritten before it is read." verbose="Redundant initialization for &amp;#039;d&amp;#039;. The initialized value is overwritten before it is read." cwe="563" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="114" info="d is overwritten"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="107" info="d is initialized"/>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &amp;#039;c&amp;#039; is assigned an expression that holds the same value." verbose="Variable &amp;#039;c&amp;#039; is assigned an expression that holds the same value." cwe="563" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="113" info=""/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="106" info="c is assigned &amp;#039;x2&amp;#039; here."/>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &amp;#039;d&amp;#039; is assigned an expression that holds the same value." verbose="Variable &amp;#039;d&amp;#039; is assigned an expression that holds the same value." cwe="563" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="114" info=""/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="107" info="d is assigned &amp;#039;y2&amp;#039; here."/>
+        </error>
+        <error id="shadowVariable" severity="style" msg="Local variable &amp;#039;demandedSurface&amp;#039; shadows outer variable" verbose="Local variable &amp;#039;demandedSurface&amp;#039; shadows outer variable" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="440" info="Shadow variable"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="391" info="Shadowed declaration"/>
+        </error>
+        <error id="shadowVariable" severity="style" msg="Local variable &amp;#039;cnt&amp;#039; shadows outer variable" verbose="Local variable &amp;#039;cnt&amp;#039; shadows outer variable" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="451" info="Shadow variable"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="442" info="Shadowed declaration"/>
+        </error>
+        <error id="shadowVariable" severity="style" msg="Local variable &amp;#039;selectedChamberNo&amp;#039; shadows outer variable" verbose="Local variable &amp;#039;selectedChamberNo&amp;#039; shadows outer variable" cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="458" info="Shadow variable"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="400" info="Shadowed declaration"/>
+        </error>
+        <error id="safeIntegerOverflow" severity="error" msg="Safe checks: Signed integer overflow for expression &amp;#039;holes*15&amp;#039;." verbose="Safe checks: Signed integer overflow for expression &amp;#039;holes*15&amp;#039;." cwe="190" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="344" info="Integer overflow"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="309" info="Safe checks: Assuming argument has value 2147483647"/>
+        </error>
+        <error id="safeIntegerOverflow" severity="error" msg="Safe checks: Signed integer overflow for expression &amp;#039;holes*5&amp;#039;." verbose="Safe checks: Signed integer overflow for expression &amp;#039;holes*5&amp;#039;." cwe="190" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="355" info="Integer overflow"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/randomLevelGenerator.cpp" line="309" info="Safe checks: Assuming argument has value -2147483648"/>
+        </error>
+        <error id="negativeContainerIndex" severity="warning" msg="Array index -2147483648 is out of bounds." verbose="Array index -2147483648 is out of bounds." cwe="786" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/soundManager.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/soundManager.cpp" line="537" info="Negative array index"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/soundManager.cpp" line="534" info="Safe checks: Assuming argument has value -2147483648"/>
+        </error>
+        <error id="negativeContainerIndex" severity="warning" msg="Array index -2147483648 is out of bounds." verbose="Array index -2147483648 is out of bounds." cwe="786" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/soundManager.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/soundManager.cpp" line="538" info="Negative array index"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/soundManager.cpp" line="534" info="Safe checks: Assuming argument has value -2147483648"/>
+        </error>
+        <error id="negativeContainerIndex" severity="warning" msg="Array index -2147483648 is out of bounds." verbose="Array index -2147483648 is out of bounds." cwe="786" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/soundManager.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/soundManager.cpp" line="539" info="Negative array index"/>
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/soundManager.cpp" line="534" info="Safe checks: Assuming argument has value -2147483648"/>
+        </error>
+        <error id="threadsafety-unsafe-call" severity="warning" msg="exit is MT-unsafe" verbose="exit is MT-unsafe" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/videoDriver.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/videoDriver.cpp" line="33"/>
+        </error>
+        <error id="threadsafety-unsafe-call" severity="warning" msg="exit is MT-unsafe" verbose="exit is MT-unsafe" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/videoDriver.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/videoDriver.cpp" line="40"/>
+        </error>
+        <error id="uninitMemberVar" severity="warning" msg="Member variable &amp;#039;videoElementDef::sprites&amp;#039; is not initialized in the copy constructor." verbose="Member variable &amp;#039;videoElementDef::sprites&amp;#039; is not initialized in the copy constructor. Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior." cwe="398" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/videoElementDef.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/videoElementDef.cpp" line="54"/>
+        </error>
+        <error id="localMutex" severity="warning" msg="The lock is ineffective because the mutex is locked at the same scope as the mutex itself." verbose="The lock is ineffective because the mutex is locked at the same scope as the mutex itself." cwe="667" file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/viewPoint.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/src/viewPoint.cpp" line="45"/>
+        </error>
+        <error id="unknownMacro" severity="error" msg="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." verbose="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/bElem-test.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/bElem-test.cpp" line="60"/>
+        </error>
+        <error id="unknownMacro" severity="error" msg="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." verbose="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/chamberArea-test.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/chamberArea-test.cpp" line="12"/>
+        </error>
+        <error id="unknownMacro" severity="error" msg="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." verbose="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/goldenApple-test.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/goldenApple-test.cpp" line="16"/>
+        </error>
+        <error id="unknownMacro" severity="error" msg="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." verbose="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/guns-test.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/guns-test.cpp" line="24"/>
+        </error>
+        <error id="unknownMacro" severity="error" msg="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." verbose="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/player-test.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/player-test.cpp" line="13"/>
+        </error>
+        <error id="unknownMacro" severity="error" msg="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." verbose="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/teleport-test.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/teleport-test.cpp" line="44"/>
+        </error>
+        <error id="unknownMacro" severity="error" msg="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." verbose="There is an unknown macro here somewhere. Configuration is required. If BOOST_AUTO_TEST_SUITE is a macro then please configure it." file0="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/viewPoint-tests.cpp" sinceDate="5.09.2024">
+            <location file="git/GardenOfErisorOnboxiousLabirynth/Gardens-of-Eris/unitTests/viewPoint-tests.cpp" line="35"/>
+        </error>
+    </errors>
+</results>
