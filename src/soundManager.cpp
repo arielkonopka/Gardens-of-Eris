@@ -93,9 +93,8 @@ void soundManager::stopSoundsByElementId(unsigned int elId)
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->pauseSong(elId);
-    for(unsigned int c=0; c<this->registeredSounds.size(); c++)
+    for(auto n : this->registeredSounds)
     {
-        std::shared_ptr<stNode> n=this->registeredSounds[c];
         if(n->elId==elId && n->mode>0) // we kill only looping sounds, other will end anyway
         {
             this->stopSnd(n);
@@ -109,7 +108,7 @@ void soundManager::stopSoundsByElementId(unsigned int elId)
 /**
  * @brief Examines the queue of registered sounds, ensuring that only relevant sound samples are played.
  *
- * This function is executed on receiving new sound requests. It checks if the total count of sounds
+ * This function is executed on periodically. It checks if the total count of sounds
  * has changed and accordingly updates the local counter. It also locates the nearest music and changes
  * the current music if necessary. For each registered sound, the function checks its status and updates
  * it based on certain conditions, including the distance from the listener and whether it is in the current sound space.
@@ -136,10 +135,10 @@ void soundManager::stopSoundsByElementId(unsigned int elId)
     {
         this->playSong(this->currentMusic);
     }
-    for(unsigned int c=0; c<this->registeredSounds.size(); c++)
-    {
-        std::shared_ptr<stNode> n=this->registeredSounds[c];
 
+
+    for(auto n : this->registeredSounds)
+    {
         /* stop sounds from different board */
         if (n->isRegistered && this->isSndPlaying(n->source) && (n->soundSpace!=this->currSoundSpace || this->listenerPos.distance(n->position)>this->gc->soundDistance))
         {
@@ -161,6 +160,9 @@ void soundManager::stopSoundsByElementId(unsigned int elId)
                 continue;
             }
         }
+
+
+
         if(n->isRegistered && this->isSndPlaying(n->source)==false)
         {
             n->isRegistered=false;
@@ -197,7 +199,7 @@ std::shared_ptr<stNode> soundManager::registerSound(int chamberId, coords3d posi
     if (!this->active || chamberId!=this->currSoundSpace
             || this->listenerPos.distance(position)>this->gc->soundDistance
             || !this->gc->samples[typeId][subtypeId][eventType][event].configured
-            || (this->sndRegister[elId][typeId][eventType][event].r && this->gc->samples[typeId][subtypeId][eventType][event].allowMulti==false)
+            || (this->sndRegister[elId][typeId][eventType][event].r && !this->gc->samples[typeId][subtypeId][eventType][event].allowMulti)
        )
     {
         return nullptr;
@@ -205,9 +207,9 @@ std::shared_ptr<stNode> soundManager::registerSound(int chamberId, coords3d posi
 
     if(this->samplesLoaded[typeId][subtypeId][eventType][event].get()==nullptr )
         this->samplesLoaded[typeId][subtypeId][eventType][event]=std::make_shared<sndHolder>();
-    if (this->samplesLoaded[typeId][subtypeId][eventType][event]->loaded==false)
+    if (!this->samplesLoaded[typeId][subtypeId][eventType][event]->loaded)
     {
-        if(this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].r==false)
+        if(!this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].r)
         {
             ALuint bid=this->loadSample(this->gc->samples[typeId][subtypeId][eventType][event].fname);
             if(bid==0)
@@ -225,7 +227,7 @@ std::shared_ptr<stNode> soundManager::registerSound(int chamberId, coords3d posi
     std::shared_ptr<stNode> srcNode=this->getSndNode();
     if(this->sndRegister[elId][typeId][eventType][event].r)
     {
-        if(this->gc->samples[typeId][subtypeId][eventType][event].stacking==false)
+        if(!this->gc->samples[typeId][subtypeId][eventType][event].stacking)
         {
 
             this->stopSnd(this->sndRegister[elId][typeId][eventType][event].stn);
@@ -328,14 +330,19 @@ std::shared_ptr<stNode> soundManager::getSndNode()
 
 void soundManager::setListenerPosition(coords3d pos)
 {
-    alListener3f(AL_POSITION, (float)pos.x/1024.0, (float)pos.y/1024.0, (float)pos.z/1024.0);
+    if(this->spaceSize!=NOCOORDS)
+        alListener3f(AL_POSITION, (float)pos.x/this->spaceSize.x, (float)pos.y/this->spaceSize.y, (float)pos.z/1024.0);
+    else
+        alListener3f(AL_POSITION, (float)pos.x/1024.0, (float)pos.y/1024.0, (float)pos.z/1024.0);
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->listenerPos=pos;
 }
 
 void soundManager::setListenerOrientation(coords3d pos)
 {
-    ALfloat listenerOri[] = { (float)(pos.x/1024.0), (float)(pos.y/1024.0), (float)(pos.z/1024.0),0.0,0.0,1.0};
+    if(this->spaceSize!=NOCOORDS)
+        return;
+    ALfloat listenerOri[] = { (float)(pos.x/this->spaceSize.x), (float)(pos.y/this->spaceSize.y), (float)(pos.z/1024.0),0.0,0.0,1.0};
     alListenerfv(AL_ORIENTATION, listenerOri);
 
 }
@@ -347,19 +354,27 @@ void soundManager::setListenerVelocity(coords3d pos)
 
 
 /* we just teleported, we need to switch the context, which means stopping all the currently played samples from the previous chamber*/
-void soundManager::setListenerChamber(int chamberId)
+void soundManager::setListenerChamber(int chamberId,coords size)
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->currSoundSpace=chamberId;
+    this->spaceSize=size;
 }
 
 void soundManager::setSoundVelocity(std::shared_ptr<stNode>  snd, coords3d pos)
 {
-    alSource3f(snd->source,AL_VELOCITY,(float)pos.x/1024.0,(float)pos.y/1024.0,(float)pos.z/1024.0);
+    if(this->spaceSize!=NOCOORDS)
+        alSource3f(snd->source,AL_VELOCITY,(float)pos.x/this->spaceSize.x,(float)pos.y/this->spaceSize.y,(float)pos.z/1024.0);
+    else
+        alSource3f(snd->source,AL_VELOCITY,(float)pos.x/1024,(float)pos.y/1024,(float)pos.z/1024.0);
+
 }
 void soundManager::setSoundPosition(std::shared_ptr<stNode> snd, coords3d pos)
 {
-    alSource3f(snd->source,AL_POSITION,(float)pos.x/1024.0,(float)pos.y/1024.0,(float)pos.z/1024.0);
+    if(this->spaceSize!=NOCOORDS)
+        alSource3f(snd->source,AL_POSITION,(float)pos.x/this->spaceSize.x,(float)pos.y/this->spaceSize.y,(float)pos.z/1024.0);
+    else
+        alSource3f(snd->source,AL_POSITION,(float)pos.x/1024.0,(float)pos.y/1024.0,(float)pos.z/1024.0);
 }
 
 
@@ -588,8 +603,13 @@ void soundManager::moveSong( int songNo, coords3d newPosition,int newChamber)
         return;
     this->registeredMusic[songNo].position = newPosition;
     this->registeredMusic[songNo].chamberId=newChamber;
-    alSource3f(this->registeredMusic[songNo].source, AL_POSITION,
-               (float)newPosition.x/1024.0, newPosition.y/1024.0, (float)newPosition.z/1024.0);
+    if(this->spaceSize!=NOCOORDS)
+        alSource3f(this->registeredMusic[songNo].source, AL_POSITION,
+               (float)newPosition.x/this->spaceSize.x, newPosition.y/this->spaceSize.y, (float)newPosition.z/1024.0);
+    else
+        alSource3f(this->registeredMusic[songNo].source, AL_POSITION,
+                   (float)newPosition.x/1024.0, newPosition.y/1024.0, (float)newPosition.z/1024.0);
+
 }
 
 void soundManager::threadLoop()
@@ -603,12 +623,12 @@ void soundManager::threadLoop()
 
 void soundManager::pauseSong(unsigned int bElemInstanceId)
 {
-    for(unsigned int c=0;c<this->registeredMusic.size();c++)
+    for(auto & c : this->registeredMusic)
     {
-        if(this->registeredMusic[c].bElemInstanceId==bElemInstanceId)
+        if(c.bElemInstanceId==bElemInstanceId)
         {
-            this->registeredMusic[c].isRegistered=false;
-            this->registeredMusic[c].delayed=555;
+            c.isRegistered=false;
+            c.delayed=555;
         }
 
     }
@@ -618,12 +638,12 @@ void soundManager::resumeSong(unsigned int bElemInstanceId)
 {
     if(bElemInstanceId<0)
         return;
-    for(unsigned int c=0;c<this->registeredMusic.size();c++)
+    for(auto & c : this->registeredMusic)
     {
-        if(this->registeredMusic[c].bElemInstanceId==bElemInstanceId)
+        if(c.bElemInstanceId==bElemInstanceId)
         {
-            this->registeredMusic[c].isRegistered=true;
-            this->registeredMusic[c].delayed=0;
+            c.isRegistered=true;
+            c.delayed=0;
         }
 
     }
