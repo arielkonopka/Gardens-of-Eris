@@ -35,32 +35,39 @@
 #include "elementFactory.h"
 #include <cmath>
 
-constexpr int _belemType=-1;
-constexpr int _floorType=0;
-constexpr int _rubishType=2;
-constexpr int _wallType=4;
-constexpr int _monster=6;
-constexpr int _patrollingDrone=7;
-constexpr int _puppetMasterType=77;
-constexpr int _brickClusterType=8;
-constexpr int _player=100;
+namespace  bElemTypes {
+    constexpr int _belemType = -1;
+    constexpr int _floorType = 0;
+    constexpr int _rubishType = 2;
+    constexpr int _wallType = 4;
+    constexpr int _monster = 6;
+    constexpr int _patrollingDrone = 7;
+    constexpr int _puppetMasterType = 77;
+    constexpr int _brickClusterType = 8;
+    constexpr int _player = 100;
 
-constexpr int  _key=51;
-constexpr int  _door=52;
-constexpr int _plainMissile=201;
-constexpr int _plainGun=200;
-constexpr int _bunker=250;
+    constexpr int _key = 51;
+    constexpr int _door = 52;
+    constexpr int _plainMissile = 201;
+    constexpr int _plainGun = 200;
+    constexpr int _bunker = 250;
+    constexpr int _bazookaMissileType=205;
+    constexpr int _bazookaType=204;
+    constexpr int _teleporter=400;
+    constexpr int _goldenAppleType=900;
+    constexpr int _stash=600;
+    constexpr int _simpleBombType=602;
+    constexpr int _boubaType=555;
+    constexpr int _kikiType=556;
+}
+
+
 constexpr int _mov_delay=8;
-constexpr int _bazookaMissileType=205;
-constexpr int  _bazookaType=204;
 constexpr int  _bazookaMaxSteps=40;
-constexpr int  _teleporter=400;
 constexpr int  _teleportationTime=(_mov_delay*15);
 constexpr int  _teleportStandTime=55;
 
-constexpr int _goldenAppleType=900;
-constexpr int _stash=600;
-constexpr int _simpleBombType=602;
+
 constexpr int _maxWaitingTtime=65535;
 constexpr int _mov_delay_push=9;
 
@@ -69,8 +76,7 @@ constexpr int _plainMissileSpeed=4;
 constexpr int _bazookaMissileSpeed=4;
 constexpr int _plainGunCharge=10;
 
-constexpr int _boubaType=555;
-constexpr int _kikiType=556;
+
 
 constexpr int _defaultKillTime=25;
 constexpr int _defaultDestroyTime=99;

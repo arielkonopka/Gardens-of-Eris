@@ -27,7 +27,7 @@
 
 int rubbish::getType() const
 {
-    return _rubishType;
+    return bElemTypes::_rubishType;
 }
 
 

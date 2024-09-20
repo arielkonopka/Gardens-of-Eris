@@ -28,7 +28,7 @@
 
 int bazooka::getType() const
 {
-    return _bazookaType;
+    return bElemTypes::_bazookaType;
 }
 std::shared_ptr<bElem> bazooka::createProjectible(std::shared_ptr<bElem>who)
 {
@@ -39,7 +39,7 @@ std::shared_ptr<bElem> bazooka::createProjectible(std::shared_ptr<bElem>who)
     pm->getStats()->setFacing(who->getStats()->getFacing());
     pm->stepOnElement(who->getElementInDirection(who->getStats()->getFacing()));
     pm->getAttrs()->setEnergy(this->getAttrs()->getEnergy());
-    if(who->getType()==_player)
+    if(who->getType()==bElemTypes::_player)
         viewPoint::get_instance()->setOwner(pm);
     pm->registerLiveElement(pm);
     return pm;
@@ -48,5 +48,5 @@ std::shared_ptr<bElem> bazooka::createProjectible(std::shared_ptr<bElem>who)
 
 bool bazooka::additionalProvisioning(int subtype)
 {
-    return bElem::additionalProvisioning(subtype);
+    return plainGun::additionalProvisioning(subtype);
 }

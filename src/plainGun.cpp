@@ -36,7 +36,7 @@ std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
     pm->getStats()->setFacing(who->getStats()->getFacing());
     pm->stepOnElement(who->getElementInDirection(who->getStats()->getFacing()));
     pm->getAttrs()->setEnergy(this->getAttrs()->getEnergy());
-    if(who->getType()==_player)
+    if(who->getType()==bElemTypes::_player)
         viewPoint::get_instance()->setOwner(pm);
     return pm;
 }
@@ -54,7 +54,7 @@ bool plainGun::additionalProvisioning(int subtype)
 
 int plainGun::getType() const
 {
-    return _plainGun;
+    return bElemTypes::_plainGun;
 }
 
 

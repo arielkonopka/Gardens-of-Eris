@@ -25,7 +25,7 @@
 
 int key::getType() const
 {
-    return _key;
+    return bElemTypes::_key;
 }
 
 

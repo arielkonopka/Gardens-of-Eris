@@ -42,7 +42,7 @@ bool plainMissile::additionalProvisioning(int subtype)
 
 int plainMissile::getType() const
 {
-    return _plainMissile;
+    return bElemTypes::_plainMissile;
 }
 
 bool plainMissile::stepOnAction(bool step, std::shared_ptr<bElem>who)
@@ -76,12 +76,12 @@ bool plainMissile::mechanics()
         this->disposeElement();
         return true;
     }
-    if (myel->getAttrs()->isSteppable()==true)
+    if (myel->getAttrs()->isSteppable())
     {
         this->moveInDirectionSpeed(this->getStats()->getMyDirection(),_plainMissileSpeed);
         return true;
     }
-    if (myel->getAttrs()->isKillable()==true)
+    if (myel->getAttrs()->isKillable())
     {
         int w=myel->getAttrs()->getEnergy();
         int dw=0;

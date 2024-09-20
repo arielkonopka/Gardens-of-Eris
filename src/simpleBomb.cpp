@@ -58,5 +58,5 @@ bool simpleBomb::mechanics()
 
 int simpleBomb::getType() const
 {
-    return _simpleBombType;
+    return bElemTypes::_simpleBombType;
 }

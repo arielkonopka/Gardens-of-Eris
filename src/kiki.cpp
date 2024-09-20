@@ -41,5 +41,5 @@ bool kiki::mechanics() {
 }
 
 int kiki::getType() const {
-    return _kikiType;
+    return bElemTypes::_kikiType;
 }

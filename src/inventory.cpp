@@ -236,7 +236,7 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
     if(o)
         o->getStats()->setPoints(TOTAL,o->getStats()->getPoints(TOTAL)+1);
     this->incrementTokenNumber({what->getType(),what->getAttrs()->getSubtype()});
-    if(what->getType()==_key)
+    if(what->getType()==bElemTypes::_key)
     {
         this->keys.push_back(what);
         return true;
@@ -257,10 +257,10 @@ bool inventory::addToInventory(std::shared_ptr<bElem> what)
         this->mods.push_back(what);
         return true;
     }
-    if(what->getAttrs()->isCollectible()==true && what->getType()!=_rubishType)
+    if(what->getAttrs()->isCollectible()==true && what->getType()!=bElemTypes::_rubishType)
     {
         // we do not collect stash items, we already merged its inventory
-        if(what->getType()!=_stash)
+        if(what->getType()!=bElemTypes::_stash)
             this->tokens.push_back(what); // the collect method should remove it from the board properly
         return true;
     }

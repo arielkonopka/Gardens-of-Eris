@@ -47,20 +47,20 @@ int randomLevelGenerator::checkWalls(int x, int y)
     coords chambersize=this->mychamber->getSize();
     if (x>0)
     {
-        if (this->mychamber->getElement(x-1,y)->getType()==_wallType) walls[0]=true;
+        if (this->mychamber->getElement(x-1,y)->getType()==bElemTypes::_wallType) walls[0]=true;
     }
     if (x<chambersize.x)
     {
-        if (this->mychamber->getElement(x+1,y)->getType()==_wallType) walls[1]=true;
+        if (this->mychamber->getElement(x+1,y)->getType()==bElemTypes::_wallType) walls[1]=true;
 
     }
     if (y>0)
     {
-        if (this->mychamber->getElement(x,y-1)->getType()==_wallType) walls[2]=true;
+        if (this->mychamber->getElement(x,y-1)->getType()==bElemTypes::_wallType) walls[2]=true;
     }
     if (y<chambersize.y)
     {
-        if (this->mychamber->getElement(x,y+1)->getType()==_wallType) walls[3]=true;
+        if (this->mychamber->getElement(x,y+1)->getType()==bElemTypes::_wallType) walls[3]=true;
 
     }
     if (walls[0] && walls[1] && walls[2] && !walls[3])
@@ -337,27 +337,27 @@ bool randomLevelGenerator::generateLevel(int holes)
     for(int c=1; c<(50/holes); c++)
     {
         // dangerous elements here, the more holes, the less of them in the gamefield
-        elementsToChooseFrom.push_back({_monster,0,1,0,3});
-        elementsToChooseFrom.push_back({_bunker,0,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_monster,0,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_bunker,0,1,0,3});
 
     }
     for(int c=0; c<holes*15; c++)
     {
-        elementsToChooseFrom.push_back({_bunker,0,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_bunker,0,1,0,3});
 
-        elementsToChooseFrom.push_back({_goldenAppleType,0,1,0,3});
-        elementsToChooseFrom.push_back({_simpleBombType,0,1,0,3});
-        elementsToChooseFrom.push_back({_puppetMasterType,0,1,0,3});
-        elementsToChooseFrom.push_back({_patrollingDrone,0,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_goldenAppleType,0,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_simpleBombType,0,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_puppetMasterType,0,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_patrollingDrone,0,1,0,3});
 
 
     }
     for(int cnt=0; cnt<holes*5; cnt++)
     {
-        elementsToChooseFrom.push_back({_key,1,1,0,3});
-        elementsToChooseFrom.push_back({_key,3,1,0,3});
-        elementsToChooseFrom.push_back({_bazookaType,0,1,0,3});
-        elementsToChooseFrom.push_back({_plainGun,0,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_key,1,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_key,3,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_bazookaType,0,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_plainGun,0,1,0,3});
 
 
 
@@ -365,27 +365,27 @@ bool randomLevelGenerator::generateLevel(int holes)
 
     for(int c=0; c<50; c++)
     {
-        elementsToChooseFrom.push_back({_brickClusterType,0,1,0,3});
-        elementsToChooseFrom.push_back({_key,0,1,0,3});
-        elementsToChooseFrom.push_back({_key,2,1,0,3});
-        elementsToChooseFrom.push_back({_key,4,1,0,3});
-        elementsToChooseFrom.push_back({_teleporter,this->mychamber->getInstanceId()+1,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_brickClusterType,0,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_key,0,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_key,2,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_key,4,1,0,3});
+        elementsToChooseFrom.push_back({bElemTypes::_teleporter,this->mychamber->getInstanceId()+1,1,0,3});
 
     }
     //  elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
-    elementsToChooseFrom.push_back({_player,0,1,0,3});
+    elementsToChooseFrom.push_back({bElemTypes::_player,0,1,0,3});
 
     //
-    elementsToChooseFrom.push_back({_patrollingDrone,0,1,0,3});
-    elementsToChooseFrom.push_back({_puppetMasterType,0,1,0,3});
+    elementsToChooseFrom.push_back({bElemTypes::_patrollingDrone,0,1,0,3});
+    elementsToChooseFrom.push_back({bElemTypes::_puppetMasterType,0,1,0,3});
 
 
     //first find area for the player and stuff for it
 
-    elementCollection.push_back({_player,0,2,0,3});
-    elementCollection.push_back({_key,1,2,0,3});
-    elementCollection.push_back({_plainGun,0,2,0,3});
-    elementCollection.push_back({_teleporter,0,1,0,3});
+    elementCollection.push_back({bElemTypes::_player,0,2,0,3});
+    elementCollection.push_back({bElemTypes::_key,1,2,0,3});
+    elementCollection.push_back({bElemTypes::_plainGun,0,2,0,3});
+    elementCollection.push_back({bElemTypes::_teleporter,0,1,0,3});
 
     /***************************refactor me******************************/
     int demandedSurface=0;
@@ -401,7 +401,7 @@ bool randomLevelGenerator::generateLevel(int holes)
 
     selectedChamberNo=(this->gen()%chamberArea::foundAreas.size());
     this->placeElementCollection(chamberArea::foundAreas[selectedChamberNo],&elementCollection);
-    this->placeDoors({_door,1,1,0,9},chamberArea::foundAreas[selectedChamberNo]);
+    this->placeDoors({bElemTypes::_door,1,1,0,9},chamberArea::foundAreas[selectedChamberNo]);
     if (chamberArea::foundAreas[selectedChamberNo]->parent!=nullptr)
     {
         chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock=true;
@@ -413,10 +413,10 @@ bool randomLevelGenerator::generateLevel(int holes)
     chamberArea::foundAreas.pop_back();
     elementCollection.clear();
 
-    elementCollection.push_back({_teleporter,0,1,0,5});
+    elementCollection.push_back({bElemTypes::_teleporter,0,1,0,5});
     selectedChamberNo=(this->gen()%chamberArea::foundAreas.size());
     this->placeElementCollection(chamberArea::foundAreas[selectedChamberNo],&elementCollection);
-    this->placeDoors({_door,0,1,0,9},chamberArea::foundAreas[selectedChamberNo]);
+    this->placeDoors({bElemTypes::_door,0,1,0,9},chamberArea::foundAreas[selectedChamberNo]);
     if (chamberArea::foundAreas[selectedChamberNo]->parent!=nullptr)
     {
         chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock=true;
@@ -467,10 +467,10 @@ bool randomLevelGenerator::generateLevel(int holes)
                     if(dice<(75/holes))
                     {
                         if(keyType>=5)
-                            this->placeDoors({_brickClusterType,0,0,9},chamberArea::foundAreas[selectedChamberNo]);
+                            this->placeDoors({bElemTypes::_brickClusterType,0,0,9},chamberArea::foundAreas[selectedChamberNo]);
                         else
-                            this->placeDoors({_door,keyType,1,0,9},chamberArea::foundAreas[selectedChamberNo]);
-                        elementCollection.push_back({_key,keyType,1,0,9}); // place key for the door and store it somewhere - warning, the door placed at the end might never receive the key
+                            this->placeDoors({bElemTypes::_door,keyType,1,0,9},chamberArea::foundAreas[selectedChamberNo]);
+                        elementCollection.push_back({bElemTypes::_key,keyType,1,0,9}); // place key for the door and store it somewhere - warning, the door placed at the end might never receive the key
                         chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock=true;
 
                     }
@@ -552,32 +552,32 @@ std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace elemen
     switch(element.eType)
     {
 
-    case _goldenAppleType:
+    case bElemTypes::_goldenAppleType:
         return elementFactory::generateAnElement<goldenApple>(this->mychamber,0);
-    case _player:
+    case bElemTypes::_player:
         return elementFactory::generateAnElement<player>(this->mychamber,0);
-    case _door:
+    case bElemTypes::_door:
         return elementFactory::generateAnElement<door>(this->mychamber,element.eSubType);
-    case _key:
+    case bElemTypes::_key:
         return elementFactory::generateAnElement<key>(this->mychamber,element.eSubType);
-    case _monster:
+    case bElemTypes::_monster:
         return elementFactory::generateAnElement<monster>(this->mychamber,element.eSubType);
-    case _plainGun:
+    case bElemTypes::_plainGun:
         return elementFactory::generateAnElement<plainGun>(this->mychamber,element.eSubType);
-    case _bunker:
+    case bElemTypes::_bunker:
         return elementFactory::generateAnElement<bunker>(this->mychamber,0);
-    case _teleporter:
+    case bElemTypes::_teleporter:
         return elementFactory::generateAnElement<teleport>(this->mychamber,element.eSubType);
 
-    case _simpleBombType:
+    case bElemTypes::_simpleBombType:
         return elementFactory::generateAnElement<simpleBomb>(this->mychamber,0);
-    case _patrollingDrone:
+    case bElemTypes::_patrollingDrone:
         return elementFactory::generateAnElement<patrollingDrone>(this->mychamber,0);
-    case _brickClusterType:
+    case bElemTypes::_brickClusterType:
         return elementFactory::generateAnElement<brickCluster>(this->mychamber,0);
-    case _puppetMasterType:
+    case bElemTypes::_puppetMasterType:
         return elementFactory::generateAnElement<puppetMasterFR>(this->mychamber,0);
-    case _bazookaType:
+    case bElemTypes::_bazookaType:
         return elementFactory::generateAnElement<bazooka>(this->mychamber,element.eSubType);
     }
     return nullptr;

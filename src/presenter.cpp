@@ -209,11 +209,11 @@ bool presenter::showObjectTile(int x, int y, int offsetX, int offsetY, std::shar
     int sType=elem->getAttrs()->getSubtype()%ve->defArray.size();
     int sDir=((int)elem->getStats()->getFacing())%ve->defArray[sType].size();
     int sPh=elem->getAnimPh()%ve->defArray[sType][sDir].size();
-    if(elem->getType()==_floorType || ( !elem->getStats()->isDying() && !elem->getStats()->isDestroying() && !elem->getStats()->isTeleporting() ))
+    if(elem->getType()==bElemTypes::_floorType || ( !elem->getStats()->isDying() && !elem->getStats()->isDestroying() && !elem->getStats()->isTeleporting() ))
     {
         coords=ve->defArray[sType][sDir][sPh];
         draw_sprite();
-        if (!elem->getType()==_floorType)
+        if (!elem->getType()==bElemTypes::_floorType)
             return res;
     }
     if (elem->getStats()->isDying())
@@ -302,7 +302,7 @@ void presenter::prepareStatsThing()
     for (int cnt=0; cnt<5; cnt++)
     {
         int tokens;
-        std::shared_ptr<bElem> key=aPlayer->getAttrs()->getInventory()->getKey(_key,cnt,false);
+        std::shared_ptr<bElem> key=aPlayer->getAttrs()->getInventory()->getKey(bElemTypes::_key,cnt,false);
         if(key!=nullptr)
         {
             tokens=aPlayer->getAttrs()->getInventory()->countTokens(key->getType(),key->getAttrs()->getSubtype());
@@ -312,7 +312,7 @@ void presenter::prepareStatsThing()
     }
     this->showObjectTile(18,0,0,0,goldenApple::getApple(0),true,_mode_onlyTop);
     this->showText(19,0,0,0,std::to_string(goldenApple::getAppleNumber()));
-    this->showText(19,0,0,32,std::to_string(aPlayer->getAttrs()->getInventory()->countTokens(_goldenAppleType,0)));
+    this->showText(19,0,0,32,std::to_string(aPlayer->getAttrs()->getInventory()->countTokens(bElemTypes::_goldenAppleType,0)));
     this->showText(21,0,6,0,"Stats");
     this->showText(21,0,5,32,"P:");
     this->showText(21,1,5,0,"Dex:");
@@ -561,7 +561,7 @@ int presenter::presentEverything()
             if(currentPlayer.get()!=nullptr)
             {
                 this->_cp_attachedBoard=player::getActivePlayer()->getBoard();
-                if(currentPlayer->getAttrs()->getInventory()->countTokens(_goldenAppleType,0)==goldenApple::getAppleNumber())
+                if(currentPlayer->getAttrs()->getInventory()->countTokens(bElemTypes::_goldenAppleType,0)==goldenApple::getAppleNumber())
                 {
                     inputManager::getInstance()->stop();
                     this->fin=true;

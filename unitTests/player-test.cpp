@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
     plr->disposeElement(); // here we should have the player to be removed from the board
     BOOST_CHECK(mc->getElement(2, 2)->getStats()->getInstanceId()!= plr->getStats()->getInstanceId());
     BOOST_CHECK(mc->getElement(2, 2)->getType()!= plr->getType());
-    BOOST_CHECK(mc->getElement(2, 2)->getType()==_rubishType);
+    BOOST_CHECK(mc->getElement(2, 2)->getType()==bElemTypes::_rubishType);
 }
 
 /**
@@ -203,13 +203,13 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
     std::cout << goldenApple::getAppleNumber() << "\n";
     sb->hurt(5);
     // We take time for the exploded bomb to finish
-    BOOST_CHECK(mc->getElement(2, 1)->getType() == _player);
+    BOOST_CHECK(mc->getElement(2, 1)->getType() == bElemTypes::_player);
     for (int c = 0; c < 1000; c++)
     {
         bElem::runLiveElements();
     }
     BOOST_CHECK(goldenApple::getAppleNumber() == 2);
-    BOOST_CHECK(mc->getElement(2, 1)->getType() == _rubishType);
+    BOOST_CHECK(mc->getElement(2, 1)->getType() == bElemTypes::_rubishType);
     sb = elementFactory::generateAnElement<simpleBomb>(mc,0);
     sb->stepOnElement(mc->getElement(2, 2));
     sb->kill();
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
     bElem::runLiveElements();
     bElem::runLiveElements();
     bElem::runLiveElements();
-    BOOST_CHECK(mc->getElement(2, 1)->getType() == _floorType);
+    BOOST_CHECK(mc->getElement(2, 1)->getType() == bElemTypes::_floorType);
     std::cout << "Ano: " << goldenApple::getAppleNumber() << "\n";
     BOOST_CHECK(goldenApple::getAppleNumber() == 2);
 }

@@ -51,14 +51,12 @@ bElemAttr::bElemAttr(std::shared_ptr<bElem> owner, int type, int subtype)
 void bElemAttr::getDefaultValues(int typeId, int subtypeId)
 {
     auto sprites = configManager::getInstance()->getConfig()->sprites;
-    for (unsigned long int c = 0; c < sprites.size(); c++)
+    for (auto sprite : sprites)
     {
-        auto sprite = sprites[c];
         if (sprite.eType != typeId)
             continue;
-        for (unsigned long int c1 = 0; c1 < sprite.attributes.size(); c1++)
+        for (auto attr : sprite.attributes)
         {
-            auto attr = sprite.attributes[c1];
             if ((!this->provisioned && attr.subType < 0) || (attr.subType == subtypeId))
             {
                 this->setMaxEnergy(attr.maxEnergy);
@@ -134,10 +132,10 @@ void bElemAttr::setDestroyable(bool d)
 
 bool bElemAttr::isSteppable() const
 {
-    std::shared_ptr<bElem> owner=this->owner.lock();
-    if(!owner)
+    std::shared_ptr<bElem> myOwner=this->owner.lock();
+    if(!myOwner)
         return this->steppable;
-    return this->steppable && !owner->getStats()->isDying() && !owner->getStats()->isDestroying() && !owner->getStats()->isTeleporting();
+    return this->steppable && !myOwner->getStats()->isDying() && !myOwner->getStats()->isDestroying() && !myOwner->getStats()->isTeleporting();
 }
 
 void bElemAttr::setSteppable(bool s)
@@ -148,7 +146,7 @@ void bElemAttr::setSteppable(bool s)
 bool bElemAttr::isMovable() const
 {
     std::shared_ptr<bElem> own=this->owner.lock();
-    return this->movable && !own->getStats()->isDestroying() && !own->getStats()->isDying() && !own->getStats()->isTeleporting();;
+    return this->movable && !own->getStats()->isDestroying() && !own->getStats()->isDying() && !own->getStats()->isTeleporting();
 }
 
 void bElemAttr::setMovable(bool m)
@@ -305,9 +303,9 @@ std::shared_ptr<inventory> bElemAttr::getInventory() const
     return this->inv;
 }
 
-void bElemAttr::setInventory(std::shared_ptr<inventory>inv)
+void bElemAttr::setInventory(std::shared_ptr<inventory> inventory)
 {
-    this->inv=inv;
+    this->inv=inventory;
 }
 
 

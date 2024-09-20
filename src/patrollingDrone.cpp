@@ -43,7 +43,7 @@ bool patrollingDrone::interact(std::shared_ptr<bElem> who)
     bool res = bElem::interact(who);
     if (res && !this->brained && this->getAttrs()->getSubtype() == 0 && who->getAttrs()->canCollect())
     {
-        std::shared_ptr<bElem> token = who->getAttrs()->getInventory()->requestToken(_puppetMasterType, -1,true);
+        std::shared_ptr<bElem> token = who->getAttrs()->getInventory()->requestToken(bElemTypes::_puppetMasterType, -1,true);
         if (token)
         {
             this->playSound("Boot", "Success");
@@ -52,7 +52,7 @@ bool patrollingDrone::interact(std::shared_ptr<bElem> who)
             token->getStats()->setCollector(shared_from_this());
             token->collectOnAction(true,shared_from_this()); // since we collect the object ourselves, we should also trigger the action
             token->getStats()->setWaiting(55);
-            if(who->getType()==_player)
+            if(who->getType()==bElemTypes::_player)
                 viewPoint::get_instance()->setOwner(shared_from_this());
             return true;
         }
@@ -63,7 +63,7 @@ bool patrollingDrone::interact(std::shared_ptr<bElem> who)
 
 int patrollingDrone::getType() const
 {
-    return _patrollingDrone;
+    return bElemTypes::_patrollingDrone;
 }
 
 

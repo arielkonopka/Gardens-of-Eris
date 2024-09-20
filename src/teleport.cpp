@@ -115,7 +115,7 @@ bool teleport::createConnectionsWithinSubtype()
 
 int teleport::getType() const
 {
-    return _teleporter;
+    return bElemTypes::_teleporter;
 }
 
 // Teleport to this becon
