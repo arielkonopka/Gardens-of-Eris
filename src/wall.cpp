@@ -45,5 +45,5 @@ std::shared_ptr<bElem> wall::removeElement()
 
 int wall::getType() const
 {
-    return _wallType;
+    return bElemTypes::_wallType;
 }

@@ -120,7 +120,6 @@ public:
     int calculateValueInTime(int value) const;
     int getValueInTime(int value) const;
 
-    void createInstanceId();
     // Set methods for boolean values
     void setActivatedMechanics(bool value);
     void setDisposed(bool value);

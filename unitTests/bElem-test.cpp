@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bElemCreateDestroyChamber,T,all_test_types)
             std::shared_ptr<bElem> beOrig=chmbr->getElement(c,d);
             coords mcoords= {c,d};
             BOOST_ASSERT(beOrig.get()!=nullptr);
-            BOOST_CHECK( beOrig->getType()==_floorType);
+            BOOST_CHECK( beOrig->getType()==bElemTypes::_floorType);
             BOOST_CHECK(beOrig->getStats()->getMyPosition()==mcoords); // just check if the allocation is correct
             BOOST_CHECK(beOrig->getStats()->hasParent()==false);
 

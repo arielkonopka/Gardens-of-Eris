@@ -68,7 +68,7 @@ coords bElem::getOffset() const
 
 bool bElem::collectOnAction(bool collected, std::shared_ptr<bElem>who)
 {
-    if (collected && who && who->getType()==_player)
+    if (collected && who && who->getType()==bElemTypes::_player)
     {
         this->playSound("Found","Collect");
     }
@@ -107,7 +107,7 @@ bool bElem::dropItem(unsigned long int  instanceId)
 
         if(this->isSteppableDirection(dir))
         {
-            if (this->getType()==_player)
+            if (this->getType()==bElemTypes::_player)
                 item->playSound("Drop","Item");
             item->stepOnElement(this->getElementInDirection(dir));
             return true;
@@ -204,7 +204,7 @@ oState bElem::disposeElementUnsafe()
             res = nullptrREACHED;
         }
 
-        if (this->getType() != _stash && this->getAttrs()->canCollect() && !this->getAttrs()->getInventory()->isEmpty()  && this->getType() != _rubishType && this->getType() != _plainMissile && this->getType() != _plainGun)
+        if (this->getType() != bElemTypes::_stash && this->getAttrs()->canCollect() && !this->getAttrs()->getInventory()->isEmpty()  && this->getType() != bElemTypes::_rubishType && this->getType() != bElemTypes::_plainMissile && this->getType() != bElemTypes::_plainGun)
         {
             std::shared_ptr<bElem> stash = elementFactory::generateAnElement<rubbish>(myBoard,0);
             stash->getAttrs()->setInventory(this->getAttrs()->getInventory());
@@ -259,7 +259,7 @@ oState bElem::disposeElement()
 
     if(this->getAttrs() && this->getAttrs()->canCollect())
     {
-        if (this->getType() == _rubishType )
+        if (this->getType() == bElemTypes::_rubishType )
         {
             this->getAttrs()->getInventory()->weapons.clear();
             this->getAttrs()->getInventory()->keys.clear();
@@ -586,7 +586,7 @@ int bElem::getTypeInDirection(dir::direction di)
 int bElem::getType() const
 {
 
-    return _belemType;
+    return bElemTypes::_belemType;
 
 }
 
@@ -767,7 +767,7 @@ void bElem::runLiveElements()
     cchmbr->toDeregister.clear();
     for (unsigned int p = 0; p < cchmbr->liveElems.size();)
     {
-        if(cchmbr->liveElems[p]->getStats()->isDisposed() || cchmbr->liveElems[p]->getType()==_player)
+        if(cchmbr->liveElems[p]->getStats()->isDisposed() || cchmbr->liveElems[p]->getType()==bElemTypes::_player)
             cchmbr->liveElems.erase(cchmbr->liveElems.begin()+p);
         else
         {

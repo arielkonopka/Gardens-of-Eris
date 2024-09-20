@@ -55,7 +55,7 @@ bool bazookaMissile::mechanics()
 int bazookaMissile::getType() const
 {
 
-    return _bazookaMissileType;
+    return bElemTypes::_bazookaMissileType;
 }
 
 

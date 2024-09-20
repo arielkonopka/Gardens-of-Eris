@@ -270,6 +270,7 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 ## ChangeLog
+* Now bElem types have their own namespace
 * A bit of code cleaning, that sound manager desperately needs refactoring. now the sounds are created with proper coordinates, normalized, that openAL expects
 * Removed that awful requirement for self pointer in additionalProvisioning
 * Teleporter: theOtherEnd is now a weak pointer, this should mitigate problems with teleport destruction from the memory. It the destructed is a receiver, it will be disabled forever, if sender, it will be connected with another available node.

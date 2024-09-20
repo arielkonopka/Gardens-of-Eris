@@ -29,16 +29,13 @@ unsigned long int bElemStats::getInstanceId() const
 {
     return this->instanceId;
 }
-void bElemStats::createInstanceId()
+
+
+
+
+bElemStats::bElemStats():instanceId(++bElemStats::currentInstance)
 {
-    this->instanceId=++bElemStats::currentInstance;
-}
 
-
-
-bElemStats::bElemStats()
-{
-    this->createInstanceId();
 }
 
 bool bElemStats::isDisposed() const

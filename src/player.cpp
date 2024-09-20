@@ -283,7 +283,7 @@ float player::getViewRadius() const
 
 int player::getType() const
 {
-    return _player;
+    return bElemTypes::_player;
 }
 
 int player::getAnimPh() const

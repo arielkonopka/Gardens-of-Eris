@@ -31,7 +31,7 @@ bool puppetMasterFR::collectOnAction(bool c, std::shared_ptr<bElem>who)
 {
     bool r=bElem::collectOnAction(c,who);
 
-    if(c && r && who && who->getType()==_patrollingDrone )
+    if(c && r && who && who->getType()==bElemTypes::_patrollingDrone )
     {
         if(who->getAttrs()->getInventory()->retrieveCollectibleFromInventory(this->getStats()->getInstanceId(),false))
         {
@@ -54,7 +54,7 @@ bool puppetMasterFR::mechanics()
     bool res = bElem::mechanics();
 
     std::shared_ptr<bElem> clc = this->getStats()->getCollector().lock();
-    if (res && clc.get() != nullptr && clc->getType() == _patrollingDrone && !clc->getStats()->isMoving() && !clc->getStats()->isWaiting())
+    if (res && clc.get() != nullptr && clc->getType() == bElemTypes::_patrollingDrone && !clc->getStats()->isMoving() && !clc->getStats()->isWaiting())
     {
         switch (this->getAttrs()->getSubtype()) // here we will route all the mechanics, when we are in the monster
         {
@@ -169,7 +169,7 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
 
 int puppetMasterFR::getType() const
 {
-    return _puppetMasterType;
+    return bElemTypes::_puppetMasterType;
 }
 
 

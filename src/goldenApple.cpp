@@ -28,7 +28,7 @@ std::vector<std::shared_ptr<bElem>> goldenApple::apples;
 
 int goldenApple::getType() const
 {
-    return _goldenAppleType;
+    return bElemTypes::_goldenAppleType;
 }
 
 bool goldenApple::hurt(int points)
@@ -64,7 +64,7 @@ bool goldenApple::destroy()
 
 bool goldenApple::additionalProvisioning(int subtype)
 {
-    if(!bElem::additionalProvisioning(subtype))
+    if(!explosives::additionalProvisioning(subtype))
         return false;
     if(subtype==0)
     {

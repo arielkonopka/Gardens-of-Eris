@@ -38,7 +38,7 @@ bool door::destroy()
 
 int door::getType() const
 {
-    return _door;
+    return bElemTypes::_door;
 }
 
 
@@ -59,14 +59,14 @@ bool door::stepOnAction(bool step, std::shared_ptr<bElem>who)
 {
     if(who==nullptr)
         return false;
-    if(step==true)
+    if(step)
     {
         if(this->getAttrs()->getSubtype()%2==1 )
         {
             std::shared_ptr<bElem> k;
             if( who->getAttrs()->canCollect())
             {
-                k=who->getAttrs()->getInventory()->getKey(_key,this->getAttrs()->getSubtype(),true);
+                k=who->getAttrs()->getInventory()->getKey(bElemTypes::_key,this->getAttrs()->getSubtype(),true);
             }
             if(!k)
             {
@@ -119,7 +119,7 @@ bool door::interact(std::shared_ptr<bElem> who)
     {
         return false;
     }
-    key = who->getAttrs()->getInventory()->getKey(_key, this->getAttrs()->getSubtype(), this->getAttrs()->getSubtype()%2!=1);
+    key = who->getAttrs()->getInventory()->getKey(bElemTypes::_key, this->getAttrs()->getSubtype(), this->getAttrs()->getSubtype()%2!=1);
     if (key != nullptr)
     {
         this->playSound("Door", "Open");

@@ -61,7 +61,7 @@ bool bunker::mechanics()
         int dd=0;
         while(e && ++dd<this->brange)
         {
-            if(e->getType()==_player)
+            if(e->getType()==bElemTypes::_player)
             {
                 this->getStats()->setFacing(d);
                 this->getStats()->setMyDirection(d);
@@ -131,6 +131,6 @@ bool bunker::selfAlign()
 
 int bunker::getType() const
 {
-    return _bunker;
+    return bElemTypes::_bunker;
 }
 

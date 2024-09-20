@@ -49,5 +49,5 @@ bool bouba::mechanics() {
 }
 
 int bouba::getType() const {
-    return _boubaType;
+    return bElemTypes::_boubaType;
 }

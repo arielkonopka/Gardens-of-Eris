@@ -67,7 +67,7 @@ bool monster::additionalProvisioning(int subtype)
 
 int monster::getType() const
 {
-    return _monster;
+    return bElemTypes::_monster;
 }
 
 bool monster::checkNeigh()
@@ -94,7 +94,7 @@ bool monster::checkNeigh()
         std::cout<<"  ** CHK isCollectible done\n";
         std::cout<<"  ** CHK getType\n";
 #endif
-        if (e->getType() == _player)
+        if (e->getType() == bElemTypes::_player)
         {
 #ifdef _VerbousMode_
             std::cout<<"  *** Hurt \n";
@@ -114,7 +114,7 @@ bool monster::checkNeigh()
             while (e != nullptr) // this is the "monstervision"
             {
 
-                if (e->getType() == _stash || e->getType() == _rubishType || (e->getType()==_goldenAppleType && e->getAttrs()->getSubtype()!=0) || e->getAttrs()->isWeapon()) // take the dir::direction towards remainings from other objects, broken apples or guns
+                if (e->getType() == bElemTypes::_stash || e->getType() == bElemTypes::_rubishType || (e->getType()==bElemTypes::_goldenAppleType && e->getAttrs()->getSubtype()!=0) || e->getAttrs()->isWeapon()) // take the dir::direction towards remainings from other objects, broken apples or guns
                 {
                     this->getStats()->setMyDirection(d);
                     this->getStats()->setFacing(d);
@@ -124,7 +124,7 @@ bool monster::checkNeigh()
                 }
 
                 if (
-                    ((e->getType() == _player && e->getStats()->isActive()) || (e->getType() == _patrollingDrone && e->getStats()->hasActivatedMechanics()))
+                    ((e->getType() == bElemTypes::_player && e->getStats()->isActive()) || (e->getType() == bElemTypes::_patrollingDrone && e->getStats()->hasActivatedMechanics()))
                     &&
                     ((this->getAttrs()->canCollect() && this->getAttrs()->getInventory()->getActiveWeapon() != nullptr ) || this->weapon != nullptr)
                 )
@@ -142,7 +142,7 @@ bool monster::checkNeigh()
                     break;
                 }
                 // if it is something interesting, go and fetch it
-                if (e->getType() == _stash || e->getType() == _rubishType || (e->getType()==_goldenAppleType && e->getAttrs()->getSubtype()!=0) || e->getAttrs()->isWeapon()) // take the dir::direction towards remainings from other objects, broken apples or guns
+                if (e->getType() == bElemTypes::_stash || e->getType() == bElemTypes::_rubishType || (e->getType()==bElemTypes::_goldenAppleType && e->getAttrs()->getSubtype()!=0) || e->getAttrs()->isWeapon()) // take the dir::direction towards remainings from other objects, broken apples or guns
                 {
                     this->getStats()->setMyDirection(d);
                     this->getStats()->setFacing(d);
@@ -152,7 +152,7 @@ bool monster::checkNeigh()
                 }
 
                 // closed door? and we got a key?
-                if ((e->getType() == _door && !e->getAttrs()->isSteppable()) && this->getAttrs()->canCollect() && (this->getAttrs()->getInventory()->countTokens(_door, e->getAttrs()->getSubtype()) > 0))
+                if ((e->getType() == bElemTypes::_door && !e->getAttrs()->isSteppable()) && this->getAttrs()->canCollect() && (this->getAttrs()->getInventory()->countTokens(bElemTypes::_door, e->getAttrs()->getSubtype()) > 0))
                 {
 
                     this->getStats()->setMyDirection(d);

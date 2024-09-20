@@ -39,10 +39,10 @@ BOOST_AUTO_TEST_CASE(GetTypeTest)
     }
     bElem::tick();
     bElem::tick();
-    BOOST_CHECK(chamber->getElement(point/2)->getType()!=_goldenAppleType);
+    BOOST_CHECK(chamber->getElement(point/2)->getType()!=bElemTypes::_goldenAppleType);
     goldenAppleObj->stepOnElement(chamber->getElement(point/2));
-    BOOST_CHECK(goldenAppleObj->getType()==_goldenAppleType);
-    BOOST_CHECK_EQUAL(chamber->getElement(point/2)->getType(),_goldenAppleType);
+    BOOST_CHECK(goldenAppleObj->getType()==bElemTypes::_goldenAppleType);
+    BOOST_CHECK_EQUAL(chamber->getElement(point/2)->getType(),bElemTypes::_goldenAppleType);
     BOOST_CHECK(goldenAppleObj->getAttrs()->getSubtype()==0);
     BOOST_CHECK(!goldenAppleObj->getAttrs()->isInteractive());
     goldenAppleObj->hurt(1);

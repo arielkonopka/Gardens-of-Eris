@@ -24,6 +24,6 @@
 
 int floorElement::getType() const
 {
-    return _floorType;
+    return bElemTypes::_floorType;
 }
 
