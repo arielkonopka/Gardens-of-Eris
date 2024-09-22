@@ -333,7 +333,7 @@ bool bElem::interact(std::shared_ptr<bElem> who)
 {
     if (this->getAttrs()->isInteractive() && !this->getStats()->isInteracting()) /* penalty for getting into counter overflow */
     {
-        this->getStats()->setInteracted( _interactedTime);
+        this->getStats()->setInteracted( GoEConstants::_interactedTime);
         return true;
     }
     return false;
@@ -348,7 +348,7 @@ bool bElem::destroy()
             this->getStats()->setKilled(0);
             this->getStats()->setKillTimeBeg(0);
         }
-        this->getStats()->setDestroyed(_defaultDestroyTime);
+        this->getStats()->setDestroyed(GoEConstants::_defaultDestroyTime);
         if (this->getAttrs()->isDestroyable() || this->getAttrs()->isKillable())
         {
             bElem::toDispose.push_back(shared_from_this());
@@ -548,7 +548,7 @@ bool bElem::kill()
         // viewPoint::get_instance()->addViewPoint(shared_from_this());
         bElem::toDispose.push_back(shared_from_this());
     }
-    this->getStats()->setKilled(_defaultKillTime);
+    this->getStats()->setKilled(GoEConstants::_defaultKillTime);
     return true;
 }
 std::shared_ptr<bElemAttr> bElem::getAttrs() const
@@ -668,11 +668,11 @@ bool bElem::moveInDirectionSpeed(dir::direction dir, int speed)
 }
 bool bElem::moveInDirection(dir::direction d)
 {
-    return this->moveInDirectionSpeed(d,_mov_delay);
+    return this->moveInDirectionSpeed(d,GoEConstants::_mov_delay);
 }
 bool bElem::dragInDirection(dir::direction dragIntoDirection)
 {
-    return this->dragInDirectionSpeed(dragIntoDirection,_mov_delay*2);
+    return this->dragInDirectionSpeed(dragIntoDirection,GoEConstants::_mov_delay*2);
 }
 
 bool bElem::dragInDirectionSpeed(dir::direction dragIntoDirection, int speed)

@@ -463,7 +463,7 @@ void presenter::drawCloak()
 
         auto ve=videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
         int obscured;
-        int divider=_dividerCloak;
+        int divider=GoEConstants::_dividerCloak;
         coords be=this->bluredElement[player::getActivePlayer()->getBoard()->getInstanceId()%this->bluredElement.size()];
         for(int x=-1; x<this->scrTilesX+2; x++)
             for(int y=-1; y<this->scrTilesY+2; y++)

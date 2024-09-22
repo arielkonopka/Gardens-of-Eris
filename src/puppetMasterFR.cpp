@@ -101,7 +101,7 @@ bool puppetMasterFR::collectorMechanics()
             {
                 _collector->getStats()->setMyDirection(_d3);
                 _collector->getStats()->setFacing(_d3);
-                this->getStats()->setWaiting(_mov_delay);
+                this->getStats()->setWaiting(GoEConstants::_mov_delay);
                 return true;
             }
             return _collector->moveInDirection(d);
@@ -138,16 +138,16 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
     {
         collector->getStats()->setMyDirection(pdir1);
         collector->getStats()->setFacing(pdir1);
-        collector->getStats()->setWaiting(_mov_delay);
-        this->getStats()->setWaiting(_mov_delay);
+        collector->getStats()->setWaiting(GoEConstants::_mov_delay);
+        this->getStats()->setWaiting(GoEConstants::_mov_delay);
         return true;
     }
     else if (b2 && roulette==25)
     {
         collector->getStats()->setMyDirection(pdir1);
         collector->getStats()->setFacing(pdir1);
-        collector->getStats()->setWaiting(_mov_delay);
-        this->getStats()->setWaiting(_mov_delay);
+        collector->getStats()->setWaiting(GoEConstants::_mov_delay);
+        this->getStats()->setWaiting(GoEConstants::_mov_delay);
         return true;
     }
 
@@ -162,8 +162,8 @@ bool puppetMasterFR::mechanicsPatrollingDrone()
         collector->getStats()->setMyDirection(ndir);
         collector->getStats()->setFacing(ndir);
     }
-    collector->getStats()->setWaiting(_mov_delay);
-    this->getStats()->setWaiting(_mov_delay);
+    collector->getStats()->setWaiting(GoEConstants::_mov_delay);
+    this->getStats()->setWaiting(GoEConstants::_mov_delay);
     return true;
 }
 

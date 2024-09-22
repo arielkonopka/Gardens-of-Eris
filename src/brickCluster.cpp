@@ -28,7 +28,7 @@ int brickCluster::getType() const
 
 {
     return bElemTypes::_brickClusterType;
-};
+}
 
 
 
