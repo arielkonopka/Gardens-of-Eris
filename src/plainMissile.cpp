@@ -24,7 +24,7 @@
 
 plainMissile::plainMissile():bElem()
 {
-    this->getStats()->setWaiting(_plainMissileSpeed);
+    this->getStats()->setWaiting(GoEConstants::_plainMissileSpeed);
     this->getStats()->setMyDirection(dir::direction::UP);
     this->getStats()->setMoved(0);
 }
@@ -78,7 +78,7 @@ bool plainMissile::mechanics()
     }
     if (myel->getAttrs()->isSteppable())
     {
-        this->moveInDirectionSpeed(this->getStats()->getMyDirection(),_plainMissileSpeed);
+        this->moveInDirectionSpeed(this->getStats()->getMyDirection(),GoEConstants::_plainMissileSpeed);
         return true;
     }
     if (myel->getAttrs()->isKillable())

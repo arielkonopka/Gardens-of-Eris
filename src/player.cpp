@@ -218,7 +218,7 @@ bool player::mechanics()
     }
     case 3:
         this->getAttrs()->getInventory()->nextUsable();
-        this->getStats()->setWaiting(_mov_delay);
+        this->getStats()->setWaiting(GoEConstants::_mov_delay);
         break;
     case 4:
         if (this->dragInDirection(currentCtrlItem.dir))
@@ -238,7 +238,7 @@ bool player::mechanics()
     case 5:
     {
         this->getAttrs()->getInventory()->nextGun();
-        this->getStats()->setWaiting(_mov_delay*2);
+        this->getStats()->setWaiting(GoEConstants::_mov_delay*2);
         break;
     }
     case 6:
@@ -246,7 +246,7 @@ bool player::mechanics()
         break;
     case 9:
         std::shared_ptr<bElem> _be=this->getAttrs()->getInventory()->getUsable();
-        this->getStats()->setWaiting(_mov_delay*2);
+        this->getStats()->setWaiting(GoEConstants::_mov_delay*2);
         if(_be)
             return this->dropItem(_be->getStats()->getInstanceId());
         break;
@@ -262,11 +262,11 @@ bool player::shootGun()
     {
         if (gun->use(shared_from_this()))
         {
-            this->getStats()->setWaiting(_interactedTime * 2);
+            this->getStats()->setWaiting(GoEConstants::_interactedTime * 2);
         };
         return true;
     }
-    this->getStats()->setWaiting(_interactedTime);
+    this->getStats()->setWaiting(GoEConstants::_interactedTime);
     return false;
 }
 

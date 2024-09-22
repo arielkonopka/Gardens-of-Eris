@@ -124,9 +124,9 @@ bool teleport::teleportIt(std::shared_ptr<bElem> who)
     if (this->getStats()->isWaiting() || !this->getBoard())
         return false;
     this->getStats()->setWaiting(50);
-    who->getStats()->setTelInProgress(_teleportationTime);
+    who->getStats()->setTelInProgress(GoEConstants::_teleportationTime);
     if (who->getStats()->getSteppingOn() != nullptr)
-        who->getStats()->getSteppingOn()->getStats()->setTelInProgress(_teleportationTime);
+        who->getStats()->getSteppingOn()->getStats()->setTelInProgress(GoEConstants::_teleportationTime);
     std::vector<std::shared_ptr<bElem>> spots;
     for (auto d:dir::allDirections)
     {
@@ -135,7 +135,7 @@ bool teleport::teleportIt(std::shared_ptr<bElem> who)
     }
     if(spots.empty())
     {
-        who->getStats()->getSteppingOn()->getStats()->setTelInProgress(_teleportationTime);
+        who->getStats()->getSteppingOn()->getStats()->setTelInProgress(GoEConstants::_teleportationTime);
         return false;
     }
     else
@@ -153,7 +153,7 @@ bool teleport::stepOnAction(bool step, std::shared_ptr<bElem>who)
         return false;
     if(step && !who->getStats()->isTeleporting() && !this->getStats()->isTeleporting())
     {
-        this->getStats()->setWaiting(_teleportStandTime);
+        this->getStats()->setWaiting(GoEConstants::_teleportStandTime);
         this->registerLiveElement(shared_from_this());
     }
     else

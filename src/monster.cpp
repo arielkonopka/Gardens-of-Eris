@@ -86,7 +86,7 @@ bool monster::checkNeigh()
         if (e->getAttrs()->isCollectible() && this->getAttrs()->canCollect())
         {
             this->collect(e);
-            this->getStats()->setWaiting(_mov_delay);
+            this->getStats()->setWaiting(GoEConstants::_mov_delay);
             r = true;
             return true;
         }
@@ -119,7 +119,7 @@ bool monster::checkNeigh()
                     this->getStats()->setMyDirection(d);
                     this->getStats()->setFacing(d);
                     this->inited = false;
-                    this->getStats()->setWaiting(_mov_delay); // will wait...
+                    this->getStats()->setWaiting(GoEConstants::_mov_delay); // will wait...
                     return true;
                 }
 
@@ -138,7 +138,7 @@ bool monster::checkNeigh()
                     {
                         this->getAttrs()->getInventory()->getActiveWeapon()->use(shared_from_this()); // shoot with the one from the inventory - surprise thing:)
                     }
-                    this->getStats()->setWaiting(_mov_delay); // will wait next couple times
+                    this->getStats()->setWaiting(GoEConstants::_mov_delay); // will wait next couple times
                     break;
                 }
                 // if it is something interesting, go and fetch it
@@ -147,7 +147,7 @@ bool monster::checkNeigh()
                     this->getStats()->setMyDirection(d);
                     this->getStats()->setFacing(d);
                     this->inited = false;
-                    this->getStats()->setWaiting(_mov_delay); // will wait...
+                    this->getStats()->setWaiting(GoEConstants::_mov_delay); // will wait...
                     return true;
                 }
 
@@ -157,7 +157,7 @@ bool monster::checkNeigh()
 
                     this->getStats()->setMyDirection(d);
                     this->inited = false;
-                    this->getStats()->setWaiting(_mov_delay);
+                    this->getStats()->setWaiting(GoEConstants::_mov_delay);
                     return true;
 
                 }

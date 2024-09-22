@@ -35,60 +35,111 @@
 #include "elementFactory.h"
 #include <cmath>
 
-namespace  bElemTypes {
-    constexpr int _belemType = -1;
-    constexpr int _floorType = 0;
-    constexpr int _rubishType = 2;
-    constexpr int _wallType = 4;
-    constexpr int _monster = 6;
-    constexpr int _patrollingDrone = 7;
-    constexpr int _puppetMasterType = 77;
-    constexpr int _brickClusterType = 8;
-    constexpr int _player = 100;
+/**
+ * @namespace bElemTypes
+ * @brief A delightful collection of arbitrary constants for game element types.
+ *
+ * This namespace houses the sacred numbers of Discordia, representing types of
+ * game elements that will inevitably confuse and amaze you. These constants are
+ * the mystical return values of the great bElem class and its numerous chaotic offspring.
+ *
+ * All constants here are not just numbers, they are glimpses into the cosmic prank
+ * that is the game world. Use them wisely, or Eris herself may throw a golden apple
+ * into your codebase. Have fun!
+ *
+ * The sacred categories are:
+ * - **Environment elements** (e.g., floor, wall, stash): Static, predictable, and boring... unless they aren't.
+ * - **Characters** (e.g., player, monsters, drones): Beware, for they may not be what they seem.
+ * - **Items** (e.g., key, door, missiles): Objects of power, or maybe just distractions in Eris' grand jest.
+ *
+ * Remember, these constants may be arbitrary, but so is life. Hail Eris!
+ */
+namespace bElemTypes {
+    // Base types - the foundation of chaos
+    constexpr int _belemType = -1;          ///< The anti-type, representing nothingness, or perhaps everything.
+    constexpr int _floorType = 0;           ///< A floor, to walk on... or maybe to slip on. Who can say?
+    constexpr int _rubishType = 2;          ///< Debris or trash? One creature's trash is another creature's treasure.
+    constexpr int _wallType = 4;            ///< A wall, standing tall, until it doesn't.
 
-    constexpr int _key = 51;
-    constexpr int _door = 52;
-    constexpr int _plainMissile = 201;
-    constexpr int _plainGun = 200;
-    constexpr int _bunker = 250;
-    constexpr int _bazookaMissileType=205;
-    constexpr int _bazookaType=204;
-    constexpr int _teleporter=400;
-    constexpr int _goldenAppleType=900;
-    constexpr int _stash=600;
-    constexpr int _simpleBombType=602;
-    constexpr int _boubaType=555;
-    constexpr int _kikiType=556;
+    // Characters - friends, foes, or indifferent cosmic entities?
+    constexpr int _monster = 6;             ///< Monsters, they exist to be feared... or mocked.
+    constexpr int _patrollingDrone = 7;     ///< A drone, forever patrolling, but to what end? Who gave it orders?
+    constexpr int _puppetMasterType = 77;   ///< Puppet Master - the strings are pulled, but by whom? Probably Eris.
+    constexpr int _brickClusterType = 8;    ///< A brick cluster - it does absolutely nothing, can't be killed, but can be destroyed and pushed around. An embodiment of stubborn inertia.
+    constexpr int _player = 100;            ///< You, the player! The chosen one, or maybe just a pawn in a cosmic joke.
+
+    // Items - the true prizes in the game... or are they?
+    constexpr int _key = 51;                ///< A key! It opens doors, unless the door doesn't exist. Then it's just a key.
+    constexpr int _door = 52;               ///< A door! A way in or a way out? Who can truly know?
+
+    // Weapons and their chaotic projectiles
+    constexpr int _plainMissile = 201;      ///< A missile, born of the plain gun's fiery ambition.
+    constexpr int _plainGun = 200;          ///< The plain gun - simple, direct, and as subtle as a flying brick.
+    constexpr int _bazookaMissileType = 205;///< The bazooka missile - bigger, louder, and the herald of chaos.
+    constexpr int _bazookaType = 204;       ///< The bazooka itself - because sometimes you need a bit more boom.
+
+    constexpr int _bunker = 250;            ///< A bunker - safe haven or tomb? Only Eris knows.
+    constexpr int _teleporter = 400;        ///< A teleporter - taking you where you need to go, or where you don't.
+
+    // Special items - more mysterious than the Golden Apple itself
+    constexpr int _goldenAppleType = 900;   ///< A golden apple - oh yes, the chaos bringer. You want this, or do you?
+    constexpr int _stash = 600;             ///< A stash - what's inside? Probably more chaos.
+    constexpr int _simpleBombType = 602;    ///< A simple bomb - it's simple, but don't underestimate the explosion.
+
+    // Special characters - are they Bouba or are they Kiki? Only the fates can tell.
+    constexpr int _boubaType = 555;         ///< Bouba - soft and round, yet full of surprises.
+    constexpr int _kikiType = 556;          ///< Kiki - sharp and edgy, just like your last existential crisis.
 }
 
 
-constexpr int _mov_delay=8;
-constexpr int  _bazookaMaxSteps=40;
-constexpr int  _teleportationTime=(_mov_delay*15);
-constexpr int  _teleportStandTime=55;
+/**
+ * @namespace GoEConstants
+ * @brief A collection of constants that define the laws of time, space, and other trivialities.
+ *
+ * This namespace holds the sacred numbers that govern movement, weapon mechanics, and the passing of time
+ * in the world of Discordia. These constants are the unwritten rules by which all must abide... unless
+ * Eris decides to rewrite them. Proceed with caution, for these values may seem reasonable, but they are
+ * the embodiment of controlled chaos.
+ *
+ * Categories include:
+ * - **Movement delays**: Because nothing should ever happen exactly when you expect it.
+ * - **Weapon mechanics**: Speed, ammo, and everything else that fuels your chaotic arsenal.
+ * - **Time management**: How long things last... or don't.
+ *
+ * In the grand cosmic jest, these values hold the universe together. Or maybe they just slow it down. Hail Eris!
+ */
+namespace GoEConstants {
+    // Movement delays - to keep you on your toes (or to trip you up)
+    constexpr int _mov_delay = 5+3;                   ///< The default delay between movements. Because haste makes waste.
+    constexpr int _mov_delay_push = 5+2+2;              ///< A little more delay when pushing something. Physics, or just Eris messing with you?
 
+    // Weapon mechanics - the stats that drive your instruments of chaos
+    constexpr int _bazookaMaxSteps = 40;            ///< Maximum steps a bazooka missile can take before it gets bored and explodes.
+    constexpr int _plainGunAmmo = 5+5;               ///< Ammo for the plain gun. Plain, simple, and just enough to get into trouble.
+    constexpr int _plainMissileSpeed = 5-1;           ///< Speed of the plain missile - fast enough to cause chaos, slow enough for suspense.
+    constexpr int _bazookaMissileSpeed = 5;         ///< Speed of the bazooka missile - because big explosions need dramatic buildup.
+    constexpr int _plainGunCharge = 5*2;             ///< Charge time for the plain gun. Patience is a virtue, but chaos doesn't care.
 
-constexpr int _maxWaitingTtime=65535;
-constexpr int _mov_delay_push=9;
+    // Teleportation - because who has time to walk?
+    constexpr int _teleportationTime = (_mov_delay * 15); ///< Time required to teleport. Instant, but not really.
+    constexpr int _teleportStandTime = 5*2*5+5;          ///< How long you must stand before teleportation. Eris likes to make you wait.
 
-constexpr int _plainGunAmmo=10;
-constexpr int _plainMissileSpeed=4;
-constexpr int _bazookaMissileSpeed=4;
-constexpr int _plainGunCharge=10;
+    // Time constants - because sometimes things take longer than expected
+    constexpr int _maxWaitingTtime = 65535;         ///< Maximum time you can wait. Infinite? Almost.
+    constexpr int _defaultKillTime = 5*5;            ///< Time it takes to "kill" something. But are they really dead? Eris might disagree.
+    constexpr int _defaultDestroyTime = 5*5*5-5*5-1;         ///< Time it takes to destroy something. Slow destruction builds anticipation.
 
+    // Miscellaneous - where the real chaos happens
+    constexpr static int _dividerCloak = int(5+3);    ///< The mystical divider for the cloak. Divides what? Who knows.
+    constexpr int _interactedTime = 5+5;             ///< Time of interaction. Meaningful, or just a fleeting moment of connection?
 
+}
 
-constexpr int _defaultKillTime=25;
-constexpr int _defaultDestroyTime=99;
-
-
-constexpr int _interactedTime=10;
 
 
 #define confFname1 "./data/skins.json"
 #define confFname2 "./GoEoOL/data/skins.json"
 
-constexpr static int _dividerCloak=int(8);
 
 
 /**

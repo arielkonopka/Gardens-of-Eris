@@ -503,11 +503,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(WaitMechanismTest,T,base_test_types)
 //            BOOST_ASSERT(testObj->isWaiting()==true); //mechanics is blocked during waiting time
             c++;
             bElem::tick();
-            if(c>_maxWaitingTtime+d+10) break;
+            if(c>GoEConstants::_maxWaitingTtime+d+10) break;
         }
         // std::cout<<"c="<<c<<" d: "<<d<<"\n";
         BOOST_ASSERT(testObj->getStats()->isWaiting()==false); // mechanics is unblocked after the waiting time
-        if(d<_maxWaitingTtime+1)
+        if(d<GoEConstants::_maxWaitingTtime+1)
         {
             BOOST_ASSERT(c==d);
         }
@@ -561,7 +561,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard,T,base_test_types)
     myObj->stepOnElement(mc->getElement(3,3));
     myObj->getStats()->setActive(true);
     myObj->destroy();
-    for(int c=0; c<_defaultDestroyTime; c++)
+    for(int c=0; c<GoEConstants::_defaultDestroyTime; c++)
     {
         BOOST_CHECK(mc->getElement(3,3)->getStats()->isDestroying()==true);
         bElem::runLiveElements();
@@ -651,7 +651,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(InteractTimerMechanismChecker,T,all_test_types)
     bElem::tick();
     if(tElem->getAttrs()->isInteractive())
         BOOST_CHECK(tElem->getStats()->isInteracting() );
-    for(int c=0; c<_interactedTime+1; c++) bElem::tick();
+    for(int c=0; c<GoEConstants::_interactedTime+1; c++) bElem::tick();
     BOOST_CHECK((!tElem->getStats()->isInteracting() && tElem->getAttrs()->isInteractive() )|| (!tElem->getStats()->isInteracting() && !tElem->getAttrs()->isInteractive() ));
     for(int c=0; c<1000; c++)
     {

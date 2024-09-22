@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
     //  std::cout<<"x:"<<crds.x<<" y:"<<crds.y<<"\n";
     BOOST_CHECK(mc->getElement(crds.x,crds.y)->getStats()->getInstanceId()==transportedE->getStats()->getInstanceId());
     BOOST_CHECK(mc->getElement(crds.x,crds.y)->getStats()->isTeleporting()==true);
-    for(int a=0; a<_teleportationTime; a++)
+    for(int a=0; a<GoEConstants::_teleportationTime; a++)
     {
         BOOST_CHECK(mc->getElement(2,3)->getStats()->isTeleporting()==true);
         BOOST_CHECK(mc->getElement(crds.x,crds.y)->getStats()->isTeleporting()==true);
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
     BOOST_CHECK(tel1->getStats()->hasActivatedMechanics()==true);
     BOOST_CHECK(transported->getStats()->getMyPosition()==pointA);
     BOOST_CHECK(mc->getElement(pointA)->getStats()->getInstanceId()==transported->getStats()->getInstanceId());
-    for(int c=0; c<_teleportStandTime; c++)
+    for(int c=0; c<GoEConstants::_teleportStandTime; c++)
     {
         BOOST_CHECK(transported->getStats()->isTeleporting()==false);
         bElem::runLiveElements();
