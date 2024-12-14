@@ -44,4 +44,6 @@
 #include "puppetMasterFR.h"
 #include "bazooka.h"
 #include "bazookaMissile.h"
+#include "kiki.h"
+
 #endif // ELEMENTS_H_INCLUDED

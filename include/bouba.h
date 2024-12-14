@@ -23,10 +23,13 @@
 
 #ifndef BOUBA_H
 #define BOUBA_H
-
 #include <explosives.h>
 
-
+namespace boubaSpace
+{
+    const auto hitpoints=5;
+    const auto boubaRefresh=5*5;
+};
 class bouba :  public explosives
 {
     public:
@@ -34,13 +37,13 @@ class bouba :  public explosives
 
         bouba()=default;
         virtual ~bouba()=default;
-        bool destroy() override;
-        bool kill() override;
-        bool mechanics() override;
-        bool interact(std::shared_ptr<bElem> who) override;
+
+        bool mechanics() final;
+
         int getType() const override;
 
     private:
+    int timer=0;
 };
 
 #endif // BOUBA_H

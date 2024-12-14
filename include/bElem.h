@@ -118,8 +118,8 @@ public:
     virtual bool lockThisObject(std::shared_ptr<bElem> who);
     virtual bool unlockThisObject(std::shared_ptr<bElem> who);
 
-    virtual int getTypeInDirection(dir::direction di);
-    virtual void setStatsOwner(std::shared_ptr<bElem> owner);
+   virtual int getTypeInDirection(dir::direction di);
+   virtual void setStatsOwner(std::shared_ptr<bElem> owner);
     virtual bool additionalProvisioning(int subtype);
 
     void playSound(std::string eventType,std::string event);

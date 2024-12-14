@@ -26,7 +26,7 @@ randomLevelGenerator::randomLevelGenerator(int w, int h)
 {
     this->width=w;
     this->height=h;
-    this->mychamber=chamber::makeNewChamber({w,h});
+    this->mychamber=chamber::makeNewChamber(myUtility::Coords(w,h));
     std::random_device rd;
     std::array<int,4> seedData;
     std::generate_n(seedData.data(), seedData.size(), std::ref(rd));
@@ -343,6 +343,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     }
     for(int c=0; c<holes*15; c++)
     {
+        elementsToChooseFrom.push_back({bElemTypes::_kikiType,0,1,0,2});
         elementsToChooseFrom.push_back({bElemTypes::_bunker,0,1,0,3});
 
         elementsToChooseFrom.push_back({bElemTypes::_goldenAppleType,0,1,0,3});
@@ -579,6 +580,8 @@ std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace elemen
         return elementFactory::generateAnElement<puppetMasterFR>(this->mychamber,0);
     case bElemTypes::_bazookaType:
         return elementFactory::generateAnElement<bazooka>(this->mychamber,element.eSubType);
+    case bElemTypes::_kikiType:
+        return elementFactory::generateAnElement<kiki>(this->mychamber,element.eSubType);
     }
     return nullptr;
 }

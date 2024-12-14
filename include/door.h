@@ -44,7 +44,7 @@ public:
     bool additionalProvisioning(int subtype) override;
 
 private:
-    void _alignWithOpen();
+    inline void _alignWithOpen();
 //   int interacted=-1;
 
 };

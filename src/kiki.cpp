@@ -19,27 +19,125 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "kiki.h"
 
-kiki::kiki()
-{
-    //ctor
-}
 
 
 
-bool kiki::kill() {
-    return bElem::kill();
-}
 
-bool kiki::destroy() {
-    return bElem::destroy();
-}
 
 bool kiki::mechanics() {
-    return bElem::mechanics();
+     if(!bElem::mechanics())
+        return false;
+    auto pos=this->getStats()->getMyPosition();
+    const auto mdir=this->getStats()->getMyDirection();
+    auto e=this->getElementInDirection(mdir);
+
+    while (e && e->getType()!=this->getType())
+    {
+        if(!e->getAttrs()->isSteppable() || !e->getAttrs()->isKillable())
+          break;
+        e=e->getElementInDirection(mdir);
+
+    }
+    while ( e && e->getAttrs()->isSteppable())
+    {
+        if(e->getType()!=bElemTypes::_boubaType)
+        {
+            /**
+             * @brief place boubas on steppable elements
+             *
+             */
+            pos=e->getStats()->getMyPosition();
+            auto ne=elementFactory::generateAnElement<bouba>(this->getBoard(),0);
+            ne->getStats()->setMyDirection(mdir);
+            ne->getStats()->setFacing(mdir);
+            ne->stepOnElement(this->getBoard()->getElement(pos));
+            e=ne;
+        }
+        e->getStats()->setWaiting(50);
+        e=e->getElementInDirection(mdir);
+    }
+    if (e && e->getType()!=this->getType())
+    {
+        e->hurt(kikiSpace::kikiHurts);
+    }
+    this->getStats()->setWaiting(kikiSpace::kikiWaitTime);
+    return true;
 }
 
 int kiki::getType() const {
     return bElemTypes::_kikiType;
+}
+
+/**
+ * @brief stepOnElement for kiki, handles movement and creation of new elements based on certain conditions.
+ *
+ *
+ * This method is called when the 'kiki' element steps on another element. It first checks if the basic element
+ * functionality (inherited from `bElem`) is executed correctly. If not, it returns `false`.
+ * If the 'kiki' element's subtype is even, it will attempt to move in a random direction and perform additional
+ * actions based on the elements it encounters.
+ *
+ * Specifically:
+ * - A random direction is chosen from all possible directions.
+ * - The element's direction is updated, and it registers itself as a live element.
+ * - The element continues moving in the chosen direction as long as it encounters elements that are steppable.
+ * - Once it reaches a point where it cannot step further, a new 'terminator' element is created and moved in the
+ *   opposite direction of the chosen direction.
+ * - This new element is then placed on the board and steps onto the last encountered element.
+ *
+ * @param step A shared pointer to the element that is being stepped on.
+ * @return `true` if the action was successfully performed, `false` otherwise.
+ */
+bool kiki::stepOnElement(std::shared_ptr<bElem> step)
+{
+    // Perform basic element behavior (from bElem class).
+    if(!bElem::stepOnElement(step))
+        return false;
+
+    // If the subtype of 'kiki' is even, proceed with additional behavior.
+    if(this->getAttrs()->getSubtype() % 2 == 0) {
+
+        // Randomly select a direction from all possible directions.
+        auto md = dir::allDirections[randomNumberGenerator() % dir::allDirections.size()];
+        int c=5;
+        while (!this->getElementInDirection(md)->getAttrs()->isSteppable() && c>0)
+        {
+            md = dir::allDirections[randomNumberGenerator() % dir::allDirections.size()];
+            c--;
+        }
+        // Update the element's facing direction and its primary movement direction.
+        this->getStats()->setFacing(md);
+        this->getStats()->setMyDirection(md);
+        // Register the element as a live element on the board.
+
+        // Check the element in the direction of movement.
+        auto e = this->getElementInDirection(md);
+        auto e1 = e;
+
+        // Continue moving while encountering steppable elements.
+        while (e && e->getAttrs()->isSteppable()) {
+            // Move further in the same direction.
+            e1 = e->getElementInDirection(md);
+
+            // If we can't move further, create a 'terminator' element.
+            if (!e1 || !e1->getAttrs()->isSteppable()) {
+                // Generate the 'terminator' element and set its direction.
+                auto terminator = elementFactory::generateAnElement<kiki>(this->getBoard(), this->getType() + 1);
+                terminator->getStats()->setMyDirection(dir::getOppositeDirection(md));
+                terminator->getStats()->setFacing(dir::getOppositeDirection(md));
+                // Step on the last valid element.
+                terminator->stepOnElement(e);
+                break;
+            }
+
+            // Move to the next steppable element.
+            e = e1;
+        }
+        this->registerLiveElement(shared_from_this());
+    }
+
+    return true; // Action was successfully performed.
 }

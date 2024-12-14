@@ -29,8 +29,7 @@ namespace presenter
 presenter::presenter(): sWidth(0),sHeight(0),spacing(0),previousPosition({0,0}),positionOnScreen({0,0})
 {
     ALLEGRO_MONITOR_INFO info;
-    al_init();
-
+    videoManager::getInstance();
     if(!al_init_image_addon())
     {
         std::cout<<"Could not initialize the image addon!!\n";
@@ -58,36 +57,12 @@ presenter::presenter(): sWidth(0),sHeight(0),spacing(0),previousPosition({0,0}),
 
 bool presenter::initializeDisplay()
 {
-    ALLEGRO_MONITOR_INFO info;
-    //  al_set_new_display_flags(ALLEGRO_FULLSCREEN);
-    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 |ALLEGRO_PROGRAMMABLE_PIPELINE); //ma| ALLEGRO_FULLSCREEN);
-    al_inhibit_screensaver(true);
-    al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
-    al_get_monitor_info(0, &info);
-    this->display = al_create_display(info.x2-info.x1, info.y2-info.y1);
-    //  al_hide_mouse_cursor(this->display);
-    al_register_event_source(this->evQueue, al_get_display_event_source(this->display));
+    al_register_event_source(this->evQueue, al_get_display_event_source(videoManager::getInstance().getCurrentDisplay()));
     this->internalBitmap=al_create_bitmap(this->scrWidth+64,this->scrHeight+64);
     this->cloakBitmap=al_create_bitmap(this->scrWidth+128,this->scrHeight+128);
     this->statsStripe=al_create_bitmap(this->scrWidth,this->scrHeight/3);
     this->pointsTexture = al_create_bitmap(this->pointsTextureWidth, this->pointsTextureHeight);
-    this->shader = al_create_shader(ALLEGRO_SHADER_GLSL);
-    const char *pixelShaderSource = "data/shaders/pixelShader.glps";
-    const char *vertexShaderSource="data/shaders/vertexShader.glvs";
-    std::string s1;
-    s1=(al_attach_shader_source_file(this->shader, ALLEGRO_VERTEX_SHADER, vertexShaderSource))?"Vertex success":"Vertex failure";
-    std::cout<<s1<<"\n";
-    std::cout << "Vertex Shader Log: " << al_get_shader_log(this->shader) << " "<<al_get_errno()<<std::endl;
-    s1=(al_attach_shader_source_file(this->shader, ALLEGRO_PIXEL_SHADER, pixelShaderSource))?"Pixel success":"Pixel failure";
-    std::cout<<s1<<"\n";
-
-    std::cout << "Pixel Shader Log: " << al_get_shader_log(this->shader) << " "<<al_get_errno()<<std::endl;
-
-    std::string c=(al_build_shader(this->shader))?"Success":"Failure";
-    std::cout<<c<<"\n";
-    al_init_primitives_addon();
-
-
+    this->shaderId=videoManager::getInstance().setupShader("data/shaders/vertexShader.glvs","data/shaders/pixelShader.glps");
     return true;
 
 }
@@ -413,7 +388,7 @@ void presenter::showGameField()
     bElem::mechUnlock();
 
 
-    al_set_target_bitmap(al_get_backbuffer(display));
+    al_set_target_bitmap(al_get_backbuffer(videoManager::getInstance().getCurrentDisplay()));
 
 
     al_clear_to_color(al_map_rgba(15,25,45,255));
@@ -424,8 +399,9 @@ void presenter::showGameField()
     //al_set_shader_float_vector("vertices",3,verts,4);
     al_draw_bitmap_region(this->internalBitmap,offX,offY,this->bsWidth,this->bsHeight,_offsetX,_offsetY/2,0);
     //al_draw_filled_rectangle(_offsetX,_offsetY/2,_offsetX+this->bsWidth,this->bsHeight+_offsetY/2, al_map_rgba(255,255,255,255));
-    al_flip_display();
     al_use_shader(nullptr);
+    al_flip_display();
+
 
 
 }
@@ -446,7 +422,7 @@ void presenter::shaderthing(int _x, int _y) {
 
 
 
-    al_use_shader(this->shader);
+    al_use_shader(videoManager::getInstance().getShader(this->shaderId));
     al_set_shader_float_vector("viewPoints", 3, points, 100);
     al_set_shader_float("texWidth", texWidth);
     al_set_shader_float("texHeight", texHeight);

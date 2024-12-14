@@ -23,29 +23,19 @@
 #include "bouba.h"
 
 /**
- * @brief bouba is a boss kinda object. So it is in reality indestructible. Destroying the element will only take the damage of one fith of the energy.
- * It would take plenty of bazooka shots to kill an average boss like bouba.
- * @return returns result of hurt method
+ * @brief Bouba mechanics
+ * Although, the kikis should never be killed, this implementation assumes the kikis could be removed from the board, it just checks it rarely
  */
-bool bouba::destroy() {
-    return this->hurt(this->getAttrs()->getEnergy()/5);
-}
-
-
-
-bool bouba::interact(std::shared_ptr<bElem> who) {
-    return bElem::interact(who);
-}
-
-bool bouba::kill() {
-    bool r=bElem::kill();
-    if(r)
-        this->explode(3.5);
-    return r;
-}
 
 bool bouba::mechanics() {
-    return bElem::mechanics();
+    if(!bElem::mechanics())
+        return false;
+    if(!this->getStats()->isWaiting())
+    {
+        this->disposeElement();
+        return false;
+    }
+    return true;
 }
 
 int bouba::getType() const {

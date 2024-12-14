@@ -1,3 +1,6 @@
+#ifndef INC_COORDS_H_
+#define INC_COORDS_H_
+
 /**
  * @class Coords
  * @brief This class is for representing 2D coordinates (x, y).
@@ -5,13 +8,17 @@
  * Coords class has x, y values and provide operations like addition, subtraction,
  * multiplication, and distance calculation. Very useful for 2D point management.
  */
+
+#include "commons.h"
+
 namespace myUtility {
 
     class Coords {
     private:
         int x=-6502; ///< x coordinate value
         int y=-6502; ///< y coordinate value
-
+        int z=-6502; ///< z coordonate if 3d
+        bool flat=true;
     public:
 
         /**
@@ -20,12 +27,19 @@ namespace myUtility {
          Coords()=default;
         /**
          * @brief Constructor that initializes Coords with specific x and y values.
-         * @param x_val Set x coordinate value (default is -1).
-         * @param y_val Set y coordinate value (default is -1).
+         * @param x_val Set x coordinate value (default is -6502).
+         * @param y_val Set y coordinate value (default is -6502).
          */
 
         Coords(int x_val, int y_val);
+        /**
+                * @brief Constructor that initializes Coords with specific x and y values.
+                * @param x_val Set x coordinate value (default is -6502).
+                * @param y_val Set y coordinate value (default is -6502).
+                * @param z_val set z coordinate value (default is -6502).
+                */
 
+        Coords(int x_val, int y_val, int z_val);
         /**
          * @brief Copy constructor.
          * @param other Coords object for copy.
@@ -73,6 +87,21 @@ namespace myUtility {
          * @return Return new Coords object with element-wise multiplied coordinates.
          */
         Coords operator*(const Coords &other) const;
+
+        /**
+         * @brief Divide Coords by integer scalar.
+         * @param scalar Integer for division.
+         * @return Return new Coords object with divided coordinates.
+         */
+        Coords operator/(int scalar) const;
+
+        /**
+         * @brief Divide two Coords objects (not standard math).
+         * @param other Coords object for division.
+         * @return Return new Coords object with element-wise divided coordinates.
+         */
+        Coords operator/(const Coords &other) const;
+
         /**
          * @brief Modulo operation with a scalar.
          *
@@ -107,6 +136,19 @@ namespace myUtility {
         Coords operator-(int scalar) const;
 
         /**
+         * @brief temporary operator of assignment from coords
+         */
+
+        Coords &operator=(const coords &other);
+
+        /**
+         * @brief temporary operator of comparison with coords
+         */
+        bool operator==(const coords &other);
+
+
+
+        /**
          * @brief Calculate distance to another Coords object.
          * @param other Coords object for distance calculation.
          * @return Return distance as double.
@@ -117,27 +159,30 @@ namespace myUtility {
          * @brief Get x coordinate value.
          * @return Return x coordinate.
          */
-        [[nodiscard]] int getX() const;
+        [[nodiscard]]int getX() const;
 
         /**
          * @brief Get y coordinate value.
          * @return Return y coordinate.
          */
-        [[nodiscard]] int getY() const;
+        [[nodiscard]]int getY() const;
 
         /**
          * @brief Set x coordinate value.
          * @param x_val New x coordinate value.
          */
-        void setX(int x_val);
+        Coords& setX(int x_val);
 
         /**
          * @brief Set y coordinate value.
          * @param y_val New y coordinate value.
          */
-        void setY(int y_val);
+        Coords& setY(int y_val);
     };
+
     constexpr Coords NOCOORDS=Coords();
 
 
 }
+
+#endif
