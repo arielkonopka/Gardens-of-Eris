@@ -28,13 +28,13 @@
 namespace boubaSpace
 {
     const auto hitpoints=5;
-    const auto boubaRefresh=5*5;
+    const auto boubaRefresh=2;
 };
 class bouba :  public explosives
 {
     public:
        using bElem::additionalProvisioning;
-
+        bool stepOnAction(bool step,std::shared_ptr<bElem> who) final;
         bouba()=default;
         virtual ~bouba()=default;
 

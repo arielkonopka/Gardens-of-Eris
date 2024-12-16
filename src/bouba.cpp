@@ -30,14 +30,20 @@
 bool bouba::mechanics() {
     if(!bElem::mechanics())
         return false;
-    if(!this->getStats()->isWaiting())
-    {
-        this->disposeElement();
-        return false;
-    }
-    return true;
+    this->disposeElement();
+    return false;
+
 }
 
 int bouba::getType() const {
     return bElemTypes::_boubaType;
+}
+
+bool bouba::stepOnAction(bool step, std::shared_ptr<bElem> who)
+{
+    if(step)
+    {
+        this->disposeElement();
+    }
+    return bElem::stepOnAction(step, who);
 }

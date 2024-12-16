@@ -36,13 +36,31 @@ bool kiki::mechanics() {
 
     while (e && e->getType()!=this->getType())
     {
-        if(!e->getAttrs()->isSteppable() || !e->getAttrs()->isKillable())
-          break;
+        if((!e->getAttrs()->isSteppable())&&(!e->getAttrs()->isKillable()))
+        {
+            e=this->getElementInDirection(mdir);
+            while ( e && e->getType()!= this->getType())
+            {
+                if(e->getType()==bElemTypes::_boubaType)
+                {
+                    auto e1=e->getElementInDirection(mdir);
+                    e->disposeElement();
+                    e=e1;
+                    continue;
+                }
+                e=e->getElementInDirection(mdir);
+            }
+            return false;
+        }
         e=e->getElementInDirection(mdir);
-
     }
-    while ( e && e->getAttrs()->isSteppable())
+    e=this->getElementInDirection(mdir);
+    while ( e && e->getType()!=this->getType())
     {
+        if (!e->getAttrs()->isSteppable() && e->getAttrs()->isKillable())
+        {
+            e->hurt(kikiSpace::kikiHurts);
+        }
         if(e->getType()!=bElemTypes::_boubaType)
         {
             /**
@@ -54,14 +72,11 @@ bool kiki::mechanics() {
             ne->getStats()->setMyDirection(mdir);
             ne->getStats()->setFacing(mdir);
             ne->stepOnElement(this->getBoard()->getElement(pos));
+          //  registerLiveElement(ne);
             e=ne;
         }
-        e->getStats()->setWaiting(50);
+        e->getStats()->setWaiting(boubaSpace::boubaRefresh);
         e=e->getElementInDirection(mdir);
-    }
-    if (e && e->getType()!=this->getType())
-    {
-        e->hurt(kikiSpace::kikiHurts);
     }
     this->getStats()->setWaiting(kikiSpace::kikiWaitTime);
     return true;
