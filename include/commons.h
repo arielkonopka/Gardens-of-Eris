@@ -132,7 +132,6 @@ namespace GoEConstants {
     // Miscellaneous - where the real chaos happens
     constexpr static int _dividerCloak = int(5+3);    ///< The mystical divider for the cloak. Divides what? Who knows.
     constexpr int _interactedTime = 5+5;             ///< Time of interaction. Meaningful, or just a fleeting moment of connection?
-
 }
 
 
@@ -149,6 +148,7 @@ namespace GoEConstants {
  *
  * This structure contains two integers: `x` and `y` to represent horizontal (x-axis) and vertical (y-axis) positions on a board.
  * It also includes several operator overloads and a function to allow for intuitive manipulation of the coordinates.
+ * Most of the operators are not vector operators as in Cartesian space, these are helpers to make things a bit easier later
  *
  * @var int x
  * Horizontal position.
@@ -177,6 +177,12 @@ namespace GoEConstants {
  *
  * @fn coords operator*(int a)
  * Multiply a coordinate by an integer. Returns a new `coords` object with `x` and `y` values multiplied by the integer `a`.
+ *
+ *  @fn coords operator/(int a)
+ *  Divide by a both coordinates, returns coords object
+ *
+ *  @fn coords operator/(coords a)
+ *  Divide cooridinates of two vectors, so the result is coors(floor(x/a.x),floor(y/a.y))
  */
 
 typedef struct coords
@@ -246,6 +252,10 @@ typedef struct coords
         return coords(int(x/a),int(y/a));
     }
 
+    inline coords operator/(coords a)
+    {
+        return coords(int(floor(x/a.x)),int(floor(y/a.y)));
+    }
 
 } coords;
 constexpr coords NOCOORDS = coords(-65535, -65535);
@@ -261,6 +271,7 @@ namespace dir
 {
     enum class direction {UP=0,LEFT=1,DOWN=2,RIGHT=3,NODIRECTION=4};
     const std::array<direction,5> allDirections={direction::UP,direction::LEFT,direction::DOWN,direction::RIGHT,direction::NODIRECTION};
+    const std::array<direction, 5> allDirectionsOpposite = {direction::DOWN,direction::RIGHT,direction::UP,direction::LEFT,direction::NODIRECTION};
     const std::array<coords, 5> directionToCoordsMap = {
             coords(0, -1),  // UP
             coords(-1, 0),  // LEFT
@@ -275,7 +286,10 @@ namespace dir
      * @return coords - direction vector
      */
     inline coords dirToCoords(direction d){
-        return directionToCoordsMap[(int)d];
+        return directionToCoordsMap[static_cast<int>(d)];
+    }
+    inline dir::direction getOppositeDirection(dir::direction d) {
+        return dir::allDirectionsOpposite[static_cast<int>(d)];
     }
 
 }

@@ -317,12 +317,12 @@ coords bElemStats::getMyPosition()
             return be->getStats()->getMyPosition();
         }
     }
-    return this->myPosition;
+    return coords(this->myPosition.getX(),this->myPosition.getY());
 }
 
 void bElemStats::setMyPosition(coords value)
 {
-    this->myPosition=value;
+    this->myPosition.setX(value.x).setY(value.y);
 }
 
 dir::direction bElemStats::getMyDirection() const

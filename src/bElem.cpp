@@ -55,7 +55,7 @@ bElem::bElem() : std::enable_shared_from_this<bElem>(), elementMutex(al_create_m
 coords bElem::getOffset() const
 {
 
-    coords res= {0,0};
+    coords res(0,0);
     int rx=configManager::getInstance()->getConfig()->tileWidth;
     int ry=configManager::getInstance()->getConfig()->tileHeight;
     if(this->getStats()->isMoving() && this->getStats()->getMovingTotalTime()>0)
@@ -596,7 +596,6 @@ Here we want to avoid the duplication of boundary checking, that is why we use g
 sNeighboorhood bElem::getSteppableNeighborhood()
 {
     sNeighboorhood myNeigh;
-    coords up, left, down, right;
 
     for (int c = 0; c < 8; c += 2)
     {

@@ -26,23 +26,31 @@
 #define KIKI_H
 
 #include <bElem.h>
+#include "commons.h"
+#include "bouba.h"
 
-
+namespace kikiSpace
+{
+    const auto kikiHurts = 5;
+    const auto kikiWaitTime=5;
+}
 class kiki : public bElem
 {
-    public:
+public:
     using bElem::additionalProvisioning;
 
-    kiki();
-        virtual ~kiki()=default;
-        bool kill() final;
-        bool destroy() final;
-        bool mechanics() final;
-        virtual int getType() const;
+    kiki()=default;
 
-    protected:
+    virtual ~kiki() = default;
+    bool stepOnElement(std::shared_ptr<bElem> step) final;
+    bool mechanics() final;
 
-    private:
+    virtual int getType() const;
+
+protected:
+
+private:
+    dir::direction direction = dir::direction::NODIRECTION;
 };
 
 #endif // KIKI_H

@@ -22,6 +22,7 @@
 
 #ifndef CHAMBER_H
 #define CHAMBER_H
+#include "Coords.h"
 #include "commons.h"
 #include "randomWordGen.h"
 #include <memory>
@@ -48,6 +49,7 @@ public:
     chamber& operator=(const chamber&) = delete;
 
     static std::shared_ptr<chamber> makeNewChamber(coords csize);
+    static std::shared_ptr<chamber> makeNewChamber(myUtility::Coords csize);
     bool visitPosition(int x, int y)
     {
         return this->visitPosition(coords(x,y));
@@ -65,6 +67,8 @@ public:
     void setElement(int x, int y, std::shared_ptr<bElem> elem);
     void setElement(coords point,std::shared_ptr<bElem> elem);
     coords getSize();
+    myUtility::Coords getSizeCrd();
+
     explicit chamber(int x,int y);
     explicit chamber(coords csize);
     ~chamber();

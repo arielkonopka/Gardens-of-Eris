@@ -23,6 +23,7 @@
 
 #ifndef BELEMSTATS_H
 #define BELEMSTATS_H
+#include "Coords.h"
 #include "../include/commons.h"
 #include <memory>
 #include <unordered_map>
@@ -117,8 +118,6 @@ public:
 
     // other methods
     void stopWaiting();
-    int calculateValueInTime(int value) const;
-    int getValueInTime(int value) const;
 
     // Set methods for boolean values
     void setActivatedMechanics(bool value);
@@ -129,6 +128,9 @@ public:
     void setMarked(bool value);
     void setStatsOwner(std::shared_ptr<bElem> own);
 private:
+    inline int getValueInTime(int value) const;
+    inline int calculateValueInTime(int value) const;
+
     static unsigned long int currentInstance;
     unsigned long int instanceId;
     bool disposed = false;
@@ -159,7 +161,7 @@ private:
     int taterCounter = 5;
     int ammo = 0;
     int killed = -1;
-    coords myPosition = NOCOORDS;
+    myUtility::Coords myPosition = myUtility::NOCOORDS;
     dir::direction myDirection = dir::direction::NODIRECTION;
     dir::direction facing = dir::direction::NODIRECTION;
 

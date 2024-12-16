@@ -30,7 +30,19 @@ std::shared_ptr<chamber> chamber::makeNewChamber(coords csize)
 #ifdef _VerbousMode_
     std::cout << "generate chamber" << csize.x << "," << csize.y << "\n";
 #endif
-    std::shared_ptr<chamber> c = std::make_shared<chamber>(csize.x, csize.y);
+    std::shared_ptr<chamber> c = makeNewChamber(myUtility::Coords (csize.x,csize.y));
+#ifdef _VerbousMode_
+    std::cout << "generated object\n";
+#endif
+    c->createFloor();
+    return c;
+}
+std::shared_ptr<chamber> chamber::makeNewChamber(myUtility::Coords csize)
+{
+#ifdef _VerbousMode_
+    std::cout << "generate chamber" << csize.getX() << "," << csize.getY() << "\n";
+#endif
+    std::shared_ptr<chamber> c = std::make_shared<chamber>(csize.getX(), csize.getY());
 #ifdef _VerbousMode_
     std::cout << "generated object\n";
 #endif
@@ -250,6 +262,10 @@ coords chamber::getSize() {
     return coords (this->width,this->height);
 }
 
+myUtility::Coords chamber::getSizeCrd()
+{
+    return myUtility::Coords(this->width,this->height);
+}
 
 
 

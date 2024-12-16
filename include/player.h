@@ -45,12 +45,13 @@ public:
     bool interact(std::shared_ptr<bElem> who) final;
     int getType() const;
     int getAnimPh() const;
-    bool shootGun();
     oState disposeElement() final;
     float getViewRadius() const;
     bool additionalProvisioning(int subtype) ;
 
 private:
+    bool shootGun();
+
     float vRadius=2;
     static std::shared_ptr<bElem> activePlayer;
     static std::vector<std::shared_ptr<bElem>> visitedPlayers;

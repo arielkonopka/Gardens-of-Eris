@@ -45,7 +45,7 @@
 #include <mutex>
 #include <viewPoint.h>
 #include <allegro5/allegro_primitives.h>
-
+#include "videoManager.h"
 
 #define _offsetX 64
 #define _offsetY 64
@@ -96,6 +96,7 @@ private:
     coords chaosGamelastPoint;
     ALLEGRO_FONT* myfont;
     std::string splashFname;
+    int shaderId=-1;
     int sWidth;
     int sHeight;
     int scrHeight;
@@ -124,7 +125,7 @@ private:
     ALLEGRO_BITMAP *pointsTexture;
     int pointsTextureWidth = 2;
     int pointsTextureHeight = 100;
-    ALLEGRO_SHADER *shader;
+ //   ALLEGRO_SHADER *shader;
 
     ALLEGRO_BITMAP *sprites;
     typedef struct movingSprite
