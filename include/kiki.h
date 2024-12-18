@@ -31,7 +31,7 @@
 
 namespace kikiSpace
 {
-    const auto kikiHurts = 5;
+    const auto kikiHurts = 15;
     const auto kikiWaitTime=5;
 }
 class kiki : public bElem
