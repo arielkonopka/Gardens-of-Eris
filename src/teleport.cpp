@@ -121,7 +121,7 @@ int teleport::getType() const
 // Teleport to this becon
 bool teleport::teleportIt(std::shared_ptr<bElem> who)
 {
-    if (this->getStats()->isWaiting() || !this->getBoard())
+    if (this->getStats()->isWaiting() || !this->getBoard() || !who || !who->getAttrs()->isMovable())
         return false;
     this->getStats()->setWaiting(50);
     who->getStats()->setTelInProgress(GoEConstants::_teleportationTime);

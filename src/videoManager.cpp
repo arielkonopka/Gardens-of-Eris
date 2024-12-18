@@ -156,6 +156,11 @@ bool videoManager::initialize() {
  * Dissolves the order back into entropy.
  */
 void videoManager::shutdown() {
+    if(!initialized)
+        return;
+    destroyAllShaders();
+    al_shutdown_image_addon();
+    al_shutdown_primitives_addon();
     if (display) {
         al_destroy_display(display);
         display = nullptr;

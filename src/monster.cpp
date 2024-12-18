@@ -73,11 +73,9 @@ int monster::getType() const
 bool monster::checkNeigh()
 {
     bool r = false;
-    for (int c = 0; c < 4; c++)
+    for (auto d:dir::allDirections)
     {
-        dir::direction d = (dir::direction)c;
-        std::shared_ptr<bElem> e = this->getElementInDirection(d);
-        ;
+        auto e=this->getElementInDirection(d);
         if (!e)
             continue;
 #ifdef _VerbousMode_
@@ -88,6 +86,7 @@ bool monster::checkNeigh()
             this->collect(e);
             this->getStats()->setWaiting(GoEConstants::_mov_delay);
             r = true;
+            /// we do that on purpose, so it would be continued in next cycle
             return true;
         }
 #ifdef _VerbousMode_
@@ -109,19 +108,12 @@ bool monster::checkNeigh()
 #ifdef _VerbousMode_
         std::cout<<"  ** CHK getType Done\n";
 #endif
-        if (this->weapon.get()!=nullptr  || this->getAttrs()->canCollect()) //
+        if (this->getAttrs()->canCollect()) //
         {
             while (e != nullptr) // this is the "monstervision"
             {
 
-                if (e->getType() == bElemTypes::_stash || e->getType() == bElemTypes::_rubishType || (e->getType()==bElemTypes::_goldenAppleType && e->getAttrs()->getSubtype()!=0) || e->getAttrs()->isWeapon()) // take the dir::direction towards remainings from other objects, broken apples or guns
-                {
-                    this->getStats()->setMyDirection(d);
-                    this->getStats()->setFacing(d);
-                    this->inited = false;
-                    this->getStats()->setWaiting(GoEConstants::_mov_delay); // will wait...
-                    return true;
-                }
+
 
                 if (
                     ((e->getType() == bElemTypes::_player && e->getStats()->isActive()) || (e->getType() == bElemTypes::_patrollingDrone && e->getStats()->hasActivatedMechanics()))
@@ -148,7 +140,7 @@ bool monster::checkNeigh()
                     this->getStats()->setFacing(d);
                     this->inited = false;
                     this->getStats()->setWaiting(GoEConstants::_mov_delay); // will wait...
-                    return true;
+                    return false;
                 }
 
                 // closed door? and we got a key?
@@ -158,7 +150,7 @@ bool monster::checkNeigh()
                     this->getStats()->setMyDirection(d);
                     this->inited = false;
                     this->getStats()->setWaiting(GoEConstants::_mov_delay);
-                    return true;
+                    return false;
 
                 }
                 // we do not see behind non steppable objects

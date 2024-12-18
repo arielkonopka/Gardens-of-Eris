@@ -47,3 +47,9 @@ bool bouba::stepOnAction(bool step, std::shared_ptr<bElem> who)
     }
     return bElem::stepOnAction(step, who);
 }
+
+int bouba::getAnimPh() const
+{
+    int ph=(this->getCntr()/3+this->getStats()->getInstanceId());
+    return ph;
+}

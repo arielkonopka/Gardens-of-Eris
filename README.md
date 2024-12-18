@@ -270,6 +270,8 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 ## ChangeLog
+* Fixed monster
+* Added death ray contraption system kiki & bouba
 * Constants have their namespace
 * Now bElem types have their own namespace
 * A bit of code cleaning, that sound manager desperately needs refactoring. now the sounds are created with proper coordinates, normalized, that openAL expects
