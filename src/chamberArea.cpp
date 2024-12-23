@@ -161,7 +161,7 @@ void chamberArea::findElementsRec(std::shared_ptr<chamber> mychamber)
         {
             for (int y=this->upLeft.y; y<=this->downRight.y; y++)
             {
-                if (mychamber->getElement(x,y)->getAttrs()->isSteppable() && this->checkIfElementIsFree(x,y,mychamber))
+                if (mychamber->getElement(x,y)->getType()==bElemTypes::_floorType) // && this->checkIfElementIsFree(x,y,mychamber))
                 {
                     chamberArea::foundElements.push_back(mychamber->getElement(x,y));
                 }

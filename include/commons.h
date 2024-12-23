@@ -218,6 +218,10 @@ typedef struct coords
         return coords(x-a.x, y-a.y);
     }
 
+    int sum2d() const
+    {
+        return x+y;
+    }
 
     float distance(const coords& a) const
     {
