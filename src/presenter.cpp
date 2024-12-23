@@ -63,6 +63,7 @@ bool presenter::initializeDisplay()
     this->statsStripe=al_create_bitmap(this->scrWidth,this->scrHeight/3);
     this->pointsTexture = al_create_bitmap(this->pointsTextureWidth, this->pointsTextureHeight);
     this->shaderId=videoManager::getInstance().setupShader("data/shaders/vertexShader.glvs","data/shaders/pixelShader.glps");
+    std::cerr<<"Created shader no:"<<this->shaderId<<"\n";
     return true;
 
 }

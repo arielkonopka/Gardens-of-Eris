@@ -270,7 +270,7 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 ## ChangeLog
-* Fixed monster
+* Fixed monster - more to go, whole monster mechanics must be rewritten
 * Added death ray contraption system kiki & bouba
 * Constants have their namespace
 * Now bElem types have their own namespace

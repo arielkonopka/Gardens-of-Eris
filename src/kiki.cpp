@@ -31,17 +31,19 @@ bool kiki::mechanics() {
      if(!bElem::mechanics())
         return false;
     auto pos=this->getStats()->getMyPosition();
-    const auto mdir=this->getStats()->getMyDirection();
+    const auto mdir=this->direction;
     auto e=this->getElementInDirection(mdir);
 
     while (e && e->getType()!=this->getType())
     {
         if((!e->getAttrs()->isSteppable())&&(!e->getAttrs()->isKillable()))
         {
+            this->getStats()->setMyDirection(dir::direction::NODIRECTION);
+            this->getStats()->setFacing(dir::direction::NODIRECTION);
             e=this->getElementInDirection(mdir);
             while ( e && e->getType()!= this->getType())
             {
-                if(e->getType()==bElemTypes::_boubaType)
+                if(e->getType()==bElemTypes::_boubaType && ((dir::direction)e->getStats()->getMyDirection()==this->direction))
                 {
                     auto e1=e->getElementInDirection(mdir);
                     e->disposeElement();
@@ -126,6 +128,7 @@ bool kiki::stepOnElement(std::shared_ptr<bElem> step)
         // Update the element's facing direction and its primary movement direction.
         this->getStats()->setFacing(md);
         this->getStats()->setMyDirection(md);
+        this->direction=md;
         // Register the element as a live element on the board.
 
         // Check the element in the direction of movement.

@@ -178,6 +178,9 @@ namespace myUtility {
          * @param y_val New y coordinate value.
          */
         Coords& setY(int y_val);
+
+        int sum2d() const;
+        int sum3d() const;
     };
 
     constexpr Coords NOCOORDS=Coords();

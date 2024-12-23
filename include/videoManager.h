@@ -1,6 +1,6 @@
 #ifndef VIDEOMANAGER_H
 #define VIDEOMANAGER_H
-
+#define DEBUGMODE
 #include <allegro5/allegro.h>
 #include <mutex>
 #include <allegro5/allegro_image.h>

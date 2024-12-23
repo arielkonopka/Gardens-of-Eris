@@ -50,6 +50,6 @@ bool bouba::stepOnAction(bool step, std::shared_ptr<bElem> who)
 
 int bouba::getAnimPh() const
 {
-    int ph=(this->getCntr()/3+this->getStats()->getInstanceId());
+    int ph=(this->getCntr()/15+this->getStats()->getMyPosition().sum2d());
     return ph;
 }

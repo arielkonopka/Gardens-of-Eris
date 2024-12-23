@@ -27,9 +27,8 @@ videoManager::ShaderInfo::ShaderInfo(const std::string& vfname,const std::string
  */
 videoManager::ShaderInfo::~ShaderInfo() {
     if (initialized && shader) {
+        std::cerr<<"Destroing shader for no"<<id<<"\n";
         al_destroy_shader(shader);
-        shader = nullptr;
-        initialized = false;
     }
 }
 
@@ -158,13 +157,17 @@ bool videoManager::initialize() {
 void videoManager::shutdown() {
     if(!initialized)
         return;
+    al_use_shader(nullptr);
     destroyAllShaders();
-    al_shutdown_image_addon();
     al_shutdown_primitives_addon();
+    al_shutdown_image_addon();
+
     if (display) {
         al_destroy_display(display);
         display = nullptr;
     }
+
+
     initialized = false;
 }
 
@@ -178,9 +181,10 @@ void videoManager::shutdown() {
  */
 int videoManager::setupShader(const std::string& vxfname,const std::string& pxfname) {
     ShaderInfo newShader(vxfname,pxfname);
-
+    newShader.initialized=false;
     // Create the shader
     newShader.shader = al_create_shader(ALLEGRO_SHADER_GLSL);
+    std::cerr<<"Creating shader no:"<<newShader.id<<"\n";
     if (!newShader.shader) {
         std::cerr << "Failed to create shader for files: " << vxfname <<" "<<pxfname<< std::endl;
         return -1; // Indicate failure
@@ -190,11 +194,13 @@ int videoManager::setupShader(const std::string& vxfname,const std::string& pxfn
     if (!al_attach_shader_source_file(newShader.shader, ALLEGRO_VERTEX_SHADER, vxfname.c_str())) {
         std::cerr << "Failed to attach vertex shader source from file: " << vxfname << std::endl;
         al_destroy_shader(newShader.shader);
+        newShader.shader= nullptr;
         return -1;
     }
     if (!al_attach_shader_source_file(newShader.shader, ALLEGRO_PIXEL_SHADER, pxfname.c_str())) {
         std::cerr << "Failed to attach vertex shader source from file: " << pxfname << std::endl;
         al_destroy_shader(newShader.shader);
+        newShader.shader= nullptr;
         return -1;
     }
 
@@ -203,10 +209,11 @@ int videoManager::setupShader(const std::string& vxfname,const std::string& pxfn
         std::cerr << "Failed to create shader for files: " << vxfname <<" "<<pxfname<< std::endl;
         std::cerr << "Shader Log: " << al_get_shader_log(newShader.shader) << std::endl;
         al_destroy_shader(newShader.shader);
+        newShader.shader= nullptr;
         return -1;
     }
     newShader.initialized = true;
-    // Insert the shader into the map using its unique ID
+    /// Insert the shader into the map using its unique ID
     shaders.emplace(newShader.id, std::move(newShader));
     return newShader.id;
 }
@@ -257,6 +264,7 @@ bool videoManager::destroyShader(int id) {
 void videoManager::destroyAllShaders() {
     for (auto& shaderPair : shaders) {
         if (shaderPair.second.shader) {
+            std::cout << "Destroying shader: " << shaderPair.first << std::endl;
             al_destroy_shader(shaderPair.second.shader);
             shaderPair.second.shader = nullptr;
         }
