@@ -16,13 +16,50 @@ BOOST_AUTO_TEST_CASE(GetActivePlayerTest)
 {
     coords point={3,3};
     inputManager::getInstance(true);
-    std::shared_ptr<chamber> mc = chamber::makeNewChamber({5, 5});
+    std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(5, 5));
     std::shared_ptr<player> plr = elementFactory::generateAnElement<player>(mc,0);
     plr->stepOnElement(mc->getElement(point));
     plr->getStats()->setActive(true);
     BOOST_CHECK(player::getActivePlayer());
     BOOST_CHECK(plr->getStats()->getInstanceId()==player::getActivePlayer()->getStats()->getInstanceId());
 }
+  /**
+   * @brief Run the game engine a specified number of times to see if our player makes it through.
+   *
+   * This function right here is responsible for ticking the engine forward by a given number of cycles.
+   * We start by grabbing our active player and storing their instance ID, you know, just in case they
+   * meet an untimely end or switch over to another player in the middle of this process. With each cycle,
+   * we run all active elements and keep an eye on any potential changes. At the end, we check on our active
+   * player again. If we’ve still got the same player and instance ID, they survived the whole ordeal. Otherwise,
+   * well, they either switched or, sadly, didn’t make it.
+   */
+
+    bool runGameEngine(int numTimes)
+    {
+        std::shared_ptr<bElem> pl = player::getActivePlayer();
+        if(!pl) return false;
+        unsigned long int iid1 = pl->getStats()->getInstanceId();
+        for (int c = 0; c < numTimes; c++)
+            bElem::runLiveElements();
+        pl = player::getActivePlayer();
+        return (pl && iid1 == pl->getStats()->getInstanceId());
+    }
+
+/**
+ * @brief Check to see if our player has taken a spill, eh?
+ *
+ * So, this function here is all about checking if our player has, you know, kicked the bucket.
+ * First thing we do is get a hold of the active player and stash their instance ID. Then, we
+ * let things tick along for about 100 cycles. Afterwards, we take another gander at our active player.
+ * If they're still hanging in there, we print a friendly little note to show they're still with us.
+ * Finally, we make sure either the player is now null (they've croaked) or their instance ID has
+ * changed (they've respawned, good on them!).
+ */
+    void checkplayerKilled()
+    {
+        bool playerAlive= runGameEngine(100);
+        BOOST_CHECK(!playerAlive);
+    }
 
 /**
  * @brief Unit test o' the `shootGun` function in the `player` class, as if written by a dwarf.
@@ -34,9 +71,13 @@ BOOST_AUTO_TEST_CASE(GetActivePlayerTest)
  */
 BOOST_AUTO_TEST_CASE(PlayerShootsGun)
 {
+    while (player::getActivePlayer())
+    {
+        player::getActivePlayer()->disposeElement();
+    }
     //    bool gunDisposed=false;
     inputManager::getInstance(true);
-    std::shared_ptr<chamber> mc = chamber::makeNewChamber({5, 5});
+    std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(5, 5));
     std::shared_ptr<player> plr = elementFactory::generateAnElement<player>(mc,0);
     BOOST_CHECK(plr->getAttrs()->canCollect());
     plr->stepOnElement(mc->getElement(2, 2));
@@ -53,10 +94,12 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
         std::shared_ptr<bElem> wep = plr->getAttrs()->getInventory()->getActiveWeapon();
         if (wep != nullptr)
         {
-            plr->shootGun();
+            controlItem ci2;
+            ci2.type = 1;
+            ci2.dir=dir::direction::LEFT;
+            inputManager::getInstance(true)->setControlItem( ci2);
+            BOOST_CHECK(runGameEngine(200));
         }
-        for (int d = 0; d < 100; d++)
-            bElem::tick();
     }
     BOOST_CHECK(plr->getAttrs()->getInventory()->getActiveWeapon() == nullptr);
 
@@ -83,8 +126,12 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
  */
 BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
 {
+    while (player::getActivePlayer())
+    {
+        player::getActivePlayer()->disposeElement();
+    }
     inputManager::getInstance(true);
-    std::shared_ptr<chamber> mc = chamber::makeNewChamber({10, 10});
+    std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(10, 10));
     std::shared_ptr<player> p = nullptr;
     p = elementFactory::generateAnElement<player>(mc,0);
     std::shared_ptr<bElem> e = nullptr;
@@ -134,6 +181,10 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
 
 BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
 {
+    while (player::getActivePlayer())
+    {
+        player::getActivePlayer()->disposeElement();
+    }
     inputManager::getInstance(true);
     std::vector<std::shared_ptr<chamber>> m;
     std::shared_ptr<player> p;
@@ -142,7 +193,7 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
     std::shared_ptr<bElem> tp, tp1;
     unsigned long int iid;
     for (int c = 0; c < 10; c++)
-        m.push_back(chamber::makeNewChamber({105, 10}));
+        m.push_back(chamber::makeNewChamber(myUtility::Coords(105, 10)));
 
     p0 = elementFactory::generateAnElement<player>(m[0],0);
     p0->stepOnElement(m[1]->getElement(0, 0));
@@ -184,8 +235,12 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
  */
 BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestroyedWithBomb)
 {
+    while (player::getActivePlayer())
+    {
+        player::getActivePlayer()->disposeElement();
+    }
     inputManager::getInstance(true);
-    std::shared_ptr<chamber> mc = chamber::makeNewChamber({10, 10});
+    std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(10, 10));
     std::shared_ptr<goldenApple> gc = elementFactory::generateAnElement<goldenApple>(mc,0);
     std::shared_ptr<player> p = elementFactory::generateAnElement<player>(mc,0);
     std::shared_ptr<simpleBomb> sb = elementFactory::generateAnElement<simpleBomb>(mc,0);
@@ -278,25 +333,7 @@ void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
         BOOST_CHECK(c0 == c1);
 }
 
-/**
- * @brief Check to see if our player has taken a spill, eh?
- *
- * So, this function here is all about checking if our player has, you know, kicked the bucket.
- * First thing we do is get a hold of the active player and stash their instance ID. Then, we
- * let things tick along for about 100 cycles. Afterwards, we take another gander at our active player.
- * If they're still hanging in there, we print a friendly little note to show they're still with us.
- * Finally, we make sure either the player is now null (they've croaked) or their instance ID has
- * changed (they've respawned, good on them!).
- */
-void checkplayerKilled()
-{
-    std::shared_ptr<bElem> p = player::getActivePlayer();
-    unsigned long int iid1 = p->getStats()->getInstanceId();
-    for (int c = 0; c < 100; c++)
-        bElem::runLiveElements();
-    p = player::getActivePlayer();
-    BOOST_CHECK(p == nullptr || iid1 != p->getStats()->getInstanceId());
-}
+
 
 /**
  * @brief Y'all, we're gonna be testing the movement of our player in all four directions: up, down, left, and right.
@@ -309,8 +346,9 @@ void checkplayerKilled()
  */
 BOOST_AUTO_TEST_CASE(MovePlayer)
 {
+
     inputManager::getInstance(true);
-    std::shared_ptr<chamber> mc = chamber::makeNewChamber({100, 100});
+    std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(100, 100));
     coords c0, c1;
     controlItem ci;
 
@@ -330,7 +368,7 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
             controlItem ci2;
             ci2.type = 6;
             ci2.dir=dir::direction::NODIRECTION;
-            inputManager::getInstance()->setControlItem( ci2);
+            inputManager::getInstance(true)->setControlItem( ci2);
             checkplayerKilled();
             p = elementFactory::generateAnElement<player>(mc,0);
             pg = elementFactory::generateAnElement<plainGun>(mc,0);
