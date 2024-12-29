@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_SUITE( TeleportObjectTests )
 BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
 {
 
-    std::shared_ptr<chamber> mc=chamber::makeNewChamber({5,5});
+    std::shared_ptr<chamber> mc=chamber::makeNewChamber(myUtility::Coords(5,5));
     elementFactory::generateAnElement<teleport>(mc,0);
     std::shared_ptr<teleport> tel1=elementFactory::generateAnElement<teleport>(mc,1);
     std::shared_ptr<bElem> transportedE=elementFactory::generateAnElement<bElem>(mc,0);
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
 
 BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
 {
-    std::shared_ptr<chamber> mc=chamber::makeNewChamber({8,8});
+    std::shared_ptr<chamber> mc=chamber::makeNewChamber(myUtility::Coords(8,8));
     coords ncrds;
     coords t1b={1,0};
     coords  t2b={7,6};
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
 
 BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
 {
-    std::shared_ptr<chamber> mc=chamber::makeNewChamber({10,10});
+    std::shared_ptr<chamber> mc=chamber::makeNewChamber(myUtility::Coords(10,10));
     coords pointA= {3,5};
     coords pointAt= {2,5};
     coords pointB= {5,5};
