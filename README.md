@@ -270,6 +270,7 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 ## ChangeLog
+* Now kiki si not placed so danesly, still glitches happen.
 * Fixed monster - more to go, whole monster mechanics must be rewritten
 * Added death ray contraption system kiki & bouba
 * Constants have their namespace

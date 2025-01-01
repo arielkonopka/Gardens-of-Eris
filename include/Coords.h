@@ -181,6 +181,8 @@ namespace myUtility {
 
         int sum2d() const;
         int sum3d() const;
+
+        Coords(coords coords1);
     };
 
     constexpr Coords NOCOORDS=Coords();

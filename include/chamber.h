@@ -48,6 +48,9 @@ public:
     chamber(const chamber&) = delete;
     chamber& operator=(const chamber&) = delete;
 
+    int calculateLine(myUtility::Coords position,dir::direction Odir);
+    std::shared_ptr<bElem> getLastInLine(myUtility::Coords pos,dir::direction mydir);
+
     static std::shared_ptr<chamber> makeNewChamber(coords csize);
     static std::shared_ptr<chamber> makeNewChamber(myUtility::Coords csize);
     bool visitPosition(int x, int y)
@@ -64,6 +67,7 @@ public:
  //   coords player;
     std::shared_ptr<bElem> getElement(int x, int y);
     std::shared_ptr<bElem> getElement(coords point);
+    std::shared_ptr<bElem> getElement(myUtility::Coords point);
     void setElement(int x, int y, std::shared_ptr<bElem> elem);
     void setElement(coords point,std::shared_ptr<bElem> elem);
     coords getSize();
