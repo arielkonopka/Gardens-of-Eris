@@ -299,5 +299,10 @@ namespace myUtility
         return x + y+z;
     }
 
+    Coords::Coords(coords coords1):x(coords1.x),y(coords1.y),flat(true)
+    {
+
+    }
+
 
 };

@@ -41,7 +41,10 @@ bool kiki::mechanics() {
             this->getStats()->setMyDirection(dir::direction::NODIRECTION);
             this->getStats()->setFacing(dir::direction::NODIRECTION);
             e=this->getElementInDirection(mdir);
-            while ( e && e->getType()!= this->getType())
+            while ( e &&
+            (e->getType()!= this->getType() ||
+             (e->getType()==this->getType() && e->getStats()->getMyDirection()!=dir::getOppositeDirection(this->getStats()->getMyDirection())
+             && e->getStats()->getMyDirection()!=dir::direction::NODIRECTION && e->getAttrs()->getSubtype()!=this->getType()+1)))
             {
                 if(e->getType()==bElemTypes::_boubaType && ((dir::direction)e->getStats()->getMyDirection()==this->direction))
                 {
@@ -116,25 +119,34 @@ bool kiki::stepOnElement(std::shared_ptr<bElem> step)
 
     // If the subtype of 'kiki' is even, proceed with additional behavior.
     if(this->getAttrs()->getSubtype() % 2 == 0) {
-
-        // Randomly select a direction from all possible directions.
-        auto md = dir::allDirections[randomNumberGenerator() % dir::allDirections.size()];
-        int c=5;
-        while (!this->getElementInDirection(md)->getAttrs()->isSteppable() && c>0)
+        myUtility::Coords mycoords(this->getStats()->getMyPosition());
+        std::vector<dir::direction> dirs{dir::direction::DOWN,dir::direction::UP,dir::direction::LEFT,dir::direction::RIGHT};
+        for(auto it=0;it<dirs.size();)
         {
-            md = dir::allDirections[randomNumberGenerator() % dir::allDirections.size()];
-            c--;
+            if(this->getBoard()->calculateLine(mycoords,dirs[it])<5)
+            {
+                dirs.erase(dirs.begin()+it);
+                continue;
+            }
+            it++;
         }
+        if(dirs.size()==0)
+        {
+            this->getAttrs()->setSubtype(this->getType() + 1);
+            this->getStats()->setFacing(dir::direction::NODIRECTION);
+            this->getStats()->setMyDirection(dir::direction::NODIRECTION);
+            return true;
+        }
+        auto md=dirs[this->randomNumberGenerator()%dirs.size()];
+
         // Update the element's facing direction and its primary movement direction.
         this->getStats()->setFacing(md);
         this->getStats()->setMyDirection(md);
         this->direction=md;
-        // Register the element as a live element on the board.
-
         // Check the element in the direction of movement.
+        // Register the element as a live element on the board.
         auto e = this->getElementInDirection(md);
         auto e1 = e;
-
         // Continue moving while encountering steppable elements.
         while (e && e->getAttrs()->isSteppable()) {
             // Move further in the same direction.
@@ -154,7 +166,9 @@ bool kiki::stepOnElement(std::shared_ptr<bElem> step)
             // Move to the next steppable element.
             e = e1;
         }
+
         this->registerLiveElement(shared_from_this());
+        this->mechanics();
     }
 
     return true; // Action was successfully performed.
