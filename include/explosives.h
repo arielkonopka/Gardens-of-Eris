@@ -23,7 +23,7 @@
 #ifndef EXPLOSIVES_H
 #define EXPLOSIVES_H
 #include <bElem.h>
-
+#include "chamber.h"
 
 
 class explosives : virtual public bElem
@@ -37,7 +37,10 @@ public:
     virtual float getViewRadius() const;
     virtual bool additionalProvisioning(int subtype);
 private:
+    std::shared_ptr<chamber> brd;
+    int bx,by;
     float radius=1.5;
+    bool traverser(myUtility::Coords center,myUtility::Coords point,float radius);
 };
 
 #endif // EXPLOSIVES_H
