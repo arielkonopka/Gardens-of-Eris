@@ -292,6 +292,7 @@ namespace dir
     inline coords dirToCoords(direction d){
         return directionToCoordsMap[static_cast<int>(d)];
     }
+
     inline dir::direction getOppositeDirection(dir::direction d) {
         return dir::allDirectionsOpposite[static_cast<int>(d)];
     }

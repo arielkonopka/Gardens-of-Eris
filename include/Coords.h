@@ -183,6 +183,7 @@ namespace myUtility {
         int sum3d() const;
 
         Coords(coords coords1);
+        static Coords dir2coords(dir::direction dir);
     };
 
     constexpr Coords NOCOORDS=Coords();
