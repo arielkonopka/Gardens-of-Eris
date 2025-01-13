@@ -23,14 +23,14 @@
 #include "bunker.h"
 #include <elementFactory.h>
 
-bunker::bunker(): bElem(), myGun(elementFactory::generateAnElement<plainGun>(nullptr,1))
-{
-}
-
+bunker::bunker()
+    : bElem()
+    , myGun(elementFactory::generateAnElement<plainGun>(nullptr, 1))
+{}
 
 bool bunker::additionalProvisioning(int subtype)
 {
-    if(!bElem::additionalProvisioning(subtype))
+    if (!bElem::additionalProvisioning(subtype))
         return false;
     this->registerLiveElement(shared_from_this());
     this->myGun->getStats()->setCollector(shared_from_this());
@@ -38,99 +38,84 @@ bool bunker::additionalProvisioning(int subtype)
     return true;
 }
 
-
-
-
-
-
 bool bunker::mechanics()
 {
-    bool res=bElem::mechanics();
-    if(!res || this->getStats()->isMoving() || this->getStats()->isWaiting() || this->myGun->getStats()->isWaiting())
+    bool res = bElem::mechanics();
+    if (!res || this->getStats()->isMoving() || this->getStats()->isWaiting()
+        || this->myGun->getStats()->isWaiting())
         return false;
-    int randomTest=bElem::randomNumberGenerator()%55;
-    if(randomTest>25)
-    {
-        this->help=0;
+    int randomTest = bElem::randomNumberGenerator() % 55;
+    if (randomTest > 25) {
+        this->help = 0;
         this->myGun->use(shared_from_this());
     }
-    for(int c=0; c<4; c++)
-    {
-        dir::direction d=(dir::direction)c;
-        std::shared_ptr<bElem> e=this->getElementInDirection(d);
-        int dd=0;
-        while(e && ++dd<this->brange)
-        {
-            if(e->getType()==bElemTypes::_player)
-            {
+    for (int c = 0; c < 4; c++) {
+        dir::direction d = (dir::direction) c;
+        std::shared_ptr<bElem> e = this->getElementInDirection(d);
+        int dd = 0;
+        while (e && ++dd < this->brange) {
+            if (e->getType() == bElemTypes::_player) {
                 this->getStats()->setFacing(d);
                 this->getStats()->setMyDirection(d);
                 this->myGun->use(shared_from_this());
             }
-            if (!e->getAttrs()->isSteppable())
-            {
+            if (!e->getAttrs()->isSteppable()) {
                 break;
             }
-            e=e->getElementInDirection(d);
+            e = e->getElementInDirection(d);
         }
     }
-    this->getStats()->setWaiting((1+bElem::randomNumberGenerator()%55)*5);
+    this->getStats()->setWaiting((1 + bElem::randomNumberGenerator() % 55) * 5);
     return res;
 }
 
 bool bunker::interact(std::shared_ptr<bElem> Who)
 {
-    if(!bElem::interact(Who))
+    if (!bElem::interact(Who))
         return false;
-    this->help=5555;
+    this->help = 5555;
     return true;
 }
 
 dir::direction bunker::findLongestShot()
 {
-    int dir=0;
-    int longest=0;
-    dir::direction longestDir=dir::direction::UP;
+    int dir = 0;
+    int longest = 0;
+    dir::direction longestDir = dir::direction::UP;
     std::shared_ptr<bElem> element;
-    int routes[]= {0,0,0,0};
-    for(dir=0; dir<4; dir++)
-    {
-        element=this->getElementInDirection((dir::direction)(dir));
-        if(element.get()==nullptr) continue;
-        while(element->getAttrs()->isSteppable()==true)
-        {
+    int routes[] = {0, 0, 0, 0};
+    for (dir = 0; dir < 4; dir++) {
+        element = this->getElementInDirection((dir::direction)(dir));
+        if (element.get() == nullptr)
+            continue;
+        while (element->getAttrs()->isSteppable() == true) {
             routes[dir]++;
-            element=element->getElementInDirection((dir::direction)(dir));
-            if (element.get()==nullptr)
+            element = element->getElementInDirection((dir::direction)(dir));
+            if (element.get() == nullptr)
                 break;
         }
-        if (element)
-        {
-            if (element->getAttrs()->isKillable()==true)
-            {
-                routes[dir]=655350; // We shoot here, the place, where something to be killed stands at
+        if (element) {
+            if (element->getAttrs()->isKillable() == true) {
+                routes[dir]
+                    = 655350; // We shoot here, the place, where something to be killed stands at
             }
         }
-        if(routes[dir]>longest)
-        {
-            longest=routes[dir];
-            longestDir=(dir::direction)dir;
+        if (routes[dir] > longest) {
+            longest = routes[dir];
+            longestDir = (dir::direction) dir;
         }
     }
     return longestDir;
 }
 
-
 bool bunker::selfAlign()
 {
-    if(this->getBoard())
+    if (this->getBoard())
         this->getStats()->setFacing(this->findLongestShot());
     return true;
 }
-
 
 int bunker::getType() const
 {
     return bElemTypes::_bunker;
 }
-

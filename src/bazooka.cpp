@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2023, Ariel Konopka
  *
@@ -23,28 +22,25 @@
 
 #include "bazooka.h"
 
-
-
-
 int bazooka::getType() const
 {
     return bElemTypes::_bazookaType;
 }
-std::shared_ptr<bElem> bazooka::createProjectible(std::shared_ptr<bElem>who)
+std::shared_ptr<bElem> bazooka::createProjectible(std::shared_ptr<bElem> who)
 {
-    std::shared_ptr<bElem> pm=elementFactory::generateAnElement<bazookaMissile>(who->getBoard(),0);
+    std::shared_ptr<bElem> pm = elementFactory::generateAnElement<bazookaMissile>(who->getBoard(),
+                                                                                  0);
     pm->getStats()->setStatsOwner(who);
     who->lockThisObject(pm);
     pm->getStats()->setMyDirection(who->getStats()->getFacing());
     pm->getStats()->setFacing(who->getStats()->getFacing());
     pm->stepOnElement(who->getElementInDirection(who->getStats()->getFacing()));
     pm->getAttrs()->setEnergy(this->getAttrs()->getEnergy());
-    if(who->getType()==bElemTypes::_player)
+    if (who->getType() == bElemTypes::_player)
         viewPoint::get_instance()->setOwner(pm);
     pm->registerLiveElement(pm);
     return pm;
 }
-
 
 bool bazooka::additionalProvisioning(int subtype)
 {

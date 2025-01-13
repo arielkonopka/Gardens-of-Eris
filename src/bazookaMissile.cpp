@@ -22,30 +22,28 @@
 
 #include "bazookaMissile.h"
 
-
-
 bool bazookaMissile::mechanics()
 {
-    if(!explosives::mechanics())
+    if (!explosives::mechanics())
         return false;
-    if(++this->steps<GoEConstants::_bazookaMaxSteps && this->moveInDirectionSpeed(this->getStats()->getMyDirection(),GoEConstants::_bazookaMissileSpeed) )
+    if (++this->steps < GoEConstants::_bazookaMaxSteps
+        && this->moveInDirectionSpeed(this->getStats()->getMyDirection(),
+                                      GoEConstants::_bazookaMissileSpeed))
         return true;
-    std::shared_ptr<bElem> be=this->getElementInDirection(this->getStats()->getMyDirection());
-    if(this->steps>1 || !be)
+    std::shared_ptr<bElem> be = this->getElementInDirection(this->getStats()->getMyDirection());
+    if (this->steps > 1 || !be)
         return this->explode(1.5);
 
-    int beEnergy=be->getAttrs()->getEnergy();
+    int beEnergy = be->getAttrs()->getEnergy();
 
-    if(be)
+    if (be)
         be->hurt(this->getAttrs()->getEnergy());
-    beEnergy=beEnergy-be->getAttrs()->getEnergy();
-    if(beEnergy)
-    {
-        std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
-        if(sowner)
-        {
-            sowner->getStats()->setPoints(SHOOT,sowner->getStats()->getPoints(SHOOT)+1);
-            sowner->getStats()->setPoints(TOTAL,sowner->getStats()->getPoints(TOTAL)+beEnergy);
+    beEnergy = beEnergy - be->getAttrs()->getEnergy();
+    if (beEnergy) {
+        std::shared_ptr<bElem> sowner = this->getStats()->getStatsOwner().lock();
+        if (sowner) {
+            sowner->getStats()->setPoints(SHOOT, sowner->getStats()->getPoints(SHOOT) + 1);
+            sowner->getStats()->setPoints(TOTAL, sowner->getStats()->getPoints(TOTAL) + beEnergy);
         }
     }
 
@@ -54,10 +52,8 @@ bool bazookaMissile::mechanics()
 
 int bazookaMissile::getType() const
 {
-
     return bElemTypes::_bazookaMissileType;
 }
-
 
 bool bazookaMissile::additionalProvisioning(int subtype)
 {

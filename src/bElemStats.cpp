@@ -23,20 +23,16 @@
 #include "bElemStats.h"
 #include "../include/bElem.h"
 
-unsigned long int bElemStats::currentInstance=0;
+unsigned long int bElemStats::currentInstance = 0;
 
 unsigned long int bElemStats::getInstanceId() const
 {
     return this->instanceId;
 }
 
-
-
-
-bElemStats::bElemStats():instanceId(++bElemStats::currentInstance)
-{
-
-}
+bElemStats::bElemStats()
+    : instanceId(++bElemStats::currentInstance)
+{}
 
 bool bElemStats::isDisposed() const
 {
@@ -50,7 +46,6 @@ void bElemStats::setDisposed(bool value)
 
     if (this->disposed)
         this->setMyPosition(NOCOORDS);
-
 }
 
 bool bElemStats::hasActivatedMechanics() const
@@ -60,8 +55,7 @@ bool bElemStats::hasActivatedMechanics() const
 
 void bElemStats::setActivatedMechanics(bool value)
 {
-    this->activatedMechanics=value;
-
+    this->activatedMechanics = value;
 }
 
 unsigned int bElemStats::getTelTimeReq() const
@@ -71,7 +65,7 @@ unsigned int bElemStats::getTelTimeReq() const
 
 void bElemStats::setTelTimeReq(unsigned int value)
 {
-    this->telTimeReq=value;
+    this->telTimeReq = value;
 }
 
 unsigned int bElemStats::getTelReqTime() const
@@ -81,7 +75,7 @@ unsigned int bElemStats::getTelReqTime() const
 
 void bElemStats::setTelReqTime(unsigned int value)
 {
-    this->telReqTime=value;
+    this->telReqTime = value;
 }
 
 unsigned int bElemStats::getKillTimeReq() const
@@ -91,7 +85,7 @@ unsigned int bElemStats::getKillTimeReq() const
 
 void bElemStats::setKillTimeReq(unsigned int value)
 {
-    this->killTimeReq=value;
+    this->killTimeReq = value;
 }
 
 unsigned int bElemStats::getKillTimeBeg() const
@@ -101,12 +95,12 @@ unsigned int bElemStats::getKillTimeBeg() const
 
 void bElemStats::setKillTimeBeg(unsigned int value)
 {
-    this->killTimeBeg=value;
+    this->killTimeBeg = value;
 }
 
 bool bElemStats::isDying() const
 {
-    return this->getKilled()>0;
+    return this->getKilled() > 0;
 }
 
 unsigned int bElemStats::getDestTimeReq() const
@@ -116,7 +110,7 @@ unsigned int bElemStats::getDestTimeReq() const
 
 void bElemStats::setDestTimeReq(unsigned int value)
 {
-    this->destTimeReq=value;
+    this->destTimeReq = value;
 }
 
 unsigned int bElemStats::getDestTimeBeg() const
@@ -126,11 +120,11 @@ unsigned int bElemStats::getDestTimeBeg() const
 
 void bElemStats::setDestTimeBeg(unsigned int value)
 {
-    this->destTimeBeg=value;
+    this->destTimeBeg = value;
 }
 bool bElemStats::isTeleporting() const
 {
-    return this->getTelInProgress()>0;
+    return this->getTelInProgress() > 0;
 }
 
 int bElemStats::getTelInProgress() const
@@ -140,7 +134,7 @@ int bElemStats::getTelInProgress() const
 
 void bElemStats::setTelInProgress(unsigned int value)
 {
-    this->telInProgress=this->calculateValueInTime(value);
+    this->telInProgress = this->calculateValueInTime(value);
     this->setTelReqTime(bElem::getCntr());
     this->setTelTimeReq(value);
 }
@@ -150,9 +144,9 @@ std::shared_ptr<bElem> bElemStats::getSteppingOn() const
     return this->steppingOn;
 }
 
-void bElemStats::setSteppingOn(std::shared_ptr<bElem>value)
+void bElemStats::setSteppingOn(std::shared_ptr<bElem> value)
 {
-    this->steppingOn=value;
+    this->steppingOn = value;
 }
 
 bool bElemStats::hasParent() const
@@ -162,22 +156,22 @@ bool bElemStats::hasParent() const
 
 void bElemStats::setHasParent(bool value)
 {
-    this->parent=value;
+    this->parent = value;
 }
 
 std::weak_ptr<bElem> bElemStats::getStandingOn()
 {
-    if(this->hasParent() && !this->standingOn.expired())
+    if (this->hasParent() && !this->standingOn.expired())
         return this->standingOn;
-    std::shared_ptr<bElem> b=nullptr;
+    std::shared_ptr<bElem> b = nullptr;
     this->setHasParent(false);
     return b;
 }
 
-void bElemStats::setStandingOn(std::weak_ptr<bElem>value)
+void bElemStats::setStandingOn(std::weak_ptr<bElem> value)
 {
-    this->standingOn=value;
-    if(!value.expired())
+    this->standingOn = value;
+    if (!value.expired())
         this->setHasParent(true);
     else
         this->setHasParent(false);
@@ -190,35 +184,31 @@ bool bElemStats::isCollected() const
 
 void bElemStats::setCollected(bool value)
 {
-    this->collected=value;
+    this->collected = value;
 }
 void bElemStats::setDopped()
 {
-
     this->setCollected(false);
-
 }
 
 std::weak_ptr<bElem> bElemStats::getCollector()
 {
-    if(this->isCollected() )
-    {
-        if(this->collector.expired())
+    if (this->isCollected()) {
+        if (this->collector.expired())
             this->setCollected(false);
         return this->collector;
     }
-    if(!this->collector.expired())
-    {
-        std::shared_ptr<bElem> ne=nullptr;
+    if (!this->collector.expired()) {
+        std::shared_ptr<bElem> ne = nullptr;
         this->setCollector(ne);
     }
     return this->collector;
 }
 
-void bElemStats::setCollector(std::weak_ptr<bElem>value)
+void bElemStats::setCollector(std::weak_ptr<bElem> value)
 {
-    this->collector=value;
-    if(value.expired())
+    this->collector = value;
+    if (value.expired())
         this->setCollected(false);
     else
         this->setCollected(true);
@@ -230,7 +220,7 @@ int bElemStats::getMovingTotalTime() const
 
 bool bElemStats::isMoving() const
 {
-    return this->getMoved()>0;
+    return this->getMoved() > 0;
 }
 
 int bElemStats::getInteracted() const
@@ -240,7 +230,7 @@ int bElemStats::getInteracted() const
 
 void bElemStats::setInteracted(unsigned int value)
 {
-    this->interacted=this->calculateValueInTime(value);
+    this->interacted = this->calculateValueInTime(value);
 }
 
 int bElemStats::getWaiting() const
@@ -250,11 +240,11 @@ int bElemStats::getWaiting() const
 
 void bElemStats::setWaiting(int value)
 {
-    this->waiting=this->calculateValueInTime(value);
+    this->waiting = this->calculateValueInTime(value);
 }
 bool bElemStats::isWaiting() const
 {
-    return this->getWaiting()>0;
+    return this->getWaiting() > 0;
 }
 
 void bElemStats::stopWaiting()
@@ -269,23 +259,20 @@ int bElemStats::getDestroyed() const
 
 int bElemStats::isDestroying() const
 {
-    return this->getDestroyed()>0;
+    return this->getDestroyed() > 0;
 }
-
 
 void bElemStats::setDestroyed(int value)
 {
-    this->destroyed=this->calculateValueInTime(value);
+    this->destroyed = this->calculateValueInTime(value);
     this->setDestTimeBeg(bElem::getCntr());
     this->setDestTimeReq(value);
 }
 
 bool bElemStats::isInteracting() const
 {
-    return this->getInteracted()>0;
+    return this->getInteracted() > 0;
 }
-
-
 
 int bElemStats::getAnimPhase() const
 {
@@ -294,7 +281,7 @@ int bElemStats::getAnimPhase() const
 
 void bElemStats::setAnimPhase(int value)
 {
-    this->animPhase=value;
+    this->animPhase = value;
 }
 
 int bElemStats::getTaterCounter() const
@@ -304,20 +291,18 @@ int bElemStats::getTaterCounter() const
 
 void bElemStats::setTaterCounter(int value)
 {
-    this->taterCounter=value;
+    this->taterCounter = value;
 }
 
 coords bElemStats::getMyPosition()
 {
-    if(this->collected)
-    {
-        std::shared_ptr<bElem> be=(this->getCollector().lock());
-        if(be)
-        {
+    if (this->collected) {
+        std::shared_ptr<bElem> be = (this->getCollector().lock());
+        if (be) {
             return be->getStats()->getMyPosition();
         }
     }
-    return coords(this->myPosition.getX(),this->myPosition.getY());
+    return coords(this->myPosition.getX(), this->myPosition.getY());
 }
 
 void bElemStats::setMyPosition(coords value)
@@ -332,7 +317,7 @@ dir::direction bElemStats::getMyDirection() const
 
 void bElemStats::setMyDirection(dir::direction value)
 {
-    this->myDirection=value;
+    this->myDirection = value;
 }
 
 dir::direction bElemStats::getFacing() const
@@ -340,21 +325,19 @@ dir::direction bElemStats::getFacing() const
     return this->facing;
 }
 
-
 void bElemStats::setFacing(dir::direction value)
 {
-    this->facing=value;
+    this->facing = value;
 }
 
 int bElemStats::getKilled() const
 {
     return this->getValueInTime(this->killed);
-
 }
 
 void bElemStats::setKilled(int value)
 {
-    this->killed=calculateValueInTime(value);
+    this->killed = calculateValueInTime(value);
     this->setKillTimeBeg(bElem::getCntr());
     this->setKillTimeReq(value);
 }
@@ -372,13 +355,12 @@ void bElemStats::setKilled(int value)
  */
 int bElemStats::getValueInTime(int value) const
 {
-    return (value > 0 && value >= (int)bElem::getCntr()) ? value - (int)bElem::getCntr() : -1;
+    return (value > 0 && value >= (int) bElem::getCntr()) ? value - (int) bElem::getCntr() : -1;
 }
-
 
 int bElemStats::calculateValueInTime(int value) const
 {
-    return bElem::getCntr()+value;
+    return bElem::getCntr() + value;
 }
 
 bool bElemStats::isActive() const
@@ -388,7 +370,7 @@ bool bElemStats::isActive() const
 
 void bElemStats::setActive(bool value)
 {
-    this->active=value;
+    this->active = value;
 }
 
 int bElemStats::getMoved() const
@@ -398,8 +380,8 @@ int bElemStats::getMoved() const
 
 void bElemStats::setMoved(int value)
 {
-    this->moved=this->calculateValueInTime(value);
-    this->movingTotalTime=value;
+    this->moved = this->calculateValueInTime(value);
+    this->movingTotalTime = value;
 }
 
 int bElemStats::getFadingOut() const
@@ -413,15 +395,14 @@ int bElemStats::getFadingIn() const
 
 void bElemStats::setFadingIn(int value)
 {
-    this->fadingIn=this->calculateValueInTime(value);
-    this->fadingInReq=bElem::getCntr();
-
+    this->fadingIn = this->calculateValueInTime(value);
+    this->fadingInReq = bElem::getCntr();
 }
 
 void bElemStats::setFadingOut(int value)
 {
-    this->fadingOut=this->calculateValueInTime(value);
-    this->fadingOutReq=bElem::getCntr();
+    this->fadingOut = this->calculateValueInTime(value);
+    this->fadingOutReq = bElem::getCntr();
 }
 int bElemStats::getFadingInReq() const
 {
@@ -435,12 +416,12 @@ int bElemStats::getFadingOutReq() const
 
 bool bElemStats::isFadingIn() const
 {
-    return this->getFadingIn()>0;
+    return this->getFadingIn() > 0;
 }
 
 bool bElemStats::isFadingOut() const
 {
-    return this->getFadingOut()>0;
+    return this->getFadingOut() > 0;
 }
 
 bool bElemStats::isMarked() const
@@ -450,9 +431,8 @@ bool bElemStats::isMarked() const
 
 void bElemStats::setMarked(bool value)
 {
-    this->marked=value;
+    this->marked = value;
 }
-
 
 /**
  * @brief Retrieves the statistic value for a given pointsType key.
@@ -466,7 +446,7 @@ void bElemStats::setMarked(bool value)
  */
 int bElemStats::getStats(pointsType t)
 {
-    if(this->statistics.find(t)!=this->statistics.end())
+    if (this->statistics.find(t) != this->statistics.end())
         return this->statistics[t];
     return 1;
 }
@@ -483,33 +463,27 @@ int bElemStats::getStats(pointsType t)
  */
 void bElemStats::setStats(pointsType t, int value)
 {
-    this->statistics[t]=value;
+    this->statistics[t] = value;
 }
-
 
 std::weak_ptr<bElem> bElemStats::getStatsOwner() const
 {
     return this->statsOwner;
 }
 
-void bElemStats::setStatsOwner(std::shared_ptr<bElem>own)
+void bElemStats::setStatsOwner(std::shared_ptr<bElem> own)
 {
-    this->statsOwner=own;
+    this->statsOwner = own;
 }
 
 int bElemStats::getPoints(pointsType ptype)
 {
-    if(statistics.find(ptype)!=statistics.end())
+    if (statistics.find(ptype) != statistics.end())
         return this->statistics[ptype];
     return 0;
 }
 
 void bElemStats::setPoints(pointsType ptype, int val)
 {
-    this->statistics[ptype]=val;
+    this->statistics[ptype] = val;
 }
-
-
-
-
-

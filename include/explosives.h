@@ -33,14 +33,37 @@ public:
 
     explosives()=default;
     virtual ~explosives()=default;
-    virtual bool explode(float radius);
+/**
+ * @brief Handles the explosion logic for the explosive object.
+ *
+ * This function sets the explosion radius, checks preconditions,
+ * and processes the explosion effect on the game board using
+ * a cellular automata-based approach to determine the affected areas.
+ *
+ * @param radius The explosion radius.
+ * @return True if the explosion logic was executed successfully, false otherwise.
+ */
+    bool explode(float radius);
     virtual float getViewRadius() const;
     virtual bool additionalProvisioning(int subtype);
 private:
+/**
+ * @brief Recursively traverses the game board to resolve the shape of the explosion.
+ *
+ * The function uses cellular automata to determine which elements
+ * are affected by the explosion based on their destroyability, position,
+ * and distance from the explosion's center.
+ *
+ * @param center The center point of the explosion.
+ * @param point The current point being evaluated during traversal.
+ * @param radius The maximum allowable radius for the explosion's effect.
+ * @return True if traversal is successful, false if conditions for stopping are met.
+ */
+    bool traverser(myUtility::Coords center, myUtility::Coords point, float radius,int plen,dir::direction noGo);
     std::shared_ptr<chamber> brd;
     int bx,by;
     float radius=1.5;
-    bool traverser(myUtility::Coords center,myUtility::Coords point,float radius);
+
 };
 
 #endif // EXPLOSIVES_H
