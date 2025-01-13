@@ -21,13 +21,6 @@
  */
 #include "wall.h"
 
-
-
-
-
-
-
-
 bool wall::stepOnElement(std::shared_ptr<bElem> elem)
 {
     bool res = bElem::stepOnElement(elem);

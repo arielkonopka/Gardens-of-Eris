@@ -14,8 +14,12 @@ std::once_flag videoManager::initFlag;
  *
  * @param fname The filename of the shader.
  */
-videoManager::ShaderInfo::ShaderInfo(const std::string& vfname,const std::string& pfname)
-        : psfilename(pfname),vsfilename(vfname), initialized(false), shader(nullptr) {
+videoManager::ShaderInfo::ShaderInfo(const std::string &vfname, const std::string &pfname)
+    : psfilename(pfname)
+    , vsfilename(vfname)
+    , initialized(false)
+    , shader(nullptr)
+{
     std::lock_guard<std::mutex> lock(idMutex);
     id = lastId++;
 }
@@ -25,9 +29,10 @@ videoManager::ShaderInfo::ShaderInfo(const std::string& vfname,const std::string
  *
  * As discord returns to the void, so does our shader.
  */
-videoManager::ShaderInfo::~ShaderInfo() {
+videoManager::ShaderInfo::~ShaderInfo()
+{
     if (initialized && shader) {
-        std::cerr<<"Destroing shader for no"<<id<<"\n";
+        std::cerr << "Destroing shader for no" << id << "\n";
         al_destroy_shader(shader);
     }
 }
@@ -39,12 +44,13 @@ videoManager::ShaderInfo::~ShaderInfo() {
  *
  * @param other The ShaderInfo to move from.
  */
-videoManager::ShaderInfo::ShaderInfo(ShaderInfo&& other) noexcept
-        : psfilename(std::move(other.psfilename)),
-          vsfilename(std::move(other.vsfilename)),
-          id(other.id),
-          initialized(other.initialized),
-          shader(other.shader) {
+videoManager::ShaderInfo::ShaderInfo(ShaderInfo &&other) noexcept
+    : psfilename(std::move(other.psfilename))
+    , vsfilename(std::move(other.vsfilename))
+    , id(other.id)
+    , initialized(other.initialized)
+    , shader(other.shader)
+{
     other.initialized = false;
     other.shader = nullptr;
 }
@@ -57,7 +63,8 @@ videoManager::ShaderInfo::ShaderInfo(ShaderInfo&& other) noexcept
  * @param other The ShaderInfo to move from.
  * @return Reference to this ShaderInfo.
  */
-videoManager::ShaderInfo& videoManager::ShaderInfo::operator=(ShaderInfo&& other) noexcept {
+videoManager::ShaderInfo &videoManager::ShaderInfo::operator=(ShaderInfo &&other) noexcept
+{
     if (this != &other) {
         // Destroy current shader if necessary
         if (initialized && shader) {
@@ -86,7 +93,8 @@ videoManager::ShaderInfo& videoManager::ShaderInfo::operator=(ShaderInfo&& other
  *
  * @return The singleton instance of videoManager.
  */
-videoManager& videoManager::getInstance() {
+videoManager &videoManager::getInstance()
+{
     static videoManager instance;
     if (!instance.initialized) {
         if (!instance.initialize()) {
@@ -103,14 +111,18 @@ videoManager& videoManager::getInstance() {
  *
  * Concealed to maintain singularity in the midst of chaos.
  */
-videoManager::videoManager() : display(nullptr), initialized(false) {}
+videoManager::videoManager()
+    : display(nullptr)
+    , initialized(false)
+{}
 
 /**
  * @brief Destructor that cleans up video resources.
  *
  * Returns all organized structures back to primordial chaos.
  */
-videoManager::~videoManager() {
+videoManager::~videoManager()
+{
     shutdown();
 }
 
@@ -121,8 +133,8 @@ videoManager::~videoManager() {
  *
  * @return true if initialization was successful, false otherwise.
  */
-bool videoManager::initialize() {
-
+bool videoManager::initialize()
+{
     if (!al_init()) {
         std::cerr << "Failed to initialize Allegro!\n";
         return false;
@@ -134,18 +146,19 @@ bool videoManager::initialize() {
     }
     ALLEGRO_MONITOR_INFO info;
     //  al_set_new_display_flags(ALLEGRO_FULLSCREEN);
-    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 |ALLEGRO_PROGRAMMABLE_PIPELINE); //ma| ALLEGRO_FULLSCREEN);
+    al_set_new_display_flags(ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0
+                             | ALLEGRO_PROGRAMMABLE_PIPELINE); //ma| ALLEGRO_FULLSCREEN);
     al_inhibit_screensaver(true);
     al_set_new_display_option(ALLEGRO_VSYNC, 0, ALLEGRO_REQUIRE);
     al_get_monitor_info(0, &info);
-    this->display = al_create_display(info.x2-info.x1, info.y2-info.y1);
+    this->display = al_create_display(info.x2 - info.x1, info.y2 - info.y1);
     al_hide_mouse_cursor(this->display);
     if (!display) {
         std::cerr << "Failed to create display!\n";
         return false;
     }
     al_init_primitives_addon();
-    initialized = true;  // Set initialized flag to true after successful initialization
+    initialized = true; // Set initialized flag to true after successful initialization
     return true;
 }
 
@@ -154,8 +167,9 @@ bool videoManager::initialize() {
  *
  * Dissolves the order back into entropy.
  */
-void videoManager::shutdown() {
-    if(!initialized)
+void videoManager::shutdown()
+{
+    if (!initialized)
         return;
     al_use_shader(nullptr);
     destroyAllShaders();
@@ -166,7 +180,6 @@ void videoManager::shutdown() {
         al_destroy_display(display);
         display = nullptr;
     }
-
 
     initialized = false;
 }
@@ -179,14 +192,16 @@ void videoManager::shutdown() {
  * @param fname The filename of the shader.
  * @return The unique ID of the shader, or -1 on failure.
  */
-int videoManager::setupShader(const std::string& vxfname,const std::string& pxfname) {
-    ShaderInfo newShader(vxfname,pxfname);
-    newShader.initialized=false;
+int videoManager::setupShader(const std::string &vxfname, const std::string &pxfname)
+{
+    ShaderInfo newShader(vxfname, pxfname);
+    newShader.initialized = false;
     // Create the shader
     newShader.shader = al_create_shader(ALLEGRO_SHADER_GLSL);
-    std::cerr<<"Creating shader no:"<<newShader.id<<"\n";
+    std::cerr << "Creating shader no:" << newShader.id << "\n";
     if (!newShader.shader) {
-        std::cerr << "Failed to create shader for files: " << vxfname <<" "<<pxfname<< std::endl;
+        std::cerr << "Failed to create shader for files: " << vxfname << " " << pxfname
+                  << std::endl;
         return -1; // Indicate failure
     }
 
@@ -194,22 +209,23 @@ int videoManager::setupShader(const std::string& vxfname,const std::string& pxfn
     if (!al_attach_shader_source_file(newShader.shader, ALLEGRO_VERTEX_SHADER, vxfname.c_str())) {
         std::cerr << "Failed to attach vertex shader source from file: " << vxfname << std::endl;
         al_destroy_shader(newShader.shader);
-        newShader.shader= nullptr;
+        newShader.shader = nullptr;
         return -1;
     }
     if (!al_attach_shader_source_file(newShader.shader, ALLEGRO_PIXEL_SHADER, pxfname.c_str())) {
         std::cerr << "Failed to attach vertex shader source from file: " << pxfname << std::endl;
         al_destroy_shader(newShader.shader);
-        newShader.shader= nullptr;
+        newShader.shader = nullptr;
         return -1;
     }
 
     // Build the shader
     if (!al_build_shader(newShader.shader)) {
-        std::cerr << "Failed to create shader for files: " << vxfname <<" "<<pxfname<< std::endl;
+        std::cerr << "Failed to create shader for files: " << vxfname << " " << pxfname
+                  << std::endl;
         std::cerr << "Shader Log: " << al_get_shader_log(newShader.shader) << std::endl;
         al_destroy_shader(newShader.shader);
-        newShader.shader= nullptr;
+        newShader.shader = nullptr;
         return -1;
     }
     newShader.initialized = true;
@@ -226,7 +242,8 @@ int videoManager::setupShader(const std::string& vxfname,const std::string& pxfn
  * @param id The unique ID of the shader.
  * @return A pointer to the ALLEGRO_SHADER, or nullptr if not found.
  */
-ALLEGRO_SHADER* videoManager::getShader(int id) {
+ALLEGRO_SHADER *videoManager::getShader(int id)
+{
     auto it = shaders.find(id);
     if (it != shaders.end()) {
         return it->second.shader;
@@ -242,7 +259,8 @@ ALLEGRO_SHADER* videoManager::getShader(int id) {
  * @param id The unique ID of the shader to destroy.
  * @return true if the shader was successfully destroyed, false if not found.
  */
-bool videoManager::destroyShader(int id) {
+bool videoManager::destroyShader(int id)
+{
     auto it = shaders.find(id);
     if (it != shaders.end()) {
         if (it->second.shader) {
@@ -261,8 +279,9 @@ bool videoManager::destroyShader(int id) {
  *
  * Embraces entropy by eliminating all structured shaders.
  */
-void videoManager::destroyAllShaders() {
-    for (auto& shaderPair : shaders) {
+void videoManager::destroyAllShaders()
+{
+    for (auto &shaderPair : shaders) {
         if (shaderPair.second.shader) {
             std::cout << "Destroying shader: " << shaderPair.first << std::endl;
             al_destroy_shader(shaderPair.second.shader);
@@ -279,7 +298,8 @@ void videoManager::destroyAllShaders() {
  *
  * @return A pointer to the display's backbuffer bitmap.
  */
-ALLEGRO_BITMAP* videoManager::getDisplayBitmap() {
+ALLEGRO_BITMAP *videoManager::getDisplayBitmap()
+{
     if (display) {
         return al_get_backbuffer(display);
     }
@@ -293,7 +313,8 @@ ALLEGRO_BITMAP* videoManager::getDisplayBitmap() {
  *
  * @return The coordinates representing screen width and height.
  */
-coords videoManager::getScreenSize() {
+coords videoManager::getScreenSize()
+{
     return coords(al_get_display_width(display), al_get_display_height(display));
 }
 
@@ -304,14 +325,15 @@ coords videoManager::getScreenSize() {
  *
  * @return The coordinates representing game field width and height.
  */
-coords videoManager::getGameFieldSize() {
-    coords tileNum = (this->getScreenSize() / coords(
-            configManager::getInstance()->getConfig()->tileWidth,
-            configManager::getInstance()->getConfig()->tileHeight));
+coords videoManager::getGameFieldSize()
+{
+    coords tileNum = (this->getScreenSize()
+                      / coords(configManager::getInstance()->getConfig()->tileWidth,
+                               configManager::getInstance()->getConfig()->tileHeight));
     tileNum = tileNum - coords(2, 5); // how many columns and rows to be removed from the game field
-    coords gfSize(tileNum * coords(
-            configManager::getInstance()->getConfig()->tileWidth,
-            configManager::getInstance()->getConfig()->tileHeight));
+    coords gfSize(tileNum
+                  * coords(configManager::getInstance()->getConfig()->tileWidth,
+                           configManager::getInstance()->getConfig()->tileHeight));
     return gfSize;
 }
 
@@ -322,11 +344,12 @@ coords videoManager::getGameFieldSize() {
  *
  * @return The coordinates representing HUD width and height.
  */
-coords videoManager::getHudSize() {
-    return coords(getGameFieldSize().x,
-                  configManager::getInstance()->getConfig()->tileHeight * 5);
+coords videoManager::getHudSize()
+{
+    return coords(getGameFieldSize().x, configManager::getInstance()->getConfig()->tileHeight * 5);
 }
 
-ALLEGRO_DISPLAY *videoManager::getCurrentDisplay() const {
+ALLEGRO_DISPLAY *videoManager::getCurrentDisplay() const
+{
     return this->display;
 }

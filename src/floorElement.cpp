@@ -21,9 +21,7 @@
  */
 #include "floorElement.h"
 
-
 int floorElement::getType() const
 {
     return bElemTypes::_floorType;
 }
-

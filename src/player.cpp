@@ -25,26 +25,20 @@ std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
 //std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
 std::shared_ptr<bElem> player::activePlayer = nullptr;
 
-
-
 bool player::additionalProvisioning(int subtype)
 {
-
-    if(!bElem::additionalProvisioning(subtype))
+    if (!bElem::additionalProvisioning(subtype))
         return false;
     this->getAttrs()->setCollect(true);
     this->getAttrs()->setEnergy(105);
     this->provisioned = true;
     this->registerLiveElement(shared_from_this());
-    if ( this->getBoard() && player::activePlayer==nullptr)
-    {
+    if (this->getBoard() && player::activePlayer == nullptr) {
         this->getStats()->setActive(true);
         this->getStats()->setMarked(true);
-        player::activePlayer=shared_from_this();
+        player::activePlayer = shared_from_this();
         viewPoint::get_instance()->setOwner(player::activePlayer);
-    }
-    else
-    {
+    } else {
         this->getStats()->setActive(false);
     }
 
@@ -56,25 +50,23 @@ std::shared_ptr<bElem> player::getActivePlayer()
     std::mutex my_mutex;
     std::lock_guard<std::mutex> lock(my_mutex);
 
-    if (player::activePlayer == nullptr || (player::activePlayer && player::activePlayer->getStats()->isDisposed()))
-    {
+    if (player::activePlayer == nullptr
+        || (player::activePlayer && player::activePlayer->getStats()->isDisposed())) {
         /* find active player, because it is nullptr */
-        for (int p=(int)player::visitedPlayers.size()-1; p>=0; p--)
-        {
-            auto plr=player::visitedPlayers[p];
-            if (plr && !plr->getStats()->isDisposed() && plr->getBoard())
-            {
+        for (int p = (int) player::visitedPlayers.size() - 1; p >= 0; p--) {
+            auto plr = player::visitedPlayers[p];
+            if (plr && !plr->getStats()->isDisposed() && plr->getBoard()) {
                 viewPoint::get_instance()->setOwner(plr);
                 player::activePlayer = plr;
                 plr->getStats()->setActive(true);
-                soundManager::getInstance()->setListenerChamber(plr->getBoard()->getInstanceId(),plr->getBoard()->getSize());
-                player::visitedPlayers.erase(player::visitedPlayers.begin()+p);
+                soundManager::getInstance()->setListenerChamber(plr->getBoard()->getInstanceId(),
+                                                                plr->getBoard()->getSize());
+                player::visitedPlayers.erase(player::visitedPlayers.begin() + p);
                 break;
             }
         }
     }
     /* return value can be nullptr, then no active player found*/
-
 
     return player::activePlayer;
 }
@@ -86,18 +78,16 @@ unsigned int player::countVisitedPlayers()
 
 oState player::disposeElement()
 {
-    if (player::activePlayer && this->getStats()->getInstanceId()==player::activePlayer->getStats()->getInstanceId())
-    {
+    if (player::activePlayer
+        && this->getStats()->getInstanceId() == player::activePlayer->getStats()->getInstanceId()) {
         this->getStats()->setActive(false);
         player::activePlayer = nullptr;
     }
-    for (unsigned int cnt = 0; cnt < player::visitedPlayers.size();)
-    {
-        if (player::visitedPlayers[cnt]->getStats()->getInstanceId() == this->getStats()->getInstanceId())
-        {
+    for (unsigned int cnt = 0; cnt < player::visitedPlayers.size();) {
+        if (player::visitedPlayers[cnt]->getStats()->getInstanceId()
+            == this->getStats()->getInstanceId()) {
             player::visitedPlayers.erase(player::visitedPlayers.begin() + cnt);
-        }
-        else
+        } else
             cnt++;
     }
 
@@ -106,11 +96,12 @@ oState player::disposeElement()
 
 bool player::interact(std::shared_ptr<bElem> who)
 {
-    if (who == nullptr || this->getBoard() == nullptr || this->getStats()->isActive() || this->getStats()->isMarked() || bElem::interact(who) == false)
+    if (who == nullptr || this->getBoard() == nullptr || this->getStats()->isActive()
+        || this->getStats()->isMarked() || bElem::interact(who) == false)
         return false;
 
-    if (who->getType() == this->getType() && !this->getStats()->isActive() && !this->getStats()->isMarked())
-    {
+    if (who->getType() == this->getType() && !this->getStats()->isActive()
+        && !this->getStats()->isMarked()) {
 #ifdef _VerbousMode_
         std::cout << "Adding new avatar\n";
 #endif
@@ -121,44 +112,40 @@ bool player::interact(std::shared_ptr<bElem> who)
     return true;
 }
 
-
-
 bool player::stepOnElement(std::shared_ptr<bElem> step)
 {
     bool r = bElem::stepOnElement(step);
-    if (this->getBoard() && this->getStats()->isActive() && this->getBoard()->visitPosition(this->getStats()->getMyPosition()))
-    {
-        this->getStats()->setStats(STEPS,this->getStats()->getStats(STEPS)+(bElem::randomNumberGenerator()%2));
-        this->vRadius=2+(std::log(this->getStats()->getStats(STEPS))/2);
-        this->getStats()->setPoints(TOTAL,this->getStats()->getPoints(TOTAL)+1);
+    if (this->getBoard() && this->getStats()->isActive()
+        && this->getBoard()->visitPosition(this->getStats()->getMyPosition())) {
+        this->getStats()->setStats(STEPS,
+                                   this->getStats()->getStats(STEPS)
+                                       + (bElem::randomNumberGenerator() % 2));
+        this->vRadius = 2 + (std::log(this->getStats()->getStats(STEPS)) / 2);
+        this->getStats()->setPoints(TOTAL, this->getStats()->getPoints(TOTAL) + 1);
     }
     if (r)
         inputManager::getInstance()->hapticKick(1.0);
     return r;
 }
 
-
-
 bool player::mechanics()
 {
-
     bool res = bElem::mechanics();
-    controlItem currentCtrlItem=inputManager::getInstance()->getCtrlItem();
-    if (this->getStats()->isMoving())
-    {
+    controlItem currentCtrlItem = inputManager::getInstance()->getCtrlItem();
+    if (this->getStats()->isMoving()) {
         if (bElem::getCntr() % 3 == 0)
             this->animPh++;
         return true;
     }
-    if(!res || !this->getStats()->isActive()) return res;
+    if (!res || !this->getStats()->isActive())
+        return res;
     coords3d c3d;
-    c3d.x = (float)this->getStats()->getMyPosition().x;
-    c3d.y = (float)this->getStats()->getMyPosition().y;
+    c3d.x = (float) this->getStats()->getMyPosition().x;
+    c3d.y = (float) this->getStats()->getMyPosition().y;
     c3d.z = 5;
     coords3d vel;
-    switch (this->getStats()->getMyDirection())
-    {
-        case dir::direction::UP:
+    switch (this->getStats()->getMyDirection()) {
+    case dir::direction::UP:
         vel = {0, -1, 0};
         break;
     case dir::direction::LEFT:
@@ -174,22 +161,19 @@ bool player::mechanics()
         vel = {0, 0, 0};
     }
 
-    soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId(),this->getBoard()->getSize());
+    soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId(),
+                                                    this->getBoard()->getSize());
     soundManager::getInstance()->setListenerOrientation({0, 0, -1});
     soundManager::getInstance()->setListenerPosition(c3d);
     if (!res)
         return false;
 
-
-
-    switch (currentCtrlItem.type)
-    {
+    switch (currentCtrlItem.type) {
     case -1:
         this->animPh = 0;
         break;
     case 0:
-        if (this->moveInDirection(currentCtrlItem.dir))
-        {
+        if (this->moveInDirection(currentCtrlItem.dir)) {
             this->getStats()->setFacing(this->getStats()->getMyDirection());
             viewPoint::get_instance()->setOwner(shared_from_this());
             //
@@ -198,20 +182,18 @@ bool player::mechanics()
 
     case 1:
         this->getStats()->setFacing(currentCtrlItem.dir);
-        if (this->shootGun())
-        {
+        if (this->shootGun()) {
             this->animPh += (bElem::getCntr() % 2);
         }
         break;
-    case 2:
-    {
+    case 2: {
         if (this->getElementInDirection(currentCtrlItem.dir) == nullptr)
             return false;
         this->getStats()->setFacing(currentCtrlItem.dir);
-        std::shared_ptr<bElem> be=this->getElementInDirection(currentCtrlItem.dir);
+        std::shared_ptr<bElem> be = this->getElementInDirection(currentCtrlItem.dir);
         if (be->getAttrs()->isInteractive() && be->interact(shared_from_this()))
             return true;
-        if(be->getAttrs()->isCollectible())
+        if (be->getAttrs()->isCollectible())
             this->collect(be);
         this->animPh++;
         break;
@@ -221,12 +203,11 @@ bool player::mechanics()
         this->getStats()->setWaiting(GoEConstants::_mov_delay);
         break;
     case 4:
-        if (this->dragInDirection(currentCtrlItem.dir))
-        {
-            this->getStats()->setFacing((dir::direction)(((int)this->getStats()->getMyDirection() + 2) % 4)); /* we face backwards while dragging */
-        }
-        else if (this->moveInDirection(currentCtrlItem.dir))
-        {
+        if (this->dragInDirection(currentCtrlItem.dir)) {
+            this->getStats()->setFacing(
+                (dir::direction)(((int) this->getStats()->getMyDirection() + 2)
+                                 % 4)); /* we face backwards while dragging */
+        } else if (this->moveInDirection(currentCtrlItem.dir)) {
             this->getStats()->setFacing(this->getStats()->getMyDirection());
         }
         break;
@@ -235,22 +216,20 @@ bool player::mechanics()
             this->getAttrs()->getInventory()->getUsable()->interact(shared_from_this());
         this->getStats()->setWaiting(1);
         break;
-    case 5:
-    {
+    case 5: {
         this->getAttrs()->getInventory()->nextGun();
-        this->getStats()->setWaiting(GoEConstants::_mov_delay*2);
+        this->getStats()->setWaiting(GoEConstants::_mov_delay * 2);
         break;
     }
     case 6:
         this->kill();
         break;
     case 9:
-        std::shared_ptr<bElem> _be=this->getAttrs()->getInventory()->getUsable();
-        this->getStats()->setWaiting(GoEConstants::_mov_delay*2);
-        if(_be)
+        std::shared_ptr<bElem> _be = this->getAttrs()->getInventory()->getUsable();
+        this->getStats()->setWaiting(GoEConstants::_mov_delay * 2);
+        if (_be)
             return this->dropItem(_be->getStats()->getInstanceId());
         break;
-
     }
     return true;
 }
@@ -258,10 +237,8 @@ bool player::mechanics()
 bool player::shootGun()
 {
     std::shared_ptr<bElem> gun = this->getAttrs()->getInventory()->getActiveWeapon();
-    if (gun != nullptr)
-    {
-        if (gun->use(shared_from_this()))
-        {
+    if (gun != nullptr) {
+        if (gun->use(shared_from_this())) {
             this->getStats()->setWaiting(GoEConstants::_interactedTime * 2);
         };
         return true;
@@ -270,16 +247,10 @@ bool player::shootGun()
     return false;
 }
 
-
-
 float player::getViewRadius() const
 {
     return this->vRadius;
 }
-
-
-
-
 
 int player::getType() const
 {
@@ -288,8 +259,8 @@ int player::getType() const
 
 int player::getAnimPh() const
 {
-    if (this->getStats()->isTeleporting() || this->getStats()->isDying() || this->getStats()->isDestroying() || !this->getStats()->isActive())
+    if (this->getStats()->isTeleporting() || this->getStats()->isDying()
+        || this->getStats()->isDestroying() || !this->getStats()->isActive())
         return bElem::getAnimPh();
     return this->animPh;
 }
-

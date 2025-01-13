@@ -15,17 +15,8 @@ menuScreen::~menuScreen()
  * the menu should consist of setting menu, game starting, and game stopping
  *
  */
-void menuScreen::showMainWindow()
-{
+void menuScreen::showMainWindow() {}
 
-}
+void menuScreen::drawTitle() {}
 
-void menuScreen::drawTitle()
-{
-
-}
-
-void menuScreen::showSettingsWindow()
-{
-
-}
+void menuScreen::showSettingsWindow() {}

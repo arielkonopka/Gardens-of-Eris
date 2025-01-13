@@ -21,10 +21,8 @@
  */
 #include "goldenApple.h"
 
-
 unsigned int goldenApple::appleNumber = 0;
 std::vector<std::shared_ptr<bElem>> goldenApple::apples;
-
 
 int goldenApple::getType() const
 {
@@ -33,61 +31,50 @@ int goldenApple::getType() const
 
 bool goldenApple::hurt(int points)
 {
-    if (this->getAttrs()->getSubtype() != 1)
-    {
+    if (this->getAttrs()->getSubtype() != 1) {
         this->getAttrs()->setSubtype(1);
         this->getAttrs()->setInteractive(true);
-        for (unsigned int cnt = 0; cnt < goldenApple::apples.size();)
-        {
-            if (!goldenApple::apples[cnt] || goldenApple::apples[cnt]->getStats()->getInstanceId() == this->getStats()->getInstanceId())
-            {
+        for (unsigned int cnt = 0; cnt < goldenApple::apples.size();) {
+            if (!goldenApple::apples[cnt]
+                || goldenApple::apples[cnt]->getStats()->getInstanceId()
+                       == this->getStats()->getInstanceId()) {
                 goldenApple::apples.erase(goldenApple::apples.begin() + cnt);
-            }
-            else
+            } else
                 cnt++;
         }
     }
-    goldenApple::appleNumber=goldenApple::apples.size();
+    goldenApple::appleNumber = goldenApple::apples.size();
     return bElem::hurt(points);
 }
 
 bool goldenApple::destroy()
 {
-
-    if(!this->getStats()->isDestroying())
+    if (!this->getStats()->isDestroying())
         return this->explode(2.5);
     return false;
 }
 
-
-
-
 bool goldenApple::additionalProvisioning(int subtype)
 {
-    if(!explosives::additionalProvisioning(subtype))
+    if (!explosives::additionalProvisioning(subtype))
         return false;
-    if(subtype==0)
-    {
+    if (subtype == 0) {
         goldenApple::apples.push_back(shared_from_this());
     }
-    goldenApple::appleNumber=goldenApple::apples.size();
+    goldenApple::appleNumber = goldenApple::apples.size();
     return true;
-
 }
-
 
 oState goldenApple::disposeElement()
 {
-    for (unsigned int cnt = 0; cnt < goldenApple::apples.size();)
-    {
-        if (goldenApple::apples[cnt]->getStats()->getInstanceId() == this->getStats()->getInstanceId())
-        {
+    for (unsigned int cnt = 0; cnt < goldenApple::apples.size();) {
+        if (goldenApple::apples[cnt]->getStats()->getInstanceId()
+            == this->getStats()->getInstanceId()) {
             goldenApple::apples.erase(goldenApple::apples.begin() + cnt);
-        }
-        else
+        } else
             cnt++;
     }
-    goldenApple::appleNumber=goldenApple::apples.size();
+    goldenApple::appleNumber = goldenApple::apples.size();
     return bElem::disposeElement();
 }
 
@@ -109,14 +96,13 @@ bool goldenApple::mechanics()
 {
     if (!this->getStats()->isActive() || !explosives::mechanics())
         return false;
-    std::shared_ptr<bElem> _owner=this->getStats()->getCollector().lock();
-    if ( this->getAttrs()->getSubtype() == 0 || !this->getStats()->isCollected() || !_owner || !_owner->getBoard() )
-    {
+    std::shared_ptr<bElem> _owner = this->getStats()->getCollector().lock();
+    if (this->getAttrs()->getSubtype() == 0 || !this->getStats()->isCollected() || !_owner
+        || !_owner->getBoard()) {
         return false;
     }
     int e = _owner->getAttrs()->getEnergy();
-    if (e < 100)
-    {
+    if (e < 100) {
         this->getStats()->setWaiting(55);
         _owner->getAttrs()->setEnergy(e + 5);
         this->hurt(5);
@@ -124,9 +110,9 @@ bool goldenApple::mechanics()
     return true;
 }
 
-bool goldenApple::interact(std::shared_ptr<bElem>who)
+bool goldenApple::interact(std::shared_ptr<bElem> who)
 {
-    if(!this->getAttrs()->isInteractive() || !who || !bElem::interact(who))
+    if (!this->getAttrs()->isInteractive() || !who || !bElem::interact(who))
         return false;
     this->getStats()->setWaiting(55);
     this->getStats()->setInteracted(55);
@@ -139,22 +125,19 @@ bool goldenApple::interact(std::shared_ptr<bElem>who)
  * @brief collectOnAction - when collected, checks, if it is a first collect by the collector, if so, sets itself active.
  * enables its own mechanics when collected and is of subtype other than zero
  */
-bool goldenApple::collectOnAction(bool collected, std::shared_ptr<bElem>who)
+bool goldenApple::collectOnAction(bool collected, std::shared_ptr<bElem> who)
 {
-    if(collected && who && this->getAttrs()->getSubtype()!=0)
-    {
-        if(who->getAttrs()->getInventory()->countTokens(this->getType(),this->getAttrs()->getSubtype())<=1)
+    if (collected && who && this->getAttrs()->getSubtype() != 0) {
+        if (who->getAttrs()->getInventory()->countTokens(this->getType(),
+                                                         this->getAttrs()->getSubtype())
+            <= 1)
             this->getStats()->setActive(true);
         this->registerLiveElement(shared_from_this());
-    }
-    else
-    {
+    } else {
         this->getStats()->setActive(false);
         this->deregisterLiveElement(this->getStats()->getInstanceId());
         this->getStats()->setActivatedMechanics(false);
     }
-    bool r=bElem::collectOnAction(collected,who);
+    bool r = bElem::collectOnAction(collected, who);
     return r;
 }
-
-

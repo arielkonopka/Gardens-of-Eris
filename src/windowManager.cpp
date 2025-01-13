@@ -4,6 +4,4 @@
 #include "windowManager.h"
 windowManager::windowManager() {}
 
-windowManager::~windowManager() {
-
-}
+windowManager::~windowManager() {}
