@@ -23,98 +23,78 @@
 #include "plainGun.h"
 #include "viewPoint.h"
 
-
-
-
-
 std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
 {
-    std::shared_ptr<bElem> pm=elementFactory::generateAnElement<plainMissile>(who->getBoard(),0);
+    std::shared_ptr<bElem> pm = elementFactory::generateAnElement<plainMissile>(who->getBoard(), 0);
     pm->getStats()->setStatsOwner(who);
     who->lockThisObject(pm);
     pm->getStats()->setMyDirection(who->getStats()->getFacing());
     pm->getStats()->setFacing(who->getStats()->getFacing());
     pm->stepOnElement(who->getElementInDirection(who->getStats()->getFacing()));
     pm->getAttrs()->setEnergy(this->getAttrs()->getEnergy());
-    if(who->getType()==bElemTypes::_player)
+    if (who->getType() == bElemTypes::_player)
         viewPoint::get_instance()->setOwner(pm);
     return pm;
 }
 
-
 bool plainGun::additionalProvisioning(int subtype)
 {
-    if(!bElem::additionalProvisioning(subtype))
+    if (!bElem::additionalProvisioning(subtype))
         return false;
     this->registerLiveElement(shared_from_this());
     return true;
 }
-
-
 
 int plainGun::getType() const
 {
     return bElemTypes::_plainGun;
 }
 
-
-
 bool plainGun::use(std::shared_ptr<bElem> who)
 {
     std::shared_ptr<bElem> myel;
 #ifdef _VerbousMode_
-    if (who==nullptr)
-    {
-        std::cout<<"Who is nullptr for plain gun!";
+    if (who == nullptr) {
+        std::cout << "Who is nullptr for plain gun!";
         return false;
     }
-  ma
+    ma
 #endif
-   if (this->getStats()->isWaiting() || (this->getAttrs()->getAmmo()<=0 && (this->getAttrs()->getSubtype()%2)==0))
-        return false;
+        if (this->getStats()->isWaiting()
+            || (this->getAttrs()->getAmmo() <= 0
+                && (this->getAttrs()->getSubtype() % 2) == 0)) return false;
     this->getStats()->setWaiting(GoEConstants::_plainGunCharge);
-    if(!this->getStats()->isCollected())
-        who=shared_from_this();
-    myel=who->getElementInDirection(who->getStats()->getFacing());
-    if(myel!=nullptr)
-    {
-        if (this->getAttrs()->getAmmo()>0 || this->getAttrs()->getSubtype()%2==1)
-        {
-
+    if (!this->getStats()->isCollected())
+        who = shared_from_this();
+    myel = who->getElementInDirection(who->getStats()->getFacing());
+    if (myel != nullptr) {
+        if (this->getAttrs()->getAmmo() > 0 || this->getAttrs()->getSubtype() % 2 == 1) {
             coords3d c3d;
-            c3d.x=who->getStats()->getMyPosition().x*32+who->getOffset().x;
-            c3d.z=who->getStats()->getMyPosition().y*32+who->getOffset().y;
-            c3d.y=50;
-            this->playSound("use","shoot");
-            if (myel->getAttrs()->isSteppable()==true)
-            {
+            c3d.x = who->getStats()->getMyPosition().x * 32 + who->getOffset().x;
+            c3d.z = who->getStats()->getMyPosition().y * 32 + who->getOffset().y;
+            c3d.y = 50;
+            this->playSound("use", "shoot");
+            if (myel->getAttrs()->isSteppable() == true) {
                 this->createProjectible(who);
-            }
-            else if (myel->getAttrs()->isKillable() )
-            {
+            } else if (myel->getAttrs()->isKillable()) {
                 myel->hurt(this->getAttrs()->getEnergy());
             }
-            if (this->getAttrs()->getSubtype()%2==0)
-            {
-                this->getAttrs()->setAmmo(this->getAttrs()->getAmmo()-1);
-                this->getAttrs()->setEnergy(this->getAttrs()->getEnergy()-(this->getAttrs()->getEnergy()*0.2));
-
+            if (this->getAttrs()->getSubtype() % 2 == 0) {
+                this->getAttrs()->setAmmo(this->getAttrs()->getAmmo() - 1);
+                this->getAttrs()->setEnergy(this->getAttrs()->getEnergy()
+                                            - (this->getAttrs()->getEnergy() * 0.2));
             }
         }
-
     }
     return true;
 }
 
-
-
 bool plainGun::mechanics()
 {
-    bool res=bElem::mechanics();
-    if(this->getAttrs()->getEnergy()<this->maxEnergy)
-    {
-        if (bElem::getCntr()%5==0)
-            this->getAttrs()->setEnergy(this->getAttrs()->getEnergy()+1);
+    bool res = bElem::mechanics();
+    if (this->getAttrs()->getEnergy() < this->maxEnergy) {
+        if (bElem::getCntr() % 5 == 0)
+            this->getAttrs()->setEnergy(this->getAttrs()->getEnergy() + 1);
     }
     return res;
 }

@@ -22,28 +22,20 @@
 #include "inventory.h"
 #include "bElem.h"
 
-
-
-
 void inventory::changeOwner(std::shared_ptr<bElem> who)
 {
-    auto chg=[](std::shared_ptr<bElem>& w,std::vector<std::shared_ptr<bElem>>& vec)
-    {
-        for(auto w:vec)
-        {
+    auto chg = [](std::shared_ptr<bElem> &w, std::vector<std::shared_ptr<bElem>> &vec) {
+        for (auto w : vec) {
             w->getStats()->setCollector(w);
         }
-
     };
-    this->owner=who;
-    chg(who,this->weapons);
-    chg(who,this->mods);
-    chg(who,this->tokens);
-    chg(who,this->usables);
-    chg(who,this->keys);
+    this->owner = who;
+    chg(who, this->weapons);
+    chg(who, this->mods);
+    chg(who, this->tokens);
+    chg(who, this->usables);
+    chg(who, this->keys);
 }
-
-
 
 /**
 * @brief Removes a collectible item from the inventory based on its instance ID.
@@ -55,26 +47,24 @@ void inventory::changeOwner(std::shared_ptr<bElem> who)
 * @return true if the item was successfully removed, false otherwise.
 */
 
-bool inventory::removeCollectibleFromInventory(unsigned long  int instance)
+bool inventory::removeCollectibleFromInventory(unsigned long int instance)
 {
-    return (this->retrieveCollectibleFromInventory(instance,true)==nullptr);
+    return (this->retrieveCollectibleFromInventory(instance, true) == nullptr);
 }
 
-std::shared_ptr<bElem> inventory::retrieveCollectibleFromInventory(unsigned long int instanceId,bool removeIt)
+std::shared_ptr<bElem> inventory::retrieveCollectibleFromInventory(unsigned long int instanceId,
+                                                                   bool removeIt)
 {
-    auto removeFromColl=[&](std::vector<std::shared_ptr<bElem>>& _vect,unsigned long int _inst )
-    {
+    auto removeFromColl = [&](std::vector<std::shared_ptr<bElem>> &_vect, unsigned long int _inst) {
         std::shared_ptr<bElem> clc;
-        for(unsigned int c=0; c<_vect.size();)
-        {
-            if(_vect[c]->getStats()->getInstanceId()==_inst)
-            {
+        for (unsigned int c = 0; c < _vect.size();) {
+            if (_vect[c]->getStats()->getInstanceId() == _inst) {
                 _vect[c]->getStats()->setCollected(false);
-                clc=_vect[c];
-                if(removeIt)
-                {
-                    this->decrementTokenNumber({_vect[c]->getType(),_vect[c]->getAttrs()->getSubtype()});
-                    _vect.erase(_vect.begin()+c);
+                clc = _vect[c];
+                if (removeIt) {
+                    this->decrementTokenNumber(
+                        {_vect[c]->getType(), _vect[c]->getAttrs()->getSubtype()});
+                    _vect.erase(_vect.begin() + c);
                 }
                 return clc;
             }
@@ -83,28 +73,28 @@ std::shared_ptr<bElem> inventory::retrieveCollectibleFromInventory(unsigned long
         clc.reset();
         return clc;
     };
-    std::shared_ptr<bElem> e=removeFromColl(this->weapons,instanceId);
-    if(!e) e= removeFromColl(this->usables,instanceId);
-    if(!e) e= removeFromColl(this->tokens,instanceId);
-    if(!e) e= removeFromColl(this->keys,instanceId);
-    if(!e) e= removeFromColl(this->mods,instanceId);
+    std::shared_ptr<bElem> e = removeFromColl(this->weapons, instanceId);
+    if (!e)
+        e = removeFromColl(this->usables, instanceId);
+    if (!e)
+        e = removeFromColl(this->tokens, instanceId);
+    if (!e)
+        e = removeFromColl(this->keys, instanceId);
+    if (!e)
+        e = removeFromColl(this->mods, instanceId);
     return e;
 }
 
-
-std::shared_ptr<bElem> inventory::getKey(int type, int subtype,bool removeIt)
+std::shared_ptr<bElem> inventory::getKey(int type, int subtype, bool removeIt)
 {
     /* finds a key in the inventory and returns it, when nothing found, nullptr is returned*/
     std::shared_ptr<bElem> res;
-    for(size_t c=0; c<this->keys.size(); c++)
-    {
-        if(this->keys[c]->getType()==type && this->keys[c]->getAttrs()->getSubtype()==subtype)
-        {
-            res=this->keys[c];
-            if (removeIt==true)
-            {
-                this->decrementTokenNumber({type,subtype});
-                this->keys.erase(this->keys.begin()+c);
+    for (size_t c = 0; c < this->keys.size(); c++) {
+        if (this->keys[c]->getType() == type && this->keys[c]->getAttrs()->getSubtype() == subtype) {
+            res = this->keys[c];
+            if (removeIt == true) {
+                this->decrementTokenNumber({type, subtype});
+                this->keys.erase(this->keys.begin() + c);
             }
             return res;
         }
@@ -114,34 +104,30 @@ std::shared_ptr<bElem> inventory::getKey(int type, int subtype,bool removeIt)
 
 int inventory::countTokens(int type, int subtype)
 {
-    if(this->tokenNumbers.find({type,subtype})!= this->tokenNumbers.end())
-    {
+    if (this->tokenNumbers.find({type, subtype}) != this->tokenNumbers.end()) {
         tType token;
-        token.tokenType=type;
-        token.tokenSubtype=subtype;
-        int result=this->tokenNumbers[token];
+        token.tokenType = type;
+        token.tokenSubtype = subtype;
+        int result = this->tokenNumbers[token];
         return result;
-
     }
     return 0;
 }
 
-
-
 std::shared_ptr<bElem> inventory::getUsable()
 {
-    if(this->usables.size()<=0)
+    if (this->usables.size() <= 0)
         return nullptr;
-    if(!this->usables[this->uPos]->getStats()->isCollected())
+    if (!this->usables[this->uPos]->getStats()->isCollected())
         this->nextUsable();
     return this->usables[this->uPos];
 }
 
 bool inventory::nextUsable()
 {
-    if (this->usables.size()<=0)
+    if (this->usables.size() <= 0)
         return false;
-    this->uPos=this->cycleElement(this->usables,this->uPos);
+    this->uPos = this->cycleElement(this->usables, this->uPos);
     return true;
 }
 
@@ -150,31 +136,28 @@ here we care about the sequence, so we move the other elements. that would be a 
 */
 bool inventory::removeActiveWeapon()
 {
-    if((unsigned int)this->wPos>=this->weapons.size())
-    {
+    if ((unsigned int) this->wPos >= this->weapons.size()) {
         return false;
     }
-    this->decrementTokenNumber({this->weapons.at(this->wPos)->getType(),this->weapons.at(this->wPos)->getAttrs()->getSubtype()});
+    this->decrementTokenNumber({this->weapons.at(this->wPos)->getType(),
+                                this->weapons.at(this->wPos)->getAttrs()->getSubtype()});
 
-   std::shared_ptr<bElem> be_=this->weapons.at(this->wPos);
-    this->weapons.erase(this->weapons.begin()+this->wPos);
-    if(!this->weapons.empty())
-        this->wPos=this->wPos%this->weapons.size();
+    std::shared_ptr<bElem> be_ = this->weapons.at(this->wPos);
+    this->weapons.erase(this->weapons.begin() + this->wPos);
+    if (!this->weapons.empty())
+        this->wPos = this->wPos % this->weapons.size();
     else
-        this->wPos=0;
+        this->wPos = 0;
 
     be_->disposeElement();
     return true;
 }
 
-
 bool inventory::runLives()
 {
-    auto rl=[](std::vector<std::shared_ptr<bElem>> in)
-    {
-        for(auto e:in)
-        {
-            if(e->getStats()->hasActivatedMechanics())
+    auto rl = [](std::vector<std::shared_ptr<bElem>> in) {
+        for (auto e : in) {
+            if (e->getStats()->hasActivatedMechanics())
                 e->mechanics();
         }
     };
@@ -186,107 +169,101 @@ bool inventory::runLives()
     return true;
 }
 
-
 std::shared_ptr<bElem> inventory::getActiveWeapon()
 {
-    if (this->weapons.size()<=0)
+    if (this->weapons.size() <= 0)
         return nullptr;
-    if(this->weapons.empty())
-        this->wPos=0;
+    if (this->weapons.empty())
+        this->wPos = 0;
     else
-        this->wPos=this->wPos%this->weapons.size();
-    if (this->weapons[this->wPos]->getAttrs()->getAmmo()<=0 || !this->weapons[this->wPos]->getStats()->isCollected())
-    {
+        this->wPos = this->wPos % this->weapons.size();
+    if (this->weapons[this->wPos]->getAttrs()->getAmmo() <= 0
+        || !this->weapons[this->wPos]->getStats()->isCollected()) {
         this->removeActiveWeapon();
         return nullptr; // We will remove empty Weapons recursively, if it is necessary
     }
     return this->weapons[this->wPos];
 }
-int inventory::cycleElement(std::vector<std::shared_ptr<bElem>>& vec, int& pos)
+int inventory::cycleElement(std::vector<std::shared_ptr<bElem>> &vec, int &pos)
 {
-    int p=pos;
-    if(vec.empty())
+    int p = pos;
+    if (vec.empty())
         return 0;
     vec[p]->getStats()->setActive(false);
-    p=(p+1) % vec.size();
+    p = (p + 1) % vec.size();
     vec[p]->getStats()->setActive(true);
     return p;
 }
 
-
-
 bool inventory::nextGun()
 {
-    if (this->weapons.size()<=0)
+    if (this->weapons.size() <= 0)
         return false;
-    this->wPos=this->cycleElement(this->weapons,this->wPos);
+    this->wPos = this->cycleElement(this->weapons, this->wPos);
     return true;
 }
 
 bool inventory::addToInventory(std::shared_ptr<bElem> what)
 {
-    bool res=false;
-    if(what==nullptr)
+    bool res = false;
+    if (what == nullptr)
         return false;
-    if(what->getStats()->isDying() || what->getStats()->isTeleporting() || what->getStats()->isDestroying())
+    if (what->getStats()->isDying() || what->getStats()->isTeleporting()
+        || what->getStats()->isDestroying())
         return false;
 
     what->getStats()->setCollector(this->owner.lock());
-    std::shared_ptr<bElem> o=this->owner.lock();
-    if(o)
-        o->getStats()->setPoints(TOTAL,o->getStats()->getPoints(TOTAL)+1);
-    this->incrementTokenNumber({what->getType(),what->getAttrs()->getSubtype()});
-    if(what->getType()==bElemTypes::_key)
-    {
+    std::shared_ptr<bElem> o = this->owner.lock();
+    if (o)
+        o->getStats()->setPoints(TOTAL, o->getStats()->getPoints(TOTAL) + 1);
+    this->incrementTokenNumber({what->getType(), what->getAttrs()->getSubtype()});
+    if (what->getType() == bElemTypes::_key) {
         this->keys.push_back(what);
         return true;
     }
 
-    if (what->getAttrs()->isWeapon()==true)
-    {
+    if (what->getAttrs()->isWeapon() == true) {
         this->weapons.push_back(what);
         return true;
     }
-    if (what->getAttrs()->isInteractive())
-    {
+    if (what->getAttrs()->isInteractive()) {
         this->usables.push_back(what);
         return true;
     }
-    if(what->getAttrs()->isMod()==true)
-    {
+    if (what->getAttrs()->isMod() == true) {
         this->mods.push_back(what);
         return true;
     }
-    if(what->getAttrs()->isCollectible()==true && what->getType()!=bElemTypes::_rubishType)
-    {
+    if (what->getAttrs()->isCollectible() == true && what->getType() != bElemTypes::_rubishType) {
         // we do not collect stash items, we already merged its inventory
-        if(what->getType()!=bElemTypes::_stash)
-            this->tokens.push_back(what); // the collect method should remove it from the board properly
+        if (what->getType() != bElemTypes::_stash)
+            this->tokens.push_back(
+                what); // the collect method should remove it from the board properly
         return true;
     }
-    if(what->getAttrs()->canCollect()==true)
-    {
+    if (what->getAttrs()->canCollect() == true) {
         /* this is probably a stash, or something like that. that is why, when we create an object, that shoots infinite ammo, it is better to have gun in non standard places, it would not be picked up that way*/
         this->mergeInventory(what->getAttrs()->getInventory());
         what->getAttrs()->setInventory(nullptr);
         what->disposeElement();
-        res=true;
+        res = true;
     }
 
     return res;
 }
 
-std::shared_ptr<bElem> inventory::requestToken(int type, int subType,bool removeIt)
+std::shared_ptr<bElem> inventory::requestToken(int type, int subType, bool removeIt)
 {
-    for(size_t c=0; c<this->tokens.size(); c++)
-    {
-        if(this->tokens[c]->getType()==type && (subType==-1 || this->tokens[c]->getAttrs()->getSubtype()==subType)) // negative value of subtype will be ignored
+    for (size_t c = 0; c < this->tokens.size(); c++) {
+        if (this->tokens[c]->getType() == type
+            && (subType == -1
+                || this->tokens[c]->getAttrs()->getSubtype()
+                       == subType)) // negative value of subtype will be ignored
         {
-            std::shared_ptr<bElem> token=this->tokens[c];
-            if(removeIt)
-            {
-                this->decrementTokenNumber( {type,token->getAttrs()->getSubtype()});
-                this->tokens.erase(this->tokens.begin()+c);
+            std::shared_ptr<bElem> token = this->tokens[c];
+            if (removeIt) {
+                this->decrementTokenNumber({type, token->getAttrs()->getSubtype()});
+                this->tokens.erase(this->tokens.begin() + c);
             }
             return token;
         }
@@ -294,48 +271,38 @@ std::shared_ptr<bElem> inventory::requestToken(int type, int subType,bool remove
     return nullptr;
 }
 
-
 int inventory::requestTokens(int number, int type, int subType)
 {
-    int num=0;
-    for(size_t c=0; c<this->tokens.size() && num<number;)
-    {
-        if(this->tokens[c]->getType()==type && (this->tokens[c]->getAttrs()->getSubtype()==subType || subType==-1) && num<number)
-        {
+    int num = 0;
+    for (size_t c = 0; c < this->tokens.size() && num < number;) {
+        if (this->tokens[c]->getType() == type
+            && (this->tokens[c]->getAttrs()->getSubtype() == subType || subType == -1)
+            && num < number) {
             this->removeToken(c); // this also disposes the token! Use it with care
             num++;
-        }
-        else  c++;
+        } else
+            c++;
     }
     return num;
 }
 
-
 void inventory::incrementTokenNumber(tType token)
 {
-    if(this->tokenNumbers.find(token)!= this->tokenNumbers.end())
-    {
-        this->tokenNumbers[token]+=1;
-    }
-    else
-    {
-        this->tokenNumbers[token]=1;
+    if (this->tokenNumbers.find(token) != this->tokenNumbers.end()) {
+        this->tokenNumbers[token] += 1;
+    } else {
+        this->tokenNumbers[token] = 1;
     }
 }
 
 void inventory::decrementTokenNumber(tType token)
 {
-    if(this->tokenNumbers.find(token)!= this->tokenNumbers.end())
-    {
-        this->tokenNumbers[token]-=1;
+    if (this->tokenNumbers.find(token) != this->tokenNumbers.end()) {
+        this->tokenNumbers[token] -= 1;
 
+    } else {
+        this->tokenNumbers[token] = 1;
     }
-    else
-    {
-        this->tokenNumbers[token]=1;
-
-    }
-
 }
 
 /**
@@ -345,26 +312,25 @@ void inventory::decrementTokenNumber(tType token)
 */
 bool inventory::mergeInventory(std::shared_ptr<inventory> theOtherInventory)
 {
-    if(theOtherInventory.get()==nullptr)
+    if (theOtherInventory.get() == nullptr)
         return false;
-    auto mergeList=[&](std::vector<std::shared_ptr<bElem>>& _vect1,std::vector<std::shared_ptr<bElem>>& _vect2)
-    {
-        for(auto item:_vect1)
-        {
-            this->incrementTokenNumber({item->getType(),item->getAttrs()->getSubtype()});
+    auto mergeList = [&](std::vector<std::shared_ptr<bElem>> &_vect1,
+                         std::vector<std::shared_ptr<bElem>> &_vect2) {
+        for (auto item : _vect1) {
+            this->incrementTokenNumber({item->getType(), item->getAttrs()->getSubtype()});
             item->getStats()->setCollected(false);
-            item->collectOnAction(false,nullptr); // we let the element to react on dropping.
+            item->collectOnAction(false, nullptr); // we let the element to react on dropping.
             item->getStats()->setCollector(this->owner.lock());
             item->getStats()->setCollected(true);
-            item->collectOnAction(true,item->getStats()->getCollector().lock());
+            item->collectOnAction(true, item->getStats()->getCollector().lock());
             _vect2.push_back(item);
         };
     };
-    mergeList(theOtherInventory->weapons,this->weapons);
-    mergeList(theOtherInventory->usables,this->usables);
-    mergeList(theOtherInventory->mods,this->mods);
-    mergeList(theOtherInventory->keys,this->keys);
-    mergeList(theOtherInventory->tokens,this->tokens);
+    mergeList(theOtherInventory->weapons, this->weapons);
+    mergeList(theOtherInventory->usables, this->usables);
+    mergeList(theOtherInventory->mods, this->mods);
+    mergeList(theOtherInventory->keys, this->keys);
+    mergeList(theOtherInventory->tokens, this->tokens);
     theOtherInventory->weapons.clear();
     theOtherInventory->usables.clear();
     theOtherInventory->mods.clear();
@@ -382,59 +348,52 @@ bool inventory::removeToken(int position)
 {
     tType token;
     /* removes a token from tokens pocket, warning, it performs disposeElement on it, so it should not be referenced anywhere else!*/
-    if(position>=(int)this->tokens.size())
+    if (position >= (int) this->tokens.size())
         return false;
-    token.tokenType=this->tokens[position]->getType();
-    token.tokenSubtype=this->tokens[position]->getAttrs()->getSubtype();
+    token.tokenType = this->tokens[position]->getType();
+    token.tokenSubtype = this->tokens[position]->getAttrs()->getSubtype();
     this->decrementTokenNumber(token);
     this->tokens[position]->disposeElement();
-    this->tokens.erase(this->tokens.begin()+position);
+    this->tokens.erase(this->tokens.begin() + position);
     return true;
 }
 
 bool inventory::findInInventory(unsigned long int instanceId)
 {
-    auto checkPresence=[](std::vector<std::shared_ptr<bElem>>& v,unsigned int inst)
-    {
-        for(auto k:v)
-            if(k->getStats()->getInstanceId()==inst)
+    auto checkPresence = [](std::vector<std::shared_ptr<bElem>> &v, unsigned int inst) {
+        for (auto k : v)
+            if (k->getStats()->getInstanceId() == inst)
                 return true;
         return false;
     };
-    if(checkPresence(this->keys,instanceId))
+    if (checkPresence(this->keys, instanceId))
         return true;
-    if(checkPresence(this->mods,instanceId))
+    if (checkPresence(this->mods, instanceId))
         return true;
-    if(checkPresence(this->tokens,instanceId))
+    if (checkPresence(this->tokens, instanceId))
         return true;
-    if(checkPresence(this->weapons,instanceId))
+    if (checkPresence(this->weapons, instanceId))
         return true;
-    if(checkPresence(this->mods,instanceId))
+    if (checkPresence(this->mods, instanceId))
         return true;
-    if(checkPresence(this->usables,instanceId))
+    if (checkPresence(this->usables, instanceId))
         return true;
     return false;
 }
 
-
-
 bool inventory::isEmpty()
 {
-    return ((this->keys.size()==0) && (this->mods.size()==0) && (this->tokens.size()==0) && (this->weapons.size()==0));
+    return ((this->keys.size() == 0) && (this->mods.size() == 0) && (this->tokens.size() == 0)
+            && (this->weapons.size() == 0));
 }
-
-
-
 
 void inventory::updateBoard()
 {
-    if(this->owner.expired())
+    if (this->owner.expired())
         return;
-    std::shared_ptr<chamber> board=this->owner.lock()->getBoard();
-    auto updateG=[&](std::vector<std::shared_ptr<bElem>>& _collection)
-    {
-        for(auto w:_collection)
-        {
+    std::shared_ptr<chamber> board = this->owner.lock()->getBoard();
+    auto updateG = [&](std::vector<std::shared_ptr<bElem>> &_collection) {
+        for (auto w : _collection) {
             w->setBoard(board);
         }
     };
@@ -443,16 +402,4 @@ void inventory::updateBoard()
     updateG(this->mods);
     updateG(this->tokens);
     updateG(this->usables);
-
 }
-
-
-
-
-
-
-
-
-
-
-

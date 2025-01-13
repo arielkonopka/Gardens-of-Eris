@@ -21,13 +21,12 @@
  */
 #include "patrollingDrone.h"
 
-
 bool patrollingDrone::additionalProvisioning(int subtype)
 {
-     if(!bElem::additionalProvisioning(subtype))
+    if (!bElem::additionalProvisioning(subtype))
         return false;
     this->getAttrs()->setCollect(true);
-    this->getAttrs()->setEnergy((1024*bElem::randomNumberGenerator())%155);
+    this->getAttrs()->setEnergy((1024 * bElem::randomNumberGenerator()) % 155);
     return true;
 }
 float patrollingDrone::getViewRadius() const
@@ -41,18 +40,20 @@ float patrollingDrone::getViewRadius() const
 bool patrollingDrone::interact(std::shared_ptr<bElem> who)
 {
     bool res = bElem::interact(who);
-    if (res && !this->brained && this->getAttrs()->getSubtype() == 0 && who->getAttrs()->canCollect())
-    {
-        std::shared_ptr<bElem> token = who->getAttrs()->getInventory()->requestToken(bElemTypes::_puppetMasterType, -1,true);
-        if (token)
-        {
+    if (res && !this->brained && this->getAttrs()->getSubtype() == 0
+        && who->getAttrs()->canCollect()) {
+        std::shared_ptr<bElem> token
+            = who->getAttrs()->getInventory()->requestToken(bElemTypes::_puppetMasterType, -1, true);
+        if (token) {
             this->playSound("Boot", "Success");
             this->brained = true;
             this->brainModule = token;
             token->getStats()->setCollector(shared_from_this());
-            token->collectOnAction(true,shared_from_this()); // since we collect the object ourselves, we should also trigger the action
+            token->collectOnAction(
+                true,
+                shared_from_this()); // since we collect the object ourselves, we should also trigger the action
             token->getStats()->setWaiting(55);
-            if(who->getType()==bElemTypes::_player)
+            if (who->getType() == bElemTypes::_player)
                 viewPoint::get_instance()->setOwner(shared_from_this());
             return true;
         }
@@ -65,5 +66,3 @@ int patrollingDrone::getType() const
 {
     return bElemTypes::_patrollingDrone;
 }
-
-

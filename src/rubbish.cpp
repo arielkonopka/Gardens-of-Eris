@@ -22,25 +22,17 @@
 
 #include "rubbish.h"
 
-
-
-
 int rubbish::getType() const
 {
     return bElemTypes::_rubishType;
 }
 
-
-
-
 bool rubbish::mechanics()
 {
-    std::shared_ptr<bElem> t=shared_from_this();
+    std::shared_ptr<bElem> t = shared_from_this();
     this->deregisterLiveElement(this->getStats()->getInstanceId());
-    if( this->getStats()->hasParent() && this->getStats()->getStandingOn().lock()->getAttrs()->canCollect())
+    if (this->getStats()->hasParent()
+        && this->getStats()->getStandingOn().lock()->getAttrs()->canCollect())
         this->getStats()->getStandingOn().lock()->collect(t);
     return false;
 }
-
-
-

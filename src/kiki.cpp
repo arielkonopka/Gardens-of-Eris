@@ -22,72 +22,68 @@
 
 #include "kiki.h"
 
-
-
-
-
-
-bool kiki::mechanics() {
-     if(!bElem::mechanics())
+bool kiki::mechanics()
+{
+    if (!bElem::mechanics())
         return false;
-    auto pos=this->getStats()->getMyPosition();
-    const auto mdir=this->direction;
-    auto e=this->getElementInDirection(mdir);
+    auto pos = this->getStats()->getMyPosition();
+    const auto mdir = this->direction;
+    auto e = this->getElementInDirection(mdir);
 
-    while (e && e->getType()!=this->getType())
-    {
-        if((!e->getAttrs()->isSteppable())&&(!e->getAttrs()->isKillable()))
-        {
+    while (e && e->getType() != this->getType()) {
+        if ((!e->getAttrs()->isSteppable()) && (!e->getAttrs()->isKillable())) {
             this->getStats()->setMyDirection(dir::direction::NODIRECTION);
             this->getStats()->setFacing(dir::direction::NODIRECTION);
-            e=this->getElementInDirection(mdir);
-            while ( e &&
-            (e->getType()!= this->getType() ||
-             (e->getType()==this->getType() && e->getStats()->getMyDirection()!=dir::getOppositeDirection(this->getStats()->getMyDirection())
-             && e->getStats()->getMyDirection()!=dir::direction::NODIRECTION && e->getAttrs()->getSubtype()!=this->getType()+1)))
-            {
-                if(e->getType()==bElemTypes::_boubaType && ((dir::direction)e->getStats()->getMyDirection()==this->direction))
-                {
-                    auto e1=e->getElementInDirection(mdir);
+            e = this->getElementInDirection(mdir);
+            while (e
+                   && (e->getType() != this->getType()
+                       || (e->getType() == this->getType()
+                           && e->getStats()->getMyDirection()
+                                  != dir::getOppositeDirection(this->getStats()->getMyDirection())
+                           && e->getStats()->getMyDirection() != dir::direction::NODIRECTION
+                           && e->getAttrs()->getSubtype() != this->getType() + 1))) {
+                if (e->getType() == bElemTypes::_boubaType
+                    && ((dir::direction) e->getStats()->getMyDirection() == this->direction)) {
+                    auto e1 = e->getElementInDirection(mdir);
                     e->disposeElement();
-                    e=e1;
+                    e = e1;
                     continue;
                 }
-                e=e->getElementInDirection(mdir);
+                e = e->getElementInDirection(mdir);
             }
             return false;
         }
-        e=e->getElementInDirection(mdir);
+        e = e->getElementInDirection(mdir);
     }
-    e=this->getElementInDirection(mdir);
-    while ( e && e->getType()!=this->getType())
-    {
-        if (!e->getAttrs()->isSteppable() && e->getAttrs()->isKillable())
-        {
+    e = this->getElementInDirection(mdir);
+    while (e && e->getType() != this->getType()) {
+    /*
+     *    if (!e->getAttrs()->isSteppable() && e->getAttrs()->isKillable()) {
             e->hurt(kikiSpace::kikiHurts);
         }
-        if(e->getType()!=bElemTypes::_boubaType)
-        {
+    */
+        if (e->getType() != bElemTypes::_boubaType) {
             /**
              * @brief place boubas on steppable elements
              *
              */
-            pos=e->getStats()->getMyPosition();
-            auto ne=elementFactory::generateAnElement<bouba>(this->getBoard(),0);
+            pos = e->getStats()->getMyPosition();
+            auto ne = elementFactory::generateAnElement<bouba>(this->getBoard(), 0);
             ne->getStats()->setMyDirection(mdir);
             ne->getStats()->setFacing(mdir);
             ne->stepOnElement(this->getBoard()->getElement(pos));
-          //  registerLiveElement(ne);
-            e=ne;
+            //  registerLiveElement(ne);
+            e = ne;
         }
-        e->getStats()->setWaiting(boubaSpace::boubaRefresh);
-        e=e->getElementInDirection(mdir);
+   //     e->getStats()->setWaiting(boubaSpace::boubaRefresh);
+        e = e->getElementInDirection(mdir);
     }
     this->getStats()->setWaiting(kikiSpace::kikiWaitTime);
     return true;
 }
 
-int kiki::getType() const {
+int kiki::getType() const
+{
     return bElemTypes::_kikiType;
 }
 
@@ -114,35 +110,35 @@ int kiki::getType() const {
 bool kiki::stepOnElement(std::shared_ptr<bElem> step)
 {
     // Perform basic element behavior (from bElem class).
-    if(!bElem::stepOnElement(step))
+    if (!bElem::stepOnElement(step))
         return false;
 
     // If the subtype of 'kiki' is even, proceed with additional behavior.
-    if(this->getAttrs()->getSubtype() % 2 == 0) {
+    if (this->getAttrs()->getSubtype() % 2 == 0) {
         myUtility::Coords mycoords(this->getStats()->getMyPosition());
-        std::vector<dir::direction> dirs{dir::direction::DOWN,dir::direction::UP,dir::direction::LEFT,dir::direction::RIGHT};
-        for(auto it=0;it<dirs.size();)
-        {
-            if(this->getBoard()->calculateLine(mycoords,dirs[it])<5)
-            {
-                dirs.erase(dirs.begin()+it);
+        std::vector<dir::direction> dirs{dir::direction::DOWN,
+                                         dir::direction::UP,
+                                         dir::direction::LEFT,
+                                         dir::direction::RIGHT};
+        for (auto it = 0; it < dirs.size();) {
+            if (this->getBoard()->calculateLine(mycoords, dirs[it]) < 5) {
+                dirs.erase(dirs.begin() + it);
                 continue;
             }
             it++;
         }
-        if(dirs.size()==0)
-        {
+        if (dirs.size() == 0) {
             this->getAttrs()->setSubtype(this->getType() + 1);
             this->getStats()->setFacing(dir::direction::NODIRECTION);
             this->getStats()->setMyDirection(dir::direction::NODIRECTION);
             return true;
         }
-        auto md=dirs[this->randomNumberGenerator()%dirs.size()];
+        auto md = dirs[this->randomNumberGenerator() % dirs.size()];
 
         // Update the element's facing direction and its primary movement direction.
         this->getStats()->setFacing(md);
         this->getStats()->setMyDirection(md);
-        this->direction=md;
+        this->direction = md;
         // Check the element in the direction of movement.
         // Register the element as a live element on the board.
         auto e = this->getElementInDirection(md);
@@ -155,7 +151,8 @@ bool kiki::stepOnElement(std::shared_ptr<bElem> step)
             // If we can't move further, create a 'terminator' element.
             if (!e1 || !e1->getAttrs()->isSteppable()) {
                 // Generate the 'terminator' element and set its direction.
-                auto terminator = elementFactory::generateAnElement<kiki>(this->getBoard(), this->getType() + 1);
+                auto terminator = elementFactory::generateAnElement<kiki>(this->getBoard(),
+                                                                          this->getType() + 1);
                 terminator->getStats()->setMyDirection(dir::getOppositeDirection(md));
                 terminator->getStats()->setFacing(dir::getOppositeDirection(md));
                 // Step on the last valid element.

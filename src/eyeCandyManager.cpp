@@ -1,15 +1,16 @@
 #include "eyeCandyManager.h"
 
-eyecandyManager& eyecandyManager::getInstance()
+eyecandyManager &eyecandyManager::getInstance()
 {
     static eyecandyManager instance;
     return instance;
 }
 
 eyecandyManager::eyecandyManager()
-        : pixelMap(nullptr)
+    : pixelMap(nullptr)
 {
-    pixelMap=al_create_bitmap(videoManager::getInstance().getGameFieldSize().x,videoManager::getInstance().getGameFieldSize().y);
+    pixelMap = al_create_bitmap(videoManager::getInstance().getGameFieldSize().x,
+                                videoManager::getInstance().getGameFieldSize().y);
 }
 
 eyecandyManager::~eyecandyManager()
@@ -18,6 +19,4 @@ eyecandyManager::~eyecandyManager()
         al_destroy_bitmap(pixelMap);
         pixelMap = nullptr;
     }
-
-
 }

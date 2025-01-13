@@ -52,7 +52,6 @@ std::shared_ptr<chamber> chamber::makeNewChamber(myUtility::Coords csize)
     return c;
 }
 
-
 void chamber::createFloor()
 {
 #ifdef _VerbousMode_
@@ -60,13 +59,11 @@ void chamber::createFloor()
     std::cout << " cfsize [";
 #endif
     for (int c = 0; c < this->width; c++) {
-
         std::vector<int> v2(this->height, 555);
         this->visitedElements.push_back(v2);
 
         std::vector<std::shared_ptr<bElemContainer>> v;
         for (int d = 0; d < this->height; d++) {
-
             int subtype = 0;
             if (bElem::randomNumberGenerator() % 10 == 0)
                 subtype = 1;
@@ -77,7 +74,8 @@ void chamber::createFloor()
             std::cout << "Create an object to place\n";
 #endif
             auto bec = std::make_shared<bElemContainer>();
-            bec->element = elementFactory::generateAnElement<floorElement>(shared_from_this(), subtype);
+            bec->element = elementFactory::generateAnElement<floorElement>(shared_from_this(),
+                                                                           subtype);
             bec->element->setBoard(shared_from_this());
             bec->element->getStats()->setMyPosition(coords(c, d));
             bec->element->getAttrs()->setSubtype(subtype);
@@ -86,7 +84,8 @@ void chamber::createFloor()
 #endif
 
 #ifdef _VerbousMode_
-            std::cout << "Push object into column vector id " << b->getStats()->getInstanceId() << "\n";
+            std::cout << "Push object into column vector id " << b->getStats()->getInstanceId()
+                      << "\n";
 #endif
             v.push_back(bec);
         }
@@ -96,7 +95,8 @@ void chamber::createFloor()
 #endif
     }
 #ifdef _VerbousMode_
-    std::cout << "\n CFsize " << this->chamberArray.size() << " " << this->chamberArray[0].size() << "\n";
+    std::cout << "\n CFsize " << this->chamberArray.size() << " " << this->chamberArray[0].size()
+              << "\n";
 #endif
 }
 
@@ -107,8 +107,12 @@ coords chamber::getSizeOfChamber()
 }
 
 chamber::chamber(int x, int y)
-        : std::enable_shared_from_this<chamber>(), width(x), height(y), SEMutex(al_create_mutex_recursive()),
-          IdMutex(al_create_mutex_recursive()), VisMutex(al_create_mutex_recursive())
+    : std::enable_shared_from_this<chamber>()
+    , width(x)
+    , height(y)
+    , SEMutex(al_create_mutex_recursive())
+    , IdMutex(al_create_mutex_recursive())
+    , VisMutex(al_create_mutex_recursive())
 {
     std::shared_ptr<randomWordGen> rwg = std::make_shared<randomWordGen>();
     this->setInstanceId(chamber::lastid++);
@@ -120,9 +124,9 @@ chamber::chamber(int x, int y)
     //this->createFloor();
 }
 
-chamber::chamber(coords csize) : chamber(csize.x, csize.y)
-{
-}
+chamber::chamber(coords csize)
+    : chamber(csize.x, csize.y)
+{}
 
 colour chamber::getChColour()
 {
@@ -130,10 +134,7 @@ colour chamber::getChColour()
     return this->chamberColour;
 }
 
-chamber::~chamber()
-{
-
-}
+chamber::~chamber() {}
 
 std::string chamber::getName()
 {
@@ -152,12 +153,18 @@ bool chamber::visitPosition(coords point)
         return false;
     al_lock_mutex(this->VisMutex);
     const int vradius = player::getActivePlayer()->getViewRadius() / 2;
-    int x0 = ((point.x - vradius) < 0) ? 0 : ((point.x - vradius >= this->width) ? this->width - 1 : point.x - vradius);
-    int y0 = ((point.y - vradius) < 0) ? 0 : ((point.y - vradius >= this->height) ? this->height - 1 : point.y -
-                                                                                                       vradius);
-    int x1 = ((point.x + vradius) < 0) ? 0 : ((point.x + vradius >= this->width) ? this->width - 1 : point.x + vradius);
-    int y1 = ((point.y + vradius) < 0) ? 0 : ((point.y + vradius >= this->height) ? this->height - 1 : point.y +
-                                                                                                       vradius);
+    int x0 = ((point.x - vradius) < 0)
+                 ? 0
+                 : ((point.x - vradius >= this->width) ? this->width - 1 : point.x - vradius);
+    int y0 = ((point.y - vradius) < 0)
+                 ? 0
+                 : ((point.y - vradius >= this->height) ? this->height - 1 : point.y - vradius);
+    int x1 = ((point.x + vradius) < 0)
+                 ? 0
+                 : ((point.x + vradius >= this->width) ? this->width - 1 : point.x + vradius);
+    int y1 = ((point.y + vradius) < 0)
+                 ? 0
+                 : ((point.y + vradius >= this->height) ? this->height - 1 : point.y + vradius);
     for (int x = x0; x <= x1; x++) {
         for (int y = y0; y <= y1; y++) {
             float distance = point.distance(coords(x, y));
@@ -165,23 +172,19 @@ bool chamber::visitPosition(coords point)
                 res = true;
                 this->visitedElements[x][y] = 0;
             }
-
         }
     }
     al_unlock_mutex(this->VisMutex);
     return res;
-
 }
 
 void chamber::setVisible(coords point, int v)
 {
-
     al_lock_mutex(this->VisMutex);
     if (point.x >= 0 && point.y >= 0 && point.x < this->width && point.y < this->height)
         this->visitedElements[point.x][point.y] = v;
     al_unlock_mutex(this->VisMutex);
 }
-
 
 int chamber::isVisible(int x, int y)
 {
@@ -193,16 +196,15 @@ int chamber::isVisible(coords point)
     if (point.x < this->width && point.y < this->height && point.x >= 0 && point.y >= 0)
         return this->visitedElements[point.x][point.y];
     return false;
-
 }
-
 
 std::shared_ptr<bElem> chamber::getElement(int x, int y)
 {
     // std::lock_guard<std::mutex> guard(this->chmutex);
     if (x < 0 || y < 0)
         return nullptr;
-    if ((unsigned int) x >= this->chamberArray.size() || (unsigned int) y >= this->chamberArray[x].size())
+    if ((unsigned int) x >= this->chamberArray.size()
+        || (unsigned int) y >= this->chamberArray[x].size())
         return nullptr;
     return this->chamberArray[x][y]->element;
 }
@@ -215,7 +217,6 @@ void chamber::setElement(int x, int y, std::shared_ptr<bElem> elem)
     this->chamberArray[x][y]->element = elem;
     elem->setBoard(shared_from_this());
     al_unlock_mutex(this->chamberArray[x][y]->eMutex);
-
 }
 
 void chamber::setElement(coords point, std::shared_ptr<bElem> elem)
@@ -237,7 +238,6 @@ void chamber::setInstanceId(int id)
 
 bool chamber::registerLiveElem(std::shared_ptr<bElem> in)
 {
-
     auto iid = in->getStats()->getInstanceId();
 
     if (!in->getBoard())
@@ -245,7 +245,8 @@ bool chamber::registerLiveElem(std::shared_ptr<bElem> in)
     for (unsigned int c = 0; c < in->getBoard()->toDeregister.size();)
         if (in->getBoard()->toDeregister[c] == iid)
             in->getBoard()->toDeregister.erase(in->getBoard()->toDeregister.begin() + c);
-        else c++;
+        else
+            c++;
 
     this->liveElems.push_back(in);
     return true;
@@ -261,7 +262,6 @@ bool chamber::deregisterLiveElem(std::shared_ptr<bElem> in)
 
 coords chamber::getSize()
 {
-
     return coords(this->width, this->height);
 }
 
@@ -272,15 +272,15 @@ myUtility::Coords chamber::getSizeCrd()
 
 int chamber::calculateLine(myUtility::Coords position, dir::direction Odir)
 {
-    auto el = this->getLastInLine(position,Odir);
-    if(el)
-        return el->getStats()->getMyPosition().distance(coords(position.getX(),position.getY()));
+    auto el = this->getLastInLine(position, Odir);
+    if (el)
+        return el->getStats()->getMyPosition().distance(coords(position.getX(), position.getY()));
     return 0;
 }
 
 std::shared_ptr<bElem> chamber::getElement(myUtility::Coords point)
 {
-    return getElement(point.getX(),point.getY());
+    return getElement(point.getX(), point.getY());
 }
 
 std::shared_ptr<bElem> chamber::getLastInLine(myUtility::Coords pos, dir::direction mydir)
@@ -295,6 +295,3 @@ std::shared_ptr<bElem> chamber::getLastInLine(myUtility::Coords pos, dir::direct
     }
     return el1;
 }
-
-
-
