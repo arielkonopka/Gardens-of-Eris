@@ -132,6 +132,8 @@ namespace GoEConstants {
     // Miscellaneous - where the real chaos happens
     constexpr static int _dividerCloak = int(5+3);    ///< The mystical divider for the cloak. Divides what? Who knows.
     constexpr int _interactedTime = 5+5;             ///< Time of interaction. Meaningful, or just a fleeting moment of connection?
+    constexpr int _radioActivityPower = 5;            ///< How much would bouba hurt you at once.
+    constexpr int _radioActivitySpeed = 5;            ///< Radioactivity speed
 }
 
 

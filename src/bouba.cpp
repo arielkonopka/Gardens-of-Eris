@@ -27,29 +27,35 @@
  * Although, the kikis should never be killed, this implementation assumes the kikis could be removed from the board, it just checks it rarely
  */
 
-bool bouba::mechanics() {
-    if(!bElem::mechanics())
+bool bouba::mechanics()
+{
+    if (!bElem::mechanics())
         return false;
-    this->disposeElement();
-    return false;
-
+    std::shared_ptr<bElem> s=this->getStats()->getStandingOn().lock();
+    if(s)
+        s->hurt(GoEConstants::_radioActivityPower);
+    this->getStats()->setWaiting(GoEConstants::_radioActivitySpeed);
+    return true;
 }
 
-int bouba::getType() const {
+int bouba::getType() const
+{
     return bElemTypes::_boubaType;
 }
 
 bool bouba::stepOnAction(bool step, std::shared_ptr<bElem> who)
 {
-    if(step)
-    {
+    if (step && who && who->getAttrs()->isKillable()) {
+        this->registerLiveElement(shared_from_this());
+    } else if (this->getStats()->isActive()) {
+        this->deregisterLiveElement(this->getStats()->getInstanceId());
+    } else
         this->disposeElement();
-    }
     return bElem::stepOnAction(step, who);
 }
 
 int bouba::getAnimPh() const
 {
-    int ph=(this->getCntr()/15+this->getStats()->getMyPosition().sum2d());
+    int ph = (this->getCntr() / 15 + this->getStats()->getMyPosition().sum2d());
     return ph;
 }

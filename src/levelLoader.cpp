@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-
 #include "levelLoader.h"
 
 levelLoader::levelLoader()

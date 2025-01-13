@@ -25,18 +25,15 @@ soundManager *soundManager::instance = nullptr;
 std::once_flag soundManager::_onceFlag;
 soundManager::soundManager()
 {
-    this->cm=configManager::getInstance();
-    this->gc=cm->getConfig();
+    this->cm = configManager::getInstance();
+    this->gc = cm->getConfig();
 
-
-    this->sndContext=nullptr;
+    this->sndContext = nullptr;
     // Initialize Open AL
     this->sndDevice = alcOpenDevice(NULL); // open default device
-    if (this->sndDevice != nullptr)
-    {
-        this->sndContext=alcCreateContext(this->sndDevice,nullptr); // create context
-        if (this->sndContext != nullptr)
-        {
+    if (this->sndDevice != nullptr) {
+        this->sndContext = alcCreateContext(this->sndDevice, nullptr); // create context
+        if (this->sndContext != nullptr) {
             alcMakeContextCurrent(this->sndContext); // set active context
         }
         alDopplerFactor(15.0);
@@ -44,32 +41,27 @@ soundManager::soundManager()
         alSpeedOfSound(300.0);
         alDistanceModel(AL_EXPONENT_DISTANCE_CLAMPED);
         /* create the queue for sndefx and music */
-        for(int c=0; c<configManager::getInstance()->getConfig()->sndFifoSize; c++)
-        {
+        for (int c = 0; c < configManager::getInstance()->getConfig()->sndFifoSize; c++) {
             ALuint source;
-            std::shared_ptr<stNode> srcNode=std::make_shared<stNode>(stNode());
+            std::shared_ptr<stNode> srcNode = std::make_shared<stNode>(stNode());
             source = 0;
             alGenSources(1, &source);
-            srcNode->source=source;
-            srcNode->isRegistered=false;
+            srcNode->source = source;
+            srcNode->isRegistered = false;
             alSourcei(srcNode->source, AL_SOURCE_RELATIVE, AL_TRUE);
-            alSourcef(srcNode->source, AL_MAX_DISTANCE, 0.8f); // we want to hear from the distance 10 elements 10*32=3200
+            alSourcef(srcNode->source,
+                      AL_MAX_DISTANCE,
+                      0.8f); // we want to hear from the distance 10 elements 10*32=3200
             alSourcef(srcNode->source, AL_REFERENCE_DISTANCE, 0.5f);
-            alSourcef(srcNode->source,AL_ROLLOFF_FACTOR,4.0f);
+            alSourcef(srcNode->source, AL_ROLLOFF_FACTOR, 4.0f);
             alSourcef(srcNode->source, AL_PITCH, 1.0f);
             alSourcef(srcNode->source, AL_GAIN, 1.0f);
             this->registeredSounds.push_back(srcNode);
         }
 
+    } else {
+        std::cout << "Sound thinggy issue.\n Device did not exist?\n";
     }
-    else
-    {
-        std::cout<<"Sound thinggy issue.\n Device did not exist?\n";
-    }
-
-
-
-
 }
 
 soundManager::~soundManager()
@@ -79,11 +71,7 @@ soundManager::~soundManager()
 }
 soundManager *soundManager::getInstance()
 {
-
-    std::call_once(soundManager::_onceFlag,[]()
-    {
-        soundManager::instance = new soundManager();
-    });
+    std::call_once(soundManager::_onceFlag, []() { soundManager::instance = new soundManager(); });
     return soundManager::instance;
 }
 /*
@@ -93,17 +81,15 @@ void soundManager::stopSoundsByElementId(unsigned int elId)
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->pauseSong(elId);
-    for(auto n : this->registeredSounds)
-    {
-        if(n->elId==elId && n->mode>0) // we kill only looping sounds, other will end anyway
+    for (auto n : this->registeredSounds) {
+        if (n->elId == elId && n->mode > 0) // we kill only looping sounds, other will end anyway
         {
             this->stopSnd(n);
-            n->isRegistered=false;
-            this->sndRegister[n->elId][n->elType][n->eventType][n->event].r=false;
+            n->isRegistered = false;
+            this->sndRegister[n->elId][n->elType][n->eventType][n->event].r = false;
         }
     }
 }
-
 
 /**
  * @brief Examines the queue of registered sounds, ensuring that only relevant sound samples are played.
@@ -115,158 +101,145 @@ void soundManager::stopSoundsByElementId(unsigned int elId)
  * Finally, the volume of the sound is adjusted based on its distance from the listener.
  *
  * @note This function is thread-safe due to the usage of std::lock_guard.
- */void soundManager::checkQueue()
+ */
+void soundManager::checkQueue()
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
-    this->cnt=bElem::getCntr();
-    int nm=this->findNearestMusic();
-    if(nm!=this->currentMusic)
-    {
+    this->cnt = bElem::getCntr();
+    int nm = this->findNearestMusic();
+    if (nm != this->currentMusic) {
         if (this->currentMusic >= 0)
             alSourcePause(this->registeredMusic[this->currentMusic].source);
-        if (nm >= 0)
-        {
+        if (nm >= 0) {
             this->currentMusic = nm;
             alSourcePlay(this->registeredMusic[this->currentMusic].source);
         };
     }
     /**/
-    if(this->currentMusic>=0)
-    {
+    if (this->currentMusic >= 0) {
         this->playSong(this->currentMusic);
     }
 
-
-    for(auto n : this->registeredSounds)
-    {
+    for (auto n : this->registeredSounds) {
         /* stop sounds from different board */
-        if (n->isRegistered && this->isSndPlaying(n->source) && (n->soundSpace!=this->currSoundSpace || this->listenerPos.distance(n->position)>this->gc->soundDistance))
-        {
+        if (n->isRegistered && this->isSndPlaying(n->source)
+            && (n->soundSpace != this->currSoundSpace
+                || this->listenerPos.distance(n->position) > this->gc->soundDistance)) {
             this->stopSnd(n);
-            n->isRegistered=false;
-            this->sndRegister[n->elId][n->elType][n->eventType][n->event].r=false;
+            n->isRegistered = false;
+            this->sndRegister[n->elId][n->elType][n->eventType][n->event].r = false;
             continue;
         }
-        if (n->isRegistered && !n->started)
-        {
-            if(n->delayed<0)
-            {
-                n->started=true;
+        if (n->isRegistered && !n->started) {
+            if (n->delayed < 0) {
+                n->started = true;
                 alSourcePlay(n->source);
-            }
-            else
-            {
+            } else {
                 n->delayed--;
                 continue;
             }
         }
 
-
-
-        if(n->isRegistered && this->isSndPlaying(n->source)==false)
-        {
-            n->isRegistered=false;
-            this->sndRegister[n->elId][n->elType][n->eventType][n->event].r=false;
+        if (n->isRegistered && this->isSndPlaying(n->source) == false) {
+            n->isRegistered = false;
+            this->sndRegister[n->elId][n->elType][n->eventType][n->event].r = false;
             continue;
         }
 
-        float newVolume = (n->gain/(n->position.distance(this->listenerPos)));
-        alSourcef(n->source, AL_GAIN, (newVolume>2)?2.0:newVolume);
-
+        float newVolume = (n->gain / (n->position.distance(this->listenerPos)));
+        alSourcef(n->source, AL_GAIN, (newVolume > 2) ? 2.0 : newVolume);
     }
 }
 void soundManager::enableSound()
 {
-    if(active)
+    if (active)
         return;
-    std::thread nt=std::thread(&soundManager::threadLoop, this);
+    std::thread nt = std::thread(&soundManager::threadLoop, this);
     nt.detach();
     std::lock_guard<std::mutex> guard(this->snd_mutex);
-    this->active=true;
+    this->active = true;
 }
 
-std::shared_ptr<stNode> soundManager::registerSound(int chamberId, coords3d position,coords3d velocity,int elId,int typeId, int subtypeId, std::string eventType, std::string event)
+std::shared_ptr<stNode> soundManager::registerSound(int chamberId,
+                                                    coords3d position,
+                                                    coords3d velocity,
+                                                    int elId,
+                                                    int typeId,
+                                                    int subtypeId,
+                                                    std::string eventType,
+                                                    std::string event)
 {
-
     alGetError();
     std::lock_guard<std::mutex> guard(this->snd_mutex);
 
-    if(!this->gc->samples[typeId][subtypeId][eventType][event].configured && this->gc->samples[typeId][-1][eventType][event].configured)
-    {
-        subtypeId=-1;
+    if (!this->gc->samples[typeId][subtypeId][eventType][event].configured
+        && this->gc->samples[typeId][-1][eventType][event].configured) {
+        subtypeId = -1;
     }
 
-    if (!this->active || chamberId!=this->currSoundSpace
-            || this->listenerPos.distance(position)>this->gc->soundDistance
-            || !this->gc->samples[typeId][subtypeId][eventType][event].configured
-            || (this->sndRegister[elId][typeId][eventType][event].r && !this->gc->samples[typeId][subtypeId][eventType][event].allowMulti)
-       )
-    {
+    if (!this->active || chamberId != this->currSoundSpace
+        || this->listenerPos.distance(position) > this->gc->soundDistance
+        || !this->gc->samples[typeId][subtypeId][eventType][event].configured
+        || (this->sndRegister[elId][typeId][eventType][event].r
+            && !this->gc->samples[typeId][subtypeId][eventType][event].allowMulti)) {
         return nullptr;
     }
 
-    if(this->samplesLoaded[typeId][subtypeId][eventType][event].get()==nullptr )
-        this->samplesLoaded[typeId][subtypeId][eventType][event]=std::make_shared<sndHolder>();
-    if (!this->samplesLoaded[typeId][subtypeId][eventType][event]->loaded)
-    {
-        if(!this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].r)
-        {
-            ALuint bid=this->loadSample(this->gc->samples[typeId][subtypeId][eventType][event].fname);
-            if(bid==0)
+    if (this->samplesLoaded[typeId][subtypeId][eventType][event].get() == nullptr)
+        this->samplesLoaded[typeId][subtypeId][eventType][event] = std::make_shared<sndHolder>();
+    if (!this->samplesLoaded[typeId][subtypeId][eventType][event]->loaded) {
+        if (!this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].r) {
+            ALuint bid = this->loadSample(
+                this->gc->samples[typeId][subtypeId][eventType][event].fname);
+            if (bid == 0)
                 return nullptr;
-            this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].r=true;
-            this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].buffer=bid;
+            this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].r = true;
+            this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].buffer
+                = bid;
         }
 
-        this->samplesLoaded[typeId][subtypeId][eventType][event]->buffer=this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].buffer;
-        this->samplesLoaded[typeId][subtypeId][eventType][event]->loaded=true;
-        this->samplesLoaded[typeId][subtypeId][eventType][event]->mode=this->gc->samples[typeId][subtypeId][eventType][event].modeOfAction;
+        this->samplesLoaded[typeId][subtypeId][eventType][event]->buffer
+            = this->sampleFile[this->gc->samples[typeId][subtypeId][eventType][event].fname].buffer;
+        this->samplesLoaded[typeId][subtypeId][eventType][event]->loaded = true;
+        this->samplesLoaded[typeId][subtypeId][eventType][event]->mode
+            = this->gc->samples[typeId][subtypeId][eventType][event].modeOfAction;
 
         //      this->samplesLoaded[typeId][subtypeId][eventType][event]->allowMulti=this->gc->samples[typeId][subtypeId][eventType][event].allowMulti;
     }
-    std::shared_ptr<stNode> srcNode=this->getSndNode();
-    if(this->sndRegister[elId][typeId][eventType][event].r)
-    {
-        if(!this->gc->samples[typeId][subtypeId][eventType][event].stacking)
-        {
-
+    std::shared_ptr<stNode> srcNode = this->getSndNode();
+    if (this->sndRegister[elId][typeId][eventType][event].r) {
+        if (!this->gc->samples[typeId][subtypeId][eventType][event].stacking) {
             this->stopSnd(this->sndRegister[elId][typeId][eventType][event].stn);
-            this->sndRegister[elId][typeId][eventType][event].stn->isRegistered=false;
-        }
-        else
-        {
-            if(!this->sndRegister[elId][typeId][eventType][event].stn->started)
-            {
-                srcNode->delayed=this->sndRegister[elId][typeId][eventType][event].stn->delayed+5;
-            }
-            else
-            {
-                srcNode->delayed=-1;
+            this->sndRegister[elId][typeId][eventType][event].stn->isRegistered = false;
+        } else {
+            if (!this->sndRegister[elId][typeId][eventType][event].stn->started) {
+                srcNode->delayed = this->sndRegister[elId][typeId][eventType][event].stn->delayed
+                                   + 5;
+            } else {
+                srcNode->delayed = -1;
             }
         }
     }
-    alSourcei(srcNode->source, AL_BUFFER, (ALint)(this->samplesLoaded[typeId][subtypeId][eventType][event]->buffer));
-    srcNode->isRegistered=true;
-    srcNode->started=false;
-    srcNode->elType=typeId;
-    srcNode->position=position;
-    srcNode->mode=this->samplesLoaded[typeId][subtypeId][eventType][event]->mode;
-    srcNode->elId=elId;
-    srcNode->eventType=eventType;
-    srcNode->event=event;
-    srcNode->gain=this->gc->samples[typeId][subtypeId][eventType][event].gain;
-    srcNode->soundSpace=chamberId;
-    float newVolume = (srcNode->gain/(position.distance(this->listenerPos)));
-    alSourcef(srcNode->source, AL_GAIN, (newVolume>2)?2.0:newVolume);
-    alSourcei(srcNode->source,AL_LOOPING,(srcNode->mode==0)?AL_FALSE:AL_TRUE);
-    this->sndRegister[elId][typeId][eventType][event].r=true;
-    this->sndRegister[elId][typeId][eventType][event].stn=srcNode;
+    alSourcei(srcNode->source,
+              AL_BUFFER,
+              (ALint) (this->samplesLoaded[typeId][subtypeId][eventType][event]->buffer));
+    srcNode->isRegistered = true;
+    srcNode->started = false;
+    srcNode->elType = typeId;
+    srcNode->position = position;
+    srcNode->mode = this->samplesLoaded[typeId][subtypeId][eventType][event]->mode;
+    srcNode->elId = elId;
+    srcNode->eventType = eventType;
+    srcNode->event = event;
+    srcNode->gain = this->gc->samples[typeId][subtypeId][eventType][event].gain;
+    srcNode->soundSpace = chamberId;
+    float newVolume = (srcNode->gain / (position.distance(this->listenerPos)));
+    alSourcef(srcNode->source, AL_GAIN, (newVolume > 2) ? 2.0 : newVolume);
+    alSourcei(srcNode->source, AL_LOOPING, (srcNode->mode == 0) ? AL_FALSE : AL_TRUE);
+    this->sndRegister[elId][typeId][eventType][event].r = true;
+    this->sndRegister[elId][typeId][eventType][event].stn = srcNode;
     return srcNode;
 };
-
-
-
-
 
 /**
  * @brief Determines the nearest music source in the same sound space as the listener.
@@ -279,17 +252,18 @@ std::shared_ptr<stNode> soundManager::registerSound(int chamberId, coords3d posi
  */
 int soundManager::findNearestMusic()
 {
-    int dst=65535;
-    int no=-1;
+    int dst = 65535;
+    int no = -1;
 
-    for(unsigned int c=0; c<this->registeredMusic.size(); c++)
-    { // we could check it in the same time, but then we would have to apply priority
-        auto tmpdist=this->listenerPos.distance(this->registeredMusic[c].position);
-        if(this->registeredMusic[c].isRegistered && this->registeredMusic[c].delayed<=0)
-            if  ((this->registeredMusic[c].chamberId==this->currSoundSpace || this->registeredMusic[c].chamberId==-1) && (no<0 || dst>tmpdist))
-            {
-                no=c;
-                dst=tmpdist;
+    for (unsigned int c = 0; c < this->registeredMusic.size();
+         c++) { // we could check it in the same time, but then we would have to apply priority
+        auto tmpdist = this->listenerPos.distance(this->registeredMusic[c].position);
+        if (this->registeredMusic[c].isRegistered && this->registeredMusic[c].delayed <= 0)
+            if ((this->registeredMusic[c].chamberId == this->currSoundSpace
+                 || this->registeredMusic[c].chamberId == -1)
+                && (no < 0 || dst > tmpdist)) {
+                no = c;
+                dst = tmpdist;
             }
     }
     return no;
@@ -300,109 +274,126 @@ void soundManager::registerMusic(int musicNo, int chamberId, coords3d position)
     /*TBC! we should have all the registered samples for music in the config structure*/
 }
 
-
 /*
  * we get a source from the queue, if it is available, we return it.
  * available means: not registered, not playing at the moment, from other sound space
  */
 std::shared_ptr<stNode> soundManager::getSndNode()
 {
-    std::shared_ptr<stNode> n=this->registeredSounds[this->regSndPos];
-    unsigned int c=0;
-    this->regSndPos=(this->regSndPos+1)%this->registeredSounds.size();
-    while(n.get()!=nullptr && n->isRegistered)
-    {
-        if ((!this->isSndPlaying(n->source)) || (n->mode>0 && c>this->registeredSounds.size()) || (c>this->registeredSounds.size()*2))
-        {
-            this->sndRegister[n->elId][n->elType][n->eventType][n->event].r=false;
-            if(this->isSndPlaying(n->source))
+    std::shared_ptr<stNode> n = this->registeredSounds[this->regSndPos];
+    unsigned int c = 0;
+    this->regSndPos = (this->regSndPos + 1) % this->registeredSounds.size();
+    while (n.get() != nullptr && n->isRegistered) {
+        if ((!this->isSndPlaying(n->source)) || (n->mode > 0 && c > this->registeredSounds.size())
+            || (c > this->registeredSounds.size() * 2)) {
+            this->sndRegister[n->elId][n->elType][n->eventType][n->event].r = false;
+            if (this->isSndPlaying(n->source))
                 this->stopSnd(n);
-            n->isRegistered=false;
+            n->isRegistered = false;
             break;
         };
         c++;
-        n=this->registeredSounds[this->regSndPos];
-        this->regSndPos=(this->regSndPos+1)%this->registeredSounds.size();
+        n = this->registeredSounds[this->regSndPos];
+        this->regSndPos = (this->regSndPos + 1) % this->registeredSounds.size();
     }
     return n;
 }
 
-
 void soundManager::setListenerPosition(coords3d pos)
 {
-    if(this->spaceSize!=NOCOORDS)
-        alListener3f(AL_POSITION, (float)pos.x/this->spaceSize.x, (float)pos.y/this->spaceSize.y, (float)pos.z/1024.0);
+    if (this->spaceSize != NOCOORDS)
+        alListener3f(AL_POSITION,
+                     (float) pos.x / this->spaceSize.x,
+                     (float) pos.y / this->spaceSize.y,
+                     (float) pos.z / 1024.0);
     else
-        alListener3f(AL_POSITION, (float)pos.x/1024.0, (float)pos.y/1024.0, (float)pos.z/1024.0);
+        alListener3f(AL_POSITION,
+                     (float) pos.x / 1024.0,
+                     (float) pos.y / 1024.0,
+                     (float) pos.z / 1024.0);
     std::lock_guard<std::mutex> guard(this->snd_mutex);
-    this->listenerPos=pos;
+    this->listenerPos = pos;
 }
 
 void soundManager::setListenerOrientation(coords3d pos)
 {
-    if(this->spaceSize!=NOCOORDS)
+    if (this->spaceSize != NOCOORDS)
         return;
-    ALfloat listenerOri[] = { (float)(pos.x/this->spaceSize.x), (float)(pos.y/this->spaceSize.y), (float)(pos.z/1024.0),0.0,0.0,1.0};
+    ALfloat listenerOri[] = {(float) (pos.x / this->spaceSize.x),
+                             (float) (pos.y / this->spaceSize.y),
+                             (float) (pos.z / 1024.0),
+                             0.0,
+                             0.0,
+                             1.0};
     alListenerfv(AL_ORIENTATION, listenerOri);
-
 }
 
 void soundManager::setListenerVelocity(coords3d pos)
 {
-    alListener3f(AL_VELOCITY, (float)pos.x/1024.0, (float)pos.y/1024.0, (float)pos.z/1024.0);
+    alListener3f(AL_VELOCITY,
+                 (float) pos.x / 1024.0,
+                 (float) pos.y / 1024.0,
+                 (float) pos.z / 1024.0);
 }
-
 
 /* we just teleported, we need to switch the context, which means stopping all the currently played samples from the previous chamber*/
-void soundManager::setListenerChamber(int chamberId,coords size)
+void soundManager::setListenerChamber(int chamberId, coords size)
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
-    this->currSoundSpace=chamberId;
-    this->spaceSize=size;
+    this->currSoundSpace = chamberId;
+    this->spaceSize = size;
 }
 
-void soundManager::setSoundVelocity(std::shared_ptr<stNode>  snd, coords3d pos)
+void soundManager::setSoundVelocity(std::shared_ptr<stNode> snd, coords3d pos)
 {
-    if(this->spaceSize!=NOCOORDS)
-        alSource3f(snd->source,AL_VELOCITY,(float)pos.x/this->spaceSize.x,(float)pos.y/this->spaceSize.y,(float)pos.z/1024.0);
+    if (this->spaceSize != NOCOORDS)
+        alSource3f(snd->source,
+                   AL_VELOCITY,
+                   (float) pos.x / this->spaceSize.x,
+                   (float) pos.y / this->spaceSize.y,
+                   (float) pos.z / 1024.0);
     else
-        alSource3f(snd->source,AL_VELOCITY,(float)pos.x/1024,(float)pos.y/1024,(float)pos.z/1024.0);
-
+        alSource3f(snd->source,
+                   AL_VELOCITY,
+                   (float) pos.x / 1024,
+                   (float) pos.y / 1024,
+                   (float) pos.z / 1024.0);
 }
 void soundManager::setSoundPosition(std::shared_ptr<stNode> snd, coords3d pos)
 {
-    if(this->spaceSize!=NOCOORDS)
-        alSource3f(snd->source,AL_POSITION,(float)pos.x/this->spaceSize.x,(float)pos.y/this->spaceSize.y,(float)pos.z/1024.0);
+    if (this->spaceSize != NOCOORDS)
+        alSource3f(snd->source,
+                   AL_POSITION,
+                   (float) pos.x / this->spaceSize.x,
+                   (float) pos.y / this->spaceSize.y,
+                   (float) pos.z / 1024.0);
     else
-        alSource3f(snd->source,AL_POSITION,(float)pos.x/1024.0,(float)pos.y/1024.0,(float)pos.z/1024.0);
+        alSource3f(snd->source,
+                   AL_POSITION,
+                   (float) pos.x / 1024.0,
+                   (float) pos.y / 1024.0,
+                   (float) pos.z / 1024.0);
 }
 
-
-ALenum soundManager::determineFormat(SF_INFO fileInfo,SNDFILE *sndfile)
+ALenum soundManager::determineFormat(SF_INFO fileInfo, SNDFILE *sndfile)
 {
-    ALenum format=AL_NONE;
-    if(fileInfo.channels == 1)
+    ALenum format = AL_NONE;
+    if (fileInfo.channels == 1)
         format = AL_FORMAT_MONO16;
-    else if(fileInfo.channels == 2)
+    else if (fileInfo.channels == 2)
         format = AL_FORMAT_STEREO16;
-    else if(fileInfo.channels == 3)
-    {
-        if(sf_command(sndfile, SFC_WAVEX_GET_AMBISONIC, NULL, 0) == SF_AMBISONIC_B_FORMAT)
+    else if (fileInfo.channels == 3) {
+        if (sf_command(sndfile, SFC_WAVEX_GET_AMBISONIC, NULL, 0) == SF_AMBISONIC_B_FORMAT)
             format = AL_FORMAT_BFORMAT2D_16;
-    }
-    else if(fileInfo.channels == 4)
-    {
-        if(sf_command(sndfile, SFC_WAVEX_GET_AMBISONIC, NULL, 0) == SF_AMBISONIC_B_FORMAT)
+    } else if (fileInfo.channels == 4) {
+        if (sf_command(sndfile, SFC_WAVEX_GET_AMBISONIC, NULL, 0) == SF_AMBISONIC_B_FORMAT)
             format = AL_FORMAT_BFORMAT3D_16;
     }
-    if(!format)
-    {
+    if (!format) {
         return AL_NONE;
     }
     return format;
 }
-
-
 
 ALuint soundManager::loadSample(std::string fname)
 {
@@ -414,11 +405,13 @@ ALuint soundManager::loadSample(std::string fname)
     ALsizei num_bytes;
     /* Open the audio file and check that it's usable. */
     sndfile = sf_open(fname.c_str(), SFM_READ, &sfinfo);
-    if(!sndfile)
+    if (!sndfile)
         return 0;
-    format = this->determineFormat(sfinfo,sndfile); /* Get the sound format, and figure out the OpenAL format */
-    if(sfinfo.frames < 1 || sfinfo.frames > (sf_count_t)(INT_MAX/sizeof(short))/sfinfo.channels || format==AL_NONE)
-    {
+    format = this->determineFormat(sfinfo,
+                                   sndfile); /* Get the sound format, and figure out the OpenAL format */
+    if (sfinfo.frames < 1
+        || sfinfo.frames > (sf_count_t) (INT_MAX / sizeof(short)) / sfinfo.channels
+        || format == AL_NONE) {
         sf_close(sndfile);
         return 0;
     }
@@ -427,9 +420,9 @@ ALuint soundManager::loadSample(std::string fname)
         std::vector<short> buff(sfinfo.frames * sfinfo.channels);
         num_frames = sf_readf_short(sndfile, buff.data(), sfinfo.frames);
         sf_close(sndfile);
-        if(num_frames < 1)
+        if (num_frames < 1)
             return 0;
-        num_bytes = (ALsizei)(num_frames * sfinfo.channels) * (ALsizei)sizeof(short);
+        num_bytes = (ALsizei) (num_frames * sfinfo.channels) * (ALsizei) sizeof(short);
         /* Buffer the audio data into a new buffer object, then free the data and
          * close the file.
          */
@@ -440,29 +433,23 @@ ALuint soundManager::loadSample(std::string fname)
 
     /* Check if an error occured, and clean up if so. */
     err = alGetError();
-    if(err != AL_NO_ERROR)
-    {
+    if (err != AL_NO_ERROR) {
         fprintf(stderr, "OpenAL Error: %s\n", alGetString(err));
-        if(buffer && alIsBuffer(buffer))
+        if (buffer && alIsBuffer(buffer))
             alDeleteBuffers(1, &buffer);
         return 0;
     }
     return buffer;
 }
 
-
-
-
 bool soundManager::isSndPlaying(ALint sndId)
 {
     ALint source_state;
     alGetSourcei(sndId, AL_SOURCE_STATE, &source_state);
-    if (source_state==AL_PLAYING)
+    if (source_state == AL_PLAYING)
         return true;
     return false;
-
 }
-
 
 bool soundManager::stopSnd(std::shared_ptr<stNode> n)
 {
@@ -472,113 +459,128 @@ bool soundManager::stopSnd(std::shared_ptr<stNode> n)
 
 const bool soundManager::isSongConfigured(int songNo, coords3d position, int chamberId)
 {
-    for(unsigned int c=0; c<this->registeredMusic.size(); c++)
-    {
-        if(this->registeredMusic[c].songNo==songNo && this->registeredMusic[c].isRegistered && this->registeredMusic[c].position==position &&  this->registeredMusic[c].chamberId==chamberId)
+    for (unsigned int c = 0; c < this->registeredMusic.size(); c++) {
+        if (this->registeredMusic[c].songNo == songNo && this->registeredMusic[c].isRegistered
+            && this->registeredMusic[c].position == position
+            && this->registeredMusic[c].chamberId == chamberId)
             return true;
     }
     return false;
 }
 
-
-int soundManager::setupSong(unsigned int bElemInstanceId,int songNo,coords3d position,int chamberId,bool vaiableVolume)
+int soundManager::setupSong(
+    unsigned int bElemInstanceId, int songNo, coords3d position, int chamberId, bool vaiableVolume)
 {
     // std::lock_guard<std::mutex> guard(this->snd_mutex);
     /* no music configured? */
-    if (this->gc->music.size()<=0 || this->isSongConfigured(songNo,position,chamberId))
-    {
+    if (this->gc->music.size() <= 0 || this->isSongConfigured(songNo, position, chamberId)) {
         return -1;
     }
     /* we deal with the problem of code and configuration mismatch */
-    if (songNo<0 || this->gc->music.size()<(unsigned int)songNo) {
+    if (songNo < 0 || this->gc->music.size() < (unsigned int) songNo) {
         songNo = bElem::randomNumberGenerator() % this->gc->music.size();
     }
     muNode muNd;
     ALuint source;
-    muNd.bElemInstanceId=bElemInstanceId;
-    muNd.variableVol=vaiableVolume;
-    muNd.delayed=0;
-    muNd.songNo=songNo;
-    muNd.position=position;
-    muNd.chamberId=chamberId;
-    muNd.musicFile=sf_open(this->gc->music[songNo].filename.c_str(), SFM_READ, &(muNd.musFileinfo));
-    if(!muNd.musicFile)
-    {
-        std::cout<<"Music file cannot be open "<<this->gc->music[songNo].filename<<"!\n";
+    muNd.bElemInstanceId = bElemInstanceId;
+    muNd.variableVol = vaiableVolume;
+    muNd.delayed = 0;
+    muNd.songNo = songNo;
+    muNd.position = position;
+    muNd.chamberId = chamberId;
+    muNd.musicFile = sf_open(this->gc->music[songNo].filename.c_str(),
+                             SFM_READ,
+                             &(muNd.musFileinfo));
+    if (!muNd.musicFile) {
+        std::cout << "Music file cannot be open " << this->gc->music[songNo].filename << "!\n";
         return -1;
     }
-    if(muNd.musFileinfo.frames < 1 || muNd.musFileinfo.frames > (sf_count_t)(INT_MAX/sizeof(short))/muNd.musFileinfo.channels)
-    {
+    if (muNd.musFileinfo.frames < 1
+        || muNd.musFileinfo.frames
+               > (sf_count_t) (INT_MAX / sizeof(short)) / muNd.musFileinfo.channels) {
         sf_close(muNd.musicFile); /* music file contains no data */
         return -1;
     }
-    muNd.format = this->determineFormat(muNd.musFileinfo,muNd.musicFile);
-    if(!muNd.format)
-    {
+    muNd.format = this->determineFormat(muNd.musFileinfo, muNd.musicFile);
+    if (!muNd.format) {
         sf_close(muNd.musicFile);
         return -1;
     }
     source = 0;
     alGenSources(1, &source);
-    muNd.source=source;
-    muNd.gain=this->gc->music[songNo].gain;
-    alSource3f(source,AL_POSITION,(float)position.x/1024.0,(float)position.y/1024.0,(float)position.z/1024.0);
-    alSourcef(source,AL_GAIN,std::min(muNd.gain,(float)1.0));
-    const int buffersNum=3;
+    muNd.source = source;
+    muNd.gain = this->gc->music[songNo].gain;
+    alSource3f(source,
+               AL_POSITION,
+               (float) position.x / 1024.0,
+               (float) position.y / 1024.0,
+               (float) position.z / 1024.0);
+    alSourcef(source, AL_GAIN, std::min(muNd.gain, (float) 1.0));
+    const int buffersNum = 3;
     alGenBuffers(buffersNum, &muNd.Abuffers[0]);
-    for(int n=0; n<buffersNum; n++)
-    {
+    for (int n = 0; n < buffersNum; n++) {
         std::vector<short> buff(65536);
-        int num_frames = sf_readf_short(muNd.musicFile, buff.data(), buff.size()/muNd.musFileinfo.channels);
-        if(num_frames < 1)
+        int num_frames = sf_readf_short(muNd.musicFile,
+                                        buff.data(),
+                                        buff.size() / muNd.musFileinfo.channels);
+        if (num_frames < 1)
             break;
-        alBufferData(muNd.Abuffers[n],muNd.format,buff.data(),buff.size()*sizeof(short),muNd.musFileinfo.samplerate);
+        alBufferData(muNd.Abuffers[n],
+                     muNd.format,
+                     buff.data(),
+                     buff.size() * sizeof(short),
+                     muNd.musFileinfo.samplerate);
     }
-    alSourceQueueBuffers(muNd.source,buffersNum,&muNd.Abuffers[0]);
-    muNd.isRegistered=true;
+    alSourceQueueBuffers(muNd.source, buffersNum, &muNd.Abuffers[0]);
+    muNd.isRegistered = true;
     std::lock_guard<std::mutex> guard(this->snd_mutex);
 
-     this->registeredMusic.push_back(muNd);
+    this->registeredMusic.push_back(muNd);
 
-     return this->registeredMusic.size()-1;
-
-
+    return this->registeredMusic.size() - 1;
 }
-
 
 void soundManager::playSong(int songNo)
 {
     ALint buffersProcessed = 0;
-    float newVol=5.5*(this->registeredMusic[songNo].gain/(0.01+this->listenerPos.distance(this->registeredMusic[songNo].position)));
-    newVol=(this->registeredMusic[songNo].variableVol)?std::min((float)this->registeredMusic[songNo].gain,newVol):this->registeredMusic[songNo].gain;
+    float newVol = 5.5
+                   * (this->registeredMusic[songNo].gain
+                      / (0.01 + this->listenerPos.distance(this->registeredMusic[songNo].position)));
+    newVol = (this->registeredMusic[songNo].variableVol)
+                 ? std::min((float) this->registeredMusic[songNo].gain, newVol)
+                 : this->registeredMusic[songNo].gain;
     alGetSourcei(this->registeredMusic[songNo].source, AL_BUFFERS_PROCESSED, &buffersProcessed);
     alSourcef(this->registeredMusic[songNo].source, AL_GAIN, newVol);
-    if(buffersProcessed <= 0 || !this->registeredMusic[songNo].isRegistered || this->registeredMusic[songNo].delayed>0)
-    {
+    if (buffersProcessed <= 0 || !this->registeredMusic[songNo].isRegistered
+        || this->registeredMusic[songNo].delayed > 0) {
         return;
     }
 
-    while(buffersProcessed--)
-    {
+    while (buffersProcessed--) {
         ALuint buffer;
-        alSourceUnqueueBuffers( this->registeredMusic[songNo].source, 1, &buffer);
+        alSourceUnqueueBuffers(this->registeredMusic[songNo].source, 1, &buffer);
 
         std::vector<short> buff(65536);
-        int num_frames = sf_readf_short(this->registeredMusic[songNo].musicFile, buff.data(), buff.size()/this->registeredMusic[songNo].musFileinfo.channels);
-        if(num_frames < 1)
-        {
-            sf_seek(this->registeredMusic[songNo].musicFile,0,0);
-            num_frames = sf_readf_short(this->registeredMusic[songNo].musicFile, buff.data(), buff.size()/this->registeredMusic[songNo].musFileinfo.channels);
-            if(num_frames < 1)
+        int num_frames = sf_readf_short(this->registeredMusic[songNo].musicFile,
+                                        buff.data(),
+                                        buff.size()
+                                            / this->registeredMusic[songNo].musFileinfo.channels);
+        if (num_frames < 1) {
+            sf_seek(this->registeredMusic[songNo].musicFile, 0, 0);
+            num_frames = sf_readf_short(this->registeredMusic[songNo].musicFile,
+                                        buff.data(),
+                                        buff.size()
+                                            / this->registeredMusic[songNo].musFileinfo.channels);
+            if (num_frames < 1)
                 break;
         }
-        alBufferData(buffer,this->registeredMusic[songNo].format,buff.data(),buff.size()*sizeof(short),this->registeredMusic[songNo].musFileinfo.samplerate);
+        alBufferData(buffer,
+                     this->registeredMusic[songNo].format,
+                     buff.data(),
+                     buff.size() * sizeof(short),
+                     this->registeredMusic[songNo].musFileinfo.samplerate);
         alSourceQueueBuffers(this->registeredMusic[songNo].source, 1, &buffer);
-
-
     }
-
-
 }
 
 /**
@@ -593,29 +595,32 @@ void soundManager::playSong(int songNo)
  *
  * @note This method employs a thread-safe design, utilising the class's mutex for synchronisation purposes. Therefore, it is perfectly suited to an environment where multiple threads are in operation, ensuring no untoward clashes or conflicts arise in the process of adjusting the song's position.
  */
-void soundManager::moveSong( int songNo, coords3d newPosition,int newChamber)
+void soundManager::moveSong(int songNo, coords3d newPosition, int newChamber)
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
 
-
     // Sprawdź czy songNo jest prawidłowe
-    if (songNo < 0 || (unsigned int )songNo >= this->registeredMusic.size())
+    if (songNo < 0 || (unsigned int) songNo >= this->registeredMusic.size())
         return;
     this->registeredMusic[songNo].position = newPosition;
-    this->registeredMusic[songNo].chamberId=newChamber;
-    if(this->spaceSize!=NOCOORDS)
-        alSource3f(this->registeredMusic[songNo].source, AL_POSITION,
-               (float)newPosition.x/this->spaceSize.x, newPosition.y/this->spaceSize.y, (float)newPosition.z/1024.0);
+    this->registeredMusic[songNo].chamberId = newChamber;
+    if (this->spaceSize != NOCOORDS)
+        alSource3f(this->registeredMusic[songNo].source,
+                   AL_POSITION,
+                   (float) newPosition.x / this->spaceSize.x,
+                   newPosition.y / this->spaceSize.y,
+                   (float) newPosition.z / 1024.0);
     else
-        alSource3f(this->registeredMusic[songNo].source, AL_POSITION,
-                   (float)newPosition.x/1024.0, newPosition.y/1024.0, (float)newPosition.z/1024.0);
-
+        alSource3f(this->registeredMusic[songNo].source,
+                   AL_POSITION,
+                   (float) newPosition.x / 1024.0,
+                   newPosition.y / 1024.0,
+                   (float) newPosition.z / 1024.0);
 }
 
 void soundManager::threadLoop()
 {
-    while(this->active)
-    {
+    while (this->active) {
         this->checkQueue();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -623,36 +628,22 @@ void soundManager::threadLoop()
 
 void soundManager::pauseSong(unsigned int bElemInstanceId)
 {
-    for(auto & c : this->registeredMusic)
-    {
-        if(c.bElemInstanceId==bElemInstanceId)
-        {
-            c.isRegistered=false;
-            c.delayed=555;
+    for (auto &c : this->registeredMusic) {
+        if (c.bElemInstanceId == bElemInstanceId) {
+            c.isRegistered = false;
+            c.delayed = 555;
         }
-
     }
 }
 
 void soundManager::resumeSong(unsigned int bElemInstanceId)
 {
-    if(bElemInstanceId<0)
+    if (bElemInstanceId < 0)
         return;
-    for(auto & c : this->registeredMusic)
-    {
-        if(c.bElemInstanceId==bElemInstanceId)
-        {
-            c.isRegistered=true;
-            c.delayed=0;
+    for (auto &c : this->registeredMusic) {
+        if (c.bElemInstanceId == bElemInstanceId) {
+            c.isRegistered = true;
+            c.delayed = 0;
         }
-
     }
 }
-
-
-
-
-
-
-
-

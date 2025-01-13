@@ -22,14 +22,8 @@
 
 #include "brickCluster.h"
 
-
-
 int brickCluster::getType() const
 
 {
     return bElemTypes::_brickClusterType;
 }
-
-
-
-

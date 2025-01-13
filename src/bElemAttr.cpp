@@ -23,8 +23,6 @@
 #include "../include/bElem.h"
 #include "../include/inventory.h"
 
-
-
 bElemAttr::bElemAttr(std::shared_ptr<bElem> owner, int type, int subtype)
 {
     this->owner = owner;
@@ -33,7 +31,6 @@ bElemAttr::bElemAttr(std::shared_ptr<bElem> owner, int type, int subtype)
     if (owner == nullptr)
         return; // no point getting values, set it yourself then
     this->getDefaultValues(type, subtype);
-
 }
 
 /**
@@ -51,14 +48,11 @@ bElemAttr::bElemAttr(std::shared_ptr<bElem> owner, int type, int subtype)
 void bElemAttr::getDefaultValues(int typeId, int subtypeId)
 {
     auto sprites = configManager::getInstance()->getConfig()->sprites;
-    for (auto sprite : sprites)
-    {
+    for (auto sprite : sprites) {
         if (sprite.eType != typeId)
             continue;
-        for (auto attr : sprite.attributes)
-        {
-            if ((!this->provisioned && attr.subType < 0) || (attr.subType == subtypeId))
-            {
+        for (auto attr : sprite.attributes) {
+            if ((!this->provisioned && attr.subType < 0) || (attr.subType == subtypeId)) {
                 this->setMaxEnergy(attr.maxEnergy);
                 this->setMaxAmmo(attr.maxAmmo);
                 this->setKillable(attr.killable);
@@ -76,14 +70,12 @@ void bElemAttr::getDefaultValues(int typeId, int subtypeId)
                 this->setEnergy(attr.energy);
                 this->setAmmo(attr.ammo);
                 this->provisioned = true; // this way we do not have to setup attributes for the walls.
-                if(subtypeId>=0) break; // we can define the first one as -1, and then the 0 and positive subtypes would override it.
+                if (subtypeId >= 0)
+                    break; // we can define the first one as -1, and then the 0 and positive subtypes would override it.
             }
         }
     }
-
 }
-
-
 
 bool bElemAttr::isMod() const
 {
@@ -107,7 +99,7 @@ int bElemAttr::getEnergy() const
 
 void bElemAttr::setEnergy(int e)
 {
-    this->energy = std::min(this->getMaxEnergy(),std::max(0,e));
+    this->energy = std::min(this->getMaxEnergy(), std::max(0, e));
 }
 
 bool bElemAttr::isKillable() const
@@ -119,7 +111,6 @@ void bElemAttr::setKillable(bool k)
     this->killable = k;
 }
 
-
 bool bElemAttr::isDestroyable() const
 {
     return this->destroyable;
@@ -127,31 +118,33 @@ bool bElemAttr::isDestroyable() const
 
 void bElemAttr::setDestroyable(bool d)
 {
-    this->destroyable=d;
+    this->destroyable = d;
 }
 
 bool bElemAttr::isSteppable() const
 {
-    std::shared_ptr<bElem> myOwner=this->owner.lock();
-    if(!myOwner)
+    std::shared_ptr<bElem> myOwner = this->owner.lock();
+    if (!myOwner)
         return this->steppable;
-    return this->steppable && !myOwner->getStats()->isDying() && !myOwner->getStats()->isDestroying() && !myOwner->getStats()->isTeleporting();
+    return this->steppable && !myOwner->getStats()->isDying()
+           && !myOwner->getStats()->isDestroying() && !myOwner->getStats()->isTeleporting();
 }
 
 void bElemAttr::setSteppable(bool s)
 {
-    this->steppable=s;
+    this->steppable = s;
 }
 
 bool bElemAttr::isMovable() const
 {
-    std::shared_ptr<bElem> own=this->owner.lock();
-    return this->movable && !own->getStats()->isDestroying() && !own->getStats()->isDying() && !own->getStats()->isTeleporting();
+    std::shared_ptr<bElem> own = this->owner.lock();
+    return this->movable && !own->getStats()->isDestroying() && !own->getStats()->isDying()
+           && !own->getStats()->isTeleporting();
 }
 
 void bElemAttr::setMovable(bool m)
 {
-    this->movable=m;
+    this->movable = m;
 }
 
 bool bElemAttr::isInteractive() const
@@ -161,7 +154,7 @@ bool bElemAttr::isInteractive() const
 
 void bElemAttr::setInteractive(bool i)
 {
-    this->interactive=i;
+    this->interactive = i;
 }
 
 bool bElemAttr::isCollectible() const
@@ -169,12 +162,9 @@ bool bElemAttr::isCollectible() const
     return this->collectible;
 }
 
-
-
-
 void bElemAttr::setCollectible(bool c)
 {
-    this->collectible=c;
+    this->collectible = c;
 }
 
 bool bElemAttr::canPush() const
@@ -184,7 +174,7 @@ bool bElemAttr::canPush() const
 
 void bElemAttr::setPush(bool p)
 {
-    this->push=p;
+    this->push = p;
 }
 
 bool bElemAttr::canBePushed() const
@@ -194,9 +184,8 @@ bool bElemAttr::canBePushed() const
 
 void bElemAttr::setPushed(bool p)
 {
-    this->pushed=p;
+    this->pushed = p;
 }
-
 
 /**
  * @brief Checks if the element has an associated inventory for collecting.
@@ -208,9 +197,7 @@ void bElemAttr::setPushed(bool p)
  */
 bool bElemAttr::canCollect() const
 {
-
-    return (bool)this->inv;
-
+    return (bool) this->inv;
 }
 
 /**
@@ -228,13 +215,11 @@ bool bElemAttr::canCollect() const
  */
 void bElemAttr::setCollect(bool c)
 {
-    if(c==true && !this->canCollect() && !this->owner.expired())
-    {
-        std::shared_ptr<inventory> newInv=std::make_shared<inventory>();
+    if (c == true && !this->canCollect() && !this->owner.expired()) {
+        std::shared_ptr<inventory> newInv = std::make_shared<inventory>();
         newInv->changeOwner(this->owner.lock());
-        this->inv=newInv;
+        this->inv = newInv;
     }
-
 }
 
 bool bElemAttr::isWeapon() const
@@ -244,7 +229,7 @@ bool bElemAttr::isWeapon() const
 
 void bElemAttr::setWeapon(bool w)
 {
-    this->weapon=w;
+    this->weapon = w;
 }
 
 bool bElemAttr::isOpen() const
@@ -254,7 +239,7 @@ bool bElemAttr::isOpen() const
 
 void bElemAttr::setOpen(bool o)
 {
-    this->open=o;
+    this->open = o;
 }
 
 bool bElemAttr::isLocked() const
@@ -264,7 +249,7 @@ bool bElemAttr::isLocked() const
 
 void bElemAttr::setLocked(bool l)
 {
-    this->locked=l;
+    this->locked = l;
 }
 
 int bElemAttr::getMaxEnergy() const
@@ -274,7 +259,7 @@ int bElemAttr::getMaxEnergy() const
 
 void bElemAttr::setMaxEnergy(int e)
 {
-    this->maxEnergy=std::max(0,e);
+    this->maxEnergy = std::max(0, e);
 }
 
 int bElemAttr::getAmmo() const
@@ -284,7 +269,7 @@ int bElemAttr::getAmmo() const
 
 void bElemAttr::setAmmo(int a)
 {
-    this->ammo=std::min(this->getMaxAmmo(),std::max(0,a));
+    this->ammo = std::min(this->getMaxAmmo(), std::max(0, a));
 }
 
 int bElemAttr::getMaxAmmo() const
@@ -294,9 +279,8 @@ int bElemAttr::getMaxAmmo() const
 
 void bElemAttr::setMaxAmmo(int m)
 {
-    this->maxAmmo=std::max(0,m);
+    this->maxAmmo = std::max(0, m);
 }
-
 
 std::shared_ptr<inventory> bElemAttr::getInventory() const
 {
@@ -305,10 +289,5 @@ std::shared_ptr<inventory> bElemAttr::getInventory() const
 
 void bElemAttr::setInventory(std::shared_ptr<inventory> inventory)
 {
-    this->inv=inventory;
+    this->inv = inventory;
 }
-
-
-
-
-

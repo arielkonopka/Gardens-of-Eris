@@ -21,14 +21,7 @@
  */
 #include "key.h"
 
-
-
 int key::getType() const
 {
     return bElemTypes::_key;
 }
-
-
-
-
-

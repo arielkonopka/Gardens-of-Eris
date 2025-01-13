@@ -22,11 +22,6 @@
 
 #include "simpleBomb.h"
 
-
-
-
-
-
 bool simpleBomb::hurt(int points)
 {
     return this->destroy();
@@ -39,7 +34,7 @@ bool simpleBomb::kill()
 
 bool simpleBomb::destroy()
 {
-    if(this->getStats()->isDestroying() || this->triggered)
+    if (this->getStats()->isDestroying() || this->triggered)
         return false;
 
     this->registerLiveElement(shared_from_this());
@@ -50,11 +45,10 @@ bool simpleBomb::destroy()
 
 bool simpleBomb::mechanics()
 {
-    if (bElem::mechanics()) return this->explode(1.5);
+    if (bElem::mechanics() && !this->getStats()->isDestroying())
+        return this->explode(1.5);
     return false;
 }
-
-
 
 int simpleBomb::getType() const
 {
