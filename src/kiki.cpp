@@ -57,25 +57,41 @@ bool kiki::mechanics()
     }
     e = this->getElementInDirection(mdir);
     while (e && e->getType() != this->getType()) {
-    /*
+        /*
      *    if (!e->getAttrs()->isSteppable() && e->getAttrs()->isKillable()) {
             e->hurt(kikiSpace::kikiHurts);
         }
     */
-        if (e->getType() != bElemTypes::_boubaType) {
-            /**
-             * @brief place boubas on steppable elements
-             *
-             */
-            pos = e->getStats()->getMyPosition();
-            auto ne = elementFactory::generateAnElement<bouba>(this->getBoard(), 0);
-            ne->getStats()->setMyDirection(mdir);
-            ne->getStats()->setFacing(mdir);
-            ne->stepOnElement(this->getBoard()->getElement(pos));
-            //  registerLiveElement(ne);
-            e = ne;
+        if(e->getAttrs()->isSteppable()) {
+
+            if (e->getType() != bElemTypes::_boubaType ) {
+                /**
+                 * @brief place boubas on steppable elements
+                 *
+                 */
+                pos = e->getStats()->getMyPosition();
+                auto ne = elementFactory::generateAnElement<bouba>(this->getBoard(), 0);
+                ne->getStats()->setMyDirection(mdir);
+                ne->getStats()->setFacing(mdir);
+                ne->stepOnElement(this->getBoard()->getElement(pos));
+                e = ne;
+            }
+        } else
+        {
+            auto st=e->getStats()->getSteppingOn();
+            if(st && st->getType()!=bElemTypes::_boubaType) {
+                pos = e->getStats()->getMyPosition();
+                auto ne = elementFactory::generateAnElement<bouba>(this->getBoard(), 0);
+                ne->getStats()->setMyDirection(mdir);
+                ne->getStats()->setFacing(mdir);
+                ne->stepOnElement(st);
+                this->registerLiveElement(ne);
+            }
         }
-   //     e->getStats()->setWaiting(boubaSpace::boubaRefresh);
+
+
+
+        //     e->getStats()->setWaiting(boubaSpace::boubaRefresh);
         e = e->getElementInDirection(mdir);
     }
     this->getStats()->setWaiting(kikiSpace::kikiWaitTime);

@@ -31,8 +31,8 @@ bool bouba::mechanics()
 {
     if (!bElem::mechanics())
         return false;
-    std::shared_ptr<bElem> s=this->getStats()->getStandingOn().lock();
-    if(s)
+    std::shared_ptr<bElem> s = this->getStats()->getStandingOn().lock();
+    if (s)
         s->hurt(GoEConstants::_radioActivityPower);
     this->getStats()->setWaiting(GoEConstants::_radioActivitySpeed);
     return true;

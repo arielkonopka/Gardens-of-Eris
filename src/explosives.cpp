@@ -22,8 +22,6 @@
 #include "explosives.h"
 #include <viewPoint.h>
 
-
-
 bool explosives::additionalProvisioning(int subtype)
 {
     return bElem::additionalProvisioning(subtype);
@@ -172,25 +170,39 @@ float explosives::getViewRadius() const
     return this->radius;
 }
 
-
 bool explosives::explode(float radius)
 {
-    this->radius=radius*(float)2.5;
-    this->brd=this->getBoard();
-    if(!brd || this->getStats()->isDestroying() || this->getStats()->isDisposed())
+    this->radius = radius * (float) 2.5;
+    this->brd = this->getBoard();
+    if (!brd || this->getStats()->isDestroying() || this->getStats()->isDisposed())
         return false;
     viewPoint::get_instance()->addViewPoint(shared_from_this());
-    this->bx=brd->getSize().x;
-    this->by=brd->getSize().y;
-    myUtility::Coords mpos=myUtility::Coords(this->getStats()->getMyPosition());
+    this->bx = brd->getSize().x;
+    this->by = brd->getSize().y;
+    myUtility::Coords mpos = myUtility::Coords(this->getStats()->getMyPosition());
     bElem::destroy();
     viewPoint::get_instance()->addViewPoint(brd->getElement(mpos));
-    traverser(mpos,mpos+myUtility::Coords::dir2coords(dir::direction::RIGHT),radius,(int)radius+2,dir::direction::LEFT);
-    traverser(mpos,mpos+myUtility::Coords::dir2coords(dir::direction::LEFT),radius,(int)radius+2,dir::direction::RIGHT);
-    traverser(mpos,mpos+myUtility::Coords::dir2coords(dir::direction::UP),radius,(int)radius+2,dir::direction::DOWN);
-    traverser(mpos,mpos+myUtility::Coords::dir2coords(dir::direction::DOWN),radius,(int)radius+2,dir::direction::UP);
+    traverser(mpos,
+              mpos + myUtility::Coords::dir2coords(dir::direction::RIGHT),
+              radius,
+              (int) radius + 2,
+              dir::direction::LEFT);
+    traverser(mpos,
+              mpos + myUtility::Coords::dir2coords(dir::direction::LEFT),
+              radius,
+              (int) radius + 2,
+              dir::direction::RIGHT);
+    traverser(mpos,
+              mpos + myUtility::Coords::dir2coords(dir::direction::UP),
+              radius,
+              (int) radius + 2,
+              dir::direction::DOWN);
+    traverser(mpos,
+              mpos + myUtility::Coords::dir2coords(dir::direction::DOWN),
+              radius,
+              (int) radius + 2,
+              dir::direction::UP);
     return true;
-
 }
 /***
  * @brief We will use cellular automata to resolve the shape of an explosion
@@ -199,22 +211,40 @@ bool explosives::explode(float radius)
  * @param radius - allowed radius
  * @return
  */
-bool explosives::traverser(myUtility::Coords center, myUtility::Coords point, float radius,int plen,dir::direction noGo)
+bool explosives::traverser(
+    myUtility::Coords center, myUtility::Coords point, float radius, int plen, dir::direction noGo)
 {
-    if (point.getX()>=bx || point.getX()<0 || point.getY()<0 ||point.getY()>=by ||(point.distance(center)>radius) || plen<=0)
+    if (point.getX() >= bx || point.getX() < 0 || point.getY() < 0 || point.getY() >= by
+        || (point.distance(center) > radius) || plen <= 0)
         return false;
-    auto elem=brd->getElement(point);
-    if(!elem || elem->getStats()->isDestroying() || (!elem->getAttrs()->isDestroyable() && !elem->getAttrs()->isSteppable()))
+    auto elem = brd->getElement(point);
+    if (!elem || elem->getStats()->isDestroying()
+        || (!elem->getAttrs()->isDestroyable() && !elem->getAttrs()->isSteppable()))
         return false;
     elem->destroy();
-    if(noGo!=dir::direction::RIGHT)
-        traverser(center,point+myUtility::Coords::dir2coords(dir::direction::RIGHT),radius,plen-1,noGo);
-    if(noGo!=dir::direction::LEFT)
-        traverser(center,point+myUtility::Coords::dir2coords(dir::direction::LEFT),radius,plen-1,noGo);
-    if(noGo!=dir::direction::UP)
-        traverser(center,point+myUtility::Coords::dir2coords(dir::direction::UP),radius,plen-1,noGo);
-    if(noGo!=dir::direction::DOWN)
-        traverser(center,point+myUtility::Coords::dir2coords(dir::direction::DOWN),radius,plen-1,noGo);
+    if (noGo != dir::direction::RIGHT)
+        traverser(center,
+                  point + myUtility::Coords::dir2coords(dir::direction::RIGHT),
+                  radius,
+                  plen - 1,
+                  noGo);
+    if (noGo != dir::direction::LEFT)
+        traverser(center,
+                  point + myUtility::Coords::dir2coords(dir::direction::LEFT),
+                  radius,
+                  plen - 1,
+                  noGo);
+    if (noGo != dir::direction::UP)
+        traverser(center,
+                  point + myUtility::Coords::dir2coords(dir::direction::UP),
+                  radius,
+                  plen - 1,
+                  noGo);
+    if (noGo != dir::direction::DOWN)
+        traverser(center,
+                  point + myUtility::Coords::dir2coords(dir::direction::DOWN),
+                  radius,
+                  plen - 1,
+                  noGo);
     return true;
 }
-
