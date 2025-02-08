@@ -134,6 +134,12 @@ namespace GoEConstants {
     constexpr int _interactedTime = 5+5;             ///< Time of interaction. Meaningful, or just a fleeting moment of connection?
     constexpr int _radioActivityPower = 5;            ///< How much would bouba hurt you at once.
     constexpr int _radioActivitySpeed = 5;            ///< Radioactivity speed
+    constexpr int _monsterMemoryTime=5*5*5*5*5;       ///< Amount of timer ticks, that monster would "remember" an object
+    constexpr int _topPriority = 5;
+    constexpr int _midPriority = 3;
+    constexpr int _lowPriority = 2;
+    constexpr int _lowestPriority = 0;
+    constexpr int _avoidPriority = -1;
 }
 
 

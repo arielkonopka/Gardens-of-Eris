@@ -225,6 +225,7 @@ There are control switches that modify sound handling:
  * stacking - If we allow multiple sounds, do we let them play, or should we stop the sound currently playing and start anew upon request (false), or permit all instances to play while avoiding collisions by applying a delay if the previous sound did not have the chance to play?
 
 ## TODO
+- Rewrite monster mechanics - Yay! finally it is the time to make it more interesting.
 - Refactor sound engine
 - Refactor chamber, to contain bElem container, which then would have the stepOnElement routines???
 ~~- Refactor the engine, to have only elements on the same board to be active. This will make a lot ot things very tricky, especially teleporting elements between boards with active elements in the inventory.~~
@@ -267,9 +268,33 @@ The config file now will have entries to configure elements attributes, like bei
     int ammo=0;
     int maxAmmo=0;
 
+## Monster logic - *TBD*
+A monster will have its own class fnordNavigator, that will contain information about all seen objects byt the monster, like states, previous states.
+FnordNavigator also will have:
+* flag, if it is locked in its mode
+* mode of operation
 
+  * Wandering = 0,      // Patroling -> Wandering through chaos
+  * Collecting = 1,     // Collecting ephemeral things
+  * Locking = 2,        // ClosingDoors -> Locking gates
+  * Escaping = 3,       // RunningAway -> Escaping into confusion
+  * Fighting = 4        // Fighting -> Fighting the absurd
+  
+* own state and previous state, to determine rotations and other things.
+
+A monster at the momento of placement will be setup with function:
+
+* guard -> will traverse the perimeter, collect the keys and weapons, can brean an apple, and collect it, if it sees an apple, and has no broken apple, will standing on radioactive fields 
+* janitor -> will lock all the open doors, fix broken apples, collect keys and other elements
+* critter -> can collect keys and broken apples, avoids being shot, avoids player, avoids radioactivity
+
+
+## TODO
+* fnordVision(TM)
+* fnordNagivatorCOmmands(TM)
 
 ## ChangeLog
+* started refactoring the Monster engine. so far I have three classes, fnordEcho - abstraction representation of an scanned objects, fnordVision - utility class, that will allow scanning the scan range, and finally fnordNavigator - the class, that will have all the logic. FnordNavigator is meant to be a class, that will tell the object what to do.
 * Now kiki si not placed so danesly, still glitches happen.
 * Fixed monster - more to go, whole monster mechanics must be rewritten
 * Added death ray contraption system kiki & bouba

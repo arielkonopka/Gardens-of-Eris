@@ -67,6 +67,8 @@ namespace myUtility {
          */
         Coords operator+(const Coords &other) const;
 
+        Coords operator+(const dir::direction &other) const;
+
         /**
          * @brief Subtract two Coords objects.
          * @param other Coords object for subtract.
@@ -182,6 +184,8 @@ namespace myUtility {
         int sum2d() const;
         int sum3d() const;
 
+        Coords validate(Coords oth);
+        Coords cutOff(Coords oth);
         Coords(coords coords1);
         static Coords dir2coords(dir::direction dir);
     };

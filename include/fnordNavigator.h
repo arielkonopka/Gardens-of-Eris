@@ -1,0 +1,86 @@
+/*
+ * Copyright (c) 2025, Ariel Konopka
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#ifndef FNORDNAVIGATOR_H
+#define FNORDNAVIGATOR_H
+#include "Coords.h"
+#include "bElem.h"
+#include "commons.h"
+#include "fnordEcho.h"
+#include <queue>
+
+namespace fnordController {
+
+struct MoveInfo
+{
+    dir::direction direction;
+    myUtility::Coords nextCoord;
+    bool shouldRotate;
+    bool shouldWait; // Dodajemy informację o czekaniu
+    enum class actionType { MOVE = 1, HOLD = 2, ATTACK = 3, INTERACT = 4 };
+    actionType action;
+    bool attackWithGun;
+};
+enum class fnordMode {
+    Wandering = 0,  // Patroling -> Wandering through chaos
+    Collecting = 1, // Collecting ephemeral things
+    Locking = 2,    // ClosingDoors -> Locking gates
+    Escaping = 3,   // RunningAway -> Escaping into confusion
+    Fighting = 4,   // Fighting -> Fighting the absurd
+    Resting = 5     // Resting -> slacking around
+};
+using Path = std::vector<std::pair<myUtility::Coords, dir::direction>>;
+enum class fnordFunc { Janitor = 0, Guard = 1, Critter = 2 };
+
+/**
+     * @brief The fnordNavigator class
+     * This class is a main navigation engine for the monster. It will navigate through fnords.
+     * Fnords are anomalies, elements that are not floors nor walls.
+     * 
+     */
+class fnordNavigator
+{
+public:
+    int radius = 10;
+    Path findPath(const myUtility::Coords &start, const myUtility::Coords &end);
+    bool modeChange = false;
+    bool hasPath = false;
+    bool locked = false;
+    fnordEcho myFnord;
+    fnordMode fMode;
+    fnordFunc fFunction;
+    std::priority_queue<fnordEcho, std::vector<fnordEcho>, std::greater<>>
+        fnordMap; /// Priority queue of fnords of interest
+    std::map<unsigned long int, fnordEcho> fnordStore;
+    std::vector<myUtility::Coords> fnordPath;
+    void addFnord(fnordEcho &fnord);
+    fnordEcho &getFnordEcho(unsigned long int id);
+    int rescore(const fnordEcho &fnord);
+    void cleanupMap();
+    fnordEcho &makeFnord(std::shared_ptr<bElem> element, fnordEcho &echo);
+    myUtility::Coords lockedOnTheTargetLogic();
+    fnordNavigator(const fnordEcho &myFnord);
+    fnordNavigator();
+    std::shared_ptr<chamber> fnordBoard;
+};
+
+} // namespace fnordController
+#endif

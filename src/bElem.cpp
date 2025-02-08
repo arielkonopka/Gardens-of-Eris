@@ -108,13 +108,18 @@ bool bElem::dropItem(unsigned long int instanceId)
     return this->collect(item); // re-collect, since there was no place to drop it.
 }
 
-/*
-   This is the most basic method for dealing with all objects. Because all of them must be put to a place on a boart at some point,
-   and this is the method that is to be used for that purpose.
-   It should work on all types of configurations, except standing on an empty point
-   If places on an object that already is covered by another one, the newly placed object is placed in between
-   This method takes "steppable" flag into consideration
-*/
+/**
+ * @brief bElem::stepOnElement Places this element onto a specified element on the board.  
+ * 
+ * Since every object must eventually be positioned on the board, this method provides the standard way to achieve that.  
+ * It works in all configurations except when attempting to place an object on `nullptr`.  
+ * If the target element is already covered by another object, the new element is inserted between them in the stack.  
+ * The method also respects the "steppable" flag to ensure proper placement logic.  
+ * 
+ * @param step The element to step on.  
+ * @return `true` if the placement was successful, `false` otherwise.  
+ */
+
 bool bElem::stepOnElement(std::shared_ptr<bElem> step)
 {
     auto elig = [](std::shared_ptr<bElem> step) -> bool {
@@ -165,6 +170,22 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
     step->stepOnAction(true, shared_from_this());
     return true;
 }
+
+/**
+ * @brief Forcefully disposes of the element without additional safety checks.  
+ * 
+ * This method removes the element from the board, handling inventory and dependencies.  
+ * If the element has active mechanics, it is first deregistered.  
+ * If the element holds a collectible inventory, its items may be transferred to a newly created rubbish element  
+ * to prevent loss, unless the element is of a type that does not require it.  
+ * 
+ * Unlike `disposeElement()`, this method does not ensure safe handling in all cases,  
+ * making it less robust but potentially more efficient in controlled scenarios.  
+ * 
+ * The method also clears the board reference, destroys mutexes, and stops any active sounds related to the element.  
+ * 
+ * @return `DISPOSED` if successful, `nullptrREACHED` if the element was removed without replacement, or `ERROR` if already disposed.  
+ */
 
 oState bElem::disposeElementUnsafe()
 {
@@ -222,6 +243,20 @@ oState bElem::disposeElementUnsafe()
     return res; // false means that there is no more elements to go.
 }
 
+/**
+ * @brief Disposes of the element, removing it from the board and handling inventory.  
+ * 
+ * This method safely removes the element from the game world.  
+ * If the element has activated mechanics, it is first deregistered.  
+ * If the element holds a collectible inventory, its items are either cleared (if it's rubbish)  
+ * or transferred to a newly created rubbish element to prevent loss.  
+ * 
+ * The method ensures the element is properly marked as disposed, removes it from the board,  
+ * and releases associated resources such as mutexes and sounds.  
+ * 
+ * @return `DISPOSED` if successful, `ERROR` if the element was already disposed.  
+ */
+
 oState bElem::disposeElement()
 {
     //std::shared_ptr<bElem> t = shared_from_this();
@@ -266,7 +301,7 @@ oState bElem::disposeElement()
  */
 coords bElem::getAbsCoords(coords dir) const
 {
-    if (this->getStats()->getMyPosition() == NOCOORDS || !this->getBoard())
+    if (!this->getBoard() || this->getStats()->getMyPosition() == NOCOORDS)
         return NOCOORDS;
     coords res = (this->getStats()->getMyPosition() + dir).validate(this->getBoard()->getSize());
     return res;

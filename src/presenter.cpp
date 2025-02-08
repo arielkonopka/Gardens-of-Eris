@@ -629,4 +629,4 @@ int presenter::presentEverything()
     return 1;
 }
 
-} // namespace namespace
+} // namespace presenter

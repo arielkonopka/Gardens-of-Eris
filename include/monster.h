@@ -22,31 +22,32 @@
 
 #ifndef MONSTER_H
 #define MONSTER_H
-#include "objectTypes.h"
-#include "chamber.h"
-#include "videoElementDef.h"
-#include "plainGun.h"
 #include "bazooka.h"
+#include "chamber.h"
+#include "commons.h"
+#include "fnordNavigator.h"
+#include "objectTypes.h"
+#include "plainGun.h"
+#include <iostream>
+#include <map>
+#include <memory>
+#include <queue>
+#include <ranges>
 
 class monster : public bElem
 {
 public:
     using bElem::additionalProvisioning;
 
-    monster()=default;
+    monster();
     virtual ~monster()=default;
     int getType() const;
-    virtual bool mechanics();
-    virtual bool checkNeigh();
-    virtual bool steppableNeigh();
+    bool mechanics() final;
+    bool selfAlign() final;
     bool additionalProvisioning(int subtype) final;
 
 private:
-    std::shared_ptr<plainGun> weapon=nullptr;
-    bool inited=false;
-    int rotA=3;
-    int rotB=1;
-
+    fnordController::fnordNavigator fNavigator;
 };
 
 #endif // MONSTER_H

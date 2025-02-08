@@ -173,6 +173,16 @@ Coords Coords::operator+(int scalar) const
 }
 
 /**
+ * @brief returnes coordinates in direction
+ * @param other
+ * @return 
+ */
+Coords Coords::operator+(const dir::direction &other) const
+{
+    return (*this) + dir::dirToCoords(other);
+}
+
+/**
  * @brief Subtracts a scalar value from both coordinates of a Coords object.
  *
  * This operator returns a new Coords object where both the x and y coordinates are decreased
@@ -297,6 +307,31 @@ int Coords::sum2d() const
 int Coords::sum3d() const
 {
     return x + y + z;
+}
+
+Coords Coords::validate(Coords oth)
+{
+    if (x < 0 || x >= oth.getX() || y < 0 || y >= oth.getY())
+        return myUtility::NOCOORDS;
+    return *this;
+}
+
+/**
+ * @brief Coords::cutOff - if coordinates are out of the board, they are fixed - cutoff
+ * @param oth - the size of the board
+ * @return 
+ */
+Coords Coords::cutOff(Coords oth)
+{
+    if (x < 0)
+        x = 0;
+    if (x >= oth.getX())
+        x = oth.getX() - 1;
+    if (y < 0)
+        y = 0;
+    if (y >= oth.getX())
+        y = oth.getX() - 1;
+    return *this;
 }
 
 Coords::Coords(coords coords1)
