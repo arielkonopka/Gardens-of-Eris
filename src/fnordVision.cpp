@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 #include "fnordVision.h" // Includes the header file for fnordVision class
-
+#include "fnordNavigator.h"
 namespace fnordVision {
 
 // Initialize the static maps outside the class definition

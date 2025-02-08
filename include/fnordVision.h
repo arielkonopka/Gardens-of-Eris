@@ -25,10 +25,14 @@
 
 #include "Coords.h" // Includes the header file for the Coords class
 #include "fnordEcho.h"
-#include "fnordNavigator.h"
+//#include "fnordNavigator.h"
 #include <map>    // Includes the map container
 #include <vector> // Includes the vector container
 
+// Forward declaration of fnordNavigator (important to avoid circular dependencies)
+namespace fnordController {
+class fnordNavigator;
+}
 namespace fnordVision {
 
 /**

@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "fnordNavigator.h"
+#include "fnordVision.h"
 
 namespace fnordController {
 /**
@@ -27,7 +28,47 @@ namespace fnordController {
  */
 fnordNavigator::fnordNavigator()
     : fnordNavigator(fnordEcho())
-{}
+{
+    this->fv = std::make_shared<fnordVision::fnordVision>();
+}
+
+void fnordNavigator::attachBoard(const std::shared_ptr<chamber> chmbr)
+{
+    this->fnordBoard = chmbr;
+}
+
+moveInfo fnordNavigator::makeUpMind()
+{
+    moveInfo mi;
+    mi.action = moveInfo::actionType::HOLD;
+    mi.direction = myFnord.previousDir;
+    mi.nextCoord = myFnord.currentPos;
+    if (!this->fnordBoard)
+        return mi;
+    if (!this->locked) {
+        this->fv->chaosScan(shared_from_this());
+        if (this->fnordMap.empty()) {
+            mi.action = moveInfo::actionType::MOVE;
+            mi.nextCoord = mi.nextCoord + dir::dirToCoords(mi.direction);
+            return mi;
+        }
+        auto fnord = this->fnordMap.top();
+        this->fnordMap.pop();
+        this->locked = true;
+        this->fnordPath = this->findPath(this->myFnord.currentPos, fnord.currentPos);
+    }
+    auto fnordStep = this->fnordPath.back();
+    if (this->myFnord.currentDir != fnordStep.second) {
+        mi.action = moveInfo::actionType::ROTATE;
+        mi.shouldRotate = true;
+        mi.direction = fnordStep.second;
+        mi.shouldWait = true;
+        return mi;
+    }
+    if (myFnord.currentPos == fnordStep.first) {
+        this->fnordPath.pop_back();
+    }
+}
 
 /**
  * @brief fnordEcho::makeFnord - make a fnordEcho of any element. this is a part of the fnordVision thing
@@ -64,9 +105,10 @@ fnordEcho &fnordNavigator::makeFnord(std::shared_ptr<bElem> element, fnordEcho &
 fnordNavigator::fnordNavigator(const fnordEcho &myFnord)
     : myFnord(myFnord)
 {
-    this->fFunction = static_cast<fnordFunc>(
+    /*  this->fFunction = static_cast<fnordFunc>(
         bElem::randomNumberGenerator()
         % 3); // We choose a random function of the monster. Which means different navigators
+  */
     this->fMode = fnordMode::Wandering;
 }
 
@@ -217,24 +259,6 @@ void fnordNavigator::cleanupMap()
 }
 
 /**
- * @brief lockedOnTheTargetLogic the fnordLogic, when it is locked on the target
- * @return 
- */
-myUtility::Coords fnordNavigator::lockedOnTheTargetLogic()
-{
-    if (hasPath) {
-        if (fnordPath.empty())
-            return myUtility::NOCOORDS;
-        myUtility::Coords mc = this->fnordPath.back();
-        this->fnordPath.pop_back();
-        return mc;
-    }
-    /// search for the path
-    return myUtility::NOCOORDS;
-    /// Create the path seeking part With A* algorithm
-}
-
-/**
  * @brief Finds a path from the start point to the end point on the board using the A* search algorithm.
  * 
  * This method calculates a path between two given coordinates on the game board, 
@@ -252,22 +276,28 @@ myUtility::Coords fnordNavigator::lockedOnTheTargetLogic()
  */
 Path fnordNavigator::findPath(const myUtility::Coords &start, const myUtility::Coords &end)
 {
-    // 1. Data structure definitions
+    /**
+     * @brief The Node struct 
+     * coords - position in search area
+     * direction - direction to get you there
+     * g - cost from start
+     * h - heuristic to the end
+     * parent - parent pointer to reconstruct the full path from end to the beging
+     * f() - cost function
+     * it also contains <=> operator and cost functions are used
+     */
     struct Node
     {
         myUtility::Coords coords;
-        dir::direction direction; // Direction from which we came to this node
-        int g;                    // Cost from start
-        int h;                    // Heuristic to the end
-        Node *parent;             // Pointer to the parent (previous node on the path)
-
-        int f() const { return g + h; } // Total cost (f = g + h)
-
-        // Comparison operator for the priority queue (reversed, because we want the smallest f)
+        dir::direction direction;
+        int g;
+        int h;
+        Node *parent;
+        int f() const { return g + h; } /// Total cost (f = g + h)
         auto operator<=>(const Node &other) const { return f() <=> other.f(); };
     };
 
-    // Function calculating the heuristic (Manhattan distance)
+    /// calculateHeuristic Lambda Function calculating the heuristic (Manhattan distance)
     auto calculateHeuristic = [&](const myUtility::Coords &a, const myUtility::Coords &b) { return std::abs(a.getX() - b.getX()) + std::abs(a.getY() - b.getY()); };
 
     // 2. Initialization

@@ -27,18 +27,25 @@
 #include "fnordEcho.h"
 #include <queue>
 
+namespace fnordVision {
+class fnordVision;
+} // namespace fnordVision
 namespace fnordController {
 
-struct MoveInfo
+/**
+ * @brief The moveInfo struct - this is the bElem controlling api, a bit different from the one for the player, where turns re without penalty
+ */
+struct moveInfo
 {
     dir::direction direction;
     myUtility::Coords nextCoord;
     bool shouldRotate;
     bool shouldWait; // Dodajemy informację o czekaniu
-    enum class actionType { MOVE = 1, HOLD = 2, ATTACK = 3, INTERACT = 4 };
+    enum class actionType { MOVE = 1, HOLD = 2, ATTACK = 3, INTERACT = 4, ROTATE = 5 };
     actionType action;
     bool attackWithGun;
 };
+
 enum class fnordMode {
     Wandering = 0,  // Patroling -> Wandering through chaos
     Collecting = 1, // Collecting ephemeral things
@@ -48,7 +55,7 @@ enum class fnordMode {
     Resting = 5     // Resting -> slacking around
 };
 using Path = std::vector<std::pair<myUtility::Coords, dir::direction>>;
-enum class fnordFunc { Janitor = 0, Guard = 1, Critter = 2 };
+//enum class fnordFunc { Janitor = 0, Guard = 1, Critter = 2 };
 
 /**
      * @brief The fnordNavigator class
@@ -56,30 +63,32 @@ enum class fnordFunc { Janitor = 0, Guard = 1, Critter = 2 };
      * Fnords are anomalies, elements that are not floors nor walls.
      * 
      */
-class fnordNavigator
+class fnordNavigator : public std::enable_shared_from_this<fnordNavigator>
 {
 public:
+    std::shared_ptr<fnordVision::fnordVision> fv;
     int radius = 10;
     Path findPath(const myUtility::Coords &start, const myUtility::Coords &end);
     bool modeChange = false;
     bool hasPath = false;
     bool locked = false;
+    void attachBoard(const std::shared_ptr<chamber> chmbr);
     fnordEcho myFnord;
-    fnordMode fMode;
-    fnordFunc fFunction;
+    fnordMode fMode = fnordMode::Wandering;
+    //  fnordFunc fFunction = fnordFunc::Guard;
     std::priority_queue<fnordEcho, std::vector<fnordEcho>, std::greater<>>
         fnordMap; /// Priority queue of fnords of interest
     std::map<unsigned long int, fnordEcho> fnordStore;
-    std::vector<myUtility::Coords> fnordPath;
+    Path fnordPath;
     void addFnord(fnordEcho &fnord);
     fnordEcho &getFnordEcho(unsigned long int id);
     int rescore(const fnordEcho &fnord);
     void cleanupMap();
     fnordEcho &makeFnord(std::shared_ptr<bElem> element, fnordEcho &echo);
-    myUtility::Coords lockedOnTheTargetLogic();
     fnordNavigator(const fnordEcho &myFnord);
     fnordNavigator();
     std::shared_ptr<chamber> fnordBoard;
+    moveInfo makeUpMind();
 };
 
 } // namespace fnordController
