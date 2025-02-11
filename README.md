@@ -269,7 +269,18 @@ The config file now will have entries to configure elements attributes, like bei
     int maxAmmo=0;
 
 ## Monster logic - *TBD*
-A monster will have its own class fnordNavigator, that will contain information about all seen objects byt the monster, like states, previous states.
+
+A monster will make use of three following classes:
+fnordEcho - abstract representation of an object from the fnordBoard. We built the abstraction layer betwean real objects and fnordEchos only to store them in fnordNavigator memory structures.  
+fnordVision - scans area around myFnord (on the fnorBoard), and creates all the interesting objects in the fnordNavigtor's memory structs
+fnordNavigator - the master control of the fnord class family. It uses fnordVision to locate interesting objects on the board, then it represents them as fnordEcho, and stores them in two structures: unordered map with elementId as the key, and fnordEcho of the element. The other structure is priority queue with scoring as the priority. 
+The scoring itself also depends on the time of the element being last seen and the distance. Only elements "visible" (this means, all the fields on the line leading to the target are steppable) are considered and further processed.
+The decision method depends on the mode of operation, but also on the scorings stored in the maps.
+
+
+
+
+A monster will have its own class fnordNavigator, that will contain information about all seen objects but the monster, like states, previous states.
 FnordNavigator also will have:
 * flag, if it is locked in its mode
 * mode of operation
