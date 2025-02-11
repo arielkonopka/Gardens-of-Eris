@@ -277,13 +277,7 @@ fnordNavigator - the master control of the fnord class family. It uses fnordVisi
 The scoring itself also depends on the time of the element being last seen and the distance. Only elements "visible" (this means, all the fields on the line leading to the target are steppable) are considered and further processed.
 The decision method depends on the mode of operation, but also on the scorings stored in the maps.
 
-
-
-
-A monster will have its own class fnordNavigator, that will contain information about all seen objects but the monster, like states, previous states.
-FnordNavigator also will have:
-* flag, if it is locked in its mode
-* mode of operation
+* mode of operation (WiP)
 
   * Wandering = 0,      // Patroling -> Wandering through chaos
   * Collecting = 1,     // Collecting ephemeral things
@@ -294,10 +288,6 @@ FnordNavigator also will have:
 * own state and previous state, to determine rotations and other things.
 
 A monster at the momento of placement will be setup with function:
-
-* guard -> will traverse the perimeter, collect the keys and weapons, can brean an apple, and collect it, if it sees an apple, and has no broken apple, will standing on radioactive fields 
-* janitor -> will lock all the open doors, fix broken apples, collect keys and other elements
-* critter -> can collect keys and broken apples, avoids being shot, avoids player, avoids radioactivity
 
 
 ## TODO
