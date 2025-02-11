@@ -25,6 +25,7 @@
 #include "bElem.h"
 #include "commons.h"
 #include "fnordEcho.h"
+#include <algorithm>
 #include <queue>
 
 namespace fnordVision {
