@@ -46,7 +46,7 @@ public:
               dir::direction previousFace);
     int fType;
     int fSubtype;
-    int fScore = 0;
+    int fScore = -6502;
     /**
  * @brief fnordEcho::operator <=> 
  * @param other

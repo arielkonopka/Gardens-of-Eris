@@ -35,7 +35,94 @@ fnordNavigator::fnordNavigator()
 void fnordNavigator::attachBoard(const std::shared_ptr<chamber> chmbr)
 {
     this->fnordBoard = chmbr;
+    this->fv->registerBoard(chmbr);
 }
+
+/*
+moveInfo fnordNavigator::makeUpMind() {
+    moveInfo mi;
+    mi.action = moveInfo::actionType::HOLD;
+    mi.direction = myFnord.previousDir;
+    mi.nextCoord = myFnord.currentPos;
+    
+    if (!this->fnordBoard) {
+        return mi; // No board, no movement, just chillin'
+    }
+    
+    if (!this->locked) { // Not locked on a target, time to explore the chaos
+        this->fMode = (this->myFnord.hasGun) ? fnordMode::Fighting : fnordMode::Collecting;
+        this->modeChange = true;
+        this->cleanupMap(); // Gotta clean up the mess before making more
+        this->fv->chaosScan(shared_from_this()); // Scan for new opportunities in the chaos
+        
+        if (this->fnordMap.empty()) { // Nothing interesting in sight, time to wander
+            mi.action = moveInfo::actionType::MOVE;
+            mi.nextCoord = mi.nextCoord + dir::dirToCoords(mi.direction);
+            return mi;
+        }
+        
+        // Pick the most intriguing point from the chaos (1.2)
+        fnordEcho bestFnord;
+        int bestScore = std::numeric_limits<int>::min(); // Lowest score to start with
+        
+        for (const auto& [id, fnord] : fnordStore) { // Check every fnord in the store
+            if (fnord.fScore > bestScore) { // Found a more interesting fnord
+                bestScore = fnord.fScore; // Update the best score
+                bestFnord = fnord; // Remember the best fnord
+            }
+        }
+        
+        this->lockedFnord = bestFnord; // Lock onto the chosen fnord
+        this->fnordPath = this->findPath(this->myFnord.currentPos, bestFnord.currentPos); // Calculate the path to it
+        
+        if (this->fnordPath.empty()) { // No path to the chosen fnord, maybe it's unreachable
+            return mi; // Give up and wait for new opportunities
+        }
+        
+        this->locked = true; // We're locked on a target now
+    }
+    
+    // 2. We have a path, let's follow it
+    
+    // 3. Are we there yet?
+    auto targetDistance = this->myFnord.currentPos.distance(this->lockedFnord.currentPos);
+    if (targetDistance <= 1) { // Close enough to the target
+        // Take action based on the target type
+        if (this->lockedFnord.isWeapon) {
+            // ... (action: pick up weapon)
+        } else if (this->lockedFnord.fType == bElemTypes::_player) {
+            // ... (action: attack)
+        } else if (this->lockedFnord.isCollectible) {
+            // ... (action: collect item)
+        }
+        this->locked = false; // Unlock after taking action
+        return mi; // No movement needed, action taken
+    }
+    
+    // 4. Move to the next point on the path
+    auto fnordStep = this->fnordPath.back();
+    if (this->myFnord.currentDir != fnordStep.second) { // Wrong direction, gotta rotate
+        mi.action = moveInfo::actionType::ROTATE;
+        mi.shouldRotate = true;
+        mi.direction = fnordStep.second;
+        mi.shouldWait = true;
+        mi.nextCoord = myFnord.currentPos + dir::dirToCoords(fnordStep.second);
+        return mi;
+    }
+    
+    mi.action = moveInfo::actionType::MOVE; // Move to the next point
+    mi.direction = fnordStep.second;
+    mi.nextCoord = fnordStep.first;
+    
+    if (myFnord.currentPos == fnordStep.first) { // Reached the current point on the path
+        this->fnordPath.pop_back(); // Remove it from the path
+        if (this->fnordPath.empty()) { // Path finished, we're at the target
+            this->locked = false; // Unlock and look for new targets
+        }
+    }
+    return mi;
+}
+*/
 
 moveInfo fnordNavigator::makeUpMind()
 {
@@ -43,21 +130,44 @@ moveInfo fnordNavigator::makeUpMind()
     mi.action = moveInfo::actionType::HOLD;
     mi.direction = myFnord.previousDir;
     mi.nextCoord = myFnord.currentPos;
+    if (locked && lockedFnord.currentPos == myFnord.currentPos)
+        locked = false;
     if (!this->fnordBoard)
         return mi;
     if (!this->locked) {
+        this->fMode = (this->myFnord.hasGun) ? fnordMode::Fighting : fnordMode::Collecting;
+        this->modeChange = true;
+        this->cleanupMap();
         this->fv->chaosScan(shared_from_this());
         if (this->fnordMap.empty()) {
             mi.action = moveInfo::actionType::MOVE;
             mi.nextCoord = mi.nextCoord + dir::dirToCoords(mi.direction);
             return mi;
         }
-        auto fnord = this->fnordMap.top();
-        this->fnordMap.pop();
-        this->locked = true;
-        this->fnordPath = this->findPath(this->myFnord.currentPos, fnord.currentPos);
+        this->fnordPath.clear();
+        while (this->fnordPath.empty() && !this->fnordMap.empty()) {
+            auto fnord = this->fnordMap.top();
+            this->fnordMap.pop(); // this is not really good way to handle it, as we will have to perform cleanUp to recover removed Elements, this includes the already collected one...
+            this->lockedFnord = fnord;
+            this->fnordPath = this->findPath(this->myFnord.currentPos, fnord.currentPos);
+        }
+        if (!this->fnordPath.empty()) {
+            this->locked = true;
+        }
     }
     auto fnordStep = this->fnordPath.back();
+    auto targetDistance = this->myFnord.currentPos.distance(this->lockedFnord.currentPos);
+    if (targetDistance <= 1) { // Close enough to the target
+        if (this->lockedFnord.fType == bElemTypes::_player) {
+            mi.action = moveInfo::actionType::ATTACK;
+            mi.direction = fnordStep.second;
+        } else if (this->lockedFnord.isCollectible) {
+            // ... (action: collect item)
+        }
+        this->locked = false; // Unlock after taking action
+        return mi;            // No movement needed, action taken
+    }
+
     if (this->myFnord.currentDir != fnordStep.second) {
         mi.action = moveInfo::actionType::ROTATE;
         mi.shouldRotate = true;
@@ -65,9 +175,11 @@ moveInfo fnordNavigator::makeUpMind()
         mi.shouldWait = true;
         return mi;
     }
-    if (myFnord.currentPos == fnordStep.first) {
-        this->fnordPath.pop_back();
-    }
+    mi.action = moveInfo::actionType::MOVE;
+    mi.nextCoord = fnordStep.first;
+    mi.direction = fnordStep.second;
+    this->fnordPath.pop_back();
+    return mi;
 }
 
 /**
@@ -119,6 +231,8 @@ fnordNavigator::fnordNavigator(const fnordEcho &myFnord)
 
 void fnordNavigator::addFnord(fnordEcho &fnord)
 {
+    if (fnord.fScore == -6502)
+        return;
     if (!fnord.fnordMapped) {
         this->fnordMap.push(fnord);
         fnord.fnordMapped = true;

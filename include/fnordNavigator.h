@@ -72,6 +72,7 @@ public:
     bool modeChange = false;
     bool hasPath = false;
     bool locked = false;
+    fnordEcho lockedFnord;
     void attachBoard(const std::shared_ptr<chamber> chmbr);
     fnordEcho myFnord;
     fnordMode fMode = fnordMode::Wandering;
