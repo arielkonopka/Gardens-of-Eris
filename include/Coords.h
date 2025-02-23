@@ -12,13 +12,7 @@
 #include "commons.h"
 
 namespace myUtility {
-const std::array<Coords, 5> directionToCoordsMap = {
-    Coords(0, -1), // UP
-    Coords(-1, 0), // LEFT
-    Coords(0, 1),  // DOWN
-    Coords(1, 0),  // RIGHT
-    Coords(0, 0),  //NOP
-};
+
 class Coords
 {
 private:
@@ -201,8 +195,13 @@ public:
     };
 
     constexpr Coords NOCOORDS=Coords();
-
-
+    const std::array<Coords, 5> directionToCoordsMap = {
+        Coords(0, -1), // UP
+        Coords(-1, 0), // LEFT
+        Coords(0, 1),  // DOWN
+        Coords(1, 0),  // RIGHT
+        Coords(0, 0),  //NOP
+    };
 }
 namespace std {
 template<>

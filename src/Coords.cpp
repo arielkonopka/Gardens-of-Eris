@@ -1,4 +1,4 @@
-#include <Coords.h>
+#include "Coords.h"
 #include <cmath>
 
 namespace myUtility {
@@ -212,6 +212,11 @@ double Coords::distance(const Coords &other) const
     return std::sqrt(dx * dx + dy * dy);
 }
 
+double Coords::manhattan(const Coords &other) const
+{
+    return std::abs(this->getX() - other.getX()) + std::abs(this->getY() - other.getY());
+}
+
 /**
  * @brief Gets the x-coordinate.
  *
@@ -309,7 +314,17 @@ int Coords::sum3d() const
     return x + y + z;
 }
 
-Coords Coords::validate(Coords oth)
+Coords Coords::min(const Coords oth1, const Coords oth2)
+{
+    return Coords(std::min(oth1.getX(), oth2.getX()), std::min(oth1.getY(), oth2.getY()));
+}
+
+Coords Coords::max(const Coords oth1, const Coords oth2)
+{
+    return Coords(std::max(oth1.getX(), oth2.getX()), std::max(oth1.getY(), oth2.getY()));
+}
+
+Coords Coords::validate(Coords oth) const
 {
     if (x < 0 || x >= oth.getX() || y < 0 || y >= oth.getY())
         return myUtility::NOCOORDS;
@@ -321,17 +336,18 @@ Coords Coords::validate(Coords oth)
  * @param oth - the size of the board
  * @return 
  */
-Coords Coords::cutOff(Coords oth)
+Coords Coords::cutOff(Coords oth) const
 {
+    Coords r = *this;
     if (x < 0)
-        x = 0;
+        r.setX(0);
     if (x >= oth.getX())
-        x = oth.getX() - 1;
+        r.setX(oth.getX() - 1);
     if (y < 0)
-        y = 0;
+        r.setY(0);
     if (y >= oth.getX())
-        y = oth.getX() - 1;
-    return *this;
+        r.setY(oth.getX() - 1);
+    return r;
 }
 
 Coords::Coords(coords coords1)
@@ -342,13 +358,6 @@ Coords::Coords(coords coords1)
 
 Coords Coords::dir2coords(dir::direction dir)
 {
-    const std::array<Coords, 5> directionToCoordsMap = {
-        Coords(0, -1), // UP
-        Coords(-1, 0), // LEFT
-        Coords(0, 1),  // DOWN
-        Coords(1, 0),  // RIGHT
-        Coords(0, 0),  //NOP
-    };
     return directionToCoordsMap[static_cast<int>(dir)];
 }
 

@@ -32,6 +32,42 @@ fnordNavigator::fnordNavigator()
     this->fv = std::make_shared<fnordVision::fnordVision>();
 }
 
+bool fnordNavigator::isValid(myUtility::Coords pos, myUtility::Coords upLeft)
+{
+    if (upLeft.validate(fnordBoard->getSizeCrd()) == myUtility::NOCOORDS)
+        return false;
+    auto bEle = this->fnordBoard->getElement(pos + upLeft);
+    if (!bEle || !bEle->getAttrs()->isSteppable() || bEle->getType() == bElemTypes::_boubaType)
+        return false;
+    return true;
+}
+
+std::vector<Node> fnordNavigator::makePath(std::array<std::array<Node, 50>, 50> map, Node dest)
+{
+    try {
+        int x = dest.coords.getX();
+        int y = dest.coords.getY();
+        std::stack<Node> path;
+        std::vector<Node> usablePath;
+
+        while (!(map[x][y].parent == myUtility::Coords(x, y)) && !(map[x][y].coords == myUtility::NOCOORDS)) {
+            path.push(map[x][y]);
+            x = map[x][y].parent.getX();
+            y = map[x][y].parent.getY();
+        }
+        path.push(map[x][y]);
+
+        while (!path.empty()) {
+            Node top = path.top();
+            path.pop();
+            usablePath.emplace_back(top);
+        }
+        return usablePath;
+    } catch (const std::exception &e) {
+        std::cout << e.what() << std::endl;
+    }
+}
+
 void fnordNavigator::attachBoard(const std::shared_ptr<chamber> chmbr)
 {
     this->fnordBoard = chmbr;
@@ -124,7 +160,7 @@ moveInfo fnordNavigator::makeUpMind() {
 }
 */
 
-moveInfo fnordNavigator::makeUpMind()
+moveInfo fnordNavigator::makeUpMind(std::shared_ptr<fnordController::fnordNavigator> fnC)
 {
     moveInfo mi;
     mi.action = moveInfo::actionType::HOLD;
@@ -138,7 +174,7 @@ moveInfo fnordNavigator::makeUpMind()
         this->fMode = (this->myFnord.hasGun) ? fnordMode::Fighting : fnordMode::Collecting;
         this->modeChange = true;
         this->cleanupMap();
-        this->fv->chaosScan(shared_from_this());
+        this->fv->chaosScan(fnC);
         if (this->fnordMap.empty()) {
             mi.action = moveInfo::actionType::MOVE;
             mi.nextCoord = mi.nextCoord + dir::dirToCoords(mi.direction);
@@ -155,17 +191,24 @@ moveInfo fnordNavigator::makeUpMind()
             this->locked = true;
         }
     }
+    if (!locked)
+        return mi;
     auto fnordStep = this->fnordPath.back();
     auto targetDistance = this->myFnord.currentPos.distance(this->lockedFnord.currentPos);
+
     if (targetDistance <= 1) { // Close enough to the target
         if (this->lockedFnord.fType == bElemTypes::_player) {
             mi.action = moveInfo::actionType::ATTACK;
             mi.direction = fnordStep.second;
-        } else if (this->lockedFnord.isCollectible) {
-            // ... (action: collect item)
+            this->locked = false; // Unlock after taking action
+            return mi;            // No movement needed, action taken
         }
-        this->locked = false; // Unlock after taking action
-        return mi;            // No movement needed, action taken
+    }
+    if (targetDistance == 0) {
+        /// it seems we reached the point in means either we collected it or it had already run away, either way, we should remove it, set the state to unlocked, and return whatever mi object we already have, it will rescan the perimetr next time.
+        this->fnordStore.erase(this->lockedFnord.fId);
+        locked = false;
+        return mi;
     }
 
     if (this->myFnord.currentDir != fnordStep.second) {
@@ -180,6 +223,14 @@ moveInfo fnordNavigator::makeUpMind()
     mi.direction = fnordStep.second;
     this->fnordPath.pop_back();
     return mi;
+}
+
+/*** FINISH me ***
+Path fnordNavigator::makePath(std::array<std::array<Node, GoEConstants::_fnordNavigatorPathSearchSize>, GoEConstants::_fnordNavigatorPathSearchSize> &allMap, myUtility::Coords end, myUtility::Coords upLeft)
+{
+    Path r;
+    myUtility::Coords spoint = end;
+    r.push_back(allMap[spoint.getX()][spoint.getY()]);
 }
 
 /**
@@ -229,7 +280,7 @@ fnordNavigator::fnordNavigator(const fnordEcho &myFnord)
  * @param fnord
  */
 
-void fnordNavigator::addFnord(fnordEcho &fnord)
+void fnordNavigator::addFnord(fnordEcho fnord)
 {
     if (fnord.fScore == -6502)
         return;
@@ -248,7 +299,7 @@ void fnordNavigator::addFnord(fnordEcho &fnord)
  * Scores are determined by the priority rules set by the mighty Eris herself.
  */
 
-int fnordNavigator::rescore(const fnordEcho &fnord)
+int fnordNavigator::rescore(fnordEcho fnord)
 {
     int score = 0;
     if (fnord.disposed || fnord.fType == bElemTypes::_wallType
@@ -299,8 +350,7 @@ int fnordNavigator::rescore(const fnordEcho &fnord)
         }
         break;
     default:
-        if (fnord.currentPos == myFnord.currentPos + dir::dirToCoords(myFnord.currentDir)
-            && fnord.isSteppable) {
+        if (fnord.currentPos == myFnord.currentPos + myUtility::Coords::dir2coords(myFnord.currentDir) && fnord.isSteppable) {
             score = GoEConstants::_midPriority;
             break;
         }
@@ -324,12 +374,12 @@ int fnordNavigator::rescore(const fnordEcho &fnord)
     if (fnord.fTime > GoEConstants::_monsterMemoryTime) {
         score = GoEConstants::_lowestPriority;
     }
-    auto dist = myFnord.currentPos.distance(fnord.currentPos);
+    double dist = std::max(1.0, static_cast<double>(myFnord.currentPos.distance(fnord.currentPos)));
+    int tdist = std::max(1, static_cast<int>(myFnord.fTime - fnord.fTime));
+
     if (score >= GoEConstants::_avoidPriority)
-        score = (score * 5 * 5)
-                / ((dist * dist)
-                   + 1); /// the scoring heavily depends on the distance of the thisFnord;
-    return score;
+        score = (score * 5 * 5) / ((dist * tdist)); /// the scoring heavily depends on the time and the distance of the thisFnord;
+    return std::floor(score * dist);
 }
 
 /**
@@ -388,7 +438,107 @@ void fnordNavigator::cleanupMap()
  * @return A 'Path' object representing the found path, or an empty path if no 
  *         path could be found.
  */
-Path fnordNavigator::findPath(const myUtility::Coords &start, const myUtility::Coords &end)
+Path fnordNavigator::findPath(const myUtility::Coords _start, const myUtility::Coords _end)
+{
+    std::vector<Node> empty;
+
+    if (_start.validate(fnordBoard->getSizeCrd()) == myUtility::NOCOORDS || _end.validate(fnordBoard->getSizeCrd()) == myUtility::NOCOORDS || _start.distance(_end) > GoEConstants::_fnordNavigatorPathSearchSize)
+        return {};
+
+    myUtility::Coords upLeft = (myUtility::Coords::min(_start, _end) - myUtility::Coords(5, 5)).cutOff(fnordBoard->getSizeCrd());
+    auto start = _start - upLeft;
+    auto end = _end - upLeft;
+    if (isValid(end, upLeft) == false || isValid(start, upLeft) || start == end) {
+        return {};
+    }
+
+    bool closedList[GoEConstants::_fnordNavigatorPathSearchSize + 10][GoEConstants::_fnordNavigatorPathSearchSize + 10];
+
+    //Initialize whole map
+    std::array<std::array<Node, GoEConstants::_fnordNavigatorPathSearchSize>, GoEConstants::_fnordNavigatorPathSearchSize> allMap;
+    for (int x = 0; x < allMap.size(); x++) {
+        for (int y = 0; y < allMap[x].size(); y++) {
+            allMap[x][y].fCost = FLT_MAX;
+            allMap[x][y].gCost = FLT_MAX;
+            allMap[x][y].hCost = FLT_MAX;
+            allMap[x][y].parent = myUtility::NOCOORDS;
+            allMap[x][y].coords = myUtility::Coords(x, y);
+            closedList[x][y] = false;
+        }
+    }
+
+    //Initialize our starting list
+    int x = start.getX();
+    int y = start.getY();
+    allMap[x][y].fCost = 0.0;
+    allMap[x][y].gCost = 0.0;
+    allMap[x][y].hCost = 0.0;
+    allMap[x][y].parent = myUtility::Coords(x, y);
+    std::vector<Node> openList;
+    openList.emplace_back(allMap[x][y]);
+    bool destinationFound = false;
+
+    while (!openList.empty() && openList.size() < 50 * 50) {
+        Node node;
+        do {
+            //This do-while loop could be replaced with extracting the first
+            //element from a set, but you'd have to make the openList a set.
+            //To be completely honest, I don't remember the reason why I do
+            //it with a vector, but for now it's still an option, although
+            //not as good as a set performance wise.
+            float temp = FLT_MAX;
+            std::vector<Node>::iterator itNode;
+            for (std::vector<Node>::iterator it = openList.begin(); it != openList.end(); it = next(it)) {
+                Node n = *it;
+                if (n.fCost < temp) {
+                    temp = n.fCost;
+                    itNode = it;
+                }
+            }
+            node = *itNode;
+            openList.erase(itNode);
+        } while (isValid(node.coords, upLeft) == false);
+
+        x = node.coords.getX();
+        y = node.coords.getY();
+        closedList[x][y] = true;
+
+        //For each neighbour starting from North-West to South-East
+        for (auto direct : myUtility::directionToCoordsMap) {
+            double gNew, hNew, fNew;
+            myUtility::Coords newC = node.coords + direct;
+            int newx = newC.getX(), newy = newC.getY();
+            if (isValid(newC, upLeft)) {
+                if (newC == end) {
+                    //Destination found - make path
+                    allMap[newx][newy].parent = node.coords;
+                    destinationFound = true;
+                    return makePath(allMap, end, upLeft);
+                } else if (closedList[newx][newy] == false) {
+                    gNew = node.gCost + 1.0;
+                    hNew = end.manhattan(newC);
+                    fNew = gNew + hNew;
+                    // Check if this path is better than the one already present
+                    if (allMap[newx][newy].fCost == FLT_MAX || allMap[newx][newy].fCost > fNew) {
+                        // Update the details of this neighbour node
+                        allMap[newx][newy].fCost = fNew;
+                        allMap[newx][newy].gCost = gNew;
+                        allMap[newx][newy].hCost = hNew;
+                        allMap[newx][newy].parent = node.coords;
+                        openList.emplace_back(allMap[newx][newy]);
+                    }
+                }
+            }
+        }
+    }
+    if (destinationFound == false) {
+        return {};
+    }
+
+    return {}; // Brak ścieżki
+}
+
+/*Path fnordNavigator::findPath(const myUtility::Coords &start, const myUtility::Coords &end)
 {
     /**
      * @brief The Node struct 
@@ -399,7 +549,7 @@ Path fnordNavigator::findPath(const myUtility::Coords &start, const myUtility::C
      * parent - parent pointer to reconstruct the full path from end to the beging
      * f() - cost function
      * it also contains <=> operator and cost functions are used
-     */
+     *
     struct Node
     {
         myUtility::Coords coords;
@@ -477,6 +627,8 @@ Path fnordNavigator::findPath(const myUtility::Coords &start, const myUtility::C
     // No path found
     return {};
 }
+
+*/
 /**
  * @brief getFnordEcho get reference to fnordEcho, needed for the scanner logic.
  * @param id

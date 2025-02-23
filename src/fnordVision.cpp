@@ -135,7 +135,8 @@ void fnordVision::chaosScan(std::shared_ptr<fnordController::fnordNavigator> fn)
     for (auto x = posUp.getX(); x < posDown.getX(); x++) {
         for (auto y = posUp.getY(); y < posDown.getY(); y++) {
             auto type = this->fnordBoard->getElement(x, y)->getType();
-            if (type != bElemTypes::_floorType) {
+            if (type != bElemTypes::_floorType && type != bElemTypes::_wallType && type != bElemTypes::_boubaType && type != bElemTypes::_brickClusterType) /// we avoid tracking of some types very early.
+            {
                 std::shared_ptr<bElem> el = this->fnordBoard->getElement(x, y);
                 if (this->isInVew(el->getStats()->getMyPosition(), fn->myFnord.currentPos)) {
                     fnordEcho &fe = fn->getFnordEcho(el->getType());

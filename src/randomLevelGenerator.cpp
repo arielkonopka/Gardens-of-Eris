@@ -292,7 +292,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     }
 
     // build probablility table - this way we can pick random objects with different probablilities
-    for (int c = 1; c < (50 / holes); c++) {
+    for (int c = 1; c < (50); c++) {
         // dangerous elements here, the more holes, the less of them in the gamefield
         elementsToChooseFrom.push_back({bElemTypes::_monster, 0, 1, 0, 3});
         elementsToChooseFrom.push_back({bElemTypes::_bunker, 0, 1, 0, 3});

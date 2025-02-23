@@ -145,7 +145,7 @@ namespace GoEConstants {
     constexpr int _monsterWait = 5;
     constexpr int _fnordVisionSize = 50;
     constexpr int _fnordNavigatorPathSearchSize = 50;
-    constexpr int _fnordNavigatorSqRoot2 = std::sqrt(2);
+    constexpr int _fnordNavigatorSqRoot2 = 1.41421356237;
 
     } // namespace GoEConstants
 

@@ -75,9 +75,21 @@ fnordEcho::fnordEcho(int fType,
     , previousFace(previousFace)
     , fTime(bElem::getCntr())
 {}
-
+/**
+ * @brief fnordEcho::fnordEcho - copy constructor
+ * @param other
+ */
 fnordEcho::fnordEcho(const fnordEcho &other)
     : fType(other.fType)
+    , fSubtype(other.fSubtype)
+    , fScore(other.fScore)
+    , hasInventory(other.hasInventory)
+    , hasGun(other.hasGun)
+    , isSteppable(other.isSteppable)
+    , isCollectible(other.isCollectible)
+    , isWeapon(other.isWeapon)
+    , disposed(other.disposed)
+    , fnordMapped(other.fnordMapped)
     , fId(other.fId)
     , currentPos(other.currentPos)
     , currentDir(other.currentDir)

@@ -20,7 +20,9 @@
  * SOFTWARE.
  */
 #include "monster.h"
-monster::monster() {}
+monster::monster()
+    : fNavigator(std::make_shared<fnordController::fnordNavigator>())
+{}
 
 bool monster::additionalProvisioning(int subtype)
 {
@@ -36,10 +38,54 @@ int monster::getType() const
     return bElemTypes::_monster;
 }
 
+/**
+ * @brief monster::mechanics we utilize here the fnordNavigator object, we have, this way, we do not have to deal with the monsters logic here
+ * @return true if success, false if not. for ex. false could mean, the object is moving or waiting, generally not suitable for running the mechanics
+ */
 bool monster::mechanics()
 {
     if (!bElem::mechanics())
         return false;
+    this->fNavigator->attachBoard(this->getBoard());
+    fnordEcho fec;
+    fec = this->fNavigator->makeFnord(shared_from_this(), this->fNavigator->myFnord);
+    this->fNavigator->myFnord = fec;
+    auto chaosStep = this->fNavigator->makeUpMind(this->fNavigator);
+
+    switch (chaosStep.action) {
+    case fnordController::moveInfo::actionType::MOVE:
+        this->moveInDirection(chaosStep.direction);
+        break;
+    case fnordController::moveInfo::actionType::ROTATE:
+        this->getStats()->setMyDirection(chaosStep.direction);
+        this->getStats()->setFacing(chaosStep.direction);
+        this->getStats()->setWaiting(GoEConstants::_mov_delay);
+        break;
+    case fnordController::moveInfo::actionType::HOLD:
+        this->getStats()->setWaiting(GoEConstants::_monstrHold);
+        break;
+    case fnordController::moveInfo::actionType::INTERACT: {
+        std::shared_ptr<bElem> bbel = getElementInDirection(chaosStep.direction);
+        if (bbel)
+            bbel->interact(shared_from_this());
+        this->getStats()->setWaiting(GoEConstants::_monsterWait);
+        break;
+    }
+    case fnordController::moveInfo::actionType::ATTACK: {
+        auto bEl = getElementInDirection(chaosStep.direction);
+        if (bEl) {
+            if (this->getAttrs()->canCollect() && this->getAttrs()->getInventory()->getActiveWeapon()) {
+                auto awe = this->getAttrs()->getInventory()->getActiveWeapon();
+                awe->use(shared_from_this());
+            } else {
+                bEl->hurt(GoEConstants::_monstrHurt);
+            }
+        }
+        this->getStats()->setWaiting(GoEConstants::_monsterWait);
+        break;
+    }
+    }
+
     return true;
 }
 
