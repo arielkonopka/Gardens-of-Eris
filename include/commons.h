@@ -140,9 +140,14 @@ namespace GoEConstants {
     constexpr int _lowPriority = 2;
     constexpr int _lowestPriority = 0;
     constexpr int _avoidPriority = -1;
-}
+    constexpr int _monstrHurt = 5;
+    constexpr int _monstrHold = 55;
+    constexpr int _monsterWait = 5;
+    constexpr int _fnordVisionSize = 50;
+    constexpr int _fnordNavigatorPathSearchSize = 50;
+    constexpr int _fnordNavigatorSqRoot2 = std::sqrt(2);
 
-
+    } // namespace GoEConstants
 
 #define confFname1 "./data/skins.json"
 #define confFname2 "./GoEoOL/data/skins.json"

@@ -27,15 +27,29 @@
 #include "fnordEcho.h"
 #include <algorithm>
 #include <queue>
+#include <stack>
 
 namespace fnordVision {
 class fnordVision;
 } // namespace fnordVision
 namespace fnordController {
 
+struct Node
+{
+    myUtility::Coords coords;
+    dir::direction direction;
+    float gCost;
+    float hCost;
+    float fCost;
+    myUtility::Coords parent;
+    int f() const { return gCost + hCost; }
+    auto operator<=>(const Node &other) const { return f() <=> other.f(); }
+};
+
 /**
- * @brief The moveInfo struct - this is the bElem controlling api, a bit different from the one for the player, where turns re without penalty
- */
+  *  @brief The moveInfo struct - the bElem controlling api
+  * a bit different from the one for the player, where turns are without penalty
+  */
 struct moveInfo
 {
     dir::direction direction;
@@ -69,7 +83,9 @@ class fnordNavigator : public std::enable_shared_from_this<fnordNavigator>
 public:
     std::shared_ptr<fnordVision::fnordVision> fv;
     int radius = 10;
-    Path findPath(const myUtility::Coords &start, const myUtility::Coords &end);
+    bool isValid(myUtility::Coords pos, myUtility::Coords upLeft);
+    std::vector<Node> makePath(std::array<std::array<Node, 50>, 50> map, Node dest);
+    Path findPath(const myUtility::Coords _start, const myUtility::Coords _end);
     bool modeChange = false;
     bool hasPath = false;
     bool locked = false;
@@ -82,15 +98,16 @@ public:
         fnordMap; /// Priority queue of fnords of interest
     std::map<unsigned long int, fnordEcho> fnordStore;
     Path fnordPath;
-    void addFnord(fnordEcho &fnord);
+    void addFnord(fnordEcho fnord);
     fnordEcho &getFnordEcho(unsigned long int id);
-    int rescore(const fnordEcho &fnord);
+    int rescore(fnordEcho fnord);
     void cleanupMap();
     fnordEcho &makeFnord(std::shared_ptr<bElem> element, fnordEcho &echo);
     fnordNavigator(const fnordEcho &myFnord);
     fnordNavigator();
     std::shared_ptr<chamber> fnordBoard;
-    moveInfo makeUpMind();
+    moveInfo makeUpMind(std::shared_ptr<fnordController::fnordNavigator> fnC);
+    Path makePath(std::array<std::array<Node, GoEConstants::_fnordNavigatorPathSearchSize>, GoEConstants::_fnordNavigatorPathSearchSize> &allMap, myUtility::Coords end, myUtility::Coords upLeft);
 };
 
 } // namespace fnordController

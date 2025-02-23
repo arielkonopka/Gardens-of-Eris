@@ -295,6 +295,7 @@ A monster at the momento of placement will be setup with function:
 * fnordNagivatorCOmmands(TM)
 
 ## ChangeLog
+* AStar algirythm used by fnordVision, early works, not yet functional
 * started refactoring the Monster engine. so far I have three classes, fnordEcho - abstraction representation of an scanned objects, fnordVision - utility class, that will allow scanning the scan range, and finally fnordNavigator - the class, that will have all the logic. FnordNavigator is meant to be a class, that will tell the object what to do.
 * Now kiki si not placed so danesly, still glitches happen.
 * Fixed monster - more to go, whole monster mechanics must be rewritten

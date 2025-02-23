@@ -47,7 +47,7 @@ public:
     bool additionalProvisioning(int subtype) final;
 
 private:
-    fnordController::fnordNavigator fNavigator;
+    std::shared_ptr<fnordController::fnordNavigator> fNavigator;
 };
 
 #endif // MONSTER_H
