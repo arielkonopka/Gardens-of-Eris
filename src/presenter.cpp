@@ -383,10 +383,6 @@ void presenter::showGameField()
             for (y = 0; y < this->scrTilesY + 1; y++) {
                 coords np = coords(x + this->previousPosition.x, y + this->previousPosition.y);
                 std::shared_ptr<bElem> elemToDisplay = player->getBoard()->getElement(np);
-                if (viewPoint::get_instance()->calculateObscured(np) < 1) {
-                    //      this->radiuses.push_back(elemToDisplay->getViewRadius()*64);
-                    //       this->poses.push_back({(x-1)*64+elemToDisplay->getOffset().x,(y-1)*64+elemToDisplay->getOffset().y});
-                }
                 if (player->getBoard()->isVisible(np) >= 255
                     && !viewPoint::get_instance()->isPointVisible(np))
                     continue; // this element is not even discovered yet

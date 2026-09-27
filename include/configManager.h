@@ -128,8 +128,8 @@ typedef struct gameConfig
 class configManager: public std::enable_shared_from_this<configManager>
 {
 public:
-    static std::shared_ptr<configManager> getInstance();
-    std::shared_ptr<gameConfig> getConfig();
+    static const std::shared_ptr<configManager>& getInstance();
+    const std::shared_ptr<gameConfig>& getConfig() const;
     void configReload();
     configManager();
 

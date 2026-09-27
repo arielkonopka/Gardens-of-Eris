@@ -47,11 +47,11 @@ bElemAttr::bElemAttr(std::shared_ptr<bElem> owner, int type, int subtype)
  */
 void bElemAttr::getDefaultValues(int typeId, int subtypeId)
 {
-    auto sprites = configManager::getInstance()->getConfig()->sprites;
-    for (auto sprite : sprites) {
+    const auto& sprites = configManager::getInstance()->getConfig()->sprites;
+    for (const auto& sprite : sprites) {
         if (sprite.eType != typeId)
             continue;
-        for (auto attr : sprite.attributes) {
+        for (const auto& attr : sprite.attributes) {
             if ((!this->provisioned && attr.subType < 0) || (attr.subType == subtypeId)) {
                 this->setMaxEnergy(attr.maxEnergy);
                 this->setMaxAmmo(attr.maxAmmo);

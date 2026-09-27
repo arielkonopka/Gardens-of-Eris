@@ -30,7 +30,7 @@ configManager::configManager()
     this->gConfObj = std::make_shared<gameConfig>();
 }
 
-std::shared_ptr<configManager> configManager::getInstance()
+const std::shared_ptr<configManager>& configManager::getInstance()
 {
     std::call_once(configManager::_onceFlag, []() {
         configManager::instance = std::make_shared<configManager>();
@@ -234,7 +234,7 @@ void configManager::configReload()
         this->gConfObj->sprites.push_back(sdata);
     }
 }
-std::shared_ptr<gameConfig> configManager::getConfig()
+const std::shared_ptr<gameConfig>& configManager::getConfig() const
 {
     return this->gConfObj;
 }
