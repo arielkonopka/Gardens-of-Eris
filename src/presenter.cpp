@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "presenter.h"
+#include "difficulty.h"
 
 namespace presenter {
 presenter::presenter()
@@ -320,11 +321,9 @@ void presenter::prepareStatsThing()
     this->showText(21, 0, 5, 32, "P:");
     this->showText(21, 1, 5, 0, "Dex:");
     this->showText(22, 0, 5, 32, std::to_string(aPlayer->getStats()->getPoints(TOTAL)));
-    this->showText(22,
-                   1,
-                   5,
-                   0,
-                   std::to_string((int) (log(aPlayer->getStats()->getPoints(SHOOT) + 1) / log(5))));
+    this->showText(22, 1, 5, 0, std::to_string(difficulty::playerLevel(aPlayer)));
+    this->showText(21, 1, 5, 32, "D:");
+    this->showText(22, 1, 5, 32, std::to_string(difficulty::of(aPlayer)));
 }
 
 /* We kinda move a window in a big screen, that is whole board.We track the upper left point, which is placed in previousPosition

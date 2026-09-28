@@ -153,6 +153,33 @@ TEST(SaveGameTests, GeneratedLevelRoundTrip)
     std::remove(f2.c_str());
 }
 
+TEST(SaveGameTests, HardLevelKeepsItsDifficultyAndLandmines)
+{
+    inputManager::getInstance(true);
+    randomLevelGenerator gen(120, 120);
+    ASSERT_TRUE(gen.generateLevel(1));
+    const int id = gen.mychamber->getInstanceId();
+    const coords origin = gen.mychamber->origin;
+    ASSERT_EQ(gen.mychamber->depth, 4);
+    for (int c = 0; c < 100; c++)
+        bElem::runLiveElements();
+
+    auto censusBefore = census();
+    EXPECT_GT(censusBefore[bElemTypes::_landmineType], 0);
+    const std::string f1 = tmpFile("goe-hard-1.goe"), f2 = tmpFile("goe-hard-2.goe");
+    ASSERT_TRUE(gameSerializer::saveGame(f1));
+    ASSERT_TRUE(gameSerializer::loadGame(f1));
+    EXPECT_TRUE(census() == censusBefore);
+    auto loaded = findChamber(id);
+    ASSERT_TRUE(loaded);
+    EXPECT_EQ(loaded->depth, 4);
+    EXPECT_TRUE(loaded->origin == origin);
+    ASSERT_TRUE(gameSerializer::saveGame(f2));
+    EXPECT_TRUE(withoutCounter(readFile(f1)) == withoutCounter(readFile(f2)));
+    std::remove(f1.c_str());
+    std::remove(f2.c_str());
+}
+
 TEST(SaveGameTests, BadFilesLeaveTheWorldAlone)
 {
     inputManager::getInstance(true);
@@ -287,7 +314,7 @@ TEST(SaveGameTests, CameraAndGuardiansRoundTrip)
                     EXPECT_TRUE(g->getCamera() == lcam);
                     guardians++;
                 }
-    EXPECT_EQ(guardians, securityCamera::guardianCount);
+    EXPECT_EQ(guardians, difficulty::guardianCount(0));
     for (int c = 0; c < 300; c++)
         bElem::runLiveElements();
 }

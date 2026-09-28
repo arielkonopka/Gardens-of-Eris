@@ -143,7 +143,7 @@ TEST(ControllerTests, CameraSpawnsItsGuardians)
     auto mc = cameraRoom(coords(40, 40), coords(2, 2), coords(30, 30), plr, cam);
     for (int c = 0; c < 3; c++)
         bElem::runLiveElements();
-    EXPECT_EQ(guardiansOf(mc, cam).size(), (size_t) securityCamera::guardianCount);
+    EXPECT_EQ(guardiansOf(mc, cam).size(), (size_t) difficulty::guardianCount(0));
     // the player is far away: no alarm
     EXPECT_EQ(cam->getAlertNumber(), 0u);
 }

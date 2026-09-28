@@ -38,6 +38,9 @@ public:
     virtual bool destroy();
     virtual int getType() const;
     virtual bool mechanics();
+protected:
+    /// ticks between being set off and the explosion
+    virtual int fuse() const { return 15; }
 private:
     bool triggered=false;
 };

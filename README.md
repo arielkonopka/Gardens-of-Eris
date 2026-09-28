@@ -224,13 +224,21 @@ There are control switches that modify sound handling:
  * modeOfAction - 0 for regular, 1 for looping
  * stacking - If we allow multiple sounds, do we let them play, or should we stop the sound currently playing and start anew upon request (false), or permit all instances to play while avoiding collisions by applying a delay if the previous sound did not have the chance to play?
 
-## TODO
+## Difficulty
+The game gets harder the better you get and the further you go. The difficulty D, shown as "D:" next to "Dex:" in the HUD, is the sum of:
+
+ * the player level: floor(log5(hits + 1)), the same number as Dex,
+ * the depth of the chamber: 0 for the easiest levels up to 4 for the ones with the fewest holes,
+ * the distance: floor(log2(1 + d / 64)), where d is how far the player is from the chamber's starting room.
+
+Every rule that depends on D lives in include/difficulty.h: bunker range and rest between shots, camera and guardian sight, guardians per camera, kiki beam damage, landmines per level, and the Hound. The Hound is a drone sent after a player who stays in one 64x64 area too long (3 minutes at D 1, down to 1 minute); it bites, and gives up when the player leaves the area.
+
 - Refactor sound engine
 - Refactor chamber, to contain bElem container, which then would have the stepOnElement routines???
 ~~- Refactor the engine, to have only elements on the same board to be active. This will make a lot ot things very tricky, especially teleporting elements between boards with active elements in the inventory.~~
 ~~- Add sound gain on music and samples~~
 ~~- Add new type of a gun, that would shoot bombs - grenade launcher~~
-- Add landmine, a steppable, that would kill you
+~~- Add landmine, a steppable, that would kill you~~
 - Add a bot and a camera, when a player is near a camera, all bots are notified about the position
 - Add fire/electric door that can be switched with a switch (indestructable)
 - Add switches that will be linked to the energy doors

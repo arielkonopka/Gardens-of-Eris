@@ -223,6 +223,8 @@ std::shared_ptr<bElem> gameSerializer::createByType(int type, int subtype)
         return elementFactory::generateAnElement<goldenApple>(none, subtype);
     case bElemTypes::_simpleBombType:
         return elementFactory::generateAnElement<simpleBomb>(none, subtype);
+    case bElemTypes::_landmineType:
+        return elementFactory::generateAnElement<landmine>(none, subtype);
     case bElemTypes::_boubaType:
         return elementFactory::generateAnElement<bouba>(none, subtype);
     case bElemTypes::_kikiType:
@@ -724,6 +726,9 @@ bool gameSerializer::saveGame(const std::string &fileName)
             w.i32(c->width);
             w.i32(c->height);
             w.u32(c->applesCount);
+            w.i32(c->depth);
+            w.i32(c->origin.x);
+            w.i32(c->origin.y);
             // fog of war, run-length encoded
             {
                 std::vector<std::pair<int32_t, uint32_t>> runs;
@@ -816,7 +821,8 @@ bool gameSerializer::loadGame(const std::string &fileName)
         auto magic = r.pod<std::array<char, 8>>();
         if (std::memcmp(magic.data(), saveMagic, sizeof(saveMagic)) != 0)
             throw std::runtime_error("not a Gardens of Eris save file");
-        if (r.u32() != formatVersion)
+        const uint32_t version = r.u32();
+        if (version < 1 || version > formatVersion)
             throw std::runtime_error("unsupported save file version");
 
         // read everything before touching the running world, so a bad file leaves it intact
@@ -869,6 +875,12 @@ bool gameSerializer::loadGame(const std::string &fileName)
             c->chamberName = name;
             c->chamberColour = col;
             c->applesCount = r.u32();
+            // version 1 saves have no difficulty data: their chambers load as depth 0, no origin
+            if (version >= 2) {
+                c->depth = r.i32();
+                c->origin.x = r.i32();
+                c->origin.y = r.i32();
+            }
             c->visitedElements.assign((size_t) w * h, 0);
             {
                 int64_t pos = 0, total = (int64_t) w * h;

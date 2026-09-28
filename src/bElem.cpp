@@ -704,6 +704,7 @@ void bElem::runLiveElements()
     ap->mechanics();
     if (ap->getAttrs()->canCollect())
         ap->getAttrs()->getInventory()->runLives();
+    puppetMasterHound::watch();
 }
 
 /**

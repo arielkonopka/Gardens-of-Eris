@@ -29,7 +29,7 @@ class securityCamera;
 /**
  * @brief Drives a guardian drone for a security camera.
  *
- * When the guardian itself sees the player within sightRange, it fights: it hurts the player
+ * When the guardian itself sees the player within difficulty::cameraSight, it fights: it hurts the player
  * when next to them, shoots along a clear row or column, and chases them otherwise. When its
  * camera reports a new sighting, it walks there to check. It never leaves the camera's leash,
  * and when there is nothing to do it patrols around the camera.
@@ -39,7 +39,6 @@ class puppetMasterGuardian : public puppetMasterFR
     friend class gameSerializer;
 
 public:
-    static constexpr int sightRange = 8;
     static constexpr int meleeDamage = 5;
 
     void guard(std::shared_ptr<securityCamera> cam);

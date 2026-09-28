@@ -273,6 +273,8 @@ bool randomLevelGenerator::generateLevel(int holes)
     // publish this level's teleporters only once the level is complete
     teleport::registrationBatch teleporterBatch;
     int tolerance = 10;
+    // fewer holes make a harder level; the difficulty of this chamber starts from that
+    this->mychamber->depth = std::max(0, 5 - holes);
     this->headNode = this->lvlGenerate(1, 1, this->width - 2, this->height - 2, _iterations, holes);
 
     this->headNode->calculateInitialSurface();
@@ -321,6 +323,9 @@ bool randomLevelGenerator::generateLevel(int holes)
         elementsToChooseFrom.push_back({bElemTypes::_plainGun, 0, 1, 0, 3});
     }
 
+    for (int c = 0; c < difficulty::landmineCopies(this->mychamber->depth); c++)
+        elementsToChooseFrom.push_back({bElemTypes::_landmineType, 0, 1, 0, 3});
+
     for (int c = 0; c < 50; c++) {
         elementsToChooseFrom.push_back({bElemTypes::_brickClusterType, 0, 1, 0, 3});
         elementsToChooseFrom.push_back({bElemTypes::_key, 0, 1, 0, 3});
@@ -354,6 +359,12 @@ bool randomLevelGenerator::generateLevel(int holes)
         return false;
     }
     this->placeElementCollection(*playerArea, elementCollection);
+    // the distance part of the difficulty is measured from the player's starting room
+    {
+        const chamberArea &start = *playerArea;
+        this->mychamber->origin = coords((start.upLeft.x + start.downRight.x) / 2,
+                                         (start.upLeft.y + start.downRight.y) / 2);
+    }
     this->placeDoors({bElemTypes::_door, 1, 1, 0, 9}, *playerArea);
     if (auto parent = this->headNode->parentOf(*playerArea))
         parent->get().childrenLock = true;
@@ -474,6 +485,8 @@ std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace elemen
         return puppetMasterFR::create(this->mychamber, (int) (bElem::randomNumberGenerator() % puppetMasterFR::looseKinds));
     case bElemTypes::_bazookaType:
         return elementFactory::generateAnElement<bazooka>(this->mychamber, element.eSubType);
+    case bElemTypes::_landmineType:
+        return elementFactory::generateAnElement<landmine>(this->mychamber, 0);
     case bElemTypes::_kikiType:
         return elementFactory::generateAnElement<kiki>(this->mychamber, element.eSubType);
     }

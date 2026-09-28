@@ -26,9 +26,11 @@
 #include "puppetMasterHunter.h"
 #include "puppetMasterWallFollower.h"
 #include "puppetMasterGuardian.h"
+#include "puppetMasterHound.h"
 #include "viewPoint.h"
 #include "chamber.h"
 #include <algorithm>
+#include <cstdlib>
 #include <deque>
 #include <vector>
 
@@ -43,6 +45,8 @@ std::shared_ptr<puppetMasterFR> puppetMasterFR::create(std::shared_ptr<chamber> 
         return elementFactory::generateAnElement<puppetMasterWallFollower>(board, subtype);
     case guardian:
         return elementFactory::generateAnElement<puppetMasterGuardian>(board, subtype);
+    case hound:
+        return elementFactory::generateAnElement<puppetMasterHound>(board, subtype);
     default:
         return elementFactory::generateAnElement<puppetMasterFR>(board, subtype);
     }
@@ -70,6 +74,24 @@ void puppetMasterFR::onAttach(std::shared_ptr<bElem> body)
     // the plain patrol controller turns its body into a roaming camera
     if (this->getAttrs()->getSubtype() == patrol)
         viewPoint::get_instance().addViewPoint(body);
+}
+
+dir::direction puppetMasterFR::towards(coords from, coords to)
+{
+    int dx = to.x - from.x, dy = to.y - from.y;
+    return std::abs(dx) >= std::abs(dy) ? (dx > 0 ? dir::direction::RIGHT : dir::direction::LEFT)
+                                        : (dy > 0 ? dir::direction::DOWN : dir::direction::UP);
+}
+
+bool puppetMasterFR::bite(std::shared_ptr<bElem> body, std::shared_ptr<bElem> prey, int damage)
+{
+    coords b = body->getStats()->getMyPosition(), p = prey->getStats()->getMyPosition();
+    if (std::abs(p.x - b.x) + std::abs(p.y - b.y) != 1)
+        return false;
+    this->turn(body, towards(b, p));
+    prey->hurt(damage);
+    body->getStats()->setWaiting(GoEConstants::_mov_delay * 2);
+    return true;
 }
 
 bool puppetMasterFR::drive(std::shared_ptr<bElem> body)

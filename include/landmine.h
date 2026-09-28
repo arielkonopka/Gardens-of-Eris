@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Ariel Konopka
+ * Copyright (c) 2026, Ariel Konopka
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,38 +19,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#ifndef LANDMINE_H
+#define LANDMINE_H
 
 #include "simpleBomb.h"
 
-bool simpleBomb::hurt(int points)
+/**
+ * @brief A landmine: a steppable tile that looks almost like floor.
+ *
+ * Whatever steps on it (the player, a monster, a drone, even a missile) sets it off, and it
+ * explodes on the next tick. Like a bomb, another explosion sets it off too. The level generator
+ * places more of them in deeper chambers (difficulty::landmineCopies).
+ */
+class landmine : public simpleBomb
 {
-    return this->destroy();
-}
+    friend class gameSerializer;
 
-bool simpleBomb::kill()
-{
-    return this->destroy();
-}
+public:
+    using bElem::additionalProvisioning;
 
-bool simpleBomb::destroy()
-{
-    if (this->getStats()->isDestroying() || this->triggered)
-        return false;
+    landmine() = default;
+    ~landmine() override = default;
+    int getType() const override;
+    bool stepOnAction(bool step, std::shared_ptr<bElem> who) override;
+    /// explodes like a bomb, and also takes whatever stands on the mine with it
+    bool mechanics() override;
 
-    this->registerLiveElement(shared_from_this());
-    this->triggered = true;
-    this->getStats()->setWaiting(this->fuse());
-    return true;
-}
+protected:
+    int fuse() const override { return 1; }
+};
 
-bool simpleBomb::mechanics()
-{
-    if (bElem::mechanics() && !this->getStats()->isDestroying())
-        return this->explode(1.5);
-    return false;
-}
-
-int simpleBomb::getType() const
-{
-    return bElemTypes::_simpleBombType;
-}
+#endif // LANDMINE_H

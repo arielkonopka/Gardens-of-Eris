@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Ariel Konopka
+ * Copyright (c) 2026, Ariel Konopka
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,37 +20,27 @@
  * SOFTWARE.
  */
 
-#include "simpleBomb.h"
+#include "landmine.h"
 
-bool simpleBomb::hurt(int points)
+int landmine::getType() const
 {
-    return this->destroy();
+    return bElemTypes::_landmineType;
 }
 
-bool simpleBomb::kill()
+bool landmine::mechanics()
 {
-    return this->destroy();
+    // an explosion only reaches the cells around it, so the one standing on the mine is hit here
+    auto rider = this->getStats()->getStandingOn().lock();
+    bool exploded = simpleBomb::mechanics();
+    if (exploded && rider && !rider->getStats()->isDisposed())
+        rider->destroy();
+    return exploded;
 }
 
-bool simpleBomb::destroy()
+bool landmine::stepOnAction(bool step, std::shared_ptr<bElem> who)
 {
-    if (this->getStats()->isDestroying() || this->triggered)
-        return false;
-
-    this->registerLiveElement(shared_from_this());
-    this->triggered = true;
-    this->getStats()->setWaiting(this->fuse());
-    return true;
-}
-
-bool simpleBomb::mechanics()
-{
-    if (bElem::mechanics() && !this->getStats()->isDestroying())
-        return this->explode(1.5);
-    return false;
-}
-
-int simpleBomb::getType() const
-{
-    return bElemTypes::_simpleBombType;
+    bool r = bElem::stepOnAction(step, who);
+    if (step && who)
+        this->destroy();
+    return r;
 }

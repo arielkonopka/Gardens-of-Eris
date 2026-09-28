@@ -27,9 +27,9 @@
 /**
  * @brief A fixed camera that watches for the player and calls its guardian drones.
  *
- * On its first tick it spawns guardianCount patrolling drones next to itself, each driven by a
+ * On its first tick it spawns difficulty::guardianCount patrolling drones next to itself, each driven by a
  * puppetMasterGuardian linked to this camera. Whenever it sees the active player within
- * sightRange, with nothing solid in between, it records where, and the guardians go there.
+ * difficulty::cameraSight, with nothing solid in between, it records where, and the guardians go there.
  * Guardians never leave the circle of radius leash around the camera.
  */
 class securityCamera : public bElem
@@ -37,9 +37,7 @@ class securityCamera : public bElem
     friend class gameSerializer;
 
 public:
-    static constexpr int sightRange = 8;
     static constexpr int leash = 55;
-    static constexpr int guardianCount = 2;
 
     securityCamera() = default;
     ~securityCamera() override = default;

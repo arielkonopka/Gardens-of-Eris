@@ -50,5 +50,8 @@
 #include "bazooka.h"
 #include "bazookaMissile.h"
 #include "kiki.h"
+#include "difficulty.h"
+#include "landmine.h"
+#include "puppetMasterHound.h"
 
 #endif // ELEMENTS_H_INCLUDED
