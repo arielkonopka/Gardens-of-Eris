@@ -24,6 +24,7 @@
 #include "floorElement.h"
 #include "rubbish.h"
 #include <algorithm>
+#include <unordered_set>
 //std::vector<std::shared_ptr<bElem>> bElem::liveElems;
 std::vector<std::shared_ptr<bElem>> bElem::toDispose;
 //std::vector<unsigned long int> bElem::toDeregister;
@@ -266,10 +267,13 @@ oState bElem::disposeElement()
  */
 coords bElem::getAbsCoords(coords dir) const
 {
-    if (this->getStats()->getMyPosition() == NOCOORDS || !this->getBoard())
+    coords pos = this->getStats()->getMyPosition();
+    if (pos == NOCOORDS)
         return NOCOORDS;
-    coords res = (this->getStats()->getMyPosition() + dir).validate(this->getBoard()->getSize());
-    return res;
+    auto board = this->getBoard();
+    if (!board)
+        return NOCOORDS;
+    return (pos + dir).validate(board->getSize());
 }
 
 coords bElem::getAbsCoords(dir::direction dir) const
@@ -283,13 +287,19 @@ std::shared_ptr<bElem> bElem::getElementInDirection(dir::direction di)
 }
 std::shared_ptr<bElem> bElem::getElementInDirection(coords di)
 {
-    coords crd = this->getAbsCoords(di);
-    if (this->attachedBoard.expired() || crd == NOCOORDS
-        || this->getStats()->getMyPosition() == NOCOORDS)
+    // this runs for every neighbour check in the game, so the board and position are read once
+    auto board = this->attachedBoard.lock();
+    if (!board)
+        return nullptr;
+    coords pos = this->getStats()->getMyPosition();
+    if (pos == NOCOORDS)
+        return nullptr;
+    coords crd = (pos + di).validate(board->getSize());
+    if (crd == NOCOORDS)
         return nullptr;
     if (di == coords(0, 0))
         return shared_from_this();
-    return this->attachedBoard.lock()->getElement(crd);
+    return board->getElement(crd);
 }
 
 ALLEGRO_MUTEX *bElem::getMyMutex()
@@ -403,12 +413,17 @@ bool bElem::isSteppableInMyDirection() const
 
 bool bElem::isSteppableDirection(coords di) const
 {
-    coords crd = this->getAbsCoords(di);
-    if (this->attachedBoard.expired() || crd == NOCOORDS
-        || this->getStats()->getMyPosition() == NOCOORDS)
+    auto board = this->attachedBoard.lock();
+    if (!board)
         return false;
-    return (this->attachedBoard.lock()->getElement(crd))
-           && this->attachedBoard.lock()->getElement(crd)->getAttrs()->isSteppable();
+    coords pos = this->getStats()->getMyPosition();
+    if (pos == NOCOORDS)
+        return false;
+    coords crd = (pos + di).validate(board->getSize());
+    if (crd == NOCOORDS)
+        return false;
+    auto e = board->getElement(crd);
+    return e && e->getAttrs()->isSteppable();
 }
 bool bElem::isSteppableDirection(dir::direction di) const
 {
@@ -666,57 +681,48 @@ void bElem::runLiveElements()
 {
     bElem::tick();
     std::shared_ptr<bElem> ap = player::getActivePlayer();
-    std::shared_ptr<chamber> cchmbr = (player::getActivePlayer())
-                                          ? player::getActivePlayer()->getBoard()
-                                          : nullptr;
-    std::vector<std::shared_ptr<bElem>>::iterator p;
+    std::shared_ptr<chamber> cchmbr = ap ? ap->getBoard() : nullptr;
     /// No active player, no game
     if (!cchmbr)
         return;
-    // We will check the elements, that are dying, and chek, if should we remove the ones, that are stale.
-    for (unsigned int c = 0; c < bElem::toDispose.size();) {
-        if (!bElem::toDispose[c]->getStats()->isDying()
-            && !bElem::toDispose[c]->getStats()->isDestroying()
-            && !bElem::toDispose[c]->getStats()->isTeleporting()) {
-            if (!bElem::toDispose[c]->getStats()->isDisposed()) {
-                bElem::toDispose[c]
-                    ->disposeElement(); // we remove the element, which stopped being dead - its time has passed.
-            }
-            bElem::toDispose.erase(bElem::toDispose.begin() + c);
-        } else
-            c++;
+    // Elements that stopped dying, being destroyed or teleporting are disposed now. They are moved
+    // out of the list first, because disposing an element may queue more elements.
+    std::vector<std::shared_ptr<bElem>> finished;
+    std::erase_if(bElem::toDispose, [&finished](const std::shared_ptr<bElem> &e) {
+        auto st = e->getStats();
+        if (st->isDying() || st->isDestroying() || st->isTeleporting())
+            return false;
+        finished.push_back(e);
+        return true;
+    });
+    for (const auto &e : finished)
+        if (!e->getStats()->isDisposed())
+            e->disposeElement();
+    // drop the deregistered elements in one pass
+    if (!cchmbr->toDeregister.empty()) {
+        std::unordered_set<unsigned long> gone(cchmbr->toDeregister.begin(), cchmbr->toDeregister.end());
+        std::erase_if(cchmbr->liveElems, [&gone](const std::shared_ptr<bElem> &e) {
+            return e && gone.contains(e->getStats()->getInstanceId());
+        });
+        cchmbr->toDeregister.clear();
     }
-    for (unsigned long int c = 0; c < cchmbr->toDeregister.size();) {
-        auto instId = cchmbr->toDeregister[c];
-        auto it = std::ranges::find_if(cchmbr->liveElems.begin(),
-                                       cchmbr->liveElems.end(),
-                                       [instId](std::shared_ptr<bElem> elem) {
-                                           return elem
-                                                  && (elem->getStats()->getInstanceId() == instId);
-                                       });
-
-        if (it != cchmbr->liveElems.end()) {
-            cchmbr->liveElems.erase(it);
-            cchmbr->toDeregister.erase(cchmbr->toDeregister.begin() + c);
-        } else
-            c++;
+    // Run every live element, compacting out the disposed ones as we go. Elements registered
+    // during this loop are appended to the vector and run in this tick too, as before.
+    auto &live = cchmbr->liveElems;
+    size_t kept = 0;
+    for (size_t r = 0; r < live.size(); r++) {
+        std::shared_ptr<bElem> e = live[r];
+        if (e->getStats()->isDisposed() || e->getType() == bElemTypes::_player)
+            continue;
+        e->mechanics();
+        if (e->getAttrs()->canCollect())
+            e->getAttrs()->getInventory()->runLives();
+        live[kept++] = std::move(e);
     }
-    cchmbr->toDeregister.clear();
-    for (unsigned int p = 0; p < cchmbr->liveElems.size();) {
-        if (cchmbr->liveElems[p]->getStats()->isDisposed()
-            || cchmbr->liveElems[p]->getType() == bElemTypes::_player)
-            cchmbr->liveElems.erase(cchmbr->liveElems.begin() + p);
-        else {
-            cchmbr->liveElems[p]->mechanics();
-            if (cchmbr->liveElems[p]->getAttrs()->canCollect())
-                cchmbr->liveElems[p]->getAttrs()->getInventory()->runLives();
-            p++;
-        }
-    }
+    live.resize(kept);
     ap->mechanics();
     if (ap->getAttrs()->canCollect())
         ap->getAttrs()->getInventory()->runLives();
-    return;
 }
 
 /**

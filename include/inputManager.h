@@ -21,6 +21,7 @@
  */
 
 
+#include <atomic>
 #include <istream>
 // *** END ***
 #ifndef INPUTMANAGER_H
@@ -61,7 +62,7 @@ private:
     std::thread nt;
     bool joyPresent=false;
     ALLEGRO_JOYSTICK *joystick;
-    bool exit=false;
+    std::atomic<bool> exit=false; ///< set by the game thread, read by the input thread
     void inputLoop();
     controlItem translateEvent(ALLEGRO_EVENT* ev);
     inputManager();

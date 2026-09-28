@@ -195,8 +195,6 @@ void inputManager::inputLoop()
 }
 void inputManager::stop()
 {
-    std::mutex mtx;
-    std::lock_guard<std::mutex> lock(mtx);
     this->exit = true;
 }
 void inputManager::hapticKick(float strength)

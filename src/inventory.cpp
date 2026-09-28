@@ -155,8 +155,8 @@ bool inventory::removeActiveWeapon()
 
 bool inventory::runLives()
 {
-    auto rl = [](std::vector<std::shared_ptr<bElem>> in) {
-        for (auto e : in) {
+    auto rl = [](const std::vector<std::shared_ptr<bElem>> &in) {
+        for (const auto &e : in) {
             if (e->getStats()->hasActivatedMechanics())
                 e->mechanics();
         }
