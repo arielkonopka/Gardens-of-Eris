@@ -33,7 +33,7 @@ std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
     pm->stepOnElement(who->getElementInDirection(who->getStats()->getFacing()));
     pm->getAttrs()->setEnergy(this->getAttrs()->getEnergy());
     if (who->getType() == bElemTypes::_player)
-        viewPoint::get_instance()->setOwner(pm);
+        viewPoint::get_instance().setOwner(pm);
     return pm;
 }
 

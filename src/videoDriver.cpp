@@ -20,8 +20,6 @@
  * SOFTWARE.
  */
 #include "videoDriver.h"
-videoDriver *videoDriver::myInstance = nullptr;
-std::once_flag videoDriver::_onceFlag;
 
 videoDriver::videoDriver()
     : std::enable_shared_from_this<videoDriver>()
@@ -33,7 +31,9 @@ videoDriver::videoDriver()
         exit(0);
     }
     al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
-    ALLEGRO_BITMAP *spriteTs = al_load_bitmap(gameConfig->spriteFile.c_str());
+    // every element definition shares the one sprite sheet
+    std::shared_ptr<ALLEGRO_BITMAP> spriteTs(al_load_bitmap(gameConfig->spriteFile.c_str()),
+                                             goe::destroyWith<al_destroy_bitmap>());
     if (spriteTs == nullptr) {
         std::cout << "Could not load sprites tile-set, please check your configuration.\n"
                   << gameConfig->spriteFile.c_str() << "\n";
@@ -98,10 +98,10 @@ videoDriver::~videoDriver()
     //dtor
 }
 
-videoDriver *videoDriver::getInstance()
+videoDriver &videoDriver::getInstance()
 {
-    std::call_once(videoDriver::_onceFlag, []() { videoDriver::myInstance = new videoDriver(); });
-    return videoDriver::myInstance;
+    static videoDriver instance;
+    return instance;
 }
 
 vElement videoDriver::getVideoElement(int typeId)

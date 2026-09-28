@@ -660,8 +660,8 @@ void gameSerializer::clearWorld()
     goldenApple::apples.clear();
     goldenApple::appleNumber = 0;
     bElem::toDispose.clear();
-    viewPoint::get_instance()->viewPoints.clear();
-    viewPoint::get_instance()->_owner.reset();
+    viewPoint::get_instance().viewPoints.clear();
+    viewPoint::get_instance()._owner.reset();
     chamber::allChambers.clear();
 }
 
@@ -678,7 +678,7 @@ bool gameSerializer::saveGame(const std::string &fileName)
         // header and global state
         w.raw(saveMagic, sizeof(saveMagic));
         w.u32(formatVersion);
-        w.u32(bElem::sTaterCounter);
+        w.u32(gameClock::ticks);
         w.u64(bElemStats::currentInstance);
         w.i32(chamber::lastid);
         std::ostringstream rng;
@@ -700,10 +700,10 @@ bool gameSerializer::saveGame(const std::string &fileName)
             w.refs(tps);
         }
         w.refs(bElem::toDispose);
-        auto vp = viewPoint::get_instance();
-        w.ref(vp->_owner);
+        auto &vp = viewPoint::get_instance();
+        w.ref(vp._owner);
         std::vector<std::shared_ptr<bElem>> vps;
-        for (const auto &p : vp->viewPoints)
+        for (const auto &p : vp.viewPoints)
             if (auto sp = p.lock())
                 vps.push_back(sp);
         w.refs(vps);
@@ -729,7 +729,7 @@ bool gameSerializer::saveGame(const std::string &fileName)
                 std::vector<std::pair<int32_t, uint32_t>> runs;
                 for (int x = 0; x < c->width; x++)
                     for (int y = 0; y < c->height; y++) {
-                        int v = c->visitedElements[x][y];
+                        int v = c->visitedElements[c->cellIndex(x, y)];
                         if (!runs.empty() && runs.back().first == v)
                             runs.back().second++;
                         else
@@ -746,7 +746,7 @@ bool gameSerializer::saveGame(const std::string &fileName)
             for (int x = 0; x < c->width; x++)
                 for (int y = 0; y < c->height; y++) {
                     stack.clear();
-                    for (auto e = c->chamberArray[x][y]->element; e && stack.size() < 255;
+                    for (auto e = c->cells[c->cellIndex(x, y)]; e && stack.size() < 255;
                          e = e->getStats()->getSteppingOn())
                         stack.push_back(e);
                     w.u8((uint8_t) stack.size());
@@ -869,22 +869,20 @@ bool gameSerializer::loadGame(const std::string &fileName)
             c->chamberName = name;
             c->chamberColour = col;
             c->applesCount = r.u32();
-            c->visitedElements.assign(w, std::vector<int>(h, 0));
+            c->visitedElements.assign((size_t) w * h, 0);
             {
                 int64_t pos = 0, total = (int64_t) w * h;
                 for (uint32_t runs = r.u32(); runs > 0; runs--) {
                     int v = r.i32();
                     uint32_t cnt = r.u32();
                     for (uint32_t k = 0; k < cnt && pos < total; k++, pos++)
-                        c->visitedElements[pos / h][pos % h] = v;
+                        c->visitedElements[pos] = v;
                 }
             }
-            c->chamberArray.resize(w);
+            c->cells.resize((size_t) w * h);
             cd.cells.resize((size_t) w * h);
             for (int x = 0; x < w; x++) {
-                c->chamberArray[x].reserve(h);
                 for (int y = 0; y < h; y++) {
-                    c->chamberArray[x].push_back(std::make_shared<bElemContainer>());
                     auto &stack = cd.cells[(size_t) x * h + y];
                     for (uint8_t k = r.u8(); k > 0; k--) {
                         cellEntry ce;
@@ -937,7 +935,7 @@ bool gameSerializer::loadGame(const std::string &fileName)
                         }
                         below = e;
                     }
-                    c->chamberArray[x][y]->element = below;
+                    c->cells[c->cellIndex(x, y)] = below;
                 }
             c->liveElems = ctx.getAll(cd.liveIds);
             c->toDeregister.assign(cd.toDeregister.begin(), cd.toDeregister.end());
@@ -959,11 +957,11 @@ bool gameSerializer::loadGame(const std::string &fileName)
             teleport::firstReceiverRemoved = firstReceiverRemoved;
         }
         bElem::toDispose = ctx.getAll(toDisposeIds);
-        auto vp = viewPoint::get_instance();
-        vp->_owner = ctx.get(viewOwnerId);
+        auto &vp = viewPoint::get_instance();
+        vp._owner = ctx.get(viewOwnerId);
         for (auto &p : ctx.getAll(viewPointIds))
-            vp->viewPoints.push_back(p);
-        bElem::sTaterCounter = taterCounter;
+            vp.viewPoints.push_back(p);
+        gameClock::ticks = taterCounter;
         std::istringstream rng(rngState);
         rng >> bElem::randomNumberGenerator;
 
@@ -973,16 +971,16 @@ bool gameSerializer::loadGame(const std::string &fileName)
             if (!t || t->getAttrs()->getSubtype() != 0 || !t->getBoard())
                 continue;
             auto pos = t->getStats()->getMyPosition();
-            soundManager::getInstance()->setupSong(t->getStats()->getInstanceId(),
+            soundManager::getInstance().setupSong(t->getStats()->getInstanceId(),
                                                    1,
                                                    {(float) pos.x, (float) pos.y, 0.0f},
                                                    t->getBoard()->getInstanceId(),
                                                    true);
             if (t->getStats()->getMyDirection() == dir::direction::LEFT)
-                soundManager::getInstance()->pauseSong(t->getStats()->getInstanceId());
+                soundManager::getInstance().pauseSong(t->getStats()->getInstanceId());
         }
         if (player::activePlayer && player::activePlayer->getBoard())
-            soundManager::getInstance()->setListenerChamber(
+            soundManager::getInstance().setListenerChamber(
                 player::activePlayer->getBoard()->getInstanceId(),
                 player::activePlayer->getBoard()->getSize());
     } catch (const std::exception &ex) {

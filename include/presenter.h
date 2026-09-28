@@ -23,6 +23,7 @@
 
 #ifndef CHAMBERPRESENTER_H
 #define CHAMBERPRESENTER_H
+#include "allegroHandles.h"
 #include "commons.h"
 
 #include <allegro5/allegro5.h>
@@ -82,7 +83,6 @@ public:
     void showText(int x,int y,int offsetX,int offsetY,std::string text);
     //relX and relY are coordinates on a board, that indicate where the player is
     void showGameField();
-    ALLEGRO_EVENT_QUEUE* evQueue;
     //void showGameFieldLoop();
     void prepareStatsThing();
 
@@ -102,7 +102,7 @@ private:
     std::vector<coords> chaosGamePoints;
     std::vector<coords> chaosGameTops;
     coords chaosGamelastPoint;
-    ALLEGRO_FONT* myfont;
+    goe::fontHandle myfont;
     std::string splashFname;
     int shaderId=-1;
     int sWidth;
@@ -119,23 +119,18 @@ private:
     coords bluredElement25=NOCOORDS;
     coords bluredElement50=NOCOORDS;
     coords bluredElement75=NOCOORDS;
-    ALLEGRO_BITMAP* internalBitmap;
-    ALLEGRO_BITMAP* cloakBitmap;
-    ALLEGRO_BITMAP* statsStripe;
+    goe::bitmapHandle internalBitmap;
+    goe::bitmapHandle statsStripe;
     int bsHeight,bsWidth;
     _cp_gameReasonOut presentGamePlay();
     std::shared_ptr<chamber> _cp_attachedBoard;
-    ALLEGRO_TIMER* alTimer;
-
-    ALLEGRO_DISPLAY* display;
+    goe::timerHandle alTimer;
+    goe::eventQueueHandle evQueue; // after the timer, so the queue goes first
 
     std::vector<float> radiuses;
-    ALLEGRO_BITMAP *pointsTexture;
+    goe::bitmapHandle pointsTexture;
     int pointsTextureWidth = 2;
     int pointsTextureHeight = 100;
- //   ALLEGRO_SHADER *shader;
-
-    ALLEGRO_BITMAP *sprites;
     typedef struct movingSprite
     {
         int x;

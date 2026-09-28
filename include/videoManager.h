@@ -9,6 +9,7 @@
 
 #include "commons.h"
 #include "configManager.h"
+#include "allegroHandles.h"
 
 /**
  * @class videoManager
@@ -96,21 +97,11 @@ private:
          */
         ShaderInfo(const std::string& vfname,const std::string& pfname);
 
-        /**
-         * @brief Destructor for ShaderInfo.
-         *
-         * Destroys the shader if it has been initialized.
-         */
-         ~ShaderInfo();
         // Member variables
         std::string psfilename;       /**< The filename of the shader */
         std::string vsfilename;       /**< The filename of the shader */
         int id;                     /**< The unique ID of the shader */
-        bool initialized;           /**< Flag indicating if the shader has been initialized */
-        ALLEGRO_SHADER* shader;     /**< Pointer to the shader object */
-        // Implement move constructor and move assignment operator
-        ShaderInfo(ShaderInfo&& other) noexcept;
-        ShaderInfo& operator=(ShaderInfo&& other) noexcept;
+        goe::shaderHandle shader;   /**< Owned shader object, destroyed with the ShaderInfo */
         // Existing constructors and methods...
 
         /**
@@ -135,7 +126,7 @@ private:
 
     // Other private members of videoManager...
     std::map<int,ShaderInfo> shaders{}; /**< Allegro shader object vector */
-    ALLEGRO_DISPLAY* display;       /**< Allegro display object for the game window */
+    goe::displayHandle display;     /**< Allegro display object for the game window */
     bool initialized;               /**< Flag to track if the videoManager is initialized */
 
     /**
@@ -161,7 +152,6 @@ private:
      */
     ~videoManager();
 
-    static std::once_flag initFlag; /**< Ensures the Singleton is initialized only once */
     int scrWidth = -1;
     int scrHeight = -1;
 };

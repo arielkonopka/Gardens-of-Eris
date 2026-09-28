@@ -21,21 +21,17 @@
  */
 #include "soundManager.h"
 
-soundManager *soundManager::instance = nullptr;
-std::once_flag soundManager::_onceFlag;
 soundManager::soundManager()
 {
     this->cm = configManager::getInstance();
     this->gc = cm->getConfig();
 
-    this->sndContext = nullptr;
     // Initialize Open AL
-    this->sndDevice = alcOpenDevice(NULL); // open default device
-    if (this->sndDevice != nullptr) {
-        this->sndContext = alcCreateContext(this->sndDevice, nullptr); // create context
-        if (this->sndContext != nullptr) {
-            alcMakeContextCurrent(this->sndContext); // set active context
-        }
+    this->sndDevice.reset(alcOpenDevice(nullptr)); // open default device
+    if (this->sndDevice) {
+        this->sndContext.reset(alcCreateContext(this->sndDevice.get(), nullptr));
+        if (this->sndContext)
+            alcMakeContextCurrent(this->sndContext.get()); // set active context
         alDopplerFactor(15.0);
         alDopplerVelocity(20);
         alSpeedOfSound(300.0);
@@ -66,13 +62,18 @@ soundManager::soundManager()
 
 soundManager::~soundManager()
 {
-    alcDestroyContext(this->sndContext);
-    alcCloseDevice(this->sndDevice);
+    this->active = false;
+    if (this->myThread.joinable())
+        this->myThread.join(); // the loop checks the flag every 10 ms
+    if (this->sndContext)
+        alcMakeContextCurrent(nullptr);
+    // the context and then the device are released by their handles
 }
-soundManager *soundManager::getInstance()
+
+soundManager &soundManager::getInstance()
 {
-    std::call_once(soundManager::_onceFlag, []() { soundManager::instance = new soundManager(); });
-    return soundManager::instance;
+    static soundManager instance;
+    return instance;
 }
 /*
  * Stop all sound efx of an element, we stop it by id.
@@ -154,10 +155,8 @@ void soundManager::enableSound()
 {
     if (active)
         return;
-    std::thread nt = std::thread(&soundManager::threadLoop, this);
-    nt.detach();
-    std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->active = true;
+    this->myThread = std::jthread(&soundManager::threadLoop, this);
 }
 
 std::shared_ptr<stNode> soundManager::registerSound(int chamberId,
@@ -399,27 +398,25 @@ ALuint soundManager::loadSample(std::string fname)
 {
     ALenum err, format;
     ALuint buffer;
-    SNDFILE *sndfile;
     SF_INFO sfinfo;
     sf_count_t num_frames;
     ALsizei num_bytes;
     /* Open the audio file and check that it's usable. */
-    sndfile = sf_open(fname.c_str(), SFM_READ, &sfinfo);
+    std::unique_ptr<SNDFILE, goe::destroyWith<sf_close>> sndfile(sf_open(fname.c_str(), SFM_READ, &sfinfo));
     if (!sndfile)
         return 0;
     format = this->determineFormat(sfinfo,
-                                   sndfile); /* Get the sound format, and figure out the OpenAL format */
+                                   sndfile.get()); /* Get the sound format, and figure out the OpenAL format */
     if (sfinfo.frames < 1
         || sfinfo.frames > (sf_count_t) (INT_MAX / sizeof(short)) / sfinfo.channels
         || format == AL_NONE) {
-        sf_close(sndfile);
         return 0;
     }
     /* Decode the whole audio file to a buffer. */
     {
         std::vector<short> buff(sfinfo.frames * sfinfo.channels);
-        num_frames = sf_readf_short(sndfile, buff.data(), sfinfo.frames);
-        sf_close(sndfile);
+        num_frames = sf_readf_short(sndfile.get(), buff.data(), sfinfo.frames);
+        sndfile.reset();
         if (num_frames < 1)
             return 0;
         num_bytes = (ALsizei) (num_frames * sfinfo.channels) * (ALsizei) sizeof(short);
@@ -477,7 +474,7 @@ int soundManager::setupSong(
         return -1;
     }
     /* we deal with the problem of code and configuration mismatch */
-    if (songNo < 0 || this->gc->music.size() < (unsigned int) songNo) {
+    if (songNo < 0 || this->gc->music.size() <= (unsigned int) songNo) {
         songNo = bElem::randomNumberGenerator() % this->gc->music.size();
     }
     muNode muNd;
@@ -488,9 +485,9 @@ int soundManager::setupSong(
     muNd.songNo = songNo;
     muNd.position = position;
     muNd.chamberId = chamberId;
-    muNd.musicFile = sf_open(this->gc->music[songNo].filename.c_str(),
-                             SFM_READ,
-                             &(muNd.musFileinfo));
+    muNd.musFileinfo = {}; // sf_open in read mode needs format 0
+    muNd.musicFile.reset(sf_open(this->gc->music[songNo].filename.c_str(), SFM_READ, &(muNd.musFileinfo)),
+                         goe::destroyWith<sf_close>());
     if (!muNd.musicFile) {
         std::cout << "Music file cannot be open " << this->gc->music[songNo].filename << "!\n";
         return -1;
@@ -498,14 +495,11 @@ int soundManager::setupSong(
     if (muNd.musFileinfo.frames < 1
         || muNd.musFileinfo.frames
                > (sf_count_t) (INT_MAX / sizeof(short)) / muNd.musFileinfo.channels) {
-        sf_close(muNd.musicFile); /* music file contains no data */
-        return -1;
+        return -1; /* music file contains no data */
     }
-    muNd.format = this->determineFormat(muNd.musFileinfo, muNd.musicFile);
-    if (!muNd.format) {
-        sf_close(muNd.musicFile);
+    muNd.format = this->determineFormat(muNd.musFileinfo, muNd.musicFile.get());
+    if (!muNd.format)
         return -1;
-    }
     source = 0;
     alGenSources(1, &source);
     muNd.source = source;
@@ -520,7 +514,7 @@ int soundManager::setupSong(
     alGenBuffers(buffersNum, &muNd.Abuffers[0]);
     for (int n = 0; n < buffersNum; n++) {
         std::vector<short> buff(65536);
-        int num_frames = sf_readf_short(muNd.musicFile,
+        int num_frames = sf_readf_short(muNd.musicFile.get(),
                                         buff.data(),
                                         buff.size() / muNd.musFileinfo.channels);
         if (num_frames < 1)
@@ -561,13 +555,13 @@ void soundManager::playSong(int songNo)
         alSourceUnqueueBuffers(this->registeredMusic[songNo].source, 1, &buffer);
 
         std::vector<short> buff(65536);
-        int num_frames = sf_readf_short(this->registeredMusic[songNo].musicFile,
+        int num_frames = sf_readf_short(this->registeredMusic[songNo].musicFile.get(),
                                         buff.data(),
                                         buff.size()
                                             / this->registeredMusic[songNo].musFileinfo.channels);
         if (num_frames < 1) {
-            sf_seek(this->registeredMusic[songNo].musicFile, 0, 0);
-            num_frames = sf_readf_short(this->registeredMusic[songNo].musicFile,
+            sf_seek(this->registeredMusic[songNo].musicFile.get(), 0, 0);
+            num_frames = sf_readf_short(this->registeredMusic[songNo].musicFile.get(),
                                         buff.data(),
                                         buff.size()
                                             / this->registeredMusic[songNo].musFileinfo.channels);

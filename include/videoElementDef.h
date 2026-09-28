@@ -22,6 +22,8 @@
 
 #ifndef VIDEOELEMENTDEF_H
 #define VIDEOELEMENTDEF_H
+#include "allegroHandles.h"
+#include <memory>
 #include "commons.h"
 
 #include <allegro5/allegro5.h>
@@ -46,10 +48,10 @@ class videoElementDef
         coordVector destroying;
         coordVector fadingOut;
         coordVector fadingIn;
-        videoElementDef(ALLEGRO_BITMAP *sprites_);
+        explicit videoElementDef(std::shared_ptr<ALLEGRO_BITMAP> sprites_);
         ~videoElementDef();
         videoElementDef(const videoElementDef& other);
-        ALLEGRO_BITMAP *sprites;
+        std::shared_ptr<ALLEGRO_BITMAP> sprites;
         static void initializeDriver();
     private:
 

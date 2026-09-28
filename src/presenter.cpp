@@ -36,9 +36,9 @@ presenter::presenter()
         exit(0);
     }
 
-    this->alTimer = al_create_timer(1.0 / 50);
-    this->evQueue = al_create_event_queue();
-    al_register_event_source(this->evQueue, al_get_timer_event_source(this->alTimer));
+    this->alTimer.reset(al_create_timer(1.0 / 50));
+    this->evQueue.reset(al_create_event_queue());
+    al_register_event_source(this->evQueue.get(), al_get_timer_event_source(this->alTimer.get()));
     //  this->_cp_attachedBoard=board;
     al_get_monitor_info(0, &info);
     this->scrWidth = info.x2 - 50;  /* Assume this is 1366 */
@@ -53,13 +53,12 @@ presenter::presenter()
 
 bool presenter::initializeDisplay()
 {
-    al_register_event_source(this->evQueue,
+    al_register_event_source(this->evQueue.get(),
                              al_get_display_event_source(
                                  videoManager::getInstance().getCurrentDisplay()));
-    this->internalBitmap = al_create_bitmap(this->scrWidth + 64, this->scrHeight + 64);
-    this->cloakBitmap = al_create_bitmap(this->scrWidth + 128, this->scrHeight + 128);
-    this->statsStripe = al_create_bitmap(this->scrWidth, this->scrHeight / 3);
-    this->pointsTexture = al_create_bitmap(this->pointsTextureWidth, this->pointsTextureHeight);
+    this->internalBitmap.reset(al_create_bitmap(this->scrWidth + 64, this->scrHeight + 64));
+    this->statsStripe.reset(al_create_bitmap(this->scrWidth, this->scrHeight / 3));
+    this->pointsTexture.reset(al_create_bitmap(this->pointsTextureWidth, this->pointsTextureHeight));
     this->shaderId = videoManager::getInstance().setupShader("data/shaders/vertexShader.glvs",
                                                              "data/shaders/pixelShader.glps");
     std::cerr << "Created shader no:" << this->shaderId << "\n";
@@ -91,9 +90,10 @@ _cp_gameReasonOut presenter::presentGamePlay()
 void presenter::showSplash()
 {
     std::cout << "Splash" << this->splashFname.c_str() << "\n";
-    ALLEGRO_BITMAP *splash = al_load_bitmap(this->splashFname.c_str());
+    goe::bitmapHandle splash(al_load_bitmap(this->splashFname.c_str()));
     al_clear_to_color(al_map_rgba(15, 15, 25, 255));
-    al_draw_bitmap(splash, 450, 0, 0);
+    if (splash)
+        al_draw_bitmap(splash.get(), 450, 0, 0);
     al_wait_for_vsync();
     al_flip_display();
 }
@@ -103,8 +103,8 @@ bool presenter::loadCofiguredData()
     std::shared_ptr<gameConfig> gcfg = configManager::getInstance()->getConfig();
     al_init_font_addon();
     al_init_ttf_addon();
-    this->myfont = al_load_ttf_font(gcfg->FontFile.c_str(), 32, 0);
-    if (this->myfont == nullptr) {
+    this->myfont.reset(al_load_ttf_font(gcfg->FontFile.c_str(), 32, 0));
+    if (!this->myfont) {
         std::cout << "Font assets are not loaded properly, check the configuration.\n";
         return false;
     }
@@ -139,21 +139,15 @@ bool presenter::showObjectTile(
     if (!elem)
         return false;
     coords coords, offset = {0, 0};
-    auto vd = videoDriver::getInstance();
-    auto ve = (vd) ? vd->getVideoElement(elem->getType()) : nullptr;
+    auto ve = videoDriver::getInstance().getVideoElement(elem->getType());
     if (!ve)
         return false;
     auto draw_sprite = [&]() {
         int sx = (coords.x * this->sWidth) + ((coords.x + 1) * (this->spacing));
         int sy = (coords.y * this->sHeight) + ((coords.y + 1) * (this->spacing));
 
-        if (!vd) {
-            std::cout << "No video driver in memory???\n";
-            exit(0);
-        };
-
         if (ve)
-            al_draw_bitmap_region(ve->sprites,
+            al_draw_bitmap_region(ve->sprites.get(),
                                   sx,
                                   sy,
                                   this->sWidth,
@@ -239,15 +233,15 @@ void presenter::showText(int x, int y, int offsetX, int offsetY, std::string tex
 {
     ALLEGRO_COLOR c = al_map_rgb(255, 255, 200);
     int scrx = offsetX + (x * this->sWidth), scry = offsetY + (y * this->sHeight);
-    if (this->myfont != nullptr) {
-        al_draw_text(this->myfont, c, (float) scrx, (float) scry, 0, text.c_str());
+    if (this->myfont) {
+        al_draw_text(this->myfont.get(), c, (float) scrx, (float) scry, 0, text.c_str());
     }
 }
 
 void presenter::prepareStatsThing()
 {
     std::shared_ptr<bElem> aPlayer = player::getActivePlayer();
-    al_set_target_bitmap(this->statsStripe);
+    al_set_target_bitmap(this->statsStripe.get());
     al_clear_to_color(al_map_rgba(0, 0, 0, 255));
     this->showText(1, 1, 0, 5, "Garden: " + aPlayer->getBoard()->getName());
     this->showObjectTile(1, 0, 0, 0, aPlayer, true, _mode_onlyTop);
@@ -348,7 +342,7 @@ void presenter::showGameField()
         boardsize = player->getBoard()->getSize();
     // Calculate LeftUpper corner of the viewpoint
     // BEGIN:upperLeft
-    coords b = viewPoint::get_instance()->getViewPoint() - halfscreen;
+    coords b = viewPoint::get_instance().getViewPoint() - halfscreen;
     b.x = std::max(0, std::min(boardsize.x - (this->scrTilesX), b.x));
     b.y = std::max(0, std::min(boardsize.y - (this->scrTilesY), b.y));
     // END:upperLeft
@@ -362,10 +356,10 @@ void presenter::showGameField()
     this->previousPosition.y = this->positionOnScreen.y / this->sHeight;
     offX = (this->positionOnScreen.x % this->sWidth);
     offY = (this->positionOnScreen.y % this->sHeight);
-    soundManager::getInstance()->setListenerVelocity({(float) d.x, (float) d.y, 0.0f});
+    soundManager::getInstance().setListenerVelocity({(float) d.x, (float) d.y, 0.0f});
     this->prepareStatsThing();
 
-    al_set_target_bitmap(this->internalBitmap);
+    al_set_target_bitmap(this->internalBitmap.get());
 
     colour c = this->_cp_attachedBoard->getChColour();
     al_clear_to_color(al_map_rgba(c.r, c.g, c.b, c.a));
@@ -384,7 +378,7 @@ void presenter::showGameField()
                 coords np = coords(x + this->previousPosition.x, y + this->previousPosition.y);
                 std::shared_ptr<bElem> elemToDisplay = player->getBoard()->getElement(np);
                 if (player->getBoard()->isVisible(np) >= 255
-                    && !viewPoint::get_instance()->isPointVisible(np))
+                    && !viewPoint::get_instance().isPointVisible(np))
                     continue; // this element is not even discovered yet
                 if (elemToDisplay) {
                     if (this->showObjectTile(x, y, 0, 0, elemToDisplay, false, 0))
@@ -407,10 +401,10 @@ void presenter::showGameField()
         } else
             this->showObjectTile(ms.x, ms.y, 0, 0, ms.elem, false, 1);
     }
-    if (player->getStats()->isMoving() && boardsize.x > viewPoint::get_instance()->getViewPoint().x
-        && viewPoint::get_instance()->getViewPoint().x >= 0
-        && boardsize.y > viewPoint::get_instance()->getViewPoint().y
-        && viewPoint::get_instance()->getViewPoint().y >= 0)
+    if (player->getStats()->isMoving() && boardsize.x > viewPoint::get_instance().getViewPoint().x
+        && viewPoint::get_instance().getViewPoint().x >= 0
+        && boardsize.y > viewPoint::get_instance().getViewPoint().y
+        && viewPoint::get_instance().getViewPoint().y >= 0)
         this->showObjectTile(px,
                              py,
                              0,
@@ -426,7 +420,7 @@ void presenter::showGameField()
     al_set_target_bitmap(al_get_backbuffer(videoManager::getInstance().getCurrentDisplay()));
 
     al_clear_to_color(al_map_rgba(15, 25, 45, 255));
-    al_draw_bitmap_region(this->statsStripe,
+    al_draw_bitmap_region(this->statsStripe.get(),
                           0,
                           0,
                           this->bsWidth - 1,
@@ -436,9 +430,9 @@ void presenter::showGameField()
                           0);
     this->shaderthing(offX, offY);
 
-    //al_set_shader_sampler("internalBitmap", this->internalBitmap,0);
+    //al_set_shader_sampler("internalBitmap", this->internalBitmap.get(),0);
     //al_set_shader_float_vector("vertices",3,verts,4);
-    al_draw_bitmap_region(this->internalBitmap,
+    al_draw_bitmap_region(this->internalBitmap.get(),
                           offX,
                           offY,
                           this->bsWidth,
@@ -456,7 +450,7 @@ void presenter::shaderthing(int _x, int _y)
     float texWidth = this->scrWidth, texHeight = this->scrHeight;
     float points[300];
     std::fill(std::begin(points), std::end(points), 0.0f);
-    auto rads = viewPoint::get_instance()->getViewPoints(this->previousPosition,
+    auto rads = viewPoint::get_instance().getViewPoints(this->previousPosition,
                                                          this->previousPosition
                                                              + coords(scrTilesX + 1, scrTilesY + 1));
     int i = 0;
@@ -477,8 +471,8 @@ void presenter::shaderthing(int _x, int _y)
 
 void presenter::drawCloak()
 {
-    if (viewPoint::get_instance()->getViewPoint() != NOCOORDS) {
-        auto ve = videoDriver::getInstance()->getVideoElement(player::getActivePlayer()->getType());
+    if (viewPoint::get_instance().getViewPoint() != NOCOORDS) {
+        auto ve = videoDriver::getInstance().getVideoElement(player::getActivePlayer()->getType());
         int obscured;
         int divider = GoEConstants::_dividerCloak;
         coords be = this->bluredElement[player::getActivePlayer()->getBoard()->getInstanceId()
@@ -488,19 +482,19 @@ void presenter::drawCloak()
                 int nx = x + this->previousPosition.x;
                 int ny = y + this->previousPosition.y;
                 coords np = coords(nx, ny);
-                if (viewPoint::get_instance()->isPointVisible(np)) {
+                if (viewPoint::get_instance().isPointVisible(np)) {
                     for (int x1 = 0; x1 < divider; x1++)
                         for (int y1 = 0; y1 < divider; y1++) {
                             coords np1 = (np * divider) + coords(x1, y1);
                             obscured = std::min(255,
                                                 viewPoint::get_instance()
-                                                    ->calculateObscured(np1, divider));
+                                                    .calculateObscured(np1, divider));
                             if (obscured > 0) {
                                 int sx = (be.x * this->sWidth) + ((be.x + 1) * (this->spacing))
                                          + (x1 * this->sWidth) / divider;
                                 int sy = (be.y * this->sHeight) + ((be.y + 1) * (this->spacing))
                                          + (y1 * this->sHeight) / divider;
-                                al_draw_tinted_bitmap_region(ve->sprites,
+                                al_draw_tinted_bitmap_region(ve->sprites.get(),
                                                              al_map_rgba(255, 255, 255, obscured),
                                                              sx,
                                                              sy,
@@ -517,7 +511,7 @@ void presenter::drawCloak()
                 }
                 int sx = (be.x * this->sWidth) + ((be.x + 1) * (this->spacing));
                 int sy = (be.y * this->sHeight) + ((be.y + 1) * (this->spacing));
-                al_draw_bitmap_region(ve->sprites,
+                al_draw_bitmap_region(ve->sprites.get(),
                                       sx,
                                       sy,
                                       this->sWidth,
@@ -568,17 +562,17 @@ void presenter::eyeCandy(int flavour)
 
 void presenter::handleSaveKeys()
 {
-    auto *im = inputManager::getInstance();
+    auto &im = inputManager::getInstance();
     if (this->pendingSaveOp == 0) {
-        if (im->pressed_keys[ALLEGRO_KEY_F5] && !this->saveKeyDown)
+        if (im.pressed_keys[ALLEGRO_KEY_F5] && !this->saveKeyDown)
             this->pendingSaveOp = 1;
-        else if (im->pressed_keys[ALLEGRO_KEY_F9] && !this->loadKeyDown)
+        else if (im.pressed_keys[ALLEGRO_KEY_F9] && !this->loadKeyDown)
             this->pendingSaveOp = 2;
         if (this->pendingSaveOp != 0)
             std::cout << (this->pendingSaveOp == 1 ? "Saving" : "Loading") << "...\n";
     }
-    this->saveKeyDown = im->pressed_keys[ALLEGRO_KEY_F5];
-    this->loadKeyDown = im->pressed_keys[ALLEGRO_KEY_F9];
+    this->saveKeyDown = im.pressed_keys[ALLEGRO_KEY_F5];
+    this->loadKeyDown = im.pressed_keys[ALLEGRO_KEY_F9];
     if (this->pendingSaveOp == 0)
         return;
     // the background generator holds the world lock while it builds a level; never freeze the game
@@ -606,11 +600,11 @@ int presenter::presentEverything()
     ALLEGRO_EVENT event;
     controlItem cItem;
 
-    al_start_timer(this->alTimer);
+    al_start_timer(this->alTimer.get());
     while (!this->fin) {
-        al_wait_for_event(this->evQueue, &event);
+        al_wait_for_event(this->evQueue.get(), &event);
         if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-            inputManager::getInstance()->stop();
+            inputManager::getInstance().stop();
             this->fin = true;
             break;
         }
@@ -625,7 +619,7 @@ int presenter::presentEverything()
                         ->getInventory()
                         ->countTokens(bElemTypes::_goldenAppleType, 0)
                     == goldenApple::getAppleNumber()) {
-                    inputManager::getInstance()->stop();
+                    inputManager::getInstance().stop();
                     this->fin = true;
                 }
             }
@@ -640,23 +634,23 @@ int presenter::presentEverything()
         } else {
             if ((currentPlayer = player::getActivePlayer()).get() == nullptr) {
                 this->fin = true;
-                inputManager::getInstance()->stop();
+                inputManager::getInstance().stop();
                 return 2;
             }
             cItem = inputManager::getInstance()
-                        ->getCtrlItem(); //We always got a status on what to do. remember, everything must have a timer!
+                        .getCtrlItem(); //We always got a status on what to do. remember, everything must have a timer!
             // the idea is to serve the keyboard state constantly, we avoid actions that are too fast
             // by having timers on everything, like: once you shoot, you will be able to shoot in some defined time
             // same with movement, object cycling, gun cycling, using things, interacting with things.
             if (cItem.type == 7) {
                 this->fin = true;
-                inputManager::getInstance()->stop();
+                inputManager::getInstance().stop();
                 return 1;
             }
         }
     }
     this->fin = true;
-    inputManager::getInstance()->stop();
+    inputManager::getInstance().stop();
     return 1;
 }
 

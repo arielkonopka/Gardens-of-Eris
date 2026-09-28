@@ -25,6 +25,7 @@
 #define bELEMATTR_H
 #include <memory>
 #include "../include/configManager.h"
+#include "bElemStats.h"
 
 class bElem;
 class inventory;
@@ -68,9 +69,10 @@ public:
     void setLocked(bool l);
     bool isKillable() const;
     bool isDestroyable() const;
-    bool isSteppable() const;
+    /// steppable by type, and the owner is not dying, being destroyed or teleporting
+    bool isSteppable() const { return this->steppable && !this->ownerBusy(); }
     bool isMovable() const;
-    bool isInteractive() const;
+    bool isInteractive() const { return this->interactive; }
     bool isCollectible() const;
     bool isWeapon() const;
     bool isOpen() const;
@@ -87,6 +89,14 @@ private:
     std::shared_ptr<inventory> inv=nullptr;
     bool provisioned = false;
     std::weak_ptr<bElem> owner;
+    /// the owner's stats, held directly so the hot state checks need no weak_ptr lock
+    std::shared_ptr<const bElemStats> ownerStats;
+    bool ownerBusy() const
+    {
+        return this->ownerStats
+               && (this->ownerStats->isDying() || this->ownerStats->isDestroying()
+                   || this->ownerStats->isTeleporting());
+    }
     int bElemType = -1;
     int subType = -1;
     bool killable = false;

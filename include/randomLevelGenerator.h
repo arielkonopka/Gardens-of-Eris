@@ -78,7 +78,7 @@ typedef struct _rect
 class randomLevelGenerator
 {
 public:
-    chamberArea* headNode;
+    std::unique_ptr<chamberArea> headNode;
     std::mt19937 gen;
     std::shared_ptr<bElem> createElement(elementToPlace element);
 
@@ -86,15 +86,18 @@ public:
     std::shared_ptr<chamber> mychamber;
     randomLevelGenerator(int w,int h);
 
-    virtual ~randomLevelGenerator();
     bool generateLevel(int holes);
 
 private:
     int doorTypes;
-    bool placeElementCollection(chamberArea* chmbrArea,std::vector<elementToPlace>* elements);
+    bool placeElementCollection(const chamberArea& chmbrArea,const std::vector<elementToPlace>& elements);
 
-    chamberArea* lvlGenerate(int x1,int y1,int x2,int y2,int depth,int holes);
-    bool placeDoors(elementToPlace element,chamberArea* location);
+    std::unique_ptr<chamberArea> lvlGenerate(int x1,int y1,int x2,int y2,int depth,int holes);
+    bool placeDoors(elementToPlace element,const chamberArea& location);
+    /// a random area with room for demandedSurface cells, if any is left
+    std::optional<chamberArea::areaRef> pickArea(int demandedSurface,int tolerance);
+    /// removes a filled area from the tree, so nothing else is placed there
+    void retireArea(const chamberArea& area);
     void addElementToPlace(elementToPlace element);
     int checkWalls(int x, int y);
     int width;

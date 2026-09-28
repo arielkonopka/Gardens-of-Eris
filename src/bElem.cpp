@@ -28,14 +28,12 @@
 //std::vector<std::shared_ptr<bElem>> bElem::liveElems;
 std::vector<std::shared_ptr<bElem>> bElem::toDispose;
 //std::vector<unsigned long int> bElem::toDeregister;
-unsigned int bElem::sTaterCounter = 5;
 
 std::mt19937 bElem::randomNumberGenerator; // NOLINT(*-msc51-cpp)
 std::mutex bElem::mechanicMutex;
 
 bElem::bElem()
     : std::enable_shared_from_this<bElem>()
-    , elementMutex(al_create_mutex_recursive())
 {
     static std::once_flag _of;
     this->status = std::make_shared<bElemStats>();
@@ -215,8 +213,7 @@ oState bElem::disposeElementUnsafe()
             }
         }
     }
-    al_destroy_mutex(this->elementMutex);
-    soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
+    soundManager::getInstance().stopSoundsByElementId(this->getStats()->getInstanceId());
     this->getStats()->setDisposed(true);
     this->getStats()->setMyPosition(NOCOORDS);
     this->attachedBoard.reset();
@@ -256,8 +253,7 @@ oState bElem::disposeElement()
     this->getStats()->setDisposed(true);
     this->setBoard(nullptr);
     this->getStats()->setMyPosition(NOCOORDS);
-    al_destroy_mutex(this->elementMutex);
-    soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
+    soundManager::getInstance().stopSoundsByElementId(this->getStats()->getInstanceId());
     return DISPOSED;
 }
 
@@ -302,10 +298,6 @@ std::shared_ptr<bElem> bElem::getElementInDirection(coords di)
     return board->getElement(crd);
 }
 
-ALLEGRO_MUTEX *bElem::getMyMutex()
-{
-    return this->elementMutex;
-}
 
 bool bElem::use(std::shared_ptr<bElem> who)
 {
@@ -390,20 +382,15 @@ bool bElem::readyToShoot() const
 
 bool bElem::mechanics()
 {
-    if ((this->getBoard().get() == nullptr || this->getStats()->getMyPosition() == NOCOORDS)
-        && (!this->getStats()->isCollected()))
+    bElemStats &st = *this->getStats();
+    // expired() checks the board without taking a reference to it
+    if ((this->attachedBoard.expired() || st.getMyPosition() == NOCOORDS) && !st.isCollected())
         return false;
-    this->getStats()->setTaterCounter(this->getStats()->getTaterCounter()
-                                      + 1); /// Instances own 'clock'.
+    st.setTaterCounter(st.getTaterCounter() + 1); /// Instances own 'clock'.
 
-    if (this->getStats()->isWaiting() || this->getStats()->isTeleporting()
-        || this->getStats()->isDying() || this->getStats()->isDestroying()
-        || this->getStats()->isMoving() || this->getStats()->isFadingIn()
-        || this->getStats()->isFadingOut()
-        || (this->getAttrs()->isInteractive() && this->getStats()->isInteracting()))
-        return false;
-
-    return true;
+    return !(st.isWaiting() || st.isTeleporting() || st.isDying() || st.isDestroying()
+             || st.isMoving() || st.isFadingIn() || st.isFadingOut()
+             || (this->getAttrs()->isInteractive() && st.isInteracting()));
 }
 
 bool bElem::isSteppableInMyDirection() const
@@ -522,22 +509,12 @@ bool bElem::kill()
         return false;
     }
     if (this->getAttrs()->isKillable()) {
-        // viewPoint::get_instance()->addViewPoint(shared_from_this());
+        // viewPoint::get_instance().addViewPoint(shared_from_this());
         bElem::toDispose.push_back(shared_from_this());
     }
     this->getStats()->setKilled(GoEConstants::_defaultKillTime);
     return true;
 }
-const std::shared_ptr<bElemAttr>& bElem::getAttrs() const
-{
-    return this->attrs;
-}
-
-const std::shared_ptr<bElemStats>& bElem::getStats() const
-{
-    return this->status;
-}
-
 bool bElem::additionalProvisioning(int subtype)
 {
     bool r = false;
@@ -714,7 +691,8 @@ void bElem::runLiveElements()
     auto &live = cchmbr->liveElems;
     size_t kept = 0;
     for (size_t r = 0; r < live.size(); r++) {
-        std::shared_ptr<bElem> e = live[r];
+        // moved out and back in: only push_back touches the list while elements run
+        std::shared_ptr<bElem> e = std::move(live[r]);
         if (e->getStats()->isDisposed() || e->getType() == bElemTypes::_player)
             continue;
         e->mechanics();
@@ -744,16 +722,6 @@ bool bElem::stepOnAction(bool step, std::shared_ptr<bElem> who)
     return false;
 }
 
-void bElem::tick()
-{
-    bElem::sTaterCounter++;
-}
-
-unsigned int bElem::getCntr()
-{
-    return bElem::sTaterCounter;
-}
-
 bool bElem::isLocked()
 {
     return this->lockers.size() != 0;
@@ -767,8 +735,6 @@ bool bElem::lockThisObject(std::shared_ptr<bElem> who)
 
 bool bElem::unlockThisObject(std::shared_ptr<bElem> who)
 {
-    static ALLEGRO_MUTEX *elementMutex = al_create_mutex_recursive();
-    al_lock_mutex(elementMutex);
     for (unsigned int cnt = 0; cnt < this->lockers.size();) {
         if (!this->lockers.at(cnt)
             || this->lockers.at(cnt)->getStats()->getInstanceId()
@@ -778,16 +744,12 @@ bool bElem::unlockThisObject(std::shared_ptr<bElem> who)
             cnt++;
         }
     }
-    al_unlock_mutex(elementMutex);
     return true;
 }
 
 void bElem::setStatsOwner(std::shared_ptr<bElem> owner)
 {
-    static ALLEGRO_MUTEX *SEMutex = al_create_mutex_recursive();
-    al_lock_mutex(SEMutex);
     this->getStats()->setStatsOwner(owner);
-    al_unlock_mutex(SEMutex);
 }
 
 void bElem::playSound(std::string eventType, std::string event)
@@ -814,7 +776,7 @@ void bElem::ps(std::shared_ptr<bElem> who, std::string eventType, std::string ev
     coords3d vel = {(who->getOffset().x) ? 0.5f : 0.0f,
                     (who->getOffset().y > 0) ? 0.5f : 0.0f,
                     0.0f};
-    soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),
+    soundManager::getInstance().registerSound(who->getBoard()->getInstanceId(),
                                                c3d,
                                                vel,
                                                this->getStats()->getInstanceId(),
@@ -826,7 +788,7 @@ void bElem::ps(std::shared_ptr<bElem> who, std::string eventType, std::string ev
 
 void bElem::stopMySounds()
 {
-    soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
+    soundManager::getInstance().stopSoundsByElementId(this->getStats()->getInstanceId());
 }
 
 std::shared_ptr<bElem> bElem::findInDir(dir::direction dir)

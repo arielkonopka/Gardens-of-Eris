@@ -1,6 +1,5 @@
-
 /*
- * Copyright (c) 2023, Ariel Konopka
+ * Copyright (c) 2026, Ariel Konopka
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,41 +19,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#ifndef GAMECLOCK_H
+#define GAMECLOCK_H
 
-
-#ifndef KIKI_H
-#define KIKI_H
-
-#include <bElem.h>
-#include "commons.h"
-#include "bouba.h"
-
-namespace kikiSpace
+/// The game's tick counter. Every timed state (dying, waiting, teleporting...) is measured in it,
+/// so it lives in its own header where those hot checks can be inlined.
+struct gameClock
 {
-    const auto kikiHurts = 15;
-    const auto kikiWaitTime=5;
-}
-class kiki : public bElem
-{
-    friend class gameSerializer;
-public:
-    using bElem::additionalProvisioning;
-
-    kiki()=default;
-
-    virtual ~kiki() = default;
-    bool stepOnElement(std::shared_ptr<bElem> step) final;
-    bool mechanics() final;
-
-    virtual int getType() const;
-
-protected:
-
-private:
-    std::shared_ptr<bElem> makeBouba(const std::shared_ptr<chamber> &board, dir::direction mdir);
-    /// something solid stands in the beam: stop and clear the boubas pointing this way
-    bool beamBlocked(dir::direction mdir);
-    dir::direction direction = dir::direction::NODIRECTION;
+    static inline unsigned int ticks = 5;
+    static unsigned int now() noexcept { return ticks; }
+    static void advance() noexcept { ++ticks; }
 };
 
-#endif // KIKI_H
+#endif // GAMECLOCK_H

@@ -22,7 +22,9 @@
  * SOFTWARE.
  */
 
+#include <atomic>
 #include <exception>
+#include <memory>
 #include <thread>
 #include "elements.h"
 #include "presenter.h"
@@ -33,10 +35,9 @@
 #include "titleScreen.h"
 #include <cstring>
 
-bool finish=false;
+std::atomic<bool> finish=false;
 void createChambers()
 {
-    randomLevelGenerator* rndl;
     for (int cnt=5; cnt>0; cnt--)
     {
         for(int c2=0; c2<5; c2++)
@@ -44,9 +45,8 @@ void createChambers()
             // let a pending save or load go first
             while(chamber::worldLockWanted && !finish)
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            rndl=new randomLevelGenerator(500,500);
-            rndl->generateLevel(cnt);
-            delete rndl; // the world (chamber::allChambers) keeps the chamber
+            // the world (chamber::allChambers) keeps the chamber after the generator is gone
+            randomLevelGenerator(500,500).generateLevel(cnt);
 
             if(finish)
                 return;
@@ -59,22 +59,22 @@ void createChambers()
 
 int main( int argc, char * argv[] )
 {
-    auto *myPresenter=new presenter::presenter();
+    auto myPresenter=std::make_unique<presenter::presenter>();
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
     myPresenter->showSplash();
-    soundManager::getInstance()->setupSong(0,0, {0.0f,0.0f,0.0f},0,true);
-    soundManager::getInstance()->setupSong(2,2, {1.0f,130.0f,0.0f},-1,true);
-    soundManager::getInstance()->setupSong(3,3, {0.0f,170.0f,0.0f},-1,true);
-    soundManager::getInstance()->setupSong(10,5, {550.0f,0.0f,0.0f},-1,true);
-    soundManager::getInstance()->setupSong(11,6, {550.0f,550.0f,0.0f},-1,true);
-    soundManager::getInstance()->setupSong(12,7, {1.0f,550.0f,0.0f},-1,true);
-    soundManager::getInstance()->setupSong(13,8, {250.0f,250.0f,0.0f},-1,true);
-    soundManager::getInstance()->setupSong(4,4, {0.0f,0.0f,0.0f},1,true);
-    soundManager::getInstance()->setupSong(5,3, {0.0f,0.0f,0.0f},2,true);
-    soundManager::getInstance()->setupSong(6,2, {0.0f,0.0f,0.0f},3,true);
-    soundManager::getInstance()->setupSong(8,0, {0.0f,0.0f,0.0f},5,true);
-    soundManager::getInstance()->setupSong(9,0, {0.0f,0.0f,0.0f},6,true);
+    soundManager::getInstance().setupSong(0,0, {0.0f,0.0f,0.0f},0,true);
+    soundManager::getInstance().setupSong(2,2, {1.0f,130.0f,0.0f},-1,true);
+    soundManager::getInstance().setupSong(3,3, {0.0f,170.0f,0.0f},-1,true);
+    soundManager::getInstance().setupSong(10,5, {550.0f,0.0f,0.0f},-1,true);
+    soundManager::getInstance().setupSong(11,6, {550.0f,550.0f,0.0f},-1,true);
+    soundManager::getInstance().setupSong(12,7, {1.0f,550.0f,0.0f},-1,true);
+    soundManager::getInstance().setupSong(13,8, {250.0f,250.0f,0.0f},-1,true);
+    soundManager::getInstance().setupSong(4,4, {0.0f,0.0f,0.0f},1,true);
+    soundManager::getInstance().setupSong(5,3, {0.0f,0.0f,0.0f},2,true);
+    soundManager::getInstance().setupSong(6,2, {0.0f,0.0f,0.0f},3,true);
+    soundManager::getInstance().setupSong(8,0, {0.0f,0.0f,0.0f},5,true);
+    soundManager::getInstance().setupSong(9,0, {0.0f,0.0f,0.0f},6,true);
     // "--load <file>" starts from a saved game instead of a freshly generated world
     std::string saveToLoad;
     for (int c = 1; c + 1 < argc; c++)
@@ -88,17 +88,16 @@ int main( int argc, char * argv[] )
             return 0;
         title.showBusy("Building the maze...");
     }
+    // builds the remaining levels; joined when main returns, after `finish` stops it
+    std::jthread levelBuilder;
     if (!saveToLoad.empty() && gameSerializer::loadGame(saveToLoad)) {
         std::cout << "Loaded " << saveToLoad << "\n";
     } else {
-        auto rndl=new randomLevelGenerator(500,500);
-        rndl->generateLevel(5);
-        delete rndl;
+        randomLevelGenerator(500,500).generateLevel(5);
         /// generate the remaining leveldata in the background, so the user would not be greeted with a delay.
-        std::thread nt=std::thread(&createChambers);
-        nt.detach();
+        levelBuilder=std::jthread(&createChambers);
     }
-    soundManager::getInstance()->enableSound();
+    soundManager::getInstance().enableSound();
     while(!finish)
     {
         int reason=0;

@@ -50,7 +50,7 @@ bool patrollingDrone::interact(std::shared_ptr<bElem> who)
             this->attachController(token);
             this->getStats()->setWaiting(55);
             if (who->getType() == bElemTypes::_player)
-                viewPoint::get_instance()->setOwner(shared_from_this());
+                viewPoint::get_instance().setOwner(shared_from_this());
             return true;
         }
         this->playSound("Boot", "Failure");

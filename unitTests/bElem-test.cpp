@@ -765,20 +765,10 @@ TYPED_TEST(BasicObjectTests_TryToRemoveElementMoreThanNeeded, TryToRemoveElement
 
     TEST(BasicObjectTests, rwg)
     {
-        randomLevelGenerator *rwg = new randomLevelGenerator(400, 400);
-        EXPECT_TRUE(rwg != nullptr);
-        EXPECT_TRUE(rwg->mychamber != nullptr);
-        delete rwg;
-        rwg = new randomLevelGenerator(40, 40);
-        EXPECT_TRUE(rwg != nullptr);
-        EXPECT_TRUE(rwg->mychamber != nullptr);
-
-        delete rwg;
-        rwg = new randomLevelGenerator(10, 10);
-        EXPECT_TRUE(rwg != nullptr);
-        EXPECT_TRUE(rwg->mychamber != nullptr);
-
-        delete rwg;
+        for (int size : {400, 40, 10}) {
+            randomLevelGenerator rwg(size, size);
+            EXPECT_TRUE(rwg.mychamber != nullptr);
+        }
 
 
     }

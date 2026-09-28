@@ -24,6 +24,7 @@
 #define TITLESCREEN_H
 
 #include "titleMenu.h"
+#include "allegroHandles.h"
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
 #include <string>
@@ -35,7 +36,6 @@ class titleScreen
 {
 public:
     explicit titleScreen(titleMenu &menu);
-    ~titleScreen();
     /// blocks until the player picks Start or Exit (closing the window counts as Exit)
     titleMenu::action run();
     /// clears the menu and shows one line, for example while the first level is being built
@@ -45,11 +45,11 @@ private:
     void draw();
 
     titleMenu &menu;
-    ALLEGRO_EVENT_QUEUE *queue = nullptr;
-    ALLEGRO_TIMER *timer = nullptr;
-    ALLEGRO_FONT *bigFont = nullptr;
-    ALLEGRO_FONT *font = nullptr;
-    ALLEGRO_BITMAP *splash = nullptr;
+    goe::fontHandle bigFont;
+    goe::fontHandle font;
+    goe::bitmapHandle splash;
+    goe::timerHandle timer;
+    goe::eventQueueHandle queue; // declared last so it is destroyed before the timer it listens to
 };
 
 #endif // TITLESCREEN_H

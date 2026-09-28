@@ -24,6 +24,7 @@
 #ifndef BELEMSTATS_H
 #define BELEMSTATS_H
 #include "Coords.h"
+#include "gameClock.h"
 #include "../include/commons.h"
 #include <memory>
 #include <atomic>
@@ -43,29 +44,30 @@ public:
     unsigned long int getInstanceId() const;
     int getAnimPhase() const;
     std::weak_ptr<bElem> getCollector() ;
-    int getDestroyed() const;
+    int getDestroyed() const { return this->getValueInTime(this->destroyed); }
     unsigned int getDestTimeBeg() const;
     unsigned int getDestTimeReq() const;
     dir::direction getFacing() const;
-    int getInteracted() const;
+    int getInteracted() const { return this->getValueInTime(this->interacted); }
     unsigned int getKillTimeBeg() const;
     unsigned int getKillTimeReq() const;
-    int getKilled() const;
-    int getTelInProgress() const;
+    int getKilled() const { return this->getValueInTime(this->killed); }
+    int getTelInProgress() const { return this->getValueInTime(this->telInProgress); }
     unsigned int getTelReqTime() const;
     unsigned int getTelTimeReq() const;
     std::shared_ptr<bElem> getSteppingOn() const;
     std::weak_ptr<bElem> getStandingOn();
     std::weak_ptr<bElem> getStatsOwner() const;
-    int getMoved() const;
+    int getMoved() const { return this->getValueInTime(this->moved); }
     dir::direction getMyDirection() const;
-    coords getMyPosition() ;
-    int getTaterCounter() const;
-    int getWaiting() const;
-    int getFadingIn() const;
+    /// where the element is; a collected element is where its collector is
+    coords getMyPosition() { return this->collected ? this->collectorPosition() : coords(this->myPosition.getX(), this->myPosition.getY()); }
+    int getTaterCounter() const { return this->taterCounter; } // the element's own clock
+    int getWaiting() const { return this->getValueInTime(this->waiting); }
+    int getFadingIn() const { return this->getValueInTime(this->fadingIn); }
     int getFadingInReq() const;
     int getFadingOutReq() const;
-    int getFadingOut() const;
+    int getFadingOut() const { return this->getValueInTime(this->fadingOut); }
     int getMovingTotalTime() const;
     int getStats(pointsType t);
     int getPoints(pointsType ptype);
@@ -92,7 +94,7 @@ public:
     void setMoved(int value);
     void setMyDirection(dir::direction value);
     void setMyPosition(coords value);
-    void setTaterCounter(int value);
+    void setTaterCounter(int value) { this->taterCounter = value; }
     void setWaiting(int value);
     void setFadingIn(int value);
     void setFadingOut(int value);
@@ -105,16 +107,16 @@ public:
 
     // is methods
     bool isActive() const;
-    bool isCollected() const;
-    bool isDisposed() const;
-    bool isDying() const;
-    bool isTeleporting() const;
-    bool isWaiting() const;
-    bool isInteracting() const;
-    int isDestroying() const;
-    bool isMoving() const;
-    bool isFadingOut() const;
-    bool isFadingIn() const;
+    bool isCollected() const { return this->collected; }
+    bool isDisposed() const { return this->disposed; }
+    bool isDying() const { return this->getKilled() > 0; }
+    bool isTeleporting() const { return this->getTelInProgress() > 0; }
+    bool isWaiting() const { return this->getWaiting() > 0; }
+    bool isInteracting() const { return this->getInteracted() > 0; }
+    int isDestroying() const { return this->getDestroyed() > 0; }
+    bool isMoving() const { return this->getMoved() > 0; }
+    bool isFadingOut() const { return this->getFadingOut() > 0; }
+    bool isFadingIn() const { return this->getFadingIn() > 0; }
     // can methods
     // none present
 
@@ -130,7 +132,12 @@ public:
     void setMarked(bool value);
     void setStatsOwner(std::shared_ptr<bElem> own);
 private:
-    inline int getValueInTime(int value) const;
+    int getValueInTime(int value) const
+    {
+        const int now = (int) gameClock::now();
+        return (value > 0 && value >= now) ? value - now : -1;
+    }
+    coords collectorPosition();
     inline int calculateValueInTime(int value) const;
 
     static std::atomic<unsigned long int> currentInstance;

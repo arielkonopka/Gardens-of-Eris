@@ -1,12 +1,25 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.16)
 project(GardenOfEris LANGUAGES CXX)
 enable_testing()
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set the compiler flags
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -O3 -pthread")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
+# Link-time optimization lets the compiler inline the many small getters across files
+option(ENABLE_LTO "Build with link-time optimization" ON)
+if(ENABLE_LTO)
+  include(CheckIPOSupported)
+  check_ipo_supported(RESULT ipo_ok OUTPUT ipo_msg LANGUAGES CXX)
+  if(ipo_ok)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+  else()
+    message(STATUS "LTO not available: ${ipo_msg}")
+  endif()
+endif()
 
 if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O2 /MTd /RTC1 /wd4514")
@@ -93,3 +106,7 @@ if(ENABLE_SONARQUBE)
     )
 endif()
 
+
+# Headless benchmark (not a test): level generation, memory, tick, save and load times
+add_executable(goe-bench ${CMAKE_SOURCE_DIR}/benchmarks/goe-bench.cpp $<TARGET_OBJECTS:GardenOfErisLib>)
+target_link_libraries(goe-bench ${LIBRARIES})

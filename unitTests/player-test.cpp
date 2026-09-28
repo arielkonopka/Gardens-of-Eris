@@ -94,7 +94,7 @@ TEST(PlayerTests, PlayerShootsGun)
             controlItem ci2;
             ci2.type = 1;
             ci2.dir=dir::direction::LEFT;
-            inputManager::getInstance(true)->setControlItem( ci2);
+            inputManager::getInstance(true).setControlItem( ci2);
             EXPECT_TRUE(runGameEngine(200));
         }
     }
@@ -313,13 +313,13 @@ void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
     c0 = p->getStats()->getMyPosition();
-    inputManager::getInstance()->setControlItem( cntrlItm);
+    inputManager::getInstance().setControlItem( cntrlItm);
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
 
     ctItem.type = -1;
     ctItem.dir = dir::direction::NODIRECTION;
-    inputManager::getInstance()->setControlItem( ctItem);
+    inputManager::getInstance().setControlItem( ctItem);
 
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
@@ -365,7 +365,7 @@ TEST(PlayerTests, MovePlayer)
             controlItem ci2;
             ci2.type = 6;
             ci2.dir=dir::direction::NODIRECTION;
-            inputManager::getInstance(true)->setControlItem( ci2);
+            inputManager::getInstance(true).setControlItem( ci2);
             checkplayerKilled();
             p = elementFactory::generateAnElement<player>(mc,0);
             pg = elementFactory::generateAnElement<plainGun>(mc,0);

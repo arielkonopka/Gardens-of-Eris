@@ -22,9 +22,9 @@
 #include "videoElementDef.h"
 #include "elements.h"
 namespace videoElement {
-videoElementDef::videoElementDef(ALLEGRO_BITMAP *sprites_)
+videoElementDef::videoElementDef(std::shared_ptr<ALLEGRO_BITMAP> sprites_)
 {
-    this->sprites = sprites_;
+    this->sprites = std::move(sprites_);
 }
 
 void videoElementDef::initializeDriver() {}

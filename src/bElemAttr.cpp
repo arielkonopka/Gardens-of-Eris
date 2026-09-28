@@ -30,6 +30,7 @@ bElemAttr::bElemAttr(std::shared_ptr<bElem> owner, int type, int subtype)
 
     if (owner == nullptr)
         return; // no point getting values, set it yourself then
+    this->ownerStats = owner->getStats();
     this->getDefaultValues(type, subtype);
 }
 
@@ -133,15 +134,6 @@ void bElemAttr::setDestroyable(bool d)
     this->destroyable = d;
 }
 
-bool bElemAttr::isSteppable() const
-{
-    std::shared_ptr<bElem> myOwner = this->owner.lock();
-    if (!myOwner)
-        return this->steppable;
-    return this->steppable && !myOwner->getStats()->isDying()
-           && !myOwner->getStats()->isDestroying() && !myOwner->getStats()->isTeleporting();
-}
-
 void bElemAttr::setSteppable(bool s)
 {
     this->steppable = s;
@@ -149,19 +141,12 @@ void bElemAttr::setSteppable(bool s)
 
 bool bElemAttr::isMovable() const
 {
-    std::shared_ptr<bElem> own = this->owner.lock();
-    return this->movable && !own->getStats()->isDestroying() && !own->getStats()->isDying()
-           && !own->getStats()->isTeleporting();
+    return this->movable && !this->ownerBusy();
 }
 
 void bElemAttr::setMovable(bool m)
 {
     this->movable = m;
-}
-
-bool bElemAttr::isInteractive() const
-{
-    return this->interactive;
 }
 
 void bElemAttr::setInteractive(bool i)

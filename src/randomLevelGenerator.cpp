@@ -40,8 +40,6 @@ randomLevelGenerator::randomLevelGenerator(int w, int h)
     this->doorTypes = 0;
 }
 
-randomLevelGenerator::~randomLevelGenerator() {}
-
 int randomLevelGenerator::checkWalls(int x, int y)
 {
     bool walls[] = {false, false, false, false};
@@ -83,9 +81,10 @@ int randomLevelGenerator::checkWalls(int x, int y)
 
 /* 이것은 순환 분할 구현입니다 */
 
-chamberArea *randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2, int depth, int holes)
+std::unique_ptr<chamberArea> randomLevelGenerator::lvlGenerate(
+    int x1, int y1, int x2, int y2, int depth, int holes)
 {
-    chamberArea *mychamberArea = new chamberArea(x1, y1, x2, y2);
+    auto mychamberArea = std::make_unique<chamberArea>(x1, y1, x2, y2);
 #ifdef _VerbousMode_
     std::cout << "create Chamber " << x1 << "," << y1 << " " << x2 << "," << y2 << "\n";
 #endif
@@ -226,47 +225,40 @@ chamberArea *randomLevelGenerator::lvlGenerate(int x1, int y1, int x2, int y2, i
         }
     }
 
-    for (unsigned int cnt = 0; cnt < mychamberArea->children.size();
-         cnt++) // add parent to the children
-    {
-        mychamberArea->children[cnt]->parent = mychamberArea;
-    }
-
     return mychamberArea;
 }
 
-bool randomLevelGenerator::placeElementCollection(chamberArea *chmbrArea,
-                                                  std::vector<elementToPlace> *elements)
+bool randomLevelGenerator::placeElementCollection(const chamberArea &chmbrArea,
+                                                  const std::vector<elementToPlace> &elements)
 {
-#ifdef _VerbousMode_
-    std::cout << "Chosen area properties - surface: " << chmbrArea->surface
-              << " x,y,x1,y1:" << chmbrArea->upLeft.x << " " << chmbrArea->upLeft.y << " "
-              << chmbrArea->downRight.x << " " << chmbrArea->downRight.y << "\n";
-#endif
-    for (unsigned int cnt = 0; cnt < elements->size(); cnt++) {
-        chmbrArea->findElementsToStepOn(mychamber);
-#ifdef _VerbousMode_
-        std::cout << "Found: " << (long int) chamberArea::foundElements.size()
-                  << " elements to step on\n";
-#endif // _VerbousMode_
-
-        for (int cnt2 = 0; cnt2 < (*elements)[cnt].number;
-             cnt2++) // We sometimes must create more than one element (we count from 0)
-        {
-            if ((long int) chamberArea::foundElements.size() <= 0)
-                break;
-            unsigned int selectedEl = this->gen()
-                                      % chamberArea::foundElements
-                                            .size(); //find the position in the found elements
-            std::shared_ptr<bElem> newElem = createElement((*elements)[cnt]);
-            newElem->stepOnElement(
-                chamberArea::foundElements[selectedEl]); //place element on a board
+    for (const auto &element : elements) {
+        auto freeCells = chmbrArea.findElementsToStepOn(mychamber);
+        // We sometimes must create more than one element
+        for (int cnt = 0; cnt < element.number && !freeCells.empty(); cnt++) {
+            const std::size_t selectedEl = this->gen() % freeCells.size();
+            std::shared_ptr<bElem> newElem = createElement(element);
+            newElem->stepOnElement(freeCells[selectedEl]);
             newElem->selfAlign();
-            chamberArea::foundElements.erase(chamberArea::foundElements.begin() + selectedEl);
+            freeCells[selectedEl] = std::move(freeCells.back());
+            freeCells.pop_back();
         }
     }
-
     return true;
+}
+
+std::optional<chamberArea::areaRef> randomLevelGenerator::pickArea(int demandedSurface,
+                                                                   int tolerance)
+{
+    auto found = this->headNode->findChambersCloseToSurface(demandedSurface, tolerance);
+    if (found.empty())
+        return std::nullopt;
+    return found[this->gen() % found.size()];
+}
+
+void randomLevelGenerator::retireArea(const chamberArea &area)
+{
+    this->headNode->removeArea(area);
+    this->headNode->removeEmptyNodes();
 }
 
 bool randomLevelGenerator::generateLevel(int holes)
@@ -355,104 +347,68 @@ bool randomLevelGenerator::generateLevel(int holes)
     int demandedSurface = 0;
     for (unsigned int cnt = 0; cnt < elementCollection.size(); cnt++)
         demandedSurface += elementCollection[cnt].surface * (elementCollection[cnt].number);
-    chamberArea::foundAreas.clear();
-    this->headNode->findChambersCloseToSurface(demandedSurface, tolerance);
-    if (chamberArea::foundAreas.empty()) {
+    // the player's starting area, behind doors that need the key placed with the player
+    auto playerArea = this->pickArea(demandedSurface, tolerance);
+    if (!playerArea) {
         std::cout << "Found areas is empty!\n";
         return false;
     }
-    int selectedChamberNo = 0;
-
-    selectedChamberNo = (this->gen() % chamberArea::foundAreas.size());
-    this->placeElementCollection(chamberArea::foundAreas[selectedChamberNo], &elementCollection);
-    this->placeDoors({bElemTypes::_door, 1, 1, 0, 9}, chamberArea::foundAreas[selectedChamberNo]);
-    if (chamberArea::foundAreas[selectedChamberNo]->parent != nullptr) {
-        chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock = true;
-    }
-
-    delete chamberArea::foundAreas[selectedChamberNo];
-    this->headNode->removeEmptyNodes();
-    chamberArea::foundAreas[selectedChamberNo]
-        = chamberArea::foundAreas[chamberArea::foundAreas.size() - 1];
-    chamberArea::foundAreas.pop_back();
+    this->placeElementCollection(*playerArea, elementCollection);
+    this->placeDoors({bElemTypes::_door, 1, 1, 0, 9}, *playerArea);
+    if (auto parent = this->headNode->parentOf(*playerArea))
+        parent->get().childrenLock = true;
+    this->retireArea(*playerArea);
     elementCollection.clear();
 
     elementCollection.push_back({bElemTypes::_teleporter, 0, 1, 0, 5});
-    selectedChamberNo = (this->gen() % chamberArea::foundAreas.size());
-    this->placeElementCollection(chamberArea::foundAreas[selectedChamberNo], &elementCollection);
-    this->placeDoors({bElemTypes::_door, 0, 1, 0, 9}, chamberArea::foundAreas[selectedChamberNo]);
-    if (chamberArea::foundAreas[selectedChamberNo]->parent != nullptr) {
-        chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock = true;
+    if (auto teleportArea = this->pickArea(demandedSurface, tolerance)) {
+        this->placeElementCollection(*teleportArea, elementCollection);
+        this->placeDoors({bElemTypes::_door, 0, 1, 0, 9}, *teleportArea);
+        if (auto parent = this->headNode->parentOf(*teleportArea))
+            parent->get().childrenLock = true;
+        this->retireArea(*teleportArea);
     }
 
-    delete chamberArea::foundAreas[selectedChamberNo];
-    this->headNode->removeEmptyNodes();
-
-    chamberArea::foundAreas[selectedChamberNo]
-        = chamberArea::foundAreas[chamberArea::foundAreas.size() - 1];
-    chamberArea::foundAreas.pop_back();
-
-    bool _ex = false;
-    chamberArea::foundAreas.clear();
-    while (!_ex) {
+    while (true) {
 #ifdef _VerbousMode_
         std::cout << "Surface total: " << this->headNode->surface << "\n";
 #endif
-        elementToPlace _nel;
         int demandedSurface = 0;
-
-        int cnt;
         int elementsToMake = ((this->gen() % 5) + 1) * 5;
         elementCollection.clear();
-        for (cnt = 0; cnt < elementsToMake; cnt++) {
-            _nel = elementsToChooseFrom[this->gen() % elementsToChooseFrom.size()];
-            elementCollection.push_back(_nel);
-        }
-        for (unsigned int cnt = 0; cnt < elementCollection.size(); cnt++)
-            demandedSurface += elementCollection[cnt].surface * (elementCollection[cnt].number);
-        chamberArea::foundAreas.clear();
-        this->headNode->findChambersCloseToSurface(demandedSurface, tolerance);
-        if (chamberArea::foundAreas.empty())
-            _ex = true;
-        if (!chamberArea::foundAreas.empty()) {
-            int selectedChamberNo = (this->gen() % chamberArea::foundAreas.size());
-            this->placeElementCollection(chamberArea::foundAreas[selectedChamberNo],
-                                         &elementCollection);
-            elementCollection.clear();
-            if (chamberArea::foundAreas[selectedChamberNo]->parent != nullptr) {
-                if (!chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock) {
-                    int dice = this->gen() % 100;
-                    int keyType = this->gen() % 10;
-                    if (dice < (75 / holes)) {
-                        if (keyType >= 5)
-                            this->placeDoors({bElemTypes::_brickClusterType, 0, 1, 0, 9},
-                                             chamberArea::foundAreas[selectedChamberNo]);
-                        else
-                            this->placeDoors({bElemTypes::_door, keyType, 1, 0, 9},
-                                             chamberArea::foundAreas[selectedChamberNo]);
-                        elementCollection.push_back(
-                            {bElemTypes::_key,
-                             keyType,
-                             1,
-                             0,
-                             9}); // place key for the door and store it somewhere - warning, the door placed at the end might never receive the key
-                        chamberArea::foundAreas[selectedChamberNo]->parent->childrenLock = true;
-                    }
-                }
-                this->headNode->removeEmptyNodes();
-                delete chamberArea::foundAreas[selectedChamberNo];
+        for (int cnt = 0; cnt < elementsToMake; cnt++)
+            elementCollection.push_back(elementsToChooseFrom[this->gen() % elementsToChooseFrom.size()]);
+        for (const auto &element : elementCollection)
+            demandedSurface += element.surface * element.number;
+        auto area = this->pickArea(demandedSurface, tolerance);
+        if (!area)
+            break;
+        this->placeElementCollection(*area, elementCollection);
+        elementCollection.clear();
+        auto parent = this->headNode->parentOf(*area);
+        if (!parent)
+            break; // only the whole level is left, nothing more to fill
+        if (!parent->get().childrenLock) {
+            int dice = this->gen() % 100;
+            int keyType = this->gen() % 10;
+            if (dice < (75 / holes)) {
+                if (keyType >= 5)
+                    this->placeDoors({bElemTypes::_brickClusterType, 0, 1, 0, 9}, *area);
+                else
+                    this->placeDoors({bElemTypes::_door, keyType, 1, 0, 9}, *area);
+                // the key for the door is placed with the next collection; the door placed at the end might never receive it
+                elementCollection.push_back({bElemTypes::_key, keyType, 1, 0, 9});
+                parent->get().childrenLock = true;
             }
-
-        } else {
-            _ex = true;
         }
+        this->retireArea(*area);
     }
     /****************************************************/
 
     return true;
 }
 
-bool randomLevelGenerator::placeDoors(elementToPlace element, chamberArea *location)
+bool randomLevelGenerator::placeDoors(elementToPlace element, const chamberArea &location)
 {
     /*
     Place doors at the location
@@ -462,24 +418,24 @@ bool randomLevelGenerator::placeDoors(elementToPlace element, chamberArea *locat
     std::cout << "door " << element.eSubType << "\n";
 #endif
     //Ok, now we need to place the door.
-    for (int c1 = location->upLeft.x - 1; c1 <= location->downRight.x + 1; c1++) {
-        if (this->mychamber->getElement(c1, location->upLeft.y - 1)->getAttrs()->isSteppable()) {
+    for (int c1 = location.upLeft.x - 1; c1 <= location.downRight.x + 1; c1++) {
+        if (this->mychamber->getElement(c1, location.upLeft.y - 1)->getAttrs()->isSteppable()) {
             std::shared_ptr<bElem> neEl = this->createElement(element);
-            neEl->stepOnElement(this->mychamber->getElement(c1, location->upLeft.y - 1));
+            neEl->stepOnElement(this->mychamber->getElement(c1, location.upLeft.y - 1));
         }
-        if (this->mychamber->getElement(c1, location->downRight.y + 1)->getAttrs()->isSteppable()) {
+        if (this->mychamber->getElement(c1, location.downRight.y + 1)->getAttrs()->isSteppable()) {
             std::shared_ptr<bElem> neEl = this->createElement(element);
-            neEl->stepOnElement(this->mychamber->getElement(c1, location->downRight.y + 1));
+            neEl->stepOnElement(this->mychamber->getElement(c1, location.downRight.y + 1));
         }
     }
-    for (int c2 = location->upLeft.y; c2 <= location->downRight.y; c2++) {
-        if (this->mychamber->getElement(location->upLeft.x - 1, c2)->getAttrs()->isSteppable()) {
+    for (int c2 = location.upLeft.y; c2 <= location.downRight.y; c2++) {
+        if (this->mychamber->getElement(location.upLeft.x - 1, c2)->getAttrs()->isSteppable()) {
             std::shared_ptr<bElem> neEl = this->createElement(element);
-            neEl->stepOnElement(this->mychamber->getElement(location->upLeft.x - 1, c2));
+            neEl->stepOnElement(this->mychamber->getElement(location.upLeft.x - 1, c2));
         }
-        if (this->mychamber->getElement(location->downRight.x + 1, c2)->getAttrs()->isSteppable()) {
+        if (this->mychamber->getElement(location.downRight.x + 1, c2)->getAttrs()->isSteppable()) {
             std::shared_ptr<bElem> neEl = this->createElement(element);
-            neEl->stepOnElement(this->mychamber->getElement(location->downRight.x + 1, c2));
+            neEl->stepOnElement(this->mychamber->getElement(location.downRight.x + 1, c2));
         }
     }
 

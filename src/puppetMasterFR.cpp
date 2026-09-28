@@ -69,7 +69,7 @@ void puppetMasterFR::onAttach(std::shared_ptr<bElem> body)
 {
     // the plain patrol controller turns its body into a roaming camera
     if (this->getAttrs()->getSubtype() == patrol)
-        viewPoint::get_instance()->addViewPoint(body);
+        viewPoint::get_instance().addViewPoint(body);
 }
 
 bool puppetMasterFR::drive(std::shared_ptr<bElem> body)

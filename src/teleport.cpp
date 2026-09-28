@@ -123,7 +123,7 @@ bool teleport::createConnectionsWithinSubtype()
         tmpt->getStats()->setFacing(dir::direction::LEFT);
         tmpt->getStats()->setMyDirection(tmpt->getStats()->getFacing());
         tmpt->theOtherEnd = tmpt2;
-        soundManager::getInstance()->pauseSong(tmpt->getStats()->getInstanceId());
+        soundManager::getInstance().pauseSong(tmpt->getStats()->getInstanceId());
         this->candidates.clear();
         return true;
     }
@@ -224,7 +224,7 @@ bool teleport::stepOnElement(std::shared_ptr<bElem> step)
     if (!bElem::stepOnElement(step))
         return false;
     if (this->getAttrs()->getSubtype() == 0) {
-        soundManager::getInstance()->setupSong(this->getStats()->getInstanceId(),
+        soundManager::getInstance().setupSong(this->getStats()->getInstanceId(),
                                                1,
                                                {(float) this->getStats()->getMyPosition().x,
                                                 (float) this->getStats()->getMyPosition().y,
@@ -233,7 +233,7 @@ bool teleport::stepOnElement(std::shared_ptr<bElem> step)
                                                true);
 
         if (this->getStats()->getMyDirection() == dir::direction::LEFT)
-            soundManager::getInstance()->pauseSong(this->getStats()->getInstanceId());
+            soundManager::getInstance().pauseSong(this->getStats()->getInstanceId());
     }
     return true;
 }

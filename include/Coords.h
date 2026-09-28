@@ -159,13 +159,13 @@ namespace myUtility {
          * @brief Get x coordinate value.
          * @return Return x coordinate.
          */
-        [[nodiscard]]int getX() const;
+        [[nodiscard]] int getX() const { return x; }
 
         /**
          * @brief Get y coordinate value.
          * @return Return y coordinate.
          */
-        [[nodiscard]]int getY() const;
+        [[nodiscard]] int getY() const { return y; }
 
         /**
          * @brief Set x coordinate value.

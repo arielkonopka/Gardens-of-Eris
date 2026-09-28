@@ -323,9 +323,7 @@ TEST(GeneratorTests, GeneratedLevelIsWalledAndConsistent)
     inputManager::getInstance(true);
     if (auto old = player::getActivePlayer())
         old->disposeElement();
-    auto rl = new randomLevelGenerator(64, 64);
-    ASSERT_TRUE(rl->generateLevel(5));
-    delete rl;
+    ASSERT_TRUE(randomLevelGenerator(64, 64).generateLevel(5));
     auto mc = chamber::allChambers.back();
     ASSERT_TRUE(mc);
     EXPECT_TRUE(mc->getSize() == coords(64, 64));

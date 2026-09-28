@@ -41,19 +41,16 @@ class videoDriver : public std::enable_shared_from_this<videoDriver>
 {
 
 public:
-    static videoDriver* getInstance();
+    static videoDriver& getInstance();
     virtual ~videoDriver();
     vElement getVideoElement(int typeId);
 
 private:
 
-    static videoDriver* myInstance;
     videoDriver();
     std::unordered_map<int,vElement> sprites;
     int lastSpriteT=-1;
     vElement lSprite;
-    static std::once_flag _onceFlag;
-
 };
 
 #endif // VIDEODRIVER_H

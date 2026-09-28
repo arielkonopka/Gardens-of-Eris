@@ -24,6 +24,8 @@
 // *** END ***
 #ifndef SOUNDMANAGER_H
 #define SOUNDMANAGER_H
+#include "allegroHandles.h"
+#include <atomic>
 #include "commons.h"
 #include <map>
 #include <vector>
@@ -61,7 +63,7 @@ using muNode=struct mudNode
     ALuint source=0;
     ALuint Abuffers[5];
     std::vector<std::vector<short>> dataStuff;
-    SNDFILE *musicFile=nullptr;
+    std::shared_ptr<SNDFILE> musicFile; ///< closed with sf_close when the last copy goes
     SF_INFO musFileinfo;
     coords3d position;
     int chamberId;
@@ -104,7 +106,7 @@ class soundManager
 {
 public:
     ~soundManager();
-    static soundManager* getInstance();
+    static soundManager& getInstance();
     std::shared_ptr<stNode> registerSound(int chamberId,coords3d position,coords3d velocity,int elId,int typeId,int subtypeId,std::string eventType,std::string event);
     void registerMusic(int musicNo,int chamberId, coords3d position);
     void setListenerPosition(coords3d pos);
@@ -129,10 +131,10 @@ private:
     bool stopSnd(std::shared_ptr<stNode> n);
     std::shared_ptr<stNode> getSndNode();
     ALuint loadSample(std::string fname);
-    static soundManager* instance;
     soundManager();
-    ALCdevice *sndDevice;
-    ALCcontext *sndContext;
+    // the device must outlive the context, so it is declared first
+    std::unique_ptr<ALCdevice, goe::destroyWith<alcCloseDevice>> sndDevice;
+    std::unique_ptr<ALCcontext, goe::destroyWith<alcDestroyContext>> sndContext;
     std::map<int, std::map< int, std::map<std::string,std::map<std::string, std::shared_ptr<sndHolder>>>>> samplesLoaded;
     std::map<std::string,ALuint> sampleBuffers; // Refactor me! - we need to load each file only once.
     std::vector<std::shared_ptr<stNode>> registeredSounds; // the whole sample data, used to register sounds
@@ -146,12 +148,11 @@ private:
     std::shared_ptr<gameConfig> gc;
     std::shared_ptr<configManager> cm;
     unsigned int cnt=0;
-    bool active=false;
+    std::atomic<bool> active=false;
     int regSndPos=0;
     int currentMusic=1;
-    std::thread myThread;
+    std::jthread myThread;
     coords spaceSize=NOCOORDS;
-    static std::once_flag _onceFlag;
 };
 
 #endif // SOUNDMANAGER_H

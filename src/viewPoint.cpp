@@ -21,8 +21,6 @@
  */
 #include "viewPoint.h"
 
-std::once_flag viewPoint::once;
-viewPoint *viewPoint::instance = nullptr;
 
 bool viewPoint::isElementInVector(const std::vector<std::weak_ptr<bElem>> &vec,
                                   const std::shared_ptr<bElem> &elem)
@@ -144,14 +142,15 @@ bool viewPoint::isPointVisible(coords point)
     return this->calculateObscured(point) < 1025;
 }
 
-viewPoint *viewPoint::get_instance()
+viewPoint::viewPoint()
+    : tilesize(configManager::getInstance()->getConfig()->tileWidth,
+               configManager::getInstance()->getConfig()->tileHeight)
+{}
+
+viewPoint &viewPoint::get_instance()
 {
-    std::call_once(once, []() {
-        viewPoint::instance = new viewPoint();
-        viewPoint::instance->tilesize = coords(configManager::getInstance()->getConfig()->tileWidth,
-                                               configManager::getInstance()->getConfig()->tileHeight);
-    });
-    return viewPoint::instance;
+    static viewPoint instance;
+    return instance;
 }
 
 std::vector<vpPoint> viewPoint::getViewPoints(coords start, coords end)
