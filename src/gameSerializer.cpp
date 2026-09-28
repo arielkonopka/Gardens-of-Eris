@@ -27,6 +27,7 @@
 #include <cstdio>
 #include <cstring>
 #include <deque>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -784,8 +785,11 @@ bool gameSerializer::saveGame(const std::string &fileName)
             return false;
         }
     }
-    // replace the old save only once the new one is complete
-    if (std::rename(tmpName.c_str(), fileName.c_str()) != 0) {
+    // replace the old save only once the new one is complete; std::rename would refuse to
+    // overwrite an existing save on Windows, std::filesystem::rename replaces it everywhere
+    std::error_code ec;
+    std::filesystem::rename(tmpName, fileName, ec);
+    if (ec) {
         std::cout << "Cannot move " << tmpName << " to " << fileName << "\n";
         return false;
     }

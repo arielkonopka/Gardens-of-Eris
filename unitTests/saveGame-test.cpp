@@ -7,10 +7,17 @@
 #define BOOST_TEST_MODULE Fixtures
 #include <boost/test/unit_test.hpp>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <map>
 #include <memory>
+
+/// a path in the system temp folder (/tmp is not a real folder for native Windows programs)
+static std::string tmpFile(const std::string &name)
+{
+    return (std::filesystem::temp_directory_path() / name).string();
+}
 
 namespace {
 std::string readFile(const std::string &name)
@@ -74,7 +81,7 @@ BOOST_AUTO_TEST_CASE(SmallWorldRoundTrip)
     auto chambersBefore = chamber::allChambers.size();
     auto censusBefore = census();
 
-    const std::string f1 = "/tmp/goe-roundtrip-1.goe", f2 = "/tmp/goe-roundtrip-2.goe";
+    const std::string f1 = tmpFile("goe-roundtrip-1.goe"), f2 = tmpFile("goe-roundtrip-2.goe");
     BOOST_REQUIRE(gameSerializer::saveGame(f1));
     plr.reset();
     gun.reset();
@@ -135,7 +142,7 @@ BOOST_AUTO_TEST_CASE(GeneratedLevelRoundTrip)
 
     auto censusBefore = census();
     auto apples = goldenApple::getAppleNumber();
-    const std::string f1 = "/tmp/goe-level-1.goe", f2 = "/tmp/goe-level-2.goe";
+    const std::string f1 = tmpFile("goe-level-1.goe"), f2 = tmpFile("goe-level-2.goe");
     BOOST_REQUIRE(gameSerializer::saveGame(f1));
     BOOST_REQUIRE(gameSerializer::loadGame(f1));
     BOOST_CHECK(census() == censusBefore);
@@ -156,14 +163,14 @@ BOOST_AUTO_TEST_CASE(BadFilesLeaveTheWorldAlone)
     auto mc = chamber::makeNewChamber(coords(8, 8));
     auto plr = elementFactory::generateAnElement<player>(mc, 0);
     plr->stepOnElement(mc->getElement(2, 2));
-    const std::string good = "/tmp/goe-good.goe", bad = "/tmp/goe-bad.goe",
-                      cut = "/tmp/goe-cut.goe";
+    const std::string good = tmpFile("goe-good.goe"), bad = tmpFile("goe-bad.goe"),
+                      cut = tmpFile("goe-cut.goe");
     BOOST_REQUIRE(gameSerializer::saveGame(good));
     auto chambersBefore = chamber::allChambers.size();
     auto censusBefore = census();
     auto active = player::getActivePlayer();
 
-    BOOST_CHECK(!gameSerializer::loadGame("/tmp/goe-does-not-exist.goe"));
+    BOOST_CHECK(!gameSerializer::loadGame(tmpFile("goe-does-not-exist.goe")));
     {
         std::ofstream out(bad, std::ios::binary);
         out << "this is not a save file at all";
@@ -203,7 +210,7 @@ BOOST_AUTO_TEST_CASE(ControlledDroneKeepsItsController)
     auto droneId = drone->getStats()->getInstanceId();
     auto brainId = brain->getStats()->getInstanceId();
 
-    const std::string f = "/tmp/goe-drone.goe";
+    const std::string f = tmpFile("goe-drone.goe");
     BOOST_REQUIRE(gameSerializer::saveGame(f));
     plr.reset();
     brain.reset();
@@ -255,7 +262,7 @@ BOOST_AUTO_TEST_CASE(CameraAndGuardiansRoundTrip)
     auto camId = cam->getStats()->getInstanceId();
     auto alerts = cam->getAlertNumber();
 
-    const std::string f1 = "/tmp/goe-cam-1.goe", f2 = "/tmp/goe-cam-2.goe";
+    const std::string f1 = tmpFile("goe-cam-1.goe"), f2 = tmpFile("goe-cam-2.goe");
     BOOST_REQUIRE(gameSerializer::saveGame(f1));
     plr.reset();
     cam.reset();
@@ -287,6 +294,20 @@ BOOST_AUTO_TEST_CASE(CameraAndGuardiansRoundTrip)
     BOOST_CHECK_EQUAL(guardians, securityCamera::guardianCount);
     for (int c = 0; c < 300; c++)
         bElem::runLiveElements();
+}
+
+BOOST_AUTO_TEST_CASE(SavingTwiceReplacesTheOldSave)
+{
+    // std::rename cannot overwrite a file on Windows, so the second quick save used to fail there
+    inputManager::getInstance(true);
+    chamber::makeNewChamber(coords(8, 8));
+    const std::string f = tmpFile("goe-twice.goe");
+    BOOST_REQUIRE(gameSerializer::saveGame(f));
+    BOOST_REQUIRE(gameSerializer::saveGame(f));
+    BOOST_CHECK(std::filesystem::exists(f));
+    BOOST_CHECK(!std::filesystem::exists(f + ".tmp"));
+    BOOST_CHECK(gameSerializer::loadGame(f));
+    std::remove(f.c_str());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
