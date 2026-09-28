@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
     std::shared_ptr<chamber> mc=chamber::makeNewChamber(myUtility::Coords(5,5));
     elementFactory::generateAnElement<teleport>(mc,0);
     std::shared_ptr<teleport> tel1=elementFactory::generateAnElement<teleport>(mc,1);
-    std::shared_ptr<bElem> transportedE=elementFactory::generateAnElement<bElem>(mc,0);
+    std::shared_ptr<bElem> transportedE=elementFactory::generateAnElement<brickCluster>(mc,0);
     transportedE->stepOnElement(mc->getElement(2,3));
     //  transportedE->setActive(true);
     coords crds;
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
     elementFactory::generateAnElement<teleport>(mc,777);
     std::shared_ptr<teleport> tel1=elementFactory::generateAnElement<teleport>(mc,2);
     std::shared_ptr<teleport>  tel2=elementFactory::generateAnElement<teleport>(mc,2);
-    std::shared_ptr<bElem> transportEl=elementFactory::generateAnElement<bElem>(mc,0);
+    std::shared_ptr<bElem> transportEl=elementFactory::generateAnElement<brickCluster>(mc,0);
     transportEl->stepOnElement(mc->getElement(telc));
     bElem::tick();
     bElem::tick();
@@ -122,8 +122,8 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
     elementFactory::generateAnElement<teleport>(mc,777);
     std::shared_ptr<teleport>  tel1=elementFactory::generateAnElement<teleport>(mc,3);
     std::shared_ptr<teleport>  tel2=elementFactory::generateAnElement<teleport>(mc,4);
-    std::shared_ptr<bElem> _tr1=elementFactory::generateAnElement<bElem>(mc,0);
-    std::shared_ptr<bElem> _tr2=elementFactory::generateAnElement<bElem>(mc,0);
+    std::shared_ptr<bElem> _tr1=elementFactory::generateAnElement<brickCluster>(mc,0);
+    std::shared_ptr<bElem> _tr2=elementFactory::generateAnElement<brickCluster>(mc,0);
     _tr1->stepOnElement(mc->getElement(t1b));
     _tr2->stepOnElement(mc->getElement(t2b));
     tel1->stepOnElement(mc->getElement(tel1c));
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
     preClean(mc,{9,9});
     std::shared_ptr<bElem> tel1,tel2,transported;
     bElem::tick();
-    transported=elementFactory::generateAnElement<bElem>(mc,0);
+    transported=elementFactory::generateAnElement<brickCluster>(mc,0);
     transported->stepOnElement(mc->getElement(pointAt));
     transported->getStats()->setMyDirection(dir::direction::RIGHT);
     BOOST_CHECK(transported->getStats()->isTeleporting()==false);

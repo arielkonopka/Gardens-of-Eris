@@ -350,11 +350,14 @@ bool inventory::removeToken(int position)
     /* removes a token from tokens pocket, warning, it performs disposeElement on it, so it should not be referenced anywhere else!*/
     if (position >= (int) this->tokens.size())
         return false;
-    token.tokenType = this->tokens[position]->getType();
-    token.tokenSubtype = this->tokens[position]->getAttrs()->getSubtype();
+    // take it out first: disposing a collected element removes it from its collector's inventory,
+    // which would free it mid-call and shift this vector under our feet
+    std::shared_ptr<bElem> removed = this->tokens[position];
+    token.tokenType = removed->getType();
+    token.tokenSubtype = removed->getAttrs()->getSubtype();
     this->decrementTokenNumber(token);
-    this->tokens[position]->disposeElement();
     this->tokens.erase(this->tokens.begin() + position);
+    removed->disposeElement();
     return true;
 }
 

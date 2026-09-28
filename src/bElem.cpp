@@ -448,10 +448,13 @@ std::shared_ptr<bElem> bElem::removeElement()
         return nullptr;
 
     if (this->getStats()->isCollected()) {
+        // the inventory may hold the last reference to us, so keep ourselves alive first
+        std::shared_ptr<bElem> self = shared_from_this();
         std::shared_ptr<bElem> collector = this->getStats()->getCollector().lock();
-        collector->getAttrs()->getInventory()->removeCollectibleFromInventory(
-            this->getStats()->getInstanceId());
-        return shared_from_this();
+        if (collector)
+            collector->getAttrs()->getInventory()->removeCollectibleFromInventory(
+                this->getStats()->getInstanceId());
+        return self;
     }
     if (this->getStats()->getMyPosition() == NOCOORDS || !_chmbr) {
         return shared_from_this(); // it is not yet placed on a board.
