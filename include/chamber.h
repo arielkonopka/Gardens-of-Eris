@@ -67,6 +67,10 @@ public:
         return this->visitPosition(coords(x,y));
     };
     unsigned int applesCount=0;
+    /// how hard this chamber is by itself, 0 for the easiest; part of the difficulty (difficulty.h)
+    int depth = 0;
+    /// where the player enters this chamber; the distance part of the difficulty is measured from here
+    coords origin = NOCOORDS;
     bool visitPosition(coords point);
     int isVisible(int x, int y) ;
     int isVisible(coords point);

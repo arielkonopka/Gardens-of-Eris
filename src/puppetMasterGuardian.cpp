@@ -21,6 +21,7 @@
  */
 
 #include "puppetMasterGuardian.h"
+#include "difficulty.h"
 #include "chamber.h"
 #include "elementFactory.h"
 #include "plainGun.h"
@@ -47,19 +48,11 @@ void puppetMasterGuardian::onAttach(std::shared_ptr<bElem> body)
 
 bool puppetMasterGuardian::fight(std::shared_ptr<bElem> body, std::shared_ptr<bElem> prey)
 {
-    coords b = body->getStats()->getMyPosition(), p = prey->getStats()->getMyPosition();
-    int dx = p.x - b.x, dy = p.y - b.y;
-    dir::direction towards = std::abs(dx) >= std::abs(dy)
-                                 ? (dx > 0 ? dir::direction::RIGHT : dir::direction::LEFT)
-                                 : (dy > 0 ? dir::direction::DOWN : dir::direction::UP);
-    if (std::abs(dx) + std::abs(dy) == 1) {
-        this->turn(body, towards);
-        prey->hurt(meleeDamage);
-        body->getStats()->setWaiting(GoEConstants::_mov_delay * 2);
+    if (this->bite(body, prey, meleeDamage))
         return true;
-    }
-    if ((dx == 0 || dy == 0) && this->gun && !this->gun->getStats()->isWaiting()) {
-        this->turn(body, towards);
+    coords b = body->getStats()->getMyPosition(), p = prey->getStats()->getMyPosition();
+    if ((p.x == b.x || p.y == b.y) && this->gun && !this->gun->getStats()->isWaiting()) {
+        this->turn(body, towards(b, p));
         this->gun->use(body);
         return true;
     }
@@ -79,7 +72,8 @@ bool puppetMasterGuardian::drive(std::shared_ptr<bElem> body)
     auto prey = player::getActivePlayer();
     if (prey && prey->getBoard() == body->getBoard()) {
         coords p = prey->getStats()->getMyPosition();
-        if (distance2(me, p) <= sightRange * sightRange && distance2(p, centre) <= leash * leash
+        const int sight = difficulty::cameraSight(difficulty::current());
+        if (distance2(me, p) <= sight * sight && distance2(p, centre) <= leash * leash
             && securityCamera::lineOfSight(body->getBoard(), me, p)) {
             this->target = p;
             if (this->fight(body, prey))

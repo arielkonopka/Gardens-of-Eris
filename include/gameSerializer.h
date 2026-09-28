@@ -52,7 +52,7 @@ class chamber;
 class gameSerializer
 {
 public:
-    static constexpr uint32_t formatVersion = 1;
+    static constexpr uint32_t formatVersion = 2;
     static bool saveGame(const std::string &fileName);
     static bool loadGame(const std::string &fileName);
 

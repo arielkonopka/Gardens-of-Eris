@@ -41,8 +41,8 @@ class puppetMasterFR : public bElem
 
 public:
     /// kinds below looseKinds are placed in levels for the player to find; a guardian only
-    /// ever comes with a security camera
-    enum kind { patrol = 0, collector = 1, hunter = 2, wallFollower = 3, looseKinds = 4, guardian = 4, kindCount = 5 };
+    /// ever comes with a security camera, and a hound is only sent after a player who lingers
+    enum kind { patrol = 0, collector = 1, hunter = 2, wallFollower = 3, looseKinds = 4, guardian = 4, hound = 5, kindCount = 6 };
 
     /// creates the controller class that matches the subtype (the kind)
     static std::shared_ptr<puppetMasterFR> create(std::shared_ptr<chamber> board, int subtype);
@@ -64,6 +64,10 @@ protected:
     void turn(std::shared_ptr<bElem> body, dir::direction d);
     /// moves the body in d, facing that way; returns false when blocked
     bool step(std::shared_ptr<bElem> body, dir::direction d);
+    /// when the prey is right next to the body: turns to it, hurts it and rests; false otherwise
+    bool bite(std::shared_ptr<bElem> body, std::shared_ptr<bElem> prey, int damage);
+    /// the one of the four directions that points most directly from one cell to another
+    static dir::direction towards(coords from, coords to);
     /**
      * first step of a shortest walk from the body to goal, over steppable cells, never leaving
      * the circle of radius around centre; NODIRECTION when there is no such walk.

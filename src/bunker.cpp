@@ -21,6 +21,7 @@
  */
 
 #include "bunker.h"
+#include "difficulty.h"
 #include <elementFactory.h>
 
 bunker::bunker()
@@ -44,6 +45,8 @@ bool bunker::mechanics()
     if (!res || this->getStats()->isMoving() || this->getStats()->isWaiting()
         || this->myGun->getStats()->isWaiting())
         return false;
+    const int level = difficulty::current();
+    const int range = difficulty::bunkerRange(level);
     int randomTest = bElem::randomNumberGenerator() % 55;
     if (randomTest > 25) {
         this->help = 0;
@@ -53,7 +56,7 @@ bool bunker::mechanics()
         dir::direction d = (dir::direction) c;
         std::shared_ptr<bElem> e = this->getElementInDirection(d);
         int dd = 0;
-        while (e && ++dd < this->brange) {
+        while (e && ++dd < range) {
             if (e->getType() == bElemTypes::_player) {
                 this->getStats()->setFacing(d);
                 this->getStats()->setMyDirection(d);
@@ -65,7 +68,8 @@ bool bunker::mechanics()
             e = e->getElementInDirection(d);
         }
     }
-    this->getStats()->setWaiting((1 + bElem::randomNumberGenerator() % 55) * 5);
+    this->getStats()->setWaiting(
+        difficulty::bunkerRest((1 + bElem::randomNumberGenerator() % 55) * 5, level));
     return res;
 }
 

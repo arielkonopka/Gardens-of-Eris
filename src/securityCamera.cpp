@@ -21,6 +21,7 @@
  */
 
 #include "securityCamera.h"
+#include "difficulty.h"
 #include "chamber.h"
 #include "elementFactory.h"
 #include "patrollingDrone.h"
@@ -72,11 +73,12 @@ void securityCamera::spawnGuardians()
     this->guardiansSpawned = true;
     auto board = this->getBoard();
     coords me = this->getStats()->getMyPosition();
+    const int wanted = difficulty::guardianCount(difficulty::current());
     int placed = 0;
     // fill free cells in growing squares around the camera
-    for (int r = 1; r <= 4 && placed < guardianCount; r++)
-        for (int x = me.x - r; x <= me.x + r && placed < guardianCount; x++)
-            for (int y = me.y - r; y <= me.y + r && placed < guardianCount; y++) {
+    for (int r = 1; r <= 4 && placed < wanted; r++)
+        for (int x = me.x - r; x <= me.x + r && placed < wanted; x++)
+            for (int y = me.y - r; y <= me.y + r && placed < wanted; y++) {
                 if (std::max(std::abs(x - me.x), std::abs(y - me.y)) != r)
                     continue;
                 auto cell = board->getElement(coords(x, y));
@@ -102,7 +104,8 @@ bool securityCamera::mechanics()
     if (prey && prey->getBoard() == this->getBoard()) {
         coords me = this->getStats()->getMyPosition(), p = prey->getStats()->getMyPosition();
         int dx = p.x - me.x, dy = p.y - me.y;
-        if (dx * dx + dy * dy <= sightRange * sightRange
+        const int sight = difficulty::cameraSight(difficulty::current());
+        if (dx * dx + dy * dy <= sight * sight
             && securityCamera::lineOfSight(this->getBoard(), me, p)) {
             this->alertAt = p;
             this->alertNumber++;

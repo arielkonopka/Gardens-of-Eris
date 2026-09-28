@@ -86,6 +86,7 @@ namespace bElemTypes {
     constexpr int _goldenAppleType = 900;   ///< A golden apple - oh yes, the chaos bringer. You want this, or do you?
     constexpr int _stash = 600;             ///< A stash - what's inside? Probably more chaos.
     constexpr int _simpleBombType = 602;    ///< A simple bomb - it's simple, but don't underestimate the explosion.
+    constexpr int _landmineType = 603;      ///< A landmine - looks almost like floor, and goes off when something steps on it.
 
     // Special characters - are they Bouba or are they Kiki? Only the fates can tell.
     constexpr int _boubaType = 555;         ///< Bouba - soft and round, yet full of surprises.

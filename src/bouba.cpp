@@ -21,6 +21,7 @@
  */
 
 #include "bouba.h"
+#include "difficulty.h"
 
 /**
  * @brief Bouba mechanics
@@ -33,7 +34,7 @@ bool bouba::mechanics()
         return false;
     std::shared_ptr<bElem> s = this->getStats()->getStandingOn().lock();
     if (s)
-        s->hurt(GoEConstants::_radioActivityPower);
+        s->hurt(difficulty::beamDamage(difficulty::current()));
     this->getStats()->setWaiting(GoEConstants::_radioActivitySpeed);
     return true;
 }

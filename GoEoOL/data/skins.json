@@ -370,10 +370,39 @@
      {
         "Type": 7,
         "Name": "Patrolling drone",
-      "AnimDef": [ [ [ [ 11, 4 ], [ 12, 4 ] ] ,[ [ 11,5] ,[12,5]], [[13,4],[14,4]],[[13,5],[14,5] ]] ],
+      "AnimDef": [ [ [ [ 11, 4 ], [ 12, 4 ] ] ,[ [ 11,5] ,[12,5]], [[13,4],[14,4]],[[13,5],[14,5] ]],
+                   [ [ [ 16, 4 ], [ 17, 4 ] ] ,[ [ 16,5] ,[17,5]], [[18,4],[19,4]],[[18,5],[19,5] ]] ],
         "Samples": [
           {
              "SubType": 0,
+             "stEvents": [
+               {
+                  "EventType": "Boot",
+                  "eventData": [
+                    {
+                       "Event": "Success",
+                       "fname": "data/sounds/controllerFound.ogg",
+                       "name": "Firmware loaded sound",
+                       "description": "maori language message",
+                       "allowMulti":false,
+                       "stacking":false,
+                       "modeOfAction":0
+                    },
+                    {
+                       "Event": "Failure",
+                       "fname": "data/sounds/brainNotFound.ogg",
+                       "name": "Firmware loaded sound",
+                       "description": "maori language message",
+                       "allowMulti":false,
+                       "stacking":false,
+                       "modeOfAction":0
+                    }
+                  ]
+               }
+             ]
+          },
+          {
+             "SubType": 1,
              "stEvents": [
                {
                   "EventType": "Boot",
@@ -1186,6 +1215,64 @@
              ]
           }
         ]
+     },
+     {
+        "Type": 603,
+        "Name": "landmine",
+      "AnimDef": [ [ [ [ 16, 0 ] ] ] ],
+        "Attributes": [
+          {
+             "SubType":-1,
+             "Killable":true,
+             "Destroyable":true,
+             "Steppable":true,
+             "isMovable":false,
+             "isInteractive":false,
+             "isCollectible":false,
+             "canPush":false,
+             "canBePushed":false,
+             "canCollect":false,
+             "isWeapon":false,
+             "isOpen":false,
+             "isLocked":false,
+             "energy":55,
+             "maxEnergy":555,
+             "ammo":0,
+             "maxAmmo":0
+          }
+        ],
+        
+        "Samples": [ {
+             "SubType": 0,
+             "stEvents": [
+               {
+                  "EventType": "Move",
+                  "eventData": [ {
+                       "Event": "StepOn",
+                       "fname": "data/sounds/stone_sliding.ogg",
+                       "name": "Step sounds of a player",
+                       "description": "This is a test sound, now it will be used for sound test",
+                       "allowMulti": true,
+                       "modeOfAction": 0,
+                       "gain":0.5
+                  }]
+               },
+               {
+                  "EventType": "Explosives",
+                  "eventData": [
+                    {
+                       "Event": "Explode",
+                       "fname": "data/sounds/bomb.ogg",
+                       "name": "Explosion",
+                       "description": "This is a test sound, now it will be used for sound test",
+                       "allowMulti": false,
+                       "modeOfAction": 0,
+                       "gain": 2.0
+                    }
+                  ]
+               }
+             ]
+        }]
      },
      {
         "Type": 602,
