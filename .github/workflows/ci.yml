@@ -21,8 +21,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build libboost-test-dev liballegro5-dev rapidjson-dev \
+          sudo apt-get install -y \
+            cmake ninja-build libboost-test-dev liballegro5-dev liballegro-ttf5-dev liballegro-image5-dev rapidjson-dev \
             libopenal-dev libsndfile1-dev
 
       - name: Configure
@@ -104,8 +104,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build libboost-test-dev liballegro5-dev rapidjson-dev \
+          sudo apt-get install -y \
+            cmake ninja-build libboost-test-dev liballegro5-dev liballegro-ttf5-dev liballegro-image5-dev rapidjson-dev \
             libopenal-dev libsndfile1-dev gcovr
 
       - name: Build with coverage
