@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "patrollingDrone.h"
+#include "puppetMasterFR.h"
 
 bool patrollingDrone::additionalProvisioning(int subtype)
 {
@@ -42,17 +43,12 @@ bool patrollingDrone::interact(std::shared_ptr<bElem> who)
     bool res = bElem::interact(who);
     if (res && !this->brained && this->getAttrs()->getSubtype() == 0
         && who->getAttrs()->canCollect()) {
-        std::shared_ptr<bElem> token
-            = who->getAttrs()->getInventory()->requestToken(bElemTypes::_puppetMasterType, -1, true);
+        auto token = std::dynamic_pointer_cast<puppetMasterFR>(
+            who->getAttrs()->getInventory()->requestToken(bElemTypes::_puppetMasterType, -1, true));
         if (token) {
             this->playSound("Boot", "Success");
-            this->brained = true;
-            this->brainModule = token;
-            token->getStats()->setCollector(shared_from_this());
-            token->collectOnAction(
-                true,
-                shared_from_this()); // since we collect the object ourselves, we should also trigger the action
-            token->getStats()->setWaiting(55);
+            this->attachController(token);
+            this->getStats()->setWaiting(55);
             if (who->getType() == bElemTypes::_player)
                 viewPoint::get_instance()->setOwner(shared_from_this());
             return true;
@@ -60,6 +56,26 @@ bool patrollingDrone::interact(std::shared_ptr<bElem> who)
         this->playSound("Boot", "Failure");
     }
     return false;
+}
+
+void patrollingDrone::attachController(std::shared_ptr<puppetMasterFR> controller)
+{
+    this->brained = true;
+    this->brainModule = controller;
+    controller->getStats()->setCollected(true);
+    controller->getStats()->setCollector(shared_from_this());
+    controller->onAttach(shared_from_this());
+    // the drone runs its controller from its own mechanics, so the drone must be live
+    this->registerLiveElement(shared_from_this());
+}
+
+bool patrollingDrone::mechanics()
+{
+    if (!bElem::mechanics())
+        return false;
+    if (auto controller = std::dynamic_pointer_cast<puppetMasterFR>(this->brainModule))
+        return controller->drive(shared_from_this());
+    return true;
 }
 
 int patrollingDrone::getType() const

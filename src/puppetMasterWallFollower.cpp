@@ -20,36 +20,27 @@
  * SOFTWARE.
  */
 
-#ifndef PATROLLINGDRONE_H
-#define PATROLLINGDRONE_H
+#include "puppetMasterWallFollower.h"
 
-#include <bElem.h>
-#include "commons.h"
-#include "videoElementDef.h"
-#include "viewPoint.h"
-class puppetMasterFR;
-
-class patrollingDrone : public bElem
+bool puppetMasterWallFollower::drive(std::shared_ptr<bElem> body)
 {
-    friend class gameSerializer;
-public:
-    using bElem::additionalProvisioning;
-
-    patrollingDrone()=default;
-    ~patrollingDrone() override=default;
-    bool interact(std::shared_ptr<bElem> who) override;
-    int getType() const override;
-    float getViewRadius() const override;
-    bool additionalProvisioning(int subtype) override;
-    bool mechanics() override;
-    /// hands a controller to this drone; from then on the controller decides how it moves
-    void attachController(std::shared_ptr<puppetMasterFR> controller);
-    /// the controller (a puppet master) that drives this drone, nullptr until one is handed over
-    std::shared_ptr<bElem> getBrainModule() const { return this->brainModule; }
-
-private:
-    bool brained=false;
-    std::shared_ptr<bElem> brainModule;
-};
-
-#endif // PATROLLINGDRONE_H
+    dir::direction cdir = body->getStats()->getMyDirection();
+    dir::direction right = rightOf(cdir);
+    auto solid = [&body](coords offset) {
+        auto e = body->getElementInDirection(offset);
+        return !e || !e->getAttrs()->isSteppable();
+    };
+    // right-hand rule: when the wall on our right just ended, go around its corner;
+    // otherwise go straight, then right, then left, and turn back only in a dead end.
+    // In an open room this walks straight until it meets a wall, instead of circling.
+    coords toRight = dir::directionToCoordsMap[(int) right];
+    coords toBack = dir::directionToCoordsMap[(int) behind(cdir)];
+    coords backRight(toRight.x + toBack.x, toRight.y + toBack.y);
+    if (!solid(toRight) && solid(backRight) && this->step(body, right))
+        return true;
+    for (auto d : {cdir, right, leftOf(cdir), behind(cdir)})
+        if (this->step(body, d))
+            return true;
+    this->turn(body, right);
+    return true;
+}

@@ -1247,6 +1247,32 @@
      },
      
      {
+        "Type": 78,
+        "Name": "security camera",
+        "AnimDef": [ [ [ [ 16, 9 ] ] ] ],
+        "Attributes": [
+          {
+             "SubType":-1,
+             "Killable":false,
+             "Destroyable":true,
+             "Steppable":false,
+             "isMovable":false,
+             "isInteractive":false,
+             "isCollectible":false,
+             "canPush":false,
+             "canBePushed":false,
+             "canCollect":false,
+             "isWeapon":false,
+             "isOpen":false,
+             "isLocked":false,
+             "energy":55,
+             "maxEnergy":555,
+             "ammo":0,
+             "maxAmmo":0
+          }
+        ]
+     },
+     {
         "Type": 77,
         "Name": "puppet master",
       "AnimDef": [ [ [ [ 0, 12 ], [1,12],[3,12],[2,12] ] ] ],

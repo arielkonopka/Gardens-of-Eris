@@ -19,37 +19,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#ifndef PUPPETMASTERHUNTER_H
+#define PUPPETMASTERHUNTER_H
 
-#ifndef PATROLLINGDRONE_H
-#define PATROLLINGDRONE_H
+#include "puppetMasterFR.h"
 
-#include <bElem.h>
-#include "commons.h"
-#include "videoElementDef.h"
-#include "viewPoint.h"
-class puppetMasterFR;
-
-class patrollingDrone : public bElem
+/// chases the active player, around walls, while the player is within sight range; wanders otherwise
+class puppetMasterHunter : public puppetMasterFR
 {
-    friend class gameSerializer;
 public:
-    using bElem::additionalProvisioning;
-
-    patrollingDrone()=default;
-    ~patrollingDrone() override=default;
-    bool interact(std::shared_ptr<bElem> who) override;
-    int getType() const override;
-    float getViewRadius() const override;
-    bool additionalProvisioning(int subtype) override;
-    bool mechanics() override;
-    /// hands a controller to this drone; from then on the controller decides how it moves
-    void attachController(std::shared_ptr<puppetMasterFR> controller);
-    /// the controller (a puppet master) that drives this drone, nullptr until one is handed over
-    std::shared_ptr<bElem> getBrainModule() const { return this->brainModule; }
-
-private:
-    bool brained=false;
-    std::shared_ptr<bElem> brainModule;
+    static constexpr int sightRange = 12;
+    bool drive(std::shared_ptr<bElem> body) override;
 };
 
-#endif // PATROLLINGDRONE_H
+#endif // PUPPETMASTERHUNTER_H

@@ -20,36 +20,23 @@
  * SOFTWARE.
  */
 
-#ifndef PATROLLINGDRONE_H
-#define PATROLLINGDRONE_H
+#include "puppetMasterHunter.h"
+#include "player.h"
+#include <cstdlib>
 
-#include <bElem.h>
-#include "commons.h"
-#include "videoElementDef.h"
-#include "viewPoint.h"
-class puppetMasterFR;
-
-class patrollingDrone : public bElem
+bool puppetMasterHunter::drive(std::shared_ptr<bElem> body)
 {
-    friend class gameSerializer;
-public:
-    using bElem::additionalProvisioning;
-
-    patrollingDrone()=default;
-    ~patrollingDrone() override=default;
-    bool interact(std::shared_ptr<bElem> who) override;
-    int getType() const override;
-    float getViewRadius() const override;
-    bool additionalProvisioning(int subtype) override;
-    bool mechanics() override;
-    /// hands a controller to this drone; from then on the controller decides how it moves
-    void attachController(std::shared_ptr<puppetMasterFR> controller);
-    /// the controller (a puppet master) that drives this drone, nullptr until one is handed over
-    std::shared_ptr<bElem> getBrainModule() const { return this->brainModule; }
-
-private:
-    bool brained=false;
-    std::shared_ptr<bElem> brainModule;
-};
-
-#endif // PATROLLINGDRONE_H
+    auto prey = player::getActivePlayer();
+    if (!prey || prey->getBoard() != body->getBoard())
+        return this->wander(body);
+    auto from = body->getStats()->getMyPosition();
+    auto to = prey->getStats()->getMyPosition();
+    int dx = to.x - from.x, dy = to.y - from.y;
+    if (std::abs(dx) + std::abs(dy) > sightRange)
+        return this->wander(body);
+    // walk around walls towards the player, never further than sightRange from where we are
+    auto d = pathTowards(body, to, from, sightRange);
+    if (d != dir::direction::NODIRECTION && this->step(body, d))
+        return true;
+    return this->wander(body);
+}

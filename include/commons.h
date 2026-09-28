@@ -65,6 +65,7 @@ namespace bElemTypes {
     constexpr int _monster = 6;             ///< Monsters, they exist to be feared... or mocked.
     constexpr int _patrollingDrone = 7;     ///< A drone, forever patrolling, but to what end? Who gave it orders?
     constexpr int _puppetMasterType = 77;   ///< Puppet Master - the strings are pulled, but by whom? Probably Eris.
+    constexpr int _securityCamera = 78;     ///< A security camera - it sees you, and it tells the guardians where you are.
     constexpr int _brickClusterType = 8;    ///< A brick cluster - it does absolutely nothing, can't be killed, but can be destroyed and pushed around. An embodiment of stubborn inertia.
     constexpr int _player = 100;            ///< You, the player! The chosen one, or maybe just a pawn in a cosmic joke.
 
