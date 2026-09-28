@@ -32,8 +32,8 @@
 #include <memory>
     TEST(ViewPointTests, CheckEmptyViewPoint)
     {
-        EXPECT_TRUE(viewPoint::get_instance()->getViewPoint()==NOCOORDS);
-        EXPECT_TRUE(viewPoint::get_instance()->getViewPointOffset()==NOCOORDS);
+        EXPECT_TRUE(viewPoint::get_instance().getViewPoint()==NOCOORDS);
+        EXPECT_TRUE(viewPoint::get_instance().getViewPointOffset()==NOCOORDS);
     }
     TEST(ViewPointTests, CheckAddOwner)
     {
@@ -45,13 +45,13 @@
 
         be->stepOnElement(ch->getElement(point));
         be2->stepOnElement(ch->getElement(point+1));
-        EXPECT_TRUE(viewPoint::get_instance()->getViewPoint()==NOCOORDS);
+        EXPECT_TRUE(viewPoint::get_instance().getViewPoint()==NOCOORDS);
 
-        viewPoint::get_instance()->setOwner(be);
-        EXPECT_TRUE(viewPoint::get_instance()->getViewPoint()==point);
+        viewPoint::get_instance().setOwner(be);
+        EXPECT_TRUE(viewPoint::get_instance().getViewPoint()==point);
         be->stepOnElement(ch->getElement(point+2));
-        EXPECT_TRUE(viewPoint::get_instance()->getViewPoint()==point+2);
+        EXPECT_TRUE(viewPoint::get_instance().getViewPoint()==point+2);
         be->disposeElement();
-        EXPECT_TRUE(viewPoint::get_instance()->getViewPoint()==NOCOORDS);
+        EXPECT_TRUE(viewPoint::get_instance().getViewPoint()==NOCOORDS);
 
     }

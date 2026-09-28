@@ -37,7 +37,7 @@ bool player::additionalProvisioning(int subtype)
         this->getStats()->setActive(true);
         this->getStats()->setMarked(true);
         player::activePlayer = shared_from_this();
-        viewPoint::get_instance()->setOwner(player::activePlayer);
+        viewPoint::get_instance().setOwner(player::activePlayer);
     } else {
         this->getStats()->setActive(false);
     }
@@ -53,10 +53,10 @@ std::shared_ptr<bElem> player::getActivePlayer()
         for (int p = (int) player::visitedPlayers.size() - 1; p >= 0; p--) {
             auto plr = player::visitedPlayers[p];
             if (plr && !plr->getStats()->isDisposed() && plr->getBoard()) {
-                viewPoint::get_instance()->setOwner(plr);
+                viewPoint::get_instance().setOwner(plr);
                 player::activePlayer = plr;
                 plr->getStats()->setActive(true);
-                soundManager::getInstance()->setListenerChamber(plr->getBoard()->getInstanceId(),
+                soundManager::getInstance().setListenerChamber(plr->getBoard()->getInstanceId(),
                                                                 plr->getBoard()->getSize());
                 player::visitedPlayers.erase(player::visitedPlayers.begin() + p);
                 break;
@@ -121,14 +121,14 @@ bool player::stepOnElement(std::shared_ptr<bElem> step)
         this->getStats()->setPoints(TOTAL, this->getStats()->getPoints(TOTAL) + 1);
     }
     if (r)
-        inputManager::getInstance()->hapticKick(1.0);
+        inputManager::getInstance().hapticKick(1.0);
     return r;
 }
 
 bool player::mechanics()
 {
     bool res = bElem::mechanics();
-    controlItem currentCtrlItem = inputManager::getInstance()->getCtrlItem();
+    controlItem currentCtrlItem = inputManager::getInstance().getCtrlItem();
     if (this->getStats()->isMoving()) {
         if (bElem::getCntr() % 3 == 0)
             this->animPh++;
@@ -158,10 +158,10 @@ bool player::mechanics()
         vel = {0, 0, 0};
     }
 
-    soundManager::getInstance()->setListenerChamber(this->getBoard()->getInstanceId(),
+    soundManager::getInstance().setListenerChamber(this->getBoard()->getInstanceId(),
                                                     this->getBoard()->getSize());
-    soundManager::getInstance()->setListenerOrientation({0, 0, -1});
-    soundManager::getInstance()->setListenerPosition(c3d);
+    soundManager::getInstance().setListenerOrientation({0, 0, -1});
+    soundManager::getInstance().setListenerPosition(c3d);
     if (!res)
         return false;
 
@@ -172,7 +172,7 @@ bool player::mechanics()
     case 0:
         if (this->moveInDirection(currentCtrlItem.dir)) {
             this->getStats()->setFacing(this->getStats()->getMyDirection());
-            viewPoint::get_instance()->setOwner(shared_from_this());
+            viewPoint::get_instance().setOwner(shared_from_this());
             //
         }
         break;

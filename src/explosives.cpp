@@ -97,11 +97,11 @@ bool explosives::explode(float radius)
         if (this->getStats()->isCollected())
         {
             this->getStats()->getCollector().lock()->destroy();
-            viewPoint::get_instance()->addViewPoint(this->getStats()->getCollector().lock());
+            viewPoint::get_instance().addViewPoint(this->getStats()->getCollector().lock());
         }
         else
         {
-            viewPoint::get_instance()->addViewPoint(shared_from_this());
+            viewPoint::get_instance().addViewPoint(shared_from_this());
         }
 
         bElem::destroy();
@@ -150,10 +150,10 @@ bool explosives::explode(float radius)
                     if(this->getStats()->isCollected())
                     {
                         this->getStats()->getCollector().lock()->destroy();
-                        viewPoint::get_instance()->addViewPoint(this->getStats()->getCollector().lock());
+                        viewPoint::get_instance().addViewPoint(this->getStats()->getCollector().lock());
                     }
                     else
-                        viewPoint::get_instance()->addViewPoint(shared_from_this());
+                        viewPoint::get_instance().addViewPoint(shared_from_this());
                     bElem::destroy();
                     continue;
                 }
@@ -176,12 +176,12 @@ bool explosives::explode(float radius)
     this->brd = this->getBoard();
     if (!brd || this->getStats()->isDestroying() || this->getStats()->isDisposed())
         return false;
-    viewPoint::get_instance()->addViewPoint(shared_from_this());
+    viewPoint::get_instance().addViewPoint(shared_from_this());
     this->bx = brd->getSize().x;
     this->by = brd->getSize().y;
     myUtility::Coords mpos = myUtility::Coords(this->getStats()->getMyPosition());
     bElem::destroy();
-    viewPoint::get_instance()->addViewPoint(brd->getElement(mpos));
+    viewPoint::get_instance().addViewPoint(brd->getElement(mpos));
     traverser(mpos,
               mpos + myUtility::Coords::dir2coords(dir::direction::RIGHT),
               radius,

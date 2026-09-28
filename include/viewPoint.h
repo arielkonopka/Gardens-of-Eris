@@ -42,12 +42,12 @@ class viewPoint
 {
     friend class gameSerializer;
 public:
-    static viewPoint* get_instance();
+    static viewPoint& get_instance();
     void setOwner(std::shared_ptr<bElem> owner);
     void addViewPoint(std::shared_ptr<bElem> vp);
     std::shared_ptr<bElem> getOwner();
-    ~viewPoint()=delete;
-    viewPoint()=default;
+    viewPoint(const viewPoint&) = delete;
+    viewPoint& operator=(const viewPoint&) = delete;
     coords getViewPoint();
     coords getViewPointOffset();
     int calculateObscured(coords point);
@@ -59,10 +59,9 @@ protected:
 
 private:
     bool isElementInVector(const std::vector<std::weak_ptr<bElem>>& vec, const std::shared_ptr<bElem>& elem);
-    static viewPoint* instance;
+    viewPoint();
     std::weak_ptr<bElem> _owner;
     std::vector<std::weak_ptr<bElem>> viewPoints;
-    static std::once_flag once;
     coords tilesize=NOCOORDS;
 };
 

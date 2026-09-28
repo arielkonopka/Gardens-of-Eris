@@ -27,6 +27,7 @@
 #ifndef INPUTMANAGER_H
 #define INPUTMANAGER_H
 #include "commons.h"
+#include "allegroHandles.h"
 
 
 #include <allegro5/allegro.h>
@@ -52,25 +53,24 @@ public:
     void setControlItem(controlItem item);
     virtual ~inputManager();
     bool pressed_keys[ALLEGRO_KEY_MAX];
-    static inputManager* getInstance();
-    static inputManager* getInstance(bool testmode);
+    /// testmode skips the keyboard, joystick and input thread, for unit tests
+    static inputManager& getInstance(bool testmode = false);
     void hapticKick(float strength);
     void stop();
 private:
     float sesitivity=0.4;
 
-    std::thread nt;
+    std::jthread nt;
     bool joyPresent=false;
-    ALLEGRO_JOYSTICK *joystick;
     std::atomic<bool> exit=false; ///< set by the game thread, read by the input thread
     void inputLoop();
     controlItem translateEvent(ALLEGRO_EVENT* ev);
     inputManager();
-    static inputManager* _instance;
+    void startInput();
     controlItem lastItem=controlItem(0,dir::direction::NODIRECTION);
 
     static std::once_flag once;
-    ALLEGRO_EVENT_QUEUE* evQueue;
+    goe::eventQueueHandle evQueue;
 
 };
 

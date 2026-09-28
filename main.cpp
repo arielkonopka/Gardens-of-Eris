@@ -63,18 +63,18 @@ int main( int argc, char * argv[] )
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
     myPresenter->showSplash();
-    soundManager::getInstance()->setupSong(0,0, {0.0f,0.0f,0.0f},0,true);
-    soundManager::getInstance()->setupSong(2,2, {1.0f,130.0f,0.0f},-1,true);
-    soundManager::getInstance()->setupSong(3,3, {0.0f,170.0f,0.0f},-1,true);
-    soundManager::getInstance()->setupSong(10,5, {550.0f,0.0f,0.0f},-1,true);
-    soundManager::getInstance()->setupSong(11,6, {550.0f,550.0f,0.0f},-1,true);
-    soundManager::getInstance()->setupSong(12,7, {1.0f,550.0f,0.0f},-1,true);
-    soundManager::getInstance()->setupSong(13,8, {250.0f,250.0f,0.0f},-1,true);
-    soundManager::getInstance()->setupSong(4,4, {0.0f,0.0f,0.0f},1,true);
-    soundManager::getInstance()->setupSong(5,3, {0.0f,0.0f,0.0f},2,true);
-    soundManager::getInstance()->setupSong(6,2, {0.0f,0.0f,0.0f},3,true);
-    soundManager::getInstance()->setupSong(8,0, {0.0f,0.0f,0.0f},5,true);
-    soundManager::getInstance()->setupSong(9,0, {0.0f,0.0f,0.0f},6,true);
+    soundManager::getInstance().setupSong(0,0, {0.0f,0.0f,0.0f},0,true);
+    soundManager::getInstance().setupSong(2,2, {1.0f,130.0f,0.0f},-1,true);
+    soundManager::getInstance().setupSong(3,3, {0.0f,170.0f,0.0f},-1,true);
+    soundManager::getInstance().setupSong(10,5, {550.0f,0.0f,0.0f},-1,true);
+    soundManager::getInstance().setupSong(11,6, {550.0f,550.0f,0.0f},-1,true);
+    soundManager::getInstance().setupSong(12,7, {1.0f,550.0f,0.0f},-1,true);
+    soundManager::getInstance().setupSong(13,8, {250.0f,250.0f,0.0f},-1,true);
+    soundManager::getInstance().setupSong(4,4, {0.0f,0.0f,0.0f},1,true);
+    soundManager::getInstance().setupSong(5,3, {0.0f,0.0f,0.0f},2,true);
+    soundManager::getInstance().setupSong(6,2, {0.0f,0.0f,0.0f},3,true);
+    soundManager::getInstance().setupSong(8,0, {0.0f,0.0f,0.0f},5,true);
+    soundManager::getInstance().setupSong(9,0, {0.0f,0.0f,0.0f},6,true);
     // "--load <file>" starts from a saved game instead of a freshly generated world
     std::string saveToLoad;
     for (int c = 1; c + 1 < argc; c++)
@@ -98,7 +98,7 @@ int main( int argc, char * argv[] )
         std::thread nt=std::thread(&createChambers);
         nt.detach();
     }
-    soundManager::getInstance()->enableSound();
+    soundManager::getInstance().enableSound();
     while(!finish)
     {
         int reason=0;

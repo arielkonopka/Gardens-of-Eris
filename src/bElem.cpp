@@ -214,7 +214,7 @@ oState bElem::disposeElementUnsafe()
             }
         }
     }
-    soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
+    soundManager::getInstance().stopSoundsByElementId(this->getStats()->getInstanceId());
     this->getStats()->setDisposed(true);
     this->getStats()->setMyPosition(NOCOORDS);
     this->attachedBoard.reset();
@@ -254,7 +254,7 @@ oState bElem::disposeElement()
     this->getStats()->setDisposed(true);
     this->setBoard(nullptr);
     this->getStats()->setMyPosition(NOCOORDS);
-    soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
+    soundManager::getInstance().stopSoundsByElementId(this->getStats()->getInstanceId());
     return DISPOSED;
 }
 
@@ -515,7 +515,7 @@ bool bElem::kill()
         return false;
     }
     if (this->getAttrs()->isKillable()) {
-        // viewPoint::get_instance()->addViewPoint(shared_from_this());
+        // viewPoint::get_instance().addViewPoint(shared_from_this());
         bElem::toDispose.push_back(shared_from_this());
     }
     this->getStats()->setKilled(GoEConstants::_defaultKillTime);
@@ -801,7 +801,7 @@ void bElem::ps(std::shared_ptr<bElem> who, std::string eventType, std::string ev
     coords3d vel = {(who->getOffset().x) ? 0.5f : 0.0f,
                     (who->getOffset().y > 0) ? 0.5f : 0.0f,
                     0.0f};
-    soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),
+    soundManager::getInstance().registerSound(who->getBoard()->getInstanceId(),
                                                c3d,
                                                vel,
                                                this->getStats()->getInstanceId(),
@@ -813,7 +813,7 @@ void bElem::ps(std::shared_ptr<bElem> who, std::string eventType, std::string ev
 
 void bElem::stopMySounds()
 {
-    soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
+    soundManager::getInstance().stopSoundsByElementId(this->getStats()->getInstanceId());
 }
 
 std::shared_ptr<bElem> bElem::findInDir(dir::direction dir)

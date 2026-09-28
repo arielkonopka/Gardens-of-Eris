@@ -660,8 +660,8 @@ void gameSerializer::clearWorld()
     goldenApple::apples.clear();
     goldenApple::appleNumber = 0;
     bElem::toDispose.clear();
-    viewPoint::get_instance()->viewPoints.clear();
-    viewPoint::get_instance()->_owner.reset();
+    viewPoint::get_instance().viewPoints.clear();
+    viewPoint::get_instance()._owner.reset();
     chamber::allChambers.clear();
 }
 
@@ -700,10 +700,10 @@ bool gameSerializer::saveGame(const std::string &fileName)
             w.refs(tps);
         }
         w.refs(bElem::toDispose);
-        auto vp = viewPoint::get_instance();
-        w.ref(vp->_owner);
+        auto &vp = viewPoint::get_instance();
+        w.ref(vp._owner);
         std::vector<std::shared_ptr<bElem>> vps;
-        for (const auto &p : vp->viewPoints)
+        for (const auto &p : vp.viewPoints)
             if (auto sp = p.lock())
                 vps.push_back(sp);
         w.refs(vps);
@@ -957,10 +957,10 @@ bool gameSerializer::loadGame(const std::string &fileName)
             teleport::firstReceiverRemoved = firstReceiverRemoved;
         }
         bElem::toDispose = ctx.getAll(toDisposeIds);
-        auto vp = viewPoint::get_instance();
-        vp->_owner = ctx.get(viewOwnerId);
+        auto &vp = viewPoint::get_instance();
+        vp._owner = ctx.get(viewOwnerId);
         for (auto &p : ctx.getAll(viewPointIds))
-            vp->viewPoints.push_back(p);
+            vp.viewPoints.push_back(p);
         bElem::sTaterCounter = taterCounter;
         std::istringstream rng(rngState);
         rng >> bElem::randomNumberGenerator;
@@ -971,16 +971,16 @@ bool gameSerializer::loadGame(const std::string &fileName)
             if (!t || t->getAttrs()->getSubtype() != 0 || !t->getBoard())
                 continue;
             auto pos = t->getStats()->getMyPosition();
-            soundManager::getInstance()->setupSong(t->getStats()->getInstanceId(),
+            soundManager::getInstance().setupSong(t->getStats()->getInstanceId(),
                                                    1,
                                                    {(float) pos.x, (float) pos.y, 0.0f},
                                                    t->getBoard()->getInstanceId(),
                                                    true);
             if (t->getStats()->getMyDirection() == dir::direction::LEFT)
-                soundManager::getInstance()->pauseSong(t->getStats()->getInstanceId());
+                soundManager::getInstance().pauseSong(t->getStats()->getInstanceId());
         }
         if (player::activePlayer && player::activePlayer->getBoard())
-            soundManager::getInstance()->setListenerChamber(
+            soundManager::getInstance().setListenerChamber(
                 player::activePlayer->getBoard()->getInstanceId(),
                 player::activePlayer->getBoard()->getSize());
     } catch (const std::exception &ex) {
