@@ -647,6 +647,37 @@ BOOST_AUTO_TEST_CASE(MonsterTurnsWhenBlocked)
     BOOST_CHECK_EQUAL(mon->getStats()->getMyPosition().y, 1);
 }
 
+BOOST_AUTO_TEST_CASE(CollectingIsReadFromTheConfig)
+{
+    // skins.json marks players, monsters, drones and bunkers with canCollect
+    auto mc = walledRoom(10, 10);
+    activePlayerAt(mc, 1, 1);
+    BOOST_CHECK(place<monster>(mc, 0, 5, 5)->getAttrs()->canCollect());
+    BOOST_CHECK(place<bunker>(mc, 0, 7, 7)->getAttrs()->canCollect());
+    BOOST_CHECK(!place<brickCluster>(mc, 0, 3, 3)->getAttrs()->canCollect());
+}
+
+BOOST_AUTO_TEST_CASE(MonsterPicksUpKeyInItsWay)
+{
+    auto mc = walledRoom(12, 5);
+    // a dead-end corridor along y == 2, the player sealed off in a corner
+    place<wall>(mc, 0, 3, 2);
+    for (int x = 3; x < 11; x++) {
+        place<wall>(mc, 0, x, 1);
+        place<wall>(mc, 0, x, 3);
+    }
+    place<wall>(mc, 0, 2, 1);
+    place<wall>(mc, 0, 1, 2);
+    activePlayerAt(mc, 1, 1);
+    auto mon = place<monster>(mc, 0, 4, 2);
+    auto k = place<key>(mc, 3, 7, 2);
+    for (int c = 0; c < 2000 && !k->getStats()->isCollected(); c++)
+        bElem::runLiveElements();
+    BOOST_REQUIRE(k->getStats()->isCollected());
+    BOOST_CHECK(k->getStats()->getCollector().lock() == mon);
+    BOOST_CHECK_EQUAL(mon->getAttrs()->getInventory()->countTokens(bElemTypes::_key, 3), 1);
+}
+
 /* ---------------------------------------------------------------- kiki and bouba */
 
 namespace {

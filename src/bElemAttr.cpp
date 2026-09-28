@@ -47,34 +47,46 @@ bElemAttr::bElemAttr(std::shared_ptr<bElem> owner, int type, int subtype)
  */
 void bElemAttr::getDefaultValues(int typeId, int subtypeId)
 {
+    // An entry with subtype -1 holds the defaults for the type; an entry for the exact subtype,
+    // wherever it sits in the list, overrides them.
+    const attributeData *base = nullptr;
+    const attributeData *exact = nullptr;
     const auto& sprites = configManager::getInstance()->getConfig()->sprites;
     for (const auto& sprite : sprites) {
         if (sprite.eType != typeId)
             continue;
         for (const auto& attr : sprite.attributes) {
-            if ((!this->provisioned && attr.subType < 0) || (attr.subType == subtypeId)) {
-                this->setMaxEnergy(attr.maxEnergy);
-                this->setMaxAmmo(attr.maxAmmo);
-                this->setKillable(attr.killable);
-                this->setDestroyable(attr.destroyable);
-                this->setSteppable(attr.steppable);
-                this->setMovable(attr.isMovable);
-                this->setInteractive(attr.isInteractive);
-                this->setCollectible(attr.isCollectible);
-                this->setPush(attr.canPush);
-                this->setPushed(attr.canBePushed);
-                this->setCollect(attr.canCollect);
-                this->setWeapon(attr.isWeapon);
-                this->setOpen(attr.isOpen);
-                this->setLocked(attr.isLocked);
-                this->setEnergy(attr.energy);
-                this->setAmmo(attr.ammo);
-                this->provisioned = true; // this way we do not have to setup attributes for the walls.
-                if (subtypeId >= 0)
-                    break; // we can define the first one as -1, and then the 0 and positive subtypes would override it.
-            }
+            if (attr.subType < 0 && !base)
+                base = &attr;
+            else if (subtypeId >= 0 && attr.subType == subtypeId && !exact)
+                exact = &attr;
         }
     }
+    if (base && !this->provisioned)
+        this->applyDefaults(*base);
+    if (exact)
+        this->applyDefaults(*exact);
+}
+
+void bElemAttr::applyDefaults(const attributeData &attr)
+{
+    this->setMaxEnergy(attr.maxEnergy);
+    this->setMaxAmmo(attr.maxAmmo);
+    this->setKillable(attr.killable);
+    this->setDestroyable(attr.destroyable);
+    this->setSteppable(attr.steppable);
+    this->setMovable(attr.isMovable);
+    this->setInteractive(attr.isInteractive);
+    this->setCollectible(attr.isCollectible);
+    this->setPush(attr.canPush);
+    this->setPushed(attr.canBePushed);
+    this->setCollect(attr.canCollect);
+    this->setWeapon(attr.isWeapon);
+    this->setOpen(attr.isOpen);
+    this->setLocked(attr.isLocked);
+    this->setEnergy(attr.energy);
+    this->setAmmo(attr.ammo);
+    this->provisioned = true; // this way we do not have to setup attributes for the walls.
 }
 
 bool bElemAttr::isMod() const
