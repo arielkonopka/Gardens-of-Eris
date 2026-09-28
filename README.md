@@ -231,7 +231,7 @@ The game gets harder the better you get and the further you go. The difficulty D
  * the depth of the chamber: 0 for the easiest levels up to 4 for the ones with the fewest holes,
  * the distance: floor(log2(1 + d / 64)), where d is how far the player is from the chamber's starting room.
 
-Every rule that depends on D lives in include/difficulty.h: bunker range and rest between shots, camera and guardian sight, guardians per camera, kiki beam damage, landmines per level, and the Hound. The Hound is a drone sent after a player who stays in one 64x64 area too long (3 minutes at D 1, down to 1 minute); it bites, and gives up when the player leaves the area.
+Every rule that depends on D lives in include/difficulty.h: bunker range and rest between shots, camera and guardian sight, guardians per camera, kiki beam damage, landmines per level, and the Hound. The Hound is a drone sent after a player who stays in one 64x64 area too long (230 seconds at D 1, 23 seconds less per step, never under 55 seconds); it bites, and gives up when the player leaves the area. The tunings follow the Law of Fives: every step, cap and floor is built from 5 or 23.
 
 - Refactor sound engine
 - Refactor chamber, to contain bElem container, which then would have the stepOnElement routines???

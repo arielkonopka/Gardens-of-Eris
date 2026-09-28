@@ -39,9 +39,9 @@ class puppetMasterHound : public puppetMasterFR
 
 public:
     /// how far around itself the hound searches for a way to the player
-    static constexpr int searchRadius = 48;
+    static constexpr int searchRadius = 55;
     /// how far from the player a hound appears
-    static constexpr int spawnDistance = 16;
+    static constexpr int spawnDistance = 15;
     /// how much a bite hurts
     static constexpr int biteDamage = 5;
 

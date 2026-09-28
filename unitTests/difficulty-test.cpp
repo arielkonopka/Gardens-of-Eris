@@ -91,16 +91,17 @@ TEST(DifficultyTests, RulesStartAtTheOldValuesAndNeverGetEasier)
     EXPECT_EQ(difficulty::beamDamage(0), GoEConstants::_radioActivityPower);
     EXPECT_EQ(difficulty::landmineCopies(0), 0);
     EXPECT_EQ(difficulty::houndPatience(0), 0);
-    EXPECT_EQ(difficulty::houndPatience(1), 180 * difficulty::ticksPerSecond);
+    EXPECT_EQ(difficulty::houndPatience(1), 230 * difficulty::ticksPerSecond);
+    EXPECT_EQ(difficulty::bunkerRest(5, 3), 5); // a short rest never gets longer
     for (int d = 1; d < 40; d++) {
         EXPECT_GE(difficulty::bunkerRange(d), difficulty::bunkerRange(d - 1));
         EXPECT_LE(difficulty::bunkerRest(275, d), difficulty::bunkerRest(275, d - 1));
-        EXPECT_GE(difficulty::bunkerRest(275, d), 10);
+        EXPECT_GE(difficulty::bunkerRest(275, d), difficulty::twentyThree);
         EXPECT_GE(difficulty::cameraSight(d), difficulty::cameraSight(d - 1));
         EXPECT_GE(difficulty::guardianCount(d), difficulty::guardianCount(d - 1));
         EXPECT_GE(difficulty::beamDamage(d), difficulty::beamDamage(d - 1));
         EXPECT_GE(difficulty::landmineCopies(d), difficulty::landmineCopies(d - 1));
-        EXPECT_GE(difficulty::houndPatience(d), 60 * difficulty::ticksPerSecond);
+        EXPECT_GE(difficulty::houndPatience(d), 55 * difficulty::ticksPerSecond);
         if (d > 1)
             EXPECT_LE(difficulty::houndPatience(d), difficulty::houndPatience(d - 1));
     }
