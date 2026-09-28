@@ -157,11 +157,6 @@ void bElemStats::setStandingOn(std::weak_ptr<bElem> value)
         this->setHasParent(false);
 }
 
-bool bElemStats::isCollected() const
-{
-    return this->collected;
-}
-
 void bElemStats::setCollected(bool value)
 {
     this->collected = value;
@@ -198,16 +193,6 @@ int bElemStats::getMovingTotalTime() const
     return this->movingTotalTime;
 }
 
-bool bElemStats::isMoving() const
-{
-    return this->getMoved() > 0;
-}
-
-int bElemStats::getInteracted() const
-{
-    return this->getValueInTime(this->interacted);
-}
-
 void bElemStats::setInteracted(unsigned int value)
 {
     this->interacted = this->calculateValueInTime(value);
@@ -229,11 +214,6 @@ void bElemStats::setDestroyed(int value)
     this->setDestTimeReq(value);
 }
 
-bool bElemStats::isInteracting() const
-{
-    return this->getInteracted() > 0;
-}
-
 int bElemStats::getAnimPhase() const
 {
     return this->animPhase;
@@ -242,16 +222,6 @@ int bElemStats::getAnimPhase() const
 void bElemStats::setAnimPhase(int value)
 {
     this->animPhase = value;
-}
-
-int bElemStats::getTaterCounter() const
-{
-    return this->taterCounter; // we have our own time thing
-}
-
-void bElemStats::setTaterCounter(int value)
-{
-    this->taterCounter = value;
 }
 
 coords bElemStats::collectorPosition()
@@ -319,24 +289,10 @@ void bElemStats::setActive(bool value)
     this->active = value;
 }
 
-int bElemStats::getMoved() const
-{
-    return this->getValueInTime(this->moved);
-}
-
 void bElemStats::setMoved(int value)
 {
     this->moved = this->calculateValueInTime(value);
     this->movingTotalTime = value;
-}
-
-int bElemStats::getFadingOut() const
-{
-    return this->getValueInTime(this->fadingOut);
-}
-int bElemStats::getFadingIn() const
-{
-    return this->getValueInTime(this->fadingIn);
 }
 
 void bElemStats::setFadingIn(int value)
@@ -358,16 +314,6 @@ int bElemStats::getFadingInReq() const
 int bElemStats::getFadingOutReq() const
 {
     return this->fadingOutReq;
-}
-
-bool bElemStats::isFadingIn() const
-{
-    return this->getFadingIn() > 0;
-}
-
-bool bElemStats::isFadingOut() const
-{
-    return this->getFadingOut() > 0;
 }
 
 bool bElemStats::isMarked() const

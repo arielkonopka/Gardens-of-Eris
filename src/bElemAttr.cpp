@@ -149,11 +149,6 @@ void bElemAttr::setMovable(bool m)
     this->movable = m;
 }
 
-bool bElemAttr::isInteractive() const
-{
-    return this->interactive;
-}
-
 void bElemAttr::setInteractive(bool i)
 {
     this->interactive = i;

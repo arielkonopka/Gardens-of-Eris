@@ -382,20 +382,15 @@ bool bElem::readyToShoot() const
 
 bool bElem::mechanics()
 {
-    if ((this->getBoard().get() == nullptr || this->getStats()->getMyPosition() == NOCOORDS)
-        && (!this->getStats()->isCollected()))
+    bElemStats &st = *this->getStats();
+    // expired() checks the board without taking a reference to it
+    if ((this->attachedBoard.expired() || st.getMyPosition() == NOCOORDS) && !st.isCollected())
         return false;
-    this->getStats()->setTaterCounter(this->getStats()->getTaterCounter()
-                                      + 1); /// Instances own 'clock'.
+    st.setTaterCounter(st.getTaterCounter() + 1); /// Instances own 'clock'.
 
-    if (this->getStats()->isWaiting() || this->getStats()->isTeleporting()
-        || this->getStats()->isDying() || this->getStats()->isDestroying()
-        || this->getStats()->isMoving() || this->getStats()->isFadingIn()
-        || this->getStats()->isFadingOut()
-        || (this->getAttrs()->isInteractive() && this->getStats()->isInteracting()))
-        return false;
-
-    return true;
+    return !(st.isWaiting() || st.isTeleporting() || st.isDying() || st.isDestroying()
+             || st.isMoving() || st.isFadingIn() || st.isFadingOut()
+             || (this->getAttrs()->isInteractive() && st.isInteracting()));
 }
 
 bool bElem::isSteppableInMyDirection() const
@@ -696,7 +691,8 @@ void bElem::runLiveElements()
     auto &live = cchmbr->liveElems;
     size_t kept = 0;
     for (size_t r = 0; r < live.size(); r++) {
-        std::shared_ptr<bElem> e = live[r];
+        // moved out and back in: only push_back touches the list while elements run
+        std::shared_ptr<bElem> e = std::move(live[r]);
         if (e->getStats()->isDisposed() || e->getType() == bElemTypes::_player)
             continue;
         e->mechanics();

@@ -72,7 +72,7 @@ public:
     /// steppable by type, and the owner is not dying, being destroyed or teleporting
     bool isSteppable() const { return this->steppable && !this->ownerBusy(); }
     bool isMovable() const;
-    bool isInteractive() const;
+    bool isInteractive() const { return this->interactive; }
     bool isCollectible() const;
     bool isWeapon() const;
     bool isOpen() const;

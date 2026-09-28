@@ -48,7 +48,7 @@ public:
     unsigned int getDestTimeBeg() const;
     unsigned int getDestTimeReq() const;
     dir::direction getFacing() const;
-    int getInteracted() const;
+    int getInteracted() const { return this->getValueInTime(this->interacted); }
     unsigned int getKillTimeBeg() const;
     unsigned int getKillTimeReq() const;
     int getKilled() const { return this->getValueInTime(this->killed); }
@@ -58,16 +58,16 @@ public:
     std::shared_ptr<bElem> getSteppingOn() const;
     std::weak_ptr<bElem> getStandingOn();
     std::weak_ptr<bElem> getStatsOwner() const;
-    int getMoved() const;
+    int getMoved() const { return this->getValueInTime(this->moved); }
     dir::direction getMyDirection() const;
     /// where the element is; a collected element is where its collector is
     coords getMyPosition() { return this->collected ? this->collectorPosition() : coords(this->myPosition.getX(), this->myPosition.getY()); }
-    int getTaterCounter() const;
+    int getTaterCounter() const { return this->taterCounter; } // the element's own clock
     int getWaiting() const { return this->getValueInTime(this->waiting); }
-    int getFadingIn() const;
+    int getFadingIn() const { return this->getValueInTime(this->fadingIn); }
     int getFadingInReq() const;
     int getFadingOutReq() const;
-    int getFadingOut() const;
+    int getFadingOut() const { return this->getValueInTime(this->fadingOut); }
     int getMovingTotalTime() const;
     int getStats(pointsType t);
     int getPoints(pointsType ptype);
@@ -94,7 +94,7 @@ public:
     void setMoved(int value);
     void setMyDirection(dir::direction value);
     void setMyPosition(coords value);
-    void setTaterCounter(int value);
+    void setTaterCounter(int value) { this->taterCounter = value; }
     void setWaiting(int value);
     void setFadingIn(int value);
     void setFadingOut(int value);
@@ -107,16 +107,16 @@ public:
 
     // is methods
     bool isActive() const;
-    bool isCollected() const;
+    bool isCollected() const { return this->collected; }
     bool isDisposed() const { return this->disposed; }
     bool isDying() const { return this->getKilled() > 0; }
     bool isTeleporting() const { return this->getTelInProgress() > 0; }
     bool isWaiting() const { return this->getWaiting() > 0; }
-    bool isInteracting() const;
+    bool isInteracting() const { return this->getInteracted() > 0; }
     int isDestroying() const { return this->getDestroyed() > 0; }
-    bool isMoving() const;
-    bool isFadingOut() const;
-    bool isFadingIn() const;
+    bool isMoving() const { return this->getMoved() > 0; }
+    bool isFadingOut() const { return this->getFadingOut() > 0; }
+    bool isFadingIn() const { return this->getFadingIn() > 0; }
     // can methods
     // none present
 
