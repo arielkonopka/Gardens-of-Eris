@@ -34,6 +34,7 @@ class bElem;
 
 class bElemStats
 {
+    friend class gameSerializer;
 public:
     bElemStats();
     ~bElemStats() =default;

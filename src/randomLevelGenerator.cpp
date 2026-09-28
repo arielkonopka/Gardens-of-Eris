@@ -26,7 +26,12 @@ randomLevelGenerator::randomLevelGenerator(int w, int h)
 {
     this->width = w;
     this->height = h;
-    this->mychamber = chamber::makeNewChamber(myUtility::Coords(w, h));
+    {
+        // the chamber is registered in the world right away, but must not be saved until generated
+        std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
+        this->mychamber = chamber::makeNewChamber(myUtility::Coords(w, h));
+        this->mychamber->ready = false;
+    }
     std::random_device rd;
     std::array<int, 4> seedData;
     std::generate_n(seedData.data(), seedData.size(), std::ref(rd));
@@ -266,6 +271,15 @@ bool randomLevelGenerator::placeElementCollection(chamberArea *chmbrArea,
 
 bool randomLevelGenerator::generateLevel(int holes)
 {
+    // keep saving and loading out while this level is being built
+    std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
+    struct markReady
+    {
+        std::shared_ptr<chamber> c;
+        ~markReady() { c->ready = true; }
+    } readyWhenDone{this->mychamber};
+    // publish this level's teleporters only once the level is complete
+    teleport::registrationBatch teleporterBatch;
     int tolerance = 10;
     this->headNode = this->lvlGenerate(1, 1, this->width - 2, this->height - 2, _iterations, holes);
 

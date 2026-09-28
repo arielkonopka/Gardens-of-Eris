@@ -40,6 +40,7 @@ public:
 
 class viewPoint
 {
+    friend class gameSerializer;
 public:
     static viewPoint* get_instance();
     void setOwner(std::shared_ptr<bElem> owner);

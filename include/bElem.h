@@ -50,6 +50,7 @@ using oState = enum ost { DISPOSED = 0,
 
 class bElem : public  std::enable_shared_from_this<bElem>
 {
+    friend class gameSerializer;
 
 public:
 

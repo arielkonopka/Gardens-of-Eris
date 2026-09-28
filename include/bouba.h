@@ -32,6 +32,7 @@ namespace boubaSpace
 };
 class bouba :  public explosives
 {
+    friend class gameSerializer;
     public:
        using bElem::additionalProvisioning;
         int getAnimPh() const final;

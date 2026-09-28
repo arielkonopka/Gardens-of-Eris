@@ -27,6 +27,7 @@
 
 class simpleBomb: public explosives
 {
+    friend class gameSerializer;
 public:
     using bElem::additionalProvisioning;
 

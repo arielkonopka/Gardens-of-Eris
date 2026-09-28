@@ -24,11 +24,13 @@
 #define TELEPORT_H
 
 #include "commons.h"
+#include <mutex>
 #include "videoElementDef.h"
 #include "randomLevelGenerator.h"
 #include "bElem.h"
 class teleport : public bElem
 {
+    friend class gameSerializer;
 public:
     using bElem::additionalProvisioning;
 
@@ -44,12 +46,31 @@ public:
     bool stepOnElement(std::shared_ptr<bElem> step) override;
     bool mechanics() final;
     bool stepOnAction(bool step,std::shared_ptr<bElem> who) override;
+
+    /**
+     * @brief Defers teleporter registration on the current thread until the batch ends.
+     *
+     * Levels are generated on a background thread while the game runs. Teleporters created
+     * inside a batch are kept aside and added to the shared registry all at once when the batch
+     * is destroyed, so pairing (especially global, cross-level pairing) only sees complete levels.
+     */
+    class registrationBatch
+    {
+    public:
+        registrationBatch();
+        ~registrationBatch();
+        registrationBatch(const registrationBatch &) = delete;
+        registrationBatch &operator=(const registrationBatch &) = delete;
+    };
 private:
     static std::vector<std::weak_ptr<teleport>> allTeleporters;
+    static std::recursive_mutex registryMutex;
+    static thread_local bool deferRegistration;
+    static thread_local std::vector<std::weak_ptr<teleport>> pendingTeleporters;
     bool removeFromAllTeleporters();
     std::weak_ptr<teleport> theOtherEnd;
     std::vector<std::shared_ptr<teleport>> candidates;
-    static std::once_flag _onceFlag;
+    static bool firstReceiverRemoved;
 };
 
 #endif // TELEPORT_H

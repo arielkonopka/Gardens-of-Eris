@@ -566,6 +566,40 @@ void presenter::eyeCandy(int flavour)
     }
 }
 
+void presenter::handleSaveKeys()
+{
+    auto *im = inputManager::getInstance();
+    if (this->pendingSaveOp == 0) {
+        if (im->pressed_keys[ALLEGRO_KEY_F5] && !this->saveKeyDown)
+            this->pendingSaveOp = 1;
+        else if (im->pressed_keys[ALLEGRO_KEY_F9] && !this->loadKeyDown)
+            this->pendingSaveOp = 2;
+        if (this->pendingSaveOp != 0)
+            std::cout << (this->pendingSaveOp == 1 ? "Saving" : "Loading") << "...\n";
+    }
+    this->saveKeyDown = im->pressed_keys[ALLEGRO_KEY_F5];
+    this->loadKeyDown = im->pressed_keys[ALLEGRO_KEY_F9];
+    if (this->pendingSaveOp == 0)
+        return;
+    // the background generator holds the world lock while it builds a level; never freeze the game
+    // waiting for it, ask it to pause after the current level and try again on the next tick
+    chamber::worldLockWanted = true;
+    std::unique_lock<std::recursive_mutex> worldLock(chamber::worldMutex, std::try_to_lock);
+    if (!worldLock.owns_lock())
+        return;
+    bool save = this->pendingSaveOp == 1;
+    bElem::mechLock();
+    bool ok = save ? gameSerializer::saveGame(gameSerializer::defaultSaveFile)
+                   : gameSerializer::loadGame(gameSerializer::defaultSaveFile);
+    bElem::mechUnlock();
+    this->pendingSaveOp = 0;
+    chamber::worldLockWanted = false;
+    if (save)
+        std::cout << (ok ? "Game saved to " : "Saving failed: ") << gameSerializer::defaultSaveFile << "\n";
+    else
+        std::cout << (ok ? "Game loaded from " : "Loading failed: ") << gameSerializer::defaultSaveFile << "\n";
+}
+
 int presenter::presentEverything()
 {
     std::shared_ptr<bElem> currentPlayer = nullptr;
@@ -582,6 +616,7 @@ int presenter::presentEverything()
         }
         if (event.type == ALLEGRO_EVENT_TIMER) {
             std::lock_guard<std::mutex> guard(this->presenter_mutex);
+            this->handleSaveKeys();
             currentPlayer = player::getActivePlayer();
             //this->_cp_attachedBoard->player=NOCOORDS;
             if (currentPlayer.get() != nullptr) {

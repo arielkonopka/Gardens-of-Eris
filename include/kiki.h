@@ -36,6 +36,7 @@ namespace kikiSpace
 }
 class kiki : public bElem
 {
+    friend class gameSerializer;
 public:
     using bElem::additionalProvisioning;
 
