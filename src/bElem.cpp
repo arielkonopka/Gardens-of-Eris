@@ -510,12 +510,12 @@ bool bElem::kill()
     this->getStats()->setKilled(GoEConstants::_defaultKillTime);
     return true;
 }
-std::shared_ptr<bElemAttr> bElem::getAttrs() const
+const std::shared_ptr<bElemAttr>& bElem::getAttrs() const
 {
     return this->attrs;
 }
 
-std::shared_ptr<bElemStats> bElem::getStats() const
+const std::shared_ptr<bElemStats>& bElem::getStats() const
 {
     return this->status;
 }
@@ -796,6 +796,8 @@ void bElem::playSound(std::string eventType, std::string event)
 
 void bElem::ps(std::shared_ptr<bElem> who, std::string eventType, std::string event)
 {
+    if (!who || !who->getBoard())
+        return;
     coords3d c3d;
     c3d.x = (float) who->getStats()->getMyPosition().x;
     c3d.y = (float) who->getStats()->getMyPosition().y;
@@ -803,8 +805,6 @@ void bElem::ps(std::shared_ptr<bElem> who, std::string eventType, std::string ev
     coords3d vel = {(who->getOffset().x) ? 0.5f : 0.0f,
                     (who->getOffset().y > 0) ? 0.5f : 0.0f,
                     0.0f};
-    if (!who || !who->getBoard())
-        return;
     soundManager::getInstance()->registerSound(who->getBoard()->getInstanceId(),
                                                c3d,
                                                vel,

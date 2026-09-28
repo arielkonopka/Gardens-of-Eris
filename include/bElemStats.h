@@ -26,6 +26,7 @@
 #include "Coords.h"
 #include "../include/commons.h"
 #include <memory>
+#include <atomic>
 #include <unordered_map>
 class bElem;
 
@@ -131,7 +132,7 @@ private:
     inline int getValueInTime(int value) const;
     inline int calculateValueInTime(int value) const;
 
-    static unsigned long int currentInstance;
+    static std::atomic<unsigned long int> currentInstance;
     unsigned long int instanceId;
     bool disposed = false;
     bool active = false;

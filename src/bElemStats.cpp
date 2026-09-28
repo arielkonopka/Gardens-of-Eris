@@ -23,7 +23,7 @@
 #include "bElemStats.h"
 #include "../include/bElem.h"
 
-unsigned long int bElemStats::currentInstance = 0;
+std::atomic<unsigned long int> bElemStats::currentInstance = 0;
 
 unsigned long int bElemStats::getInstanceId() const
 {

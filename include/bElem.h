@@ -90,8 +90,8 @@ public:
     virtual coords getAbsCoords(coords dir) const;
     virtual  int getType() const;
     virtual int getAnimPh() const;
-    std::shared_ptr<bElemAttr> getAttrs() const;
-    std::shared_ptr<bElemStats> getStats() const;
+    const std::shared_ptr<bElemAttr>& getAttrs() const;
+    const std::shared_ptr<bElemStats>& getStats() const;
 
     virtual  float getViewRadius() const;
     virtual bool collect(std::shared_ptr<bElem> collectible);
