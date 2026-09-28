@@ -48,7 +48,9 @@ target_link_libraries(GardenOfEris ${LIBRARIES})
 # Set the source files for the unit tests using wildcard
 file(GLOB TEST_SOURCE_FILES ${CMAKE_SOURCE_DIR}/unitTests/*.cpp)
 
-# Find Boost Test Framework
+# Find Boost Test Framework. The tests define BOOST_TEST_DYN_LINK, so link the shared library
+# (MinGW would otherwise pick the static archive and miss every __imp_ symbol).
+set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
 # Include directory for header files in tests
@@ -65,7 +67,7 @@ foreach(TEST_SOURCE_FILE ${TEST_SOURCE_FILES})
     # Specify the required libraries
     target_link_libraries(${TEST_NAME}
         ${LIBRARIES}
-        ${Boost_LIBRARIES}
+        Boost::unit_test_framework
     )
 
     # Add the test
