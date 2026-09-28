@@ -35,7 +35,6 @@ std::mutex bElem::mechanicMutex;
 
 bElem::bElem()
     : std::enable_shared_from_this<bElem>()
-    , elementMutex(al_create_mutex_recursive())
 {
     static std::once_flag _of;
     this->status = std::make_shared<bElemStats>();
@@ -215,7 +214,6 @@ oState bElem::disposeElementUnsafe()
             }
         }
     }
-    al_destroy_mutex(this->elementMutex);
     soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
     this->getStats()->setDisposed(true);
     this->getStats()->setMyPosition(NOCOORDS);
@@ -256,7 +254,6 @@ oState bElem::disposeElement()
     this->getStats()->setDisposed(true);
     this->setBoard(nullptr);
     this->getStats()->setMyPosition(NOCOORDS);
-    al_destroy_mutex(this->elementMutex);
     soundManager::getInstance()->stopSoundsByElementId(this->getStats()->getInstanceId());
     return DISPOSED;
 }
@@ -302,10 +299,6 @@ std::shared_ptr<bElem> bElem::getElementInDirection(coords di)
     return board->getElement(crd);
 }
 
-ALLEGRO_MUTEX *bElem::getMyMutex()
-{
-    return this->elementMutex;
-}
 
 bool bElem::use(std::shared_ptr<bElem> who)
 {
@@ -767,8 +760,6 @@ bool bElem::lockThisObject(std::shared_ptr<bElem> who)
 
 bool bElem::unlockThisObject(std::shared_ptr<bElem> who)
 {
-    static ALLEGRO_MUTEX *elementMutex = al_create_mutex_recursive();
-    al_lock_mutex(elementMutex);
     for (unsigned int cnt = 0; cnt < this->lockers.size();) {
         if (!this->lockers.at(cnt)
             || this->lockers.at(cnt)->getStats()->getInstanceId()
@@ -778,16 +769,12 @@ bool bElem::unlockThisObject(std::shared_ptr<bElem> who)
             cnt++;
         }
     }
-    al_unlock_mutex(elementMutex);
     return true;
 }
 
 void bElem::setStatsOwner(std::shared_ptr<bElem> owner)
 {
-    static ALLEGRO_MUTEX *SEMutex = al_create_mutex_recursive();
-    al_lock_mutex(SEMutex);
     this->getStats()->setStatsOwner(owner);
-    al_unlock_mutex(SEMutex);
 }
 
 void bElem::playSound(std::string eventType, std::string event)

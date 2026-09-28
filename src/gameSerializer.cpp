@@ -729,7 +729,7 @@ bool gameSerializer::saveGame(const std::string &fileName)
                 std::vector<std::pair<int32_t, uint32_t>> runs;
                 for (int x = 0; x < c->width; x++)
                     for (int y = 0; y < c->height; y++) {
-                        int v = c->visitedElements[x][y];
+                        int v = c->visitedElements[c->cellIndex(x, y)];
                         if (!runs.empty() && runs.back().first == v)
                             runs.back().second++;
                         else
@@ -746,7 +746,7 @@ bool gameSerializer::saveGame(const std::string &fileName)
             for (int x = 0; x < c->width; x++)
                 for (int y = 0; y < c->height; y++) {
                     stack.clear();
-                    for (auto e = c->chamberArray[x][y]->element; e && stack.size() < 255;
+                    for (auto e = c->cells[c->cellIndex(x, y)]; e && stack.size() < 255;
                          e = e->getStats()->getSteppingOn())
                         stack.push_back(e);
                     w.u8((uint8_t) stack.size());
@@ -869,22 +869,20 @@ bool gameSerializer::loadGame(const std::string &fileName)
             c->chamberName = name;
             c->chamberColour = col;
             c->applesCount = r.u32();
-            c->visitedElements.assign(w, std::vector<int>(h, 0));
+            c->visitedElements.assign((size_t) w * h, 0);
             {
                 int64_t pos = 0, total = (int64_t) w * h;
                 for (uint32_t runs = r.u32(); runs > 0; runs--) {
                     int v = r.i32();
                     uint32_t cnt = r.u32();
                     for (uint32_t k = 0; k < cnt && pos < total; k++, pos++)
-                        c->visitedElements[pos / h][pos % h] = v;
+                        c->visitedElements[pos] = v;
                 }
             }
-            c->chamberArray.resize(w);
+            c->cells.resize((size_t) w * h);
             cd.cells.resize((size_t) w * h);
             for (int x = 0; x < w; x++) {
-                c->chamberArray[x].reserve(h);
                 for (int y = 0; y < h; y++) {
-                    c->chamberArray[x].push_back(std::make_shared<bElemContainer>());
                     auto &stack = cd.cells[(size_t) x * h + y];
                     for (uint8_t k = r.u8(); k > 0; k--) {
                         cellEntry ce;
@@ -937,7 +935,7 @@ bool gameSerializer::loadGame(const std::string &fileName)
                         }
                         below = e;
                     }
-                    c->chamberArray[x][y]->element = below;
+                    c->cells[c->cellIndex(x, y)] = below;
                 }
             c->liveElems = ctx.getAll(cd.liveIds);
             c->toDeregister.assign(cd.toDeregister.begin(), cd.toDeregister.end());

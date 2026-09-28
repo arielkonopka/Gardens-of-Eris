@@ -60,7 +60,6 @@ public:
 
     static void mechLock();
     static void mechUnlock();
-    virtual ALLEGRO_MUTEX *getMyMutex();
     void registerLiveElement(std::shared_ptr<bElem> who);
     void deregisterLiveElement(unsigned int instanceId);
     static void runLiveElements();
@@ -134,7 +133,6 @@ private:
     std::once_flag _provOnce;
     void ps(std::shared_ptr<bElem> who,std::string eventType,std::string event);
     std::weak_ptr<chamber> attachedBoard;
-    ALLEGRO_MUTEX *elementMutex = nullptr;
     static std::mutex mechanicMutex;
     static unsigned int sTaterCounter;
     std::vector<std::shared_ptr<bElem>> lockers;

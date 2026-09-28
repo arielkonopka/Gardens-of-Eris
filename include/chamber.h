@@ -30,7 +30,6 @@
 #include <mutex>
 #include <atomic>
 #include <allegro5/allegro5.h>
-#include <bElemContainer.h>
 typedef struct color
 {
     int r;
@@ -100,18 +99,19 @@ public:
 private:
     int width;
     int height;
-    ALLEGRO_MUTEX *SEMutex=nullptr;
-    ALLEGRO_MUTEX *IdMutex=nullptr;
-    ALLEGRO_MUTEX *VisMutex=nullptr;
-    std::vector<std::vector<int>> visitedElements;
+    /// cells are stored column by column: index = x * height + y
+    std::size_t cellIndex(int x, int y) const { return (std::size_t) x * this->height + y; }
+    /// fog of war per cell; 0 once the player has seen it
+    std::vector<int> visitedElements;
     void createFloor();
-    std::vector<std::vector<std::shared_ptr<bElemContainer>>> chamberArray;
+    /// the top element of every cell's stack
+    std::vector<std::shared_ptr<bElem>> cells;
     colour chamberColour;
     std::string chamberName;
     void setInstanceId(int id);
     int instanceid;
-    static int lastid;
-    std::mutex chmutex;
+    /// chambers are also created on the level generator thread
+    static std::atomic<int> lastid;
 
 };
 
