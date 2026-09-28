@@ -124,7 +124,7 @@ bool monster::checkNeigh()
                 // closed door? and we got a key?
                 if ((e->getType() == bElemTypes::_door && !e->getAttrs()->isSteppable())
                     && this->getAttrs()->canCollect()
-                    && (this->getAttrs()->getInventory()->countTokens(bElemTypes::_door,
+                    && (this->getAttrs()->getInventory()->countTokens(bElemTypes::_key,
                                                                       e->getAttrs()->getSubtype())
                         > 0)) {
                     this->getStats()->setMyDirection(d);

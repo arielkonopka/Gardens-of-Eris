@@ -589,15 +589,15 @@ void presenter::handleSaveKeys()
         return;
     bool save = this->pendingSaveOp == 1;
     bElem::mechLock();
-    bool ok = save ? gameSerializer::saveGame(gameSerializer::defaultSaveFile)
-                   : gameSerializer::loadGame(gameSerializer::defaultSaveFile);
+    const std::string saveFile = gameSettings::getInstance().getSaveFile();
+    bool ok = save ? gameSerializer::saveGame(saveFile) : gameSerializer::loadGame(saveFile);
     bElem::mechUnlock();
     this->pendingSaveOp = 0;
     chamber::worldLockWanted = false;
     if (save)
-        std::cout << (ok ? "Game saved to " : "Saving failed: ") << gameSerializer::defaultSaveFile << "\n";
+        std::cout << (ok ? "Game saved to " : "Saving failed: ") << saveFile << "\n";
     else
-        std::cout << (ok ? "Game loaded from " : "Loading failed: ") << gameSerializer::defaultSaveFile << "\n";
+        std::cout << (ok ? "Game loaded from " : "Loading failed: ") << saveFile << "\n";
 }
 
 int presenter::presentEverything()

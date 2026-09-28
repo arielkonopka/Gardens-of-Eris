@@ -49,7 +49,7 @@ The labyrinth is inhabited by an assortment of creatures and contraptions. You'l
 
 To build the game, you need following libraries:
 * liballegro5 - better install all of it along with dev packages,
-* libboost - I would recommend all of it - including unit-test-framework
+* googletest (libgtest-dev) - for the unit tests
 * rapidjson 
 * openAL - we use it to play sound
 * libsndfile - we use it to decode audio files

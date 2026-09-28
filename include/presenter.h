@@ -47,6 +47,7 @@
 #include <allegro5/allegro_primitives.h>
 #include "videoManager.h"
 #include "gameSerializer.h"
+#include "gameSettings.h"
 
 #define _offsetX 64
 #define _offsetY 64

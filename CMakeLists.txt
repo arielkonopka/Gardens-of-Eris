@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(GardenOfEris LANGUAGES CXX)
+enable_testing()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -47,11 +48,11 @@ target_link_libraries(GardenOfEris ${LIBRARIES})
 # Set the source files for the unit tests using wildcard
 file(GLOB TEST_SOURCE_FILES ${CMAKE_SOURCE_DIR}/unitTests/*.cpp)
 
-# Find Boost Test Framework
-find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+# The unit tests use GoogleTest
+find_package(GTest REQUIRED)
 
 # Include directory for header files in tests
-include_directories(${Boost_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Loop over each test source file and create an executable
 foreach(TEST_SOURCE_FILE ${TEST_SOURCE_FILES})
@@ -64,11 +65,12 @@ foreach(TEST_SOURCE_FILE ${TEST_SOURCE_FILES})
     # Specify the required libraries
     target_link_libraries(${TEST_NAME}
         ${LIBRARIES}
-        ${Boost_LIBRARIES}
+        GTest::gtest_main
     )
 
     # Add the test
-    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+    # Tests read data/skins.json relative to the game directory
+    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/GoEoOL)
 endforeach(TEST_SOURCE_FILE)
 
 # Custom target to run all tests

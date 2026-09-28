@@ -49,8 +49,8 @@ examples:
 	sudo apt update 2>&1 >/dev/null
 	echo "Performming full upgrade on the system"
 	sudo apt full-upgrade -y
-	echo "Installing allegro5, boost, rapidjson, gcovr"
-	sudo apt install -y libboost-all-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr
+	echo "Installing allegro5, googletest, rapidjson, gcovr"
+	sudo apt install -y libgtest-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr
 	echo "Installing openAl and libsndFile"
 	sudo apt install -y libopenal-dev libalut-dev libsndfile1-dev
 	exit 0
@@ -75,8 +75,8 @@ examples:
 	${gccbin} ${extraflags} ${opts} -c ${module}.cpp -I./include  -o ${objPath}${module}.o
 	if [ "${buildTests}" = "true" ] ; then
 	    a=`basename ${module}`
-	    echo " * ${gccbin} ${objPath}${module}*.o  ${objPath}/${module}.o -o ./GoE-tests-${a%.cpp} ${libs} -lboost_unit_test_framework ${linkAdditionalFLags}"
-	    ${gccbin} ${objPath}/src/*.o  ${objPath}/${module}.o  -o ./GoE-tests-${a%.cpp} ${libs} -lboost_unit_test_framework ${linkAdditionalFLags}   3>&1 2>&1 >>compile.log
+	    echo " * ${gccbin} ${objPath}${module}*.o  ${objPath}/${module}.o -o ./GoE-tests-${a%.cpp} ${libs} -lgtest -lgtest_main -pthread ${linkAdditionalFLags}"
+	    ${gccbin} ${objPath}/src/*.o  ${objPath}/${module}.o  -o ./GoE-tests-${a%.cpp} ${libs} -lgtest -lgtest_main -pthread ${linkAdditionalFLags}   3>&1 2>&1 >>compile.log
 	fi
 	
     ;;
@@ -119,8 +119,8 @@ if [ "${buildTests}" = "true" ] ; then
 	echo " * ${gccbin} ${extraflags} ${opts} -c ${x} -I./include  -o ${objPath}/${x%.cpp}.o -D_UNIT_TEST_BUILD_ "
 	${gccbin} ${extraflags} ${opts} -c ${x} -I./include  -o ${objPath}/${x%.cpp}.o -D_UNIT_TEST_BUILD_   3>&1 2>&1 >>compile.log
 	a=$(basename $x)
-	echo " * ${gccbin} ${objPath}src/*.o  ${objPath}/${x%.cpp}.o -o ./GoE-tests-${a%.cpp}  ${libs} -lboost_unit_test_framework ${linkAdditionalFLags}"
-	${gccbin} ${objPath}src/*.o  ${objPath}/${x%.cpp}.o -o ./GoE-tests-${a%.cpp}  ${libs} -lboost_unit_test_framework ${linkAdditionalFLags}   3>&1 2>&1 >>compile.log
+	echo " * ${gccbin} ${objPath}src/*.o  ${objPath}/${x%.cpp}.o -o ./GoE-tests-${a%.cpp}  ${libs} -lgtest -lgtest_main -pthread ${linkAdditionalFLags}"
+	${gccbin} ${objPath}src/*.o  ${objPath}/${x%.cpp}.o -o ./GoE-tests-${a%.cpp}  ${libs} -lgtest -lgtest_main -pthread ${linkAdditionalFLags}   3>&1 2>&1 >>compile.log
 	if [ "${runTests}" = "true" ]; then
 	    ./GoE-tests-${a%.cpp} -r detailed -m CLF -e "Report_${a%.cpp}.log" -k testslog.log 
 	    r=$?

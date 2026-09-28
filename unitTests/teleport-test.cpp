@@ -25,10 +25,8 @@
 #include "elements.h"
 #include "commons.h"
 #include "chamber.h"
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fixtures
-#include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
+#include <gtest/gtest.h>
+#include "testSupport.h"
 #include <memory>
 
 
@@ -41,15 +39,14 @@ auto preClean=[](std::shared_ptr<chamber> ch,coords point)
     pl->stepOnElement(ch->getElement(point));
 
 };
-BOOST_AUTO_TEST_SUITE( TeleportObjectTests )
 
-BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
+TEST(TeleportObjectTests, TeleportAnObjectWithOneTeleport)
 {
 
     std::shared_ptr<chamber> mc=chamber::makeNewChamber(myUtility::Coords(5,5));
     elementFactory::generateAnElement<teleport>(mc,0);
     std::shared_ptr<teleport> tel1=elementFactory::generateAnElement<teleport>(mc,1);
-    std::shared_ptr<bElem> transportedE=elementFactory::generateAnElement<bElem>(mc,0);
+    std::shared_ptr<bElem> transportedE=elementFactory::generateAnElement<brickCluster>(mc,0);
     transportedE->stepOnElement(mc->getElement(2,3));
     //  transportedE->setActive(true);
     coords crds;
@@ -57,27 +54,27 @@ BOOST_AUTO_TEST_CASE( TeleportAnObjectWithOneTeleport)
     bElem::tick();
     bElem::tick();
     tel1->stepOnElement(mc->getElement(3,3));
-    BOOST_CHECK(tel1->interact(transportedE)==true);
+    EXPECT_TRUE(tel1->interact(transportedE)==true);
     std::cout<<"teleporting1:"<<mc->getElement(2,3)->getStats()->isTeleporting();
-    BOOST_CHECK(mc->getElement(2,3)->getStats()->getInstanceId()!=transportedE->getStats()->getInstanceId());
-    BOOST_CHECK(mc->getElement(2,3)->getStats()->isTeleporting()==true);
+    EXPECT_TRUE(mc->getElement(2,3)->getStats()->getInstanceId()!=transportedE->getStats()->getInstanceId());
+    EXPECT_TRUE(mc->getElement(2,3)->getStats()->isTeleporting()==true);
     crds=transportedE->getStats()->getMyPosition();
     //  std::cout<<"x:"<<crds.x<<" y:"<<crds.y<<"\n";
-    BOOST_CHECK(mc->getElement(crds.x,crds.y)->getStats()->getInstanceId()==transportedE->getStats()->getInstanceId());
-    BOOST_CHECK(mc->getElement(crds.x,crds.y)->getStats()->isTeleporting()==true);
+    EXPECT_TRUE(mc->getElement(crds.x,crds.y)->getStats()->getInstanceId()==transportedE->getStats()->getInstanceId());
+    EXPECT_TRUE(mc->getElement(crds.x,crds.y)->getStats()->isTeleporting()==true);
     for(int a=0; a<GoEConstants::_teleportationTime; a++)
     {
-        BOOST_CHECK(mc->getElement(2,3)->getStats()->isTeleporting()==true);
-        BOOST_CHECK(mc->getElement(crds.x,crds.y)->getStats()->isTeleporting()==true);
+        EXPECT_TRUE(mc->getElement(2,3)->getStats()->isTeleporting()==true);
+        EXPECT_TRUE(mc->getElement(crds.x,crds.y)->getStats()->isTeleporting()==true);
         bElem::tick();
     }
-    BOOST_CHECK(mc->getElement(crds.x,crds.y)->getStats()->isTeleporting()==false);
-    BOOST_CHECK(mc->getElement(2,3)->getStats()->isTeleporting()==false);
+    EXPECT_TRUE(mc->getElement(crds.x,crds.y)->getStats()->isTeleporting()==false);
+    EXPECT_TRUE(mc->getElement(2,3)->getStats()->isTeleporting()==false);
     tel1->disposeElement();
 
 }
 //We have two teleports of the same type
-BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
+TEST(TeleportObjectTests, TeleportAnObjectWithTwoTeleportsOneChamber)
 {
     coords crds;
     coords csize={10,10};
@@ -90,7 +87,7 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
     elementFactory::generateAnElement<teleport>(mc,777);
     std::shared_ptr<teleport> tel1=elementFactory::generateAnElement<teleport>(mc,2);
     std::shared_ptr<teleport>  tel2=elementFactory::generateAnElement<teleport>(mc,2);
-    std::shared_ptr<bElem> transportEl=elementFactory::generateAnElement<bElem>(mc,0);
+    std::shared_ptr<bElem> transportEl=elementFactory::generateAnElement<brickCluster>(mc,0);
     transportEl->stepOnElement(mc->getElement(telc));
     bElem::tick();
     bElem::tick();
@@ -100,18 +97,18 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsOneChamber)
     tel1->interact(transportEl);
     crds=transportEl->getStats()->getMyPosition();
     //std::cout<<"crds "<<crds.x<<","<<crds.y<<"\n";
-    BOOST_CHECK( crds.distance(tel2c)<=2 );
-    BOOST_CHECK(transportEl->getStats()->isTeleporting()==true);
+    EXPECT_TRUE(crds.distance(tel2c)<=2);
+    EXPECT_TRUE(transportEl->getStats()->isTeleporting()==true);
     for(int c=0; c<1000; c++)
         bElem::runLiveElements();
-    BOOST_CHECK(transportEl->getStats()->isTeleporting()==false);
+    EXPECT_TRUE(transportEl->getStats()->isTeleporting()==false);
     transportEl->getStats()->setMyDirection(dir::direction::LEFT);
-    BOOST_CHECK(tel2->interact(transportEl)==false);
+    EXPECT_TRUE(tel2->interact(transportEl)==false);
     tel1->disposeElement();
     tel2->disposeElement();
 }
 
-BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
+TEST(TeleportObjectTests, TeleportAnObjectWithTwoTeleportsDifferentType)
 {
     std::shared_ptr<chamber> mc=chamber::makeNewChamber(myUtility::Coords(8,8));
     coords ncrds;
@@ -122,8 +119,8 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
     elementFactory::generateAnElement<teleport>(mc,777);
     std::shared_ptr<teleport>  tel1=elementFactory::generateAnElement<teleport>(mc,3);
     std::shared_ptr<teleport>  tel2=elementFactory::generateAnElement<teleport>(mc,4);
-    std::shared_ptr<bElem> _tr1=elementFactory::generateAnElement<bElem>(mc,0);
-    std::shared_ptr<bElem> _tr2=elementFactory::generateAnElement<bElem>(mc,0);
+    std::shared_ptr<bElem> _tr1=elementFactory::generateAnElement<brickCluster>(mc,0);
+    std::shared_ptr<bElem> _tr2=elementFactory::generateAnElement<brickCluster>(mc,0);
     _tr1->stepOnElement(mc->getElement(t1b));
     _tr2->stepOnElement(mc->getElement(t2b));
     tel1->stepOnElement(mc->getElement(tel1c));
@@ -133,18 +130,18 @@ BOOST_AUTO_TEST_CASE(TeleportAnObjectWithTwoTeleportsDifferentType)
     tel1->interact(_tr1);
     tel2->interact(_tr2);
     coords tr1c=_tr1->getStats()->getMyPosition();
-    BOOST_CHECK(tr1c!=t1b);
+    EXPECT_TRUE(tr1c!=t1b);
     /// check the distance from desired teleport
-    BOOST_CHECK(tr1c.distance(tel1c)<=2);
+    EXPECT_TRUE(tr1c.distance(tel1c)<=2);
     coords tr2c=_tr2->getStats()->getMyPosition();
-    BOOST_CHECK(tr2c!=t2b);
-    BOOST_CHECK(tr2c.distance(tel2c)<=2);
+    EXPECT_TRUE(tr2c!=t2b);
+    EXPECT_TRUE(tr2c.distance(tel2c)<=2);
     tel1->disposeElement();
     tel2->disposeElement();
     mc.reset();
 }
 
-BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
+TEST(TeleportObjectTests, WalkInTeleportTests)
 {
     std::shared_ptr<chamber> mc=chamber::makeNewChamber(myUtility::Coords(10,10));
     coords pointA= {3,5};
@@ -153,25 +150,25 @@ BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
     preClean(mc,{9,9});
     std::shared_ptr<bElem> tel1,tel2,transported;
     bElem::tick();
-    transported=elementFactory::generateAnElement<bElem>(mc,0);
+    transported=elementFactory::generateAnElement<brickCluster>(mc,0);
     transported->stepOnElement(mc->getElement(pointAt));
     transported->getStats()->setMyDirection(dir::direction::RIGHT);
-    BOOST_CHECK(transported->getStats()->isTeleporting()==false);
+    EXPECT_TRUE(transported->getStats()->isTeleporting()==false);
     tel1=elementFactory::generateAnElement<teleport>(mc,5);
     tel2=elementFactory::generateAnElement<teleport>(mc,5);
     tel1->stepOnElement(mc->getElement(pointA));
     tel2->stepOnElement(mc->getElement(pointB));
     //ok now step on that teleport
     transported->stepOnElement(tel1);
-    BOOST_CHECK(tel1->getStats()->hasActivatedMechanics()==true);
-    BOOST_CHECK(transported->getStats()->getMyPosition()==pointA);
-    BOOST_CHECK(mc->getElement(pointA)->getStats()->getInstanceId()==transported->getStats()->getInstanceId());
+    EXPECT_TRUE(tel1->getStats()->hasActivatedMechanics()==true);
+    EXPECT_TRUE(transported->getStats()->getMyPosition()==pointA);
+    EXPECT_TRUE(mc->getElement(pointA)->getStats()->getInstanceId()==transported->getStats()->getInstanceId());
     for(int c=0; c<GoEConstants::_teleportStandTime; c++)
     {
-        BOOST_CHECK(transported->getStats()->isTeleporting()==false);
+        EXPECT_TRUE(transported->getStats()->isTeleporting()==false);
         bElem::runLiveElements();
     }
-    BOOST_CHECK(transported->getStats()->isTeleporting()==true);
+    EXPECT_TRUE(transported->getStats()->isTeleporting()==true);
     tel1->disposeElement();
     tel2->disposeElement();
     mc.reset();
@@ -179,4 +176,3 @@ BOOST_AUTO_TEST_CASE(WalkInTeleportTests)
 
 
 
-BOOST_AUTO_TEST_SUITE_END()

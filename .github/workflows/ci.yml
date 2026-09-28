@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux build and unit tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake ninja-build libgtest-dev liballegro5-dev liballegro-ttf5-dev liballegro-image5-dev rapidjson-dev \
+            libopenal-dev libsndfile1-dev
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run unit tests
+        run: ctest --test-dir build --output-on-failure --timeout 600
+
+      - name: Package
+        run: |
+          mkdir -p dist/GardensOfEris
+          cp build/GardenOfEris dist/GardensOfEris/
+          cp -r GoEoOL/data dist/GardensOfEris/
+          tar -C dist -czf GardensOfEris-linux-x86_64.tar.gz GardensOfEris
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GardensOfEris-linux-x86_64
+          path: GardensOfEris-linux-x86_64.tar.gz
+
+  windows:
+    name: Windows build and unit tests
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-gtest
+            mingw-w64-ucrt-x86_64-allegro
+            mingw-w64-ucrt-x86_64-rapidjson
+            mingw-w64-ucrt-x86_64-openal
+            mingw-w64-ucrt-x86_64-libsndfile
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run unit tests
+        run: ctest --test-dir build --output-on-failure --timeout 600
+
+      - name: Package
+        run: |
+          mkdir -p dist/GardensOfEris
+          cp build/GardenOfEris.exe dist/GardensOfEris/
+          cp -r GoEoOL/data dist/GardensOfEris/
+          # Ship the MinGW runtime and library DLLs next to the game
+          ldd build/GardenOfEris.exe | awk '/\/ucrt64\// {print $3}' | sort -u | xargs -r -I{} cp {} dist/GardensOfEris/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GardensOfEris-windows-x86_64
+          path: dist/GardensOfEris
+
+  sonar:
+    name: SonarCloud analysis
+    runs-on: ubuntu-24.04
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Sonar needs the full history for blame and new-code detection
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake ninja-build libgtest-dev liballegro5-dev liballegro-ttf5-dev liballegro-image5-dev rapidjson-dev \
+            libopenal-dev libsndfile1-dev gcovr
+
+      - name: Build with coverage
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+            -DENABLE_SONARQUBE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake --build build
+
+      - name: Run unit tests
+        run: ctest --test-dir build --output-on-failure --timeout 900
+
+      - name: Coverage report
+        run: |
+          mkdir -p CoverageReports
+          gcovr -r . --object-directory build -e unitTests --sonarqube -o CoverageReports/coverageReport.XML
+
+      - name: SonarCloud scan
+        if: env.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_HOST_URL: https://sonarcloud.io
+
+      - name: Missing SonarCloud token
+        if: env.SONAR_TOKEN == ''
+        run: echo "::warning::SONAR_TOKEN secret is not set, so the SonarCloud scan was skipped."

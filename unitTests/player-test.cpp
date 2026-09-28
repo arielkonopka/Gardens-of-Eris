@@ -4,15 +4,12 @@
 #include "elements.h"
 #include "commons.h"
 #include "chamber.h"
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fixtures
-#include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
+#include <gtest/gtest.h>
+#include "testSupport.h"
 #include <memory>
 
-BOOST_AUTO_TEST_SUITE(PlayerTests)
 
-BOOST_AUTO_TEST_CASE(GetActivePlayerTest)
+TEST(PlayerTests, GetActivePlayerTest)
 {
     coords point={3,3};
     inputManager::getInstance(true);
@@ -20,8 +17,8 @@ BOOST_AUTO_TEST_CASE(GetActivePlayerTest)
     std::shared_ptr<player> plr = elementFactory::generateAnElement<player>(mc,0);
     plr->stepOnElement(mc->getElement(point));
     plr->getStats()->setActive(true);
-    BOOST_CHECK(player::getActivePlayer());
-    BOOST_CHECK(plr->getStats()->getInstanceId()==player::getActivePlayer()->getStats()->getInstanceId());
+    EXPECT_TRUE(player::getActivePlayer());
+    EXPECT_TRUE(plr->getStats()->getInstanceId()==player::getActivePlayer()->getStats()->getInstanceId());
 }
   /**
    * @brief Run the game engine a specified number of times to see if our player makes it through.
@@ -58,7 +55,7 @@ BOOST_AUTO_TEST_CASE(GetActivePlayerTest)
     void checkplayerKilled()
     {
         bool playerAlive= runGameEngine(100);
-        BOOST_CHECK(!playerAlive);
+        EXPECT_TRUE(!playerAlive);
     }
 
 /**
@@ -69,7 +66,7 @@ BOOST_AUTO_TEST_CASE(GetActivePlayerTest)
  * It also checks whether, after disposing the player from the board, the location o' the player is properly replaced with rubbish.
  * Proper management of firearms is crucial for any self-respectin' dwarf, ain't it?
  */
-BOOST_AUTO_TEST_CASE(PlayerShootsGun)
+TEST(PlayerTests, PlayerShootsGun)
 {
     while (player::getActivePlayer())
     {
@@ -79,15 +76,15 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
     inputManager::getInstance(true);
     std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(5, 5));
     std::shared_ptr<player> plr = elementFactory::generateAnElement<player>(mc,0);
-    BOOST_CHECK(plr->getAttrs()->canCollect());
+    EXPECT_TRUE(plr->getAttrs()->canCollect());
     plr->stepOnElement(mc->getElement(2, 2));
     std::shared_ptr<plainGun> pGun = elementFactory::generateAnElement<plainGun>(mc,0);
     pGun->stepOnElement(mc->getElement(3, 2));
     plr->getStats()->setActive(true);
     plr->collect(pGun);
-    BOOST_CHECK(pGun->getAttrs()->isCollectible());
-    BOOST_CHECK(plr->getAttrs()->getInventory()->getActiveWeapon() != nullptr);
-    BOOST_CHECK(plr->getAttrs()->getInventory()->getActiveWeapon()->getStats()->getInstanceId() == pGun->getStats()->getInstanceId());
+    EXPECT_TRUE(pGun->getAttrs()->isCollectible());
+    EXPECT_TRUE(plr->getAttrs()->getInventory()->getActiveWeapon() != nullptr);
+    EXPECT_TRUE(plr->getAttrs()->getInventory()->getActiveWeapon()->getStats()->getInstanceId() == pGun->getStats()->getInstanceId());
     plr->getStats()->setMyDirection(dir::direction::UP);
     for (int c = 0; c < 555; c++)
     {
@@ -98,10 +95,10 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
             ci2.type = 1;
             ci2.dir=dir::direction::LEFT;
             inputManager::getInstance(true)->setControlItem( ci2);
-            BOOST_CHECK(runGameEngine(200));
+            EXPECT_TRUE(runGameEngine(200));
         }
     }
-    BOOST_CHECK(plr->getAttrs()->getInventory()->getActiveWeapon() == nullptr);
+    EXPECT_TRUE(plr->getAttrs()->getInventory()->getActiveWeapon() == nullptr);
 
     pGun = elementFactory::generateAnElement<plainGun>(mc,0);
     pGun->getAttrs()->setSubtype(0);
@@ -112,9 +109,9 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
     pGun->stepOnElement(mc->getElement(3, 2));
     plr->collect(pGun);
     plr->disposeElement(); // here we should have the player to be removed from the board
-    BOOST_CHECK(mc->getElement(2, 2)->getStats()->getInstanceId()!= plr->getStats()->getInstanceId());
-    BOOST_CHECK(mc->getElement(2, 2)->getType()!= plr->getType());
-    BOOST_CHECK(mc->getElement(2, 2)->getType()==bElemTypes::_rubishType);
+    EXPECT_TRUE(mc->getElement(2, 2)->getStats()->getInstanceId()!= plr->getStats()->getInstanceId());
+    EXPECT_TRUE(mc->getElement(2, 2)->getType()!= plr->getType());
+    EXPECT_TRUE(mc->getElement(2, 2)->getType()==bElemTypes::_rubishType);
 }
 
 /**
@@ -124,7 +121,7 @@ BOOST_AUTO_TEST_CASE(PlayerShootsGun)
  * Tests to see if the player is rightly removed from the original location and then placed in a new location, it does.
  * It also ensures the player ain't appearing in more than one place at the same time, because that'd be more magic than even Merlin could handle!
  */
-BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
+TEST(PlayerTests, PlayerStepsIntoExplodingBomb)
 {
     while (player::getActivePlayer())
     {
@@ -138,16 +135,16 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
     for (int cnt = 0; cnt < 10000; cnt++)
     {
         e = mc->getElement(1, 2);
-        BOOST_CHECK(e != nullptr);
-        BOOST_CHECK(e != p);
+        EXPECT_TRUE(e != nullptr);
+        EXPECT_TRUE(e != p);
         p->stepOnElement(e);
         e->disposeElement();
         p->getStats()->setActive(true);
         // p->moveInDirection(RIGHT);
-        BOOST_CHECK(p->removeElement() != nullptr);
+        EXPECT_TRUE(p->removeElement() != nullptr);
 
-        BOOST_CHECK(mc->getElement(1, 2) != nullptr);
-        BOOST_CHECK(mc->getElement(1, 2) != p);
+        EXPECT_TRUE(mc->getElement(1, 2) != nullptr);
+        EXPECT_TRUE(mc->getElement(1, 2) != p);
         p->stepOnElement(mc->getElement(2, 2));
 
         int instances = 0;
@@ -156,7 +153,7 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
             for (int b = 0; b < 10; b++)
             {
                 std::shared_ptr<bElem> e = mc->getElement(a, b);
-                BOOST_ASSERT(e != nullptr);
+                ASSERT_TRUE(e != nullptr);
                 while (e != nullptr)
                 {
                     if (e->getStats()->getInstanceId() == p->getStats()->getInstanceId())
@@ -165,7 +162,7 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
                 }
             }
         }
-        BOOST_CHECK(instances == 1);
+        EXPECT_TRUE(instances == 1);
     }
 }
 
@@ -179,7 +176,7 @@ BOOST_AUTO_TEST_CASE(PlayerStepsIntoExplodingBomb)
  * At the end of the day, when all players have been disposed of, the chamber is emptied and ready for another round, so it is!
  */
 
-BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
+TEST(PlayerTests, PlayerActivationOnPlayerDeath)
 {
     while (player::getActivePlayer())
     {
@@ -202,12 +199,12 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
     {
         // std::cout<<a<<"\n";
         p = elementFactory::generateAnElement<player>(m[0],0);
-        BOOST_CHECK(p->stepOnElement(nullptr) == false);
-        BOOST_CHECK(p->stepOnElement(m[a % m.size()]->getElement(a, a % 10)) == true);
-        BOOST_CHECK(p->stepOnElement(m[a % m.size()]->getElement(a, a % 10)) == false);
-        BOOST_CHECK(p->interact(nullptr) == false);
-        BOOST_CHECK(p->interact(p0) == true);
-        BOOST_CHECK(p->interact(p0) == false);
+        EXPECT_TRUE(p->stepOnElement(nullptr) == false);
+        EXPECT_TRUE(p->stepOnElement(m[a % m.size()]->getElement(a, a % 10)) == true);
+        EXPECT_TRUE(p->stepOnElement(m[a % m.size()]->getElement(a, a % 10)) == false);
+        EXPECT_TRUE(p->interact(nullptr) == false);
+        EXPECT_TRUE(p->interact(p0) == true);
+        EXPECT_TRUE(p->interact(p0) == false);
     }
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
@@ -219,7 +216,7 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
         tp->disposeElement();
         tp1 = player::getActivePlayer();
         if (p1 != nullptr)
-            BOOST_CHECK(iid != p1->getStats()->getInstanceId());
+            EXPECT_TRUE(iid != p1->getStats()->getInstanceId());
         tp = tp1;
     }
     m.clear();
@@ -233,7 +230,7 @@ BOOST_AUTO_TEST_CASE(PlayerActivationOnPlayerDeath)
  * were collected is also destroyed by a bomb. The test verifies the correct number of apples at different stages and
  * ensures the objects' types are updated correctly as they interact and get destroyed.
  */
-BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestroyedWithBomb)
+TEST(PlayerTests, PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestroyedWithBomb)
 {
     while (player::getActivePlayer())
     {
@@ -254,17 +251,17 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
     p->collect(mc->getElement(1, 2));
     p.reset();
     gc.reset();
-    BOOST_CHECK(goldenApple::getAppleNumber() == 2);
+    EXPECT_TRUE(goldenApple::getAppleNumber() == 2);
     std::cout << goldenApple::getAppleNumber() << "\n";
     sb->hurt(5);
     // We take time for the exploded bomb to finish
-    BOOST_CHECK(mc->getElement(2, 1)->getType() == bElemTypes::_player);
+    EXPECT_TRUE(mc->getElement(2, 1)->getType() == bElemTypes::_player);
     for (int c = 0; c < 1000; c++)
     {
         bElem::runLiveElements();
     }
-    BOOST_CHECK(goldenApple::getAppleNumber() == 2);
-    BOOST_CHECK(mc->getElement(2, 1)->getType() == bElemTypes::_rubishType);
+    EXPECT_TRUE(goldenApple::getAppleNumber() == 2);
+    EXPECT_TRUE(mc->getElement(2, 1)->getType() == bElemTypes::_rubishType);
     sb = elementFactory::generateAnElement<simpleBomb>(mc,0);
     sb->stepOnElement(mc->getElement(2, 2));
     sb->kill();
@@ -272,15 +269,15 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
     // we should have the rubbish with the apples contained, so no harm done, still two apples
-    BOOST_CHECK(goldenApple::getAppleNumber() == 2);
+    EXPECT_TRUE(goldenApple::getAppleNumber() == 2);
     std::cout << "Ano: " << goldenApple::getAppleNumber() << "\n";
     mc->getElement(2, 1)->disposeElement();
     bElem::runLiveElements();
     bElem::runLiveElements();
     bElem::runLiveElements();
-    BOOST_CHECK(mc->getElement(2, 1)->getType() == bElemTypes::_floorType);
+    EXPECT_TRUE(mc->getElement(2, 1)->getType() == bElemTypes::_floorType);
     std::cout << "Ano: " << goldenApple::getAppleNumber() << "\n";
-    BOOST_CHECK(goldenApple::getAppleNumber() == 2);
+    EXPECT_TRUE(goldenApple::getAppleNumber() == 2);
 }
 
 /**
@@ -308,7 +305,7 @@ BOOST_AUTO_TEST_CASE(PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestro
 void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
 {
     std::shared_ptr<bElem> p = player::getActivePlayer();
-    BOOST_CHECK(p.get() != nullptr);
+    EXPECT_TRUE(p.get() != nullptr);
     if (!p)
         return;
     controlItem ctItem=cntrlItm;
@@ -328,9 +325,9 @@ void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
         bElem::runLiveElements();
     c1 = p->getStats()->getMyPosition();
     if (cntrlItm.type == 0 || cntrlItm.type == 4)
-        BOOST_CHECK(c0 != c1);
+        EXPECT_TRUE(c0 != c1);
     else
-        BOOST_CHECK(c0 == c1);
+        EXPECT_TRUE(c0 == c1);
 }
 
 
@@ -344,7 +341,7 @@ void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
  * gonna check if our player is killed. If so, a new player is generated, collects the plainGun, steps onto a specific
  * element, and then its status is set to active.
  */
-BOOST_AUTO_TEST_CASE(MovePlayer)
+TEST(PlayerTests, MovePlayer)
 {
 
     inputManager::getInstance(true);
@@ -389,4 +386,3 @@ BOOST_AUTO_TEST_CASE(MovePlayer)
     }
 }
 
-BOOST_AUTO_TEST_SUITE_END()

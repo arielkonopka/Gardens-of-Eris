@@ -124,8 +124,8 @@ void configManager::configReload()
                 Here we read the player's attributes
                 */
                 attributeData ad;
-                ad.subType = (sprlist[c]["Attributes"][i].HasMember("Subtype"))
-                                 ? sprlist[c]["Attributes"][i]["Subtype"].GetInt()
+                ad.subType = (sprlist[c]["Attributes"][i].HasMember("SubType"))
+                                 ? sprlist[c]["Attributes"][i]["SubType"].GetInt()
                                  : -1;
                 ad.killable = (sprlist[c]["Attributes"][i].HasMember("Killable"))
                               && sprlist[c]["Attributes"][i]["Killable"].GetBool();
@@ -139,6 +139,8 @@ void configManager::configReload()
                                    && sprlist[c]["Attributes"][i]["isInteractive"].GetBool();
                 ad.isCollectible = (sprlist[c]["Attributes"][i].HasMember("isCollectible"))
                                    && sprlist[c]["Attributes"][i]["isCollectible"].GetBool();
+                ad.canCollect = (sprlist[c]["Attributes"][i].HasMember("canCollect"))
+                                && sprlist[c]["Attributes"][i]["canCollect"].GetBool();
                 ad.canPush = (sprlist[c]["Attributes"][i].HasMember("canPush"))
                              && sprlist[c]["Attributes"][i]["canPush"].GetBool();
                 ad.canBePushed = (sprlist[c]["Attributes"][i].HasMember("canBePushed"))

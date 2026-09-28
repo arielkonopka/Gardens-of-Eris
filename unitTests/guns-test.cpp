@@ -3,10 +3,8 @@
 #include "elements.h"
 #include "commons.h"
 #include "chamber.h"
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fixtures
-#include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
+#include <gtest/gtest.h>
+#include "testSupport.h"
 #include <memory>
 
 /**
@@ -21,7 +19,6 @@
  *   - it should add the owner to the projectible, so it could count points.
  * - test the projectible propelling movement - separate list of elements, in case of some children using different scheme, like homing missiles.
  */
-BOOST_AUTO_TEST_SUITE(GunsTests)
 auto preClean=[]()
 {
     inputManager::getInstance(true);
@@ -29,32 +26,38 @@ auto preClean=[]()
 
 };
 
-typedef boost::mpl::list<plainGun,bazooka> basicTestedElements;
-typedef boost::mpl::list<plainGun,bazooka> propellingProjectibles;
+using basicTestedElements = ::testing::Types<plainGun,bazooka>;
+using propellingProjectibles = ::testing::Types<plainGun,bazooka>;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( createAndDestroyWeapon, T, basicTestedElements)
+template <class> class GunsTests_createAndDestroyWeapon : public ::testing::Test {};
+TYPED_TEST_SUITE(GunsTests_createAndDestroyWeapon, basicTestedElements);
+TYPED_TEST(GunsTests_createAndDestroyWeapon, createAndDestroyWeapon)
 {
+    using T = TypeParam;
     coords csize= {20,20};
     std::shared_ptr<chamber> chmbr=chamber::makeNewChamber(csize);
     std::shared_ptr<T> elem=elementFactory::generateAnElement<T>(chmbr,0);
-    BOOST_CHECK(elem);
+    EXPECT_TRUE(elem);
     elem->stepOnElement(chmbr->getElement(csize/2));
-    BOOST_CHECK(chmbr->getElement(csize/2)->getStats()->getInstanceId()==elem->getStats()->getInstanceId());
+    EXPECT_TRUE(chmbr->getElement(csize/2)->getStats()->getInstanceId()==elem->getStats()->getInstanceId());
     elem->disposeElement();
-    BOOST_CHECK(chmbr->getElement(csize/2)->getStats()->getInstanceId()!=elem->getStats()->getInstanceId());
+    EXPECT_TRUE(chmbr->getElement(csize/2)->getStats()->getInstanceId()!=elem->getStats()->getInstanceId());
     elem=elementFactory::generateAnElement<T>(chmbr,0);
-    BOOST_CHECK(elem);
+    EXPECT_TRUE(elem);
     elem->stepOnElement(chmbr->getElement(csize/2));
-    BOOST_CHECK(chmbr->getElement(csize/2)->getStats()->getInstanceId()==elem->getStats()->getInstanceId());
+    EXPECT_TRUE(chmbr->getElement(csize/2)->getStats()->getInstanceId()==elem->getStats()->getInstanceId());
     chmbr->getElement(csize/2)->disposeElement();
-    BOOST_CHECK(chmbr->getElement(csize/2)->getStats()->getInstanceId()!=elem->getStats()->getInstanceId());
+    EXPECT_TRUE(chmbr->getElement(csize/2)->getStats()->getInstanceId()!=elem->getStats()->getInstanceId());
 }
 
 /**
  * @brief Test that the gun can be collected and it is really collected by the collector
  */
-BOOST_AUTO_TEST_CASE_TEMPLATE( collectAGun, T, basicTestedElements)
+template <class> class GunsTests_collectAGun : public ::testing::Test {};
+TYPED_TEST_SUITE(GunsTests_collectAGun, basicTestedElements);
+TYPED_TEST(GunsTests_collectAGun, collectAGun)
 {
+    using T = TypeParam;
     coords csize= {20,20};
     coords p1= {2,2};
     coords p2= {2,3};
@@ -67,15 +70,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( collectAGun, T, basicTestedElements)
     collector->stepOnElement(chmbr->getElement(p1));
     elem->stepOnElement(chmbr->getElement(p2));
     collector->collect(chmbr->getElement(p2));
-    BOOST_CHECK(chmbr->getElement(p2)->getStats()->getInstanceId()!=elem->getStats()->getInstanceId());
-    BOOST_CHECK(i->getActiveWeapon()->getStats()->getInstanceId()==elem->getStats()->getInstanceId());
+    EXPECT_TRUE(chmbr->getElement(p2)->getStats()->getInstanceId()!=elem->getStats()->getInstanceId());
+    EXPECT_TRUE(i->getActiveWeapon()->getStats()->getInstanceId()==elem->getStats()->getInstanceId());
 }
 
 /**
  * @brief Test if the gun shoots in the right direction without being collected, like when it shoots by itself, somehow
  */
-BOOST_AUTO_TEST_CASE_TEMPLATE( useWithoutCollecting, T, basicTestedElements)
+template <class> class GunsTests_useWithoutCollecting : public ::testing::Test {};
+TYPED_TEST_SUITE(GunsTests_useWithoutCollecting, basicTestedElements);
+TYPED_TEST(GunsTests_useWithoutCollecting, useWithoutCollecting)
 {
+    using T = TypeParam;
     coords csize= {20,20};
     coords p1= {5,5},p1_= {6,5};
     coords ploc= {10,10};
@@ -95,28 +101,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( useWithoutCollecting, T, basicTestedElements)
     elem->stepOnElement(chmbr->getElement(p1));
     elem->getStats()->setMyDirection(dir);
     elem->getStats()->setFacing(dir);
-    BOOST_CHECK(elem->use(be));
-    BOOST_CHECK(!elem->use(be));
-    BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1)->getElementInDirection(dir)->getType()!=bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(elem->use(be));
+    EXPECT_TRUE(!elem->use(be));
+    EXPECT_TRUE(chmbr->getElement(p1_)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1)->getElementInDirection(dir)->getType()!=bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
     for(int c=0; c<1000; c++) bElem::runLiveElements();
-    BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1_)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
     std::cout<<"type: "<<chmbr->getElement(p1)->getElementInDirection(dir)->getType()<<"\n";
-    BOOST_CHECK(chmbr->getElement(p1)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(elem->use(be));
-    BOOST_CHECK(!elem->use(be));
-    BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1)->getElementInDirection(dir)->getType()!=bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(elem->use(be));
+    EXPECT_TRUE(!elem->use(be));
+    EXPECT_TRUE(chmbr->getElement(p1_)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1)->getElementInDirection(dir)->getType()!=bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
     elem->getAttrs()->setSubtype(0);
     for(int c=0; c<1000; c++) bElem::tick();
-    BOOST_CHECK(elem->use(be));
-    BOOST_CHECK(!elem->use(be));
+    EXPECT_TRUE(elem->use(be));
+    EXPECT_TRUE(!elem->use(be));
 }
 
 /**
@@ -125,8 +131,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( useWithoutCollecting, T, basicTestedElements)
  */
 
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( useCollectedGun, T, basicTestedElements)
+template <class> class GunsTests_useCollectedGun : public ::testing::Test {};
+TYPED_TEST_SUITE(GunsTests_useCollectedGun, basicTestedElements);
+TYPED_TEST(GunsTests_useCollectedGun, useCollectedGun)
 {
+    using T = TypeParam;
     coords csize= {20,20};
     coords p1= {5,5},p1_= {6,5};
     coords ploc={10,10};
@@ -147,31 +156,30 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( useCollectedGun, T, basicTestedElements)
     elem->getStats()->setMyDirection(dir);
     elem->getStats()->setFacing(dir);
     be->collect(elem);
-    BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(elem->use(be));
-    BOOST_CHECK(!elem->use(be));
-    BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()!=bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
-    BOOST_CHECK(chmbr->getElement(p1)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1_)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(elem->use(be));
+    EXPECT_TRUE(!elem->use(be));
+    EXPECT_TRUE(chmbr->getElement(p1_)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()!=bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1)->getElementInDirection(dir)->getType()==bElemTypes::_floorType);
+    EXPECT_TRUE(chmbr->getElement(p1)->getElementInDirection(dir1)->getType()==bElemTypes::_floorType);
     for(int c=0; c<1000; c++) bElem::runLiveElements();
     for(int c=0; c<4; c++)
     {
         dir::direction d=(dir::direction)c;
-        BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(d)->getType()==bElemTypes::_floorType);
+        EXPECT_TRUE(chmbr->getElement(p1_)->getElementInDirection(d)->getType()==bElemTypes::_floorType);
     }
-    BOOST_CHECK(elem->use(be));
-    BOOST_CHECK(!elem->use(be));
-    BOOST_CHECK(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()!=bElemTypes::_floorType);
+    EXPECT_TRUE(elem->use(be));
+    EXPECT_TRUE(!elem->use(be));
+    EXPECT_TRUE(chmbr->getElement(p1_)->getElementInDirection(dir1)->getType()!=bElemTypes::_floorType);
     for(int c=0; c<1000; c++) bElem::tick();
-    BOOST_CHECK(be->getAttrs()->getInventory()->getActiveWeapon()->use(be));
-    BOOST_CHECK(!be->getAttrs()->getInventory()->getActiveWeapon()->use(be));
+    EXPECT_TRUE(be->getAttrs()->getInventory()->getActiveWeapon()->use(be));
+    EXPECT_TRUE(!be->getAttrs()->getInventory()->getActiveWeapon()->use(be));
 }
 
 
 
 
-BOOST_AUTO_TEST_SUITE_END()

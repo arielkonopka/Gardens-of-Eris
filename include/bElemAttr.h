@@ -83,6 +83,7 @@ public:
 
 private:
     void getDefaultValues(int typeId, int subtypeId);
+    void applyDefaults(const attributeData &attr);
     std::shared_ptr<inventory> inv=nullptr;
     bool provisioned = false;
     std::weak_ptr<bElem> owner;
