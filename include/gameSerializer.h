@@ -53,8 +53,6 @@ class gameSerializer
 {
 public:
     static constexpr uint32_t formatVersion = 1;
-    /// file used by the in-game quick save (F5) and quick load (F9), relative to the data directory
-    static constexpr const char *defaultSaveFile = "savegame.goe";
     static bool saveGame(const std::string &fileName);
     static bool loadGame(const std::string &fileName);
 

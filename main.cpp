@@ -29,6 +29,8 @@
 #include "randomLevelGenerator.h"
 #include "soundManager.h"
 #include "gameSerializer.h"
+#include "gameSettings.h"
+#include "titleScreen.h"
 #include <cstring>
 
 bool finish=false;
@@ -78,6 +80,14 @@ int main( int argc, char * argv[] )
     for (int c = 1; c + 1 < argc; c++)
         if (std::strcmp(argv[c], "--load") == 0)
             saveToLoad = argv[c + 1];
+    gameSettings::getInstance().load();
+    if (saveToLoad.empty()) {
+        titleMenu menu(gameSettings::getInstance());
+        titleScreen title(menu);
+        if (title.run() == titleMenu::action::EXIT)
+            return 0;
+        title.showBusy("Building the maze...");
+    }
     if (!saveToLoad.empty() && gameSerializer::loadGame(saveToLoad)) {
         std::cout << "Loaded " << saveToLoad << "\n";
     } else {
