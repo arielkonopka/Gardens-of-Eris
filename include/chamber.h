@@ -28,6 +28,7 @@
 #include <memory>
 #include <thread>
 #include <mutex>
+#include <atomic>
 #include <allegro5/allegro5.h>
 #include <bElemContainer.h>
 typedef struct color
@@ -44,6 +45,7 @@ class bElem;
 
 class chamber: public std::enable_shared_from_this<chamber>
 {
+    friend class gameSerializer;
 public:
     chamber(const chamber&) = delete;
     chamber& operator=(const chamber&) = delete;
@@ -51,6 +53,14 @@ public:
     int calculateLine(myUtility::Coords position,dir::direction Odir);
     std::shared_ptr<bElem> getLastInLine(myUtility::Coords pos,dir::direction mydir);
 
+    /// every chamber in the world; owns them, so a chamber lives until the world is cleared
+    static std::vector<std::shared_ptr<chamber>> allChambers;
+    /// guards allChambers, and is held while a level is being generated or the game is saved or loaded
+    static std::recursive_mutex worldMutex;
+    /// set by the game thread when it wants worldMutex; the background generator pauses between levels until it is cleared
+    static std::atomic<bool> worldLockWanted;
+    /// false while a level generator is still filling this chamber; such chambers are not saved
+    bool ready = true;
     static std::shared_ptr<chamber> makeNewChamber(coords csize);
     static std::shared_ptr<chamber> makeNewChamber(myUtility::Coords csize);
     bool visitPosition(int x, int y)

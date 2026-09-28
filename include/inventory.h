@@ -64,6 +64,7 @@ using tType=_tType;
  */
 class inventory
 {
+    friend class gameSerializer;
 public:
     inventory() = default;
     virtual ~inventory() = default;

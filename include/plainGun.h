@@ -29,6 +29,7 @@
 //#include "viewPoint.h"
 class plainGun : public bElem
 {
+    friend class gameSerializer;
 public:
     using bElem::additionalProvisioning;
 

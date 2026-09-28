@@ -29,6 +29,7 @@
 #include "soundManager.h"
 class goldenApple : public explosives
 {
+    friend class gameSerializer;
 public:
     using bElem::additionalProvisioning;
 

@@ -39,6 +39,7 @@ class inventory;
  */
 class bElemAttr
 {
+    friend class gameSerializer;
 public:
     bElemAttr(std::shared_ptr<bElem> owner, int type, int subtype);
     int getSubtype() const;

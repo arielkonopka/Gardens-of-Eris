@@ -46,6 +46,7 @@
 #include <viewPoint.h>
 #include <allegro5/allegro_primitives.h>
 #include "videoManager.h"
+#include "gameSerializer.h"
 
 #define _offsetX 64
 #define _offsetY 64
@@ -89,6 +90,12 @@ private:
     void shaderthing(int x, int y);
     void drawCloak();
     bool fin=false;
+    bool saveKeyDown=false;
+    bool loadKeyDown=false;
+    /// 0 nothing, 1 save, 2 load; waits here while a level is being generated
+    int pendingSaveOp=0;
+    /// F5 saves the game, F9 loads it; both act once per key press, between game ticks
+    void handleSaveKeys();
     bool mStarted=false;
     void eyeCandy(int flavour);
     std::vector<coords> chaosGamePoints;

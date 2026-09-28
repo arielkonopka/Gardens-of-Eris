@@ -29,6 +29,7 @@
 
 class bazookaMissile : public explosives
 {
+    friend class gameSerializer;
 
     public:
         using explosives::additionalProvisioning;

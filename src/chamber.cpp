@@ -25,18 +25,16 @@
 #include "player.h"
 
 int chamber::lastid = 0;
+std::vector<std::shared_ptr<chamber>> chamber::allChambers;
+std::recursive_mutex chamber::worldMutex;
+std::atomic<bool> chamber::worldLockWanted{false};
 
 std::shared_ptr<chamber> chamber::makeNewChamber(coords csize)
 {
 #ifdef _VerbousMode_
     std::cout << "generate chamber" << csize.x << "," << csize.y << "\n";
 #endif
-    std::shared_ptr<chamber> c = makeNewChamber(myUtility::Coords(csize.x, csize.y));
-#ifdef _VerbousMode_
-    std::cout << "generated object\n";
-#endif
-    c->createFloor();
-    return c;
+    return makeNewChamber(myUtility::Coords(csize.x, csize.y));
 }
 
 std::shared_ptr<chamber> chamber::makeNewChamber(myUtility::Coords csize)
@@ -49,6 +47,8 @@ std::shared_ptr<chamber> chamber::makeNewChamber(myUtility::Coords csize)
     std::cout << "generated object\n";
 #endif
     c->createFloor();
+    std::lock_guard<std::recursive_mutex> lock(chamber::worldMutex);
+    chamber::allChambers.push_back(c);
     return c;
 }
 

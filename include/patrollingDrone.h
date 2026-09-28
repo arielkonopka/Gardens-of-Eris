@@ -29,6 +29,7 @@
 #include "viewPoint.h"
 class patrollingDrone : public bElem
 {
+    friend class gameSerializer;
 public:
     using bElem::additionalProvisioning;
 

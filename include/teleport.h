@@ -30,6 +30,7 @@
 #include "bElem.h"
 class teleport : public bElem
 {
+    friend class gameSerializer;
 public:
     using bElem::additionalProvisioning;
 
@@ -69,7 +70,7 @@ private:
     bool removeFromAllTeleporters();
     std::weak_ptr<teleport> theOtherEnd;
     std::vector<std::shared_ptr<teleport>> candidates;
-    static std::once_flag _onceFlag;
+    static bool firstReceiverRemoved;
 };
 
 #endif // TELEPORT_H

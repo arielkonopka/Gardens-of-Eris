@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 #include "teleport.h"
-std::once_flag teleport::_onceFlag;
+bool teleport::firstReceiverRemoved = false;
 
 std::vector<std::weak_ptr<teleport>> teleport::allTeleporters;
 std::recursive_mutex teleport::registryMutex;
@@ -87,9 +87,10 @@ bool teleport::createConnectionsWithinSubtype()
     /// We do this only once, as soon as the first level is created. we can get away with this construct, because we know, that the first mirror is a receiver, and will be inactive.
     /// therefore we have to remove it from all teleporters vector.
     std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
-    if (!teleport::allTeleporters.empty())
-        std::call_once(teleport::_onceFlag,
-                       []() { teleport::allTeleporters.erase(teleport::allTeleporters.begin()); });
+    if (!teleport::allTeleporters.empty() && !teleport::firstReceiverRemoved) {
+        teleport::allTeleporters.erase(teleport::allTeleporters.begin());
+        teleport::firstReceiverRemoved = true;
+    }
     std::shared_ptr<teleport> tmpt, tmpt2;
     std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport> &wp) {
         if (auto sp = wp.lock()) {

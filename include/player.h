@@ -32,6 +32,7 @@
 
 class player : public bElem
 {
+    friend class gameSerializer;
 public:
     using bElem::additionalProvisioning;
 

@@ -28,6 +28,8 @@
 #include "presenter.h"
 #include "randomLevelGenerator.h"
 #include "soundManager.h"
+#include "gameSerializer.h"
+#include <cstring>
 
 bool finish=false;
 void createChambers()
@@ -37,8 +39,13 @@ void createChambers()
     {
         for(int c2=0; c2<5; c2++)
         {
+            // let a pending save or load go first
+            while(chamber::worldLockWanted && !finish)
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             rndl=new randomLevelGenerator(500,500);
             rndl->generateLevel(cnt);
+            delete rndl; // the world (chamber::allChambers) keeps the chamber
+
             if(finish)
                 return;
         }
@@ -54,7 +61,6 @@ int main( int argc, char * argv[] )
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
     myPresenter->showSplash();
-    auto rndl=new randomLevelGenerator(500,500);
     soundManager::getInstance()->setupSong(0,0, {0.0f,0.0f,0.0f},0,true);
     soundManager::getInstance()->setupSong(2,2, {1.0f,130.0f,0.0f},-1,true);
     soundManager::getInstance()->setupSong(3,3, {0.0f,170.0f,0.0f},-1,true);
@@ -67,10 +73,21 @@ int main( int argc, char * argv[] )
     soundManager::getInstance()->setupSong(6,2, {0.0f,0.0f,0.0f},3,true);
     soundManager::getInstance()->setupSong(8,0, {0.0f,0.0f,0.0f},5,true);
     soundManager::getInstance()->setupSong(9,0, {0.0f,0.0f,0.0f},6,true);
-    rndl->generateLevel(5);
-    /// generate the remaining leveldata in the background, so the user would not be greeted with a delay.
-    std::thread nt=std::thread(&createChambers);
-    nt.detach();
+    // "--load <file>" starts from a saved game instead of a freshly generated world
+    std::string saveToLoad;
+    for (int c = 1; c + 1 < argc; c++)
+        if (std::strcmp(argv[c], "--load") == 0)
+            saveToLoad = argv[c + 1];
+    if (!saveToLoad.empty() && gameSerializer::loadGame(saveToLoad)) {
+        std::cout << "Loaded " << saveToLoad << "\n";
+    } else {
+        auto rndl=new randomLevelGenerator(500,500);
+        rndl->generateLevel(5);
+        delete rndl;
+        /// generate the remaining leveldata in the background, so the user would not be greeted with a delay.
+        std::thread nt=std::thread(&createChambers);
+        nt.detach();
+    }
     soundManager::getInstance()->enableSound();
     while(!finish)
     {
