@@ -184,4 +184,109 @@ BOOST_AUTO_TEST_CASE(BadFilesLeaveTheWorldAlone)
     std::remove(cut.c_str());
 }
 
+BOOST_AUTO_TEST_CASE(ControlledDroneKeepsItsController)
+{
+    inputManager::getInstance(true);
+    // earlier tests leave their player active, and only the active player's chamber ticks
+    if (auto old = player::getActivePlayer())
+        old->disposeElement();
+    auto mc = chamber::makeNewChamber(coords(20, 20));
+    auto plr = elementFactory::generateAnElement<player>(mc, 0);
+    plr->stepOnElement(mc->getElement(3, 3));
+    plr->getStats()->setActive(true);
+    auto brain = puppetMasterFR::create(mc, puppetMasterFR::collector);
+    brain->stepOnElement(mc->getElement(4, 3));
+    BOOST_REQUIRE(plr->collect(brain));
+    auto drone = elementFactory::generateAnElement<patrollingDrone>(mc, 0);
+    drone->stepOnElement(mc->getElement(10, 10));
+    BOOST_REQUIRE(drone->interact(plr));
+    auto droneId = drone->getStats()->getInstanceId();
+    auto brainId = brain->getStats()->getInstanceId();
+
+    const std::string f = "/tmp/goe-drone.goe";
+    BOOST_REQUIRE(gameSerializer::saveGame(f));
+    plr.reset();
+    brain.reset();
+    drone.reset();
+    mc.reset();
+    BOOST_REQUIRE(gameSerializer::loadGame(f));
+    std::remove(f.c_str());
+
+    std::shared_ptr<bElem> ld;
+    for (const auto &c : chamber::allChambers)
+        for (int x = 0; x < c->getSize().x && !ld; x++)
+            for (int y = 0; y < c->getSize().y && !ld; y++)
+                for (auto e = c->getElement(x, y); e; e = e->getStats()->getSteppingOn())
+                    if (e->getStats()->getInstanceId() == droneId)
+                        ld = e;
+    BOOST_REQUIRE(ld);
+    auto d = std::dynamic_pointer_cast<patrollingDrone>(ld);
+    BOOST_REQUIRE(d);
+    auto lb = d->getBrainModule();
+    BOOST_REQUIRE(lb);
+    BOOST_CHECK_EQUAL(lb->getStats()->getInstanceId(), brainId);
+    // the loaded controller is the same kind of controller, not a plain puppet master
+    BOOST_CHECK(std::dynamic_pointer_cast<puppetMasterCollector>(lb));
+    BOOST_CHECK(lb->getStats()->getCollector().lock() == ld);
+
+    // and it keeps driving the drone after the load
+    auto start = ld->getStats()->getMyPosition();
+    bool moved = false;
+    for (int c = 0; c < 2000 && !moved; c++) {
+        bElem::runLiveElements();
+        moved = !(ld->getStats()->getMyPosition() == start);
+    }
+    BOOST_CHECK(moved);
+}
+
+BOOST_AUTO_TEST_CASE(CameraAndGuardiansRoundTrip)
+{
+    inputManager::getInstance(true);
+    if (auto old = player::getActivePlayer())
+        old->disposeElement();
+    auto mc = chamber::makeNewChamber(coords(30, 30));
+    auto plr = elementFactory::generateAnElement<player>(mc, 0);
+    plr->stepOnElement(mc->getElement(10, 15));
+    auto cam = elementFactory::generateAnElement<securityCamera>(mc, 0);
+    cam->stepOnElement(mc->getElement(16, 15));
+    for (int c = 0; c < 40; c++)
+        bElem::runLiveElements();
+    BOOST_REQUIRE_GT(cam->getAlertNumber(), 0u);
+    auto camId = cam->getStats()->getInstanceId();
+    auto alerts = cam->getAlertNumber();
+
+    const std::string f1 = "/tmp/goe-cam-1.goe", f2 = "/tmp/goe-cam-2.goe";
+    BOOST_REQUIRE(gameSerializer::saveGame(f1));
+    plr.reset();
+    cam.reset();
+    mc.reset();
+    BOOST_REQUIRE(gameSerializer::loadGame(f1));
+    BOOST_REQUIRE(gameSerializer::saveGame(f2));
+    BOOST_CHECK(withoutCounter(readFile(f1)) == withoutCounter(readFile(f2)));
+    std::remove(f1.c_str());
+    std::remove(f2.c_str());
+
+    std::shared_ptr<securityCamera> lcam;
+    int guardians = 0;
+    for (const auto &c : chamber::allChambers)
+        for (int x = 0; x < c->getSize().x; x++)
+            for (int y = 0; y < c->getSize().y; y++) {
+                auto e = c->getElement(x, y);
+                if (auto sc = std::dynamic_pointer_cast<securityCamera>(e); sc && sc->getStats()->getInstanceId() == camId)
+                    lcam = sc;
+            }
+    BOOST_REQUIRE(lcam);
+    BOOST_CHECK_EQUAL(lcam->getAlertNumber(), alerts);
+    for (int x = 0; x < lcam->getBoard()->getSize().x; x++)
+        for (int y = 0; y < lcam->getBoard()->getSize().y; y++)
+            if (auto d = std::dynamic_pointer_cast<patrollingDrone>(lcam->getBoard()->getElement(x, y)))
+                if (auto g = std::dynamic_pointer_cast<puppetMasterGuardian>(d->getBrainModule())) {
+                    BOOST_CHECK(g->getCamera() == lcam);
+                    guardians++;
+                }
+    BOOST_CHECK_EQUAL(guardians, securityCamera::guardianCount);
+    for (int c = 0; c < 300; c++)
+        bElem::runLiveElements();
+}
+
 BOOST_AUTO_TEST_SUITE_END()

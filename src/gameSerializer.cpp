@@ -194,8 +194,10 @@ std::shared_ptr<bElem> gameSerializer::createByType(int type, int subtype)
         return elementFactory::generateAnElement<monster>(none, subtype);
     case bElemTypes::_patrollingDrone:
         return elementFactory::generateAnElement<patrollingDrone>(none, subtype);
+    case bElemTypes::_securityCamera:
+        return elementFactory::generateAnElement<securityCamera>(none, subtype);
     case bElemTypes::_puppetMasterType:
-        return elementFactory::generateAnElement<puppetMasterFR>(none, subtype);
+        return puppetMasterFR::create(none, subtype);
     case bElemTypes::_brickClusterType:
         return elementFactory::generateAnElement<brickCluster>(none, subtype);
     case bElemTypes::_player:
@@ -402,6 +404,21 @@ void gameSerializer::writeElement(writer &w, const std::shared_ptr<bElem> &e)
         w.ref(std::static_pointer_cast<bElem>(t->theOtherEnd.lock()));
     if (auto k = std::dynamic_pointer_cast<kiki>(e))
         w.u8((uint8_t) k->direction);
+    if (auto c = std::dynamic_pointer_cast<securityCamera>(e)) {
+        w.u8(c->guardiansSpawned);
+        w.i32(c->alertAt.x);
+        w.i32(c->alertAt.y);
+        w.u32(c->alertNumber);
+    }
+    if (auto g = std::dynamic_pointer_cast<puppetMasterGuardian>(e)) {
+        w.ref(std::static_pointer_cast<bElem>(g->camera.lock()));
+        w.ref(g->gun);
+        w.i32(g->home.x);
+        w.i32(g->home.y);
+        w.i32(g->target.x);
+        w.i32(g->target.y);
+        w.u32(g->handledAlert);
+    }
 }
 
 std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
@@ -603,6 +620,23 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
         });
     if (auto k = std::dynamic_pointer_cast<kiki>(e))
         k->direction = (dir::direction) r.u8();
+    if (auto c = std::dynamic_pointer_cast<securityCamera>(e)) {
+        c->guardiansSpawned = r.u8();
+        int x = r.i32();
+        c->alertAt = coords(x, r.i32());
+        c->alertNumber = r.u32();
+    }
+    if (auto g = std::dynamic_pointer_cast<puppetMasterGuardian>(e)) {
+        ctx.later(r.u64(), [g](std::shared_ptr<bElem> c) {
+            g->camera = std::dynamic_pointer_cast<securityCamera>(c);
+        });
+        ctx.later(r.u64(), [g](std::shared_ptr<bElem> gun) { g->gun = gun; });
+        int x = r.i32();
+        g->home = coords(x, r.i32());
+        x = r.i32();
+        g->target = coords(x, r.i32());
+        g->handledAlert = r.u32();
+    }
 
     ctx.fixups.push_back([e, boardId, &ctx]() {
         auto it = ctx.chambersById.find(boardId);

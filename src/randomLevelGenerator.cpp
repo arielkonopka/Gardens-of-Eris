@@ -310,6 +310,8 @@ bool randomLevelGenerator::generateLevel(int holes)
         // dangerous elements here, the more holes, the less of them in the gamefield
         elementsToChooseFrom.push_back({bElemTypes::_monster, 0, 1, 0, 3});
         elementsToChooseFrom.push_back({bElemTypes::_bunker, 0, 1, 0, 3});
+        // each camera brings its own guardian drones
+        elementsToChooseFrom.push_back({bElemTypes::_securityCamera, 0, 1, 0, 3});
     }
     for (int c = 0; c < holes * 15; c++) {
         elementsToChooseFrom.push_back({bElemTypes::_kikiType, 0, 1, 0, 2});
@@ -510,8 +512,10 @@ std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace elemen
         return elementFactory::generateAnElement<patrollingDrone>(this->mychamber, 0);
     case bElemTypes::_brickClusterType:
         return elementFactory::generateAnElement<brickCluster>(this->mychamber, 0);
+    case bElemTypes::_securityCamera:
+        return elementFactory::generateAnElement<securityCamera>(this->mychamber, 0);
     case bElemTypes::_puppetMasterType:
-        return elementFactory::generateAnElement<puppetMasterFR>(this->mychamber, 0);
+        return puppetMasterFR::create(this->mychamber, (int) (bElem::randomNumberGenerator() % puppetMasterFR::looseKinds));
     case bElemTypes::_bazookaType:
         return elementFactory::generateAnElement<bazooka>(this->mychamber, element.eSubType);
     case bElemTypes::_kikiType:
