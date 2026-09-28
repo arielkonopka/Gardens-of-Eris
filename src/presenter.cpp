@@ -36,9 +36,9 @@ presenter::presenter()
         exit(0);
     }
 
-    this->alTimer = al_create_timer(1.0 / 50);
-    this->evQueue = al_create_event_queue();
-    al_register_event_source(this->evQueue, al_get_timer_event_source(this->alTimer));
+    this->alTimer.reset(al_create_timer(1.0 / 50));
+    this->evQueue.reset(al_create_event_queue());
+    al_register_event_source(this->evQueue.get(), al_get_timer_event_source(this->alTimer.get()));
     //  this->_cp_attachedBoard=board;
     al_get_monitor_info(0, &info);
     this->scrWidth = info.x2 - 50;  /* Assume this is 1366 */
@@ -53,13 +53,12 @@ presenter::presenter()
 
 bool presenter::initializeDisplay()
 {
-    al_register_event_source(this->evQueue,
+    al_register_event_source(this->evQueue.get(),
                              al_get_display_event_source(
                                  videoManager::getInstance().getCurrentDisplay()));
-    this->internalBitmap = al_create_bitmap(this->scrWidth + 64, this->scrHeight + 64);
-    this->cloakBitmap = al_create_bitmap(this->scrWidth + 128, this->scrHeight + 128);
-    this->statsStripe = al_create_bitmap(this->scrWidth, this->scrHeight / 3);
-    this->pointsTexture = al_create_bitmap(this->pointsTextureWidth, this->pointsTextureHeight);
+    this->internalBitmap.reset(al_create_bitmap(this->scrWidth + 64, this->scrHeight + 64));
+    this->statsStripe.reset(al_create_bitmap(this->scrWidth, this->scrHeight / 3));
+    this->pointsTexture.reset(al_create_bitmap(this->pointsTextureWidth, this->pointsTextureHeight));
     this->shaderId = videoManager::getInstance().setupShader("data/shaders/vertexShader.glvs",
                                                              "data/shaders/pixelShader.glps");
     std::cerr << "Created shader no:" << this->shaderId << "\n";
@@ -91,9 +90,10 @@ _cp_gameReasonOut presenter::presentGamePlay()
 void presenter::showSplash()
 {
     std::cout << "Splash" << this->splashFname.c_str() << "\n";
-    ALLEGRO_BITMAP *splash = al_load_bitmap(this->splashFname.c_str());
+    goe::bitmapHandle splash(al_load_bitmap(this->splashFname.c_str()));
     al_clear_to_color(al_map_rgba(15, 15, 25, 255));
-    al_draw_bitmap(splash, 450, 0, 0);
+    if (splash)
+        al_draw_bitmap(splash.get(), 450, 0, 0);
     al_wait_for_vsync();
     al_flip_display();
 }
@@ -103,8 +103,8 @@ bool presenter::loadCofiguredData()
     std::shared_ptr<gameConfig> gcfg = configManager::getInstance()->getConfig();
     al_init_font_addon();
     al_init_ttf_addon();
-    this->myfont = al_load_ttf_font(gcfg->FontFile.c_str(), 32, 0);
-    if (this->myfont == nullptr) {
+    this->myfont.reset(al_load_ttf_font(gcfg->FontFile.c_str(), 32, 0));
+    if (!this->myfont) {
         std::cout << "Font assets are not loaded properly, check the configuration.\n";
         return false;
     }
@@ -233,15 +233,15 @@ void presenter::showText(int x, int y, int offsetX, int offsetY, std::string tex
 {
     ALLEGRO_COLOR c = al_map_rgb(255, 255, 200);
     int scrx = offsetX + (x * this->sWidth), scry = offsetY + (y * this->sHeight);
-    if (this->myfont != nullptr) {
-        al_draw_text(this->myfont, c, (float) scrx, (float) scry, 0, text.c_str());
+    if (this->myfont) {
+        al_draw_text(this->myfont.get(), c, (float) scrx, (float) scry, 0, text.c_str());
     }
 }
 
 void presenter::prepareStatsThing()
 {
     std::shared_ptr<bElem> aPlayer = player::getActivePlayer();
-    al_set_target_bitmap(this->statsStripe);
+    al_set_target_bitmap(this->statsStripe.get());
     al_clear_to_color(al_map_rgba(0, 0, 0, 255));
     this->showText(1, 1, 0, 5, "Garden: " + aPlayer->getBoard()->getName());
     this->showObjectTile(1, 0, 0, 0, aPlayer, true, _mode_onlyTop);
@@ -359,7 +359,7 @@ void presenter::showGameField()
     soundManager::getInstance().setListenerVelocity({(float) d.x, (float) d.y, 0.0f});
     this->prepareStatsThing();
 
-    al_set_target_bitmap(this->internalBitmap);
+    al_set_target_bitmap(this->internalBitmap.get());
 
     colour c = this->_cp_attachedBoard->getChColour();
     al_clear_to_color(al_map_rgba(c.r, c.g, c.b, c.a));
@@ -420,7 +420,7 @@ void presenter::showGameField()
     al_set_target_bitmap(al_get_backbuffer(videoManager::getInstance().getCurrentDisplay()));
 
     al_clear_to_color(al_map_rgba(15, 25, 45, 255));
-    al_draw_bitmap_region(this->statsStripe,
+    al_draw_bitmap_region(this->statsStripe.get(),
                           0,
                           0,
                           this->bsWidth - 1,
@@ -430,9 +430,9 @@ void presenter::showGameField()
                           0);
     this->shaderthing(offX, offY);
 
-    //al_set_shader_sampler("internalBitmap", this->internalBitmap,0);
+    //al_set_shader_sampler("internalBitmap", this->internalBitmap.get(),0);
     //al_set_shader_float_vector("vertices",3,verts,4);
-    al_draw_bitmap_region(this->internalBitmap,
+    al_draw_bitmap_region(this->internalBitmap.get(),
                           offX,
                           offY,
                           this->bsWidth,
@@ -600,9 +600,9 @@ int presenter::presentEverything()
     ALLEGRO_EVENT event;
     controlItem cItem;
 
-    al_start_timer(this->alTimer);
+    al_start_timer(this->alTimer.get());
     while (!this->fin) {
-        al_wait_for_event(this->evQueue, &event);
+        al_wait_for_event(this->evQueue.get(), &event);
         if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
             inputManager::getInstance().stop();
             this->fin = true;

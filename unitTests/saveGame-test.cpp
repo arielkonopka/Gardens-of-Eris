@@ -131,9 +131,7 @@ TEST(SaveGameTests, SmallWorldRoundTrip)
 TEST(SaveGameTests, GeneratedLevelRoundTrip)
 {
     inputManager::getInstance(true);
-    auto rl = new randomLevelGenerator(120, 120);
-    rl->generateLevel(5);
-    delete rl;
+    randomLevelGenerator(120, 120).generateLevel(5);
     // let the level live a little, so timers, missiles and dying elements exist
     for (int c = 0; c < 300; c++)
         bElem::runLiveElements();

@@ -25,29 +25,42 @@
 #include "commons.h"
 #include "chamber.h"
 #include "bElem.h"
+#include <functional>
+#include <memory>
+#include <optional>
 #include <vector>
+
+/// A rectangle of the level, split recursively into child areas while the maze is generated.
+/// Each area owns its children; areas are found and removed by identity.
 class chamberArea
 {
-
 public:
-    static std::vector<chamberArea*> foundAreas;
-    static std::vector<std::shared_ptr<bElem> > foundElements;
+    using areaRef = std::reference_wrapper<chamberArea>;
+
     chamberArea(int xu, int yu, int xd, int yd);
-    virtual ~chamberArea();
-    bool addChildNode(chamberArea *child);
+    void addChildNode(std::unique_ptr<chamberArea> child);
     coords upLeft;
     coords downRight;
-    int surface;
-    std::vector<chamberArea* > children;
-    chamberArea* parent;
+    int surface = 0;
+    std::vector<std::unique_ptr<chamberArea>> children;
+    bool childrenLock = false;
     int calculateInitialSurface();
     int calculateSurface(std::shared_ptr<chamber> mychamber);
-    bool findElementsToStepOn(std::shared_ptr<chamber> myChamber);
-    void findElementsRec(std::shared_ptr<chamber>  mychamber);
-    void findChambersCloseToSurface(int s,int tolerance);
-    bool checkIfElementIsFree(int x,int y, std::shared_ptr<chamber> mychamber);
-    bool childrenLock;
+    /// floor cells inside the leaves of this area
+    std::vector<std::shared_ptr<bElem>> findElementsToStepOn(std::shared_ptr<chamber> myChamber) const;
+    /// the smallest areas that still offer at least s cells
+    std::vector<areaRef> findChambersCloseToSurface(int s, int tolerance);
+    bool checkIfElementIsFree(int x, int y, std::shared_ptr<chamber> mychamber);
+    /// the area that holds `area` as a direct child; empty for this node itself or an unknown area
+    std::optional<areaRef> parentOf(const chamberArea &area);
+    /// drops `area` and its subtree, and recalculates the surfaces of its ancestors
+    bool removeArea(const chamberArea &area);
     void removeEmptyNodes();
+
+private:
+    void findElementsRec(const std::shared_ptr<chamber> &mychamber,
+                         std::vector<std::shared_ptr<bElem>> &found) const;
+    void findChambersRec(int s, std::vector<areaRef> &found);
 };
 
 #endif // CHAMBERAREA_H

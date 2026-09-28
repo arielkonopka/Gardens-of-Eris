@@ -22,7 +22,9 @@
  * SOFTWARE.
  */
 
+#include <atomic>
 #include <exception>
+#include <memory>
 #include <thread>
 #include "elements.h"
 #include "presenter.h"
@@ -33,10 +35,9 @@
 #include "titleScreen.h"
 #include <cstring>
 
-bool finish=false;
+std::atomic<bool> finish=false;
 void createChambers()
 {
-    randomLevelGenerator* rndl;
     for (int cnt=5; cnt>0; cnt--)
     {
         for(int c2=0; c2<5; c2++)
@@ -44,9 +45,8 @@ void createChambers()
             // let a pending save or load go first
             while(chamber::worldLockWanted && !finish)
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            rndl=new randomLevelGenerator(500,500);
-            rndl->generateLevel(cnt);
-            delete rndl; // the world (chamber::allChambers) keeps the chamber
+            // the world (chamber::allChambers) keeps the chamber after the generator is gone
+            randomLevelGenerator(500,500).generateLevel(cnt);
 
             if(finish)
                 return;
@@ -59,7 +59,7 @@ void createChambers()
 
 int main( int argc, char * argv[] )
 {
-    auto *myPresenter=new presenter::presenter();
+    auto myPresenter=std::make_unique<presenter::presenter>();
     myPresenter->initializeDisplay();
     myPresenter->loadCofiguredData();
     myPresenter->showSplash();
@@ -88,15 +88,14 @@ int main( int argc, char * argv[] )
             return 0;
         title.showBusy("Building the maze...");
     }
+    // builds the remaining levels; joined when main returns, after `finish` stops it
+    std::jthread levelBuilder;
     if (!saveToLoad.empty() && gameSerializer::loadGame(saveToLoad)) {
         std::cout << "Loaded " << saveToLoad << "\n";
     } else {
-        auto rndl=new randomLevelGenerator(500,500);
-        rndl->generateLevel(5);
-        delete rndl;
+        randomLevelGenerator(500,500).generateLevel(5);
         /// generate the remaining leveldata in the background, so the user would not be greeted with a delay.
-        std::thread nt=std::thread(&createChambers);
-        nt.detach();
+        levelBuilder=std::jthread(&createChambers);
     }
     soundManager::getInstance().enableSound();
     while(!finish)

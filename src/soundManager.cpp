@@ -474,7 +474,7 @@ int soundManager::setupSong(
         return -1;
     }
     /* we deal with the problem of code and configuration mismatch */
-    if (songNo < 0 || this->gc->music.size() < (unsigned int) songNo) {
+    if (songNo < 0 || this->gc->music.size() <= (unsigned int) songNo) {
         songNo = bElem::randomNumberGenerator() % this->gc->music.size();
     }
     muNode muNd;
@@ -485,6 +485,7 @@ int soundManager::setupSong(
     muNd.songNo = songNo;
     muNd.position = position;
     muNd.chamberId = chamberId;
+    muNd.musFileinfo = {}; // sf_open in read mode needs format 0
     muNd.musicFile.reset(sf_open(this->gc->music[songNo].filename.c_str(), SFM_READ, &(muNd.musFileinfo)),
                          goe::destroyWith<sf_close>());
     if (!muNd.musicFile) {

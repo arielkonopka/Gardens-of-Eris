@@ -33,37 +33,25 @@ titleScreen::titleScreen(titleMenu &menu)
     al_init_font_addon();
     al_init_ttf_addon();
     auto cfg = configManager::getInstance()->getConfig();
-    this->bigFont = al_load_ttf_font(cfg->FontFile.c_str(), 72, 0);
-    this->font = al_load_ttf_font(cfg->FontFile.c_str(), 36, 0);
-    this->splash = al_load_bitmap(cfg->splashScr.c_str());
-    this->timer = al_create_timer(1.0 / 30);
-    this->queue = al_create_event_queue();
-    al_register_event_source(this->queue, al_get_keyboard_event_source());
-    al_register_event_source(this->queue, al_get_timer_event_source(this->timer));
+    this->bigFont.reset(al_load_ttf_font(cfg->FontFile.c_str(), 72, 0));
+    this->font.reset(al_load_ttf_font(cfg->FontFile.c_str(), 36, 0));
+    this->splash.reset(al_load_bitmap(cfg->splashScr.c_str()));
+    this->timer.reset(al_create_timer(1.0 / 30));
+    this->queue.reset(al_create_event_queue());
+    al_register_event_source(this->queue.get(), al_get_keyboard_event_source());
+    al_register_event_source(this->queue.get(), al_get_timer_event_source(this->timer.get()));
     if (auto *display = videoManager::getInstance().getCurrentDisplay())
-        al_register_event_source(this->queue, al_get_display_event_source(display));
-}
-
-titleScreen::~titleScreen()
-{
-    al_destroy_event_queue(this->queue);
-    al_destroy_timer(this->timer);
-    if (this->splash)
-        al_destroy_bitmap(this->splash);
-    if (this->font)
-        al_destroy_font(this->font);
-    if (this->bigFont)
-        al_destroy_font(this->bigFont);
+        al_register_event_source(this->queue.get(), al_get_display_event_source(display));
 }
 
 titleMenu::action titleScreen::run()
 {
-    al_start_timer(this->timer);
+    al_start_timer(this->timer.get());
     this->draw();
     ALLEGRO_EVENT ev;
     auto result = titleMenu::action::NONE;
     while (result == titleMenu::action::NONE) {
-        al_wait_for_event(this->queue, &ev);
+        al_wait_for_event(this->queue.get(), &ev);
         switch (ev.type) {
         case ALLEGRO_EVENT_DISPLAY_CLOSE:
             result = titleMenu::action::EXIT;
@@ -79,14 +67,14 @@ titleMenu::action titleScreen::run()
         }
             break;
         case ALLEGRO_EVENT_TIMER:
-            if (al_is_event_queue_empty(this->queue))
+            if (al_is_event_queue_empty(this->queue.get()))
                 this->draw();
             break;
         default:
             break;
         }
     }
-    al_stop_timer(this->timer);
+    al_stop_timer(this->timer.get());
     return result;
 }
 
@@ -104,38 +92,38 @@ void titleScreen::draw()
 
     float y = h * 0.05f;
     if (this->splash) {
-        float sw = (float) al_get_bitmap_width(this->splash);
-        float sh = (float) al_get_bitmap_height(this->splash);
+        float sw = (float) al_get_bitmap_width(this->splash.get());
+        float sh = (float) al_get_bitmap_height(this->splash.get());
         // keep the picture in the top third of the screen
         float scale = std::min(1.0f, std::min(w * 0.8f / sw, h * 0.33f / sh));
-        al_draw_scaled_bitmap(this->splash, 0, 0, sw, sh, (w - sw * scale) / 2, y, sw * scale, sh * scale, 0);
+        al_draw_scaled_bitmap(this->splash.get(), 0, 0, sw, sh, (w - sw * scale) / 2, y, sw * scale, sh * scale, 0);
         y += sh * scale + h * 0.02f;
     }
-    al_draw_text(this->bigFont, al_map_rgb(235, 235, 255), w / 2, y, ALLEGRO_ALIGN_CENTER, "Gardens of Eris");
-    y += (float) al_get_font_line_height(this->bigFont) * 1.3f;
+    al_draw_text(this->bigFont.get(), al_map_rgb(235, 235, 255), w / 2, y, ALLEGRO_ALIGN_CENTER, "Gardens of Eris");
+    y += (float) al_get_font_line_height(this->bigFont.get()) * 1.3f;
 
     if (this->menu.getScreen() != titleMenu::screen::MAIN) {
-        al_draw_text(this->font, normal, w / 2, y, ALLEGRO_ALIGN_CENTER, "Config");
-        y += (float) al_get_font_line_height(this->font) * 1.5f;
+        al_draw_text(this->font.get(), normal, w / 2, y, ALLEGRO_ALIGN_CENTER, "Config");
+        y += (float) al_get_font_line_height(this->font.get()) * 1.5f;
     }
     const auto lines = this->menu.getLines();
-    const float lineH = (float) al_get_font_line_height(this->font) * 1.4f;
+    const float lineH = (float) al_get_font_line_height(this->font.get()) * 1.4f;
     for (int c = 0; c < (int) lines.size(); c++) {
         bool sel = c == this->menu.getSelected();
         std::string text = sel ? "> " + lines[c] + " <" : lines[c];
-        al_draw_text(this->font, sel ? chosen : normal, w / 2, y, ALLEGRO_ALIGN_CENTER, text.c_str());
+        al_draw_text(this->font.get(), sel ? chosen : normal, w / 2, y, ALLEGRO_ALIGN_CENTER, text.c_str());
         y += lineH;
     }
     if (!this->menu.getMessage().empty()) {
         y += lineH * 0.5f;
-        al_draw_text(this->font, note, w / 2, y, ALLEGRO_ALIGN_CENTER, this->menu.getMessage().c_str());
+        al_draw_text(this->font.get(), note, w / 2, y, ALLEGRO_ALIGN_CENTER, this->menu.getMessage().c_str());
     }
     const char *help = "Up/Down to choose, Enter to select";
     if (this->menu.getScreen() == titleMenu::screen::CONFIG)
         help = "Enter to edit, Esc to go back";
     else if (this->menu.getScreen() == titleMenu::screen::EDITING)
         help = "Type the folder, Enter to keep it, Esc to cancel";
-    al_draw_text(this->font, al_map_rgb(110, 110, 130), w / 2, h - lineH * 2, ALLEGRO_ALIGN_CENTER, help);
+    al_draw_text(this->font.get(), al_map_rgb(110, 110, 130), w / 2, h - lineH * 2, ALLEGRO_ALIGN_CENTER, help);
     al_flip_display();
 }
 
@@ -147,6 +135,6 @@ void titleScreen::showBusy(const std::string &text)
     const float w = (float) al_get_display_width(display);
     const float h = (float) al_get_display_height(display);
     al_clear_to_color(al_map_rgba(15, 15, 25, 255));
-    al_draw_text(this->font, al_map_rgb(170, 170, 190), w / 2, h / 2, ALLEGRO_ALIGN_CENTER, text.c_str());
+    al_draw_text(this->font.get(), al_map_rgb(170, 170, 190), w / 2, h / 2, ALLEGRO_ALIGN_CENTER, text.c_str());
     al_flip_display();
 }

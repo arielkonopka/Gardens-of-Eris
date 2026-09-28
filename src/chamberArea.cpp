@@ -21,81 +21,48 @@
  */
 #include "chamberArea.h"
 
-std::vector<chamberArea *> chamberArea::foundAreas;
-std::vector<std::shared_ptr<bElem>> chamberArea::foundElements;
-
-chamberArea::~chamberArea() // if we remove the node, we remove all its children
-{
-    chamberArea *_par = nullptr;
-    chamberArea *_originalParent = this->parent;
-    this->parent = nullptr;
-    for (long int cnt = 0; cnt < (long int) this->children.size(); cnt++) {
-#ifdef _VerbousMode_
-        std::cout << "Destroying child" << cnt << "\n";
-#endif // _VerbousMode_
-        chamberArea *node = this->children[cnt];
-        node->parent = nullptr;
-        delete node;
-    }
-    this->children.clear();
-    if (_originalParent != nullptr) {
-        /*
-        the node has a parent? deal with it,
-         remove this node from the children list,
-         recalculate surface in the parent node and its parent nodes -
-         this way we would not have to recalculate the surface.
-         We have to remember, we remove the whole nodes. Still this will not deliver any dexterity in
-         placing the objects
-         */
-
-        for (long int cnt = 0;
-             cnt
-             < (long int) _originalParent->children.size();) //find and delete me from children list
-        {
-            if (_originalParent->children[cnt]->upLeft == this->upLeft
-                && _originalParent->children[cnt]->downRight == this->downRight) {
-#ifdef _VerbousMode_
-                std::cout << "Removed from the children list" << cnt << "\n";
-#endif
-                _originalParent->children.erase(_originalParent->children.begin() + cnt);
-
-            } else {
-                cnt++;
-            }
-        }
-        _par = _originalParent; //iterate over all parents and readjust the surface
-        while (_par != nullptr) {
-            int _surf = 0;
-            for (unsigned int c = 0; c < _par->children.size(); c++) {
-                _surf += _par->children[c]->surface;
-            }
-            _par->surface = _surf;
-            _par = _par->parent;
-        }
-    }
-}
 chamberArea::chamberArea(int xu, int yu, int xd, int yd)
+    : upLeft(xu, yu)
+    , downRight(xd, yd)
+{}
+
+void chamberArea::addChildNode(std::unique_ptr<chamberArea> child)
 {
-    this->upLeft.x = xu;
-    this->upLeft.y = yu;
-    this->downRight.x = xd;
-    this->downRight.y = yd;
-    this->parent = nullptr;
-    this->childrenLock = false;
+    this->children.push_back(std::move(child));
 }
 
-bool chamberArea::addChildNode(chamberArea *child)
+std::optional<chamberArea::areaRef> chamberArea::parentOf(const chamberArea &area)
 {
-    this->children.push_back(child);
-    child->parent = this;
-    return true;
+    for (auto &child : this->children) {
+        if (child.get() == &area)
+            return std::ref(*this);
+        if (auto parent = child->parentOf(area))
+            return parent;
+    }
+    return std::nullopt;
+}
+
+bool chamberArea::removeArea(const chamberArea &area)
+{
+    for (auto it = this->children.begin(); it != this->children.end(); ++it) {
+        if (it->get() == &area)
+            this->children.erase(it);
+        else if (!(*it)->removeArea(area))
+            continue;
+        // the area was below this node, so this node's surface shrinks with it
+        this->surface = 0;
+        for (const auto &child : this->children)
+            this->surface += child->surface;
+        return true;
+    }
+    return false;
 }
 
 // We calculate the nodes area, if it has no children, we assume it is the chamber without walls;
 int chamberArea::calculateInitialSurface()
 {
     int s = 0;
-    if (this->children.size() > 0) {
+    if (!this->children.empty()) {
         for (unsigned int cnt = 0; cnt < this->children.size(); cnt++) {
             s = s + this->children[cnt]->calculateInitialSurface();
         }
@@ -113,7 +80,7 @@ int chamberArea::calculateInitialSurface()
 int chamberArea::calculateSurface(std::shared_ptr<chamber> mychamber)
 {
     int surface_ = 0;
-    if (this->children.size() == 0) {
+    if (this->children.empty()) {
         for (int x = this->upLeft.x; x <= this->downRight.x; x++) {
             for (int y = this->upLeft.y; y <= this->downRight.y; y++) {
                 if (mychamber->getElement(x, y)->getAttrs()->isSteppable()
@@ -131,50 +98,50 @@ int chamberArea::calculateSurface(std::shared_ptr<chamber> mychamber)
     return surface_;
 }
 
-void chamberArea::findElementsRec(std::shared_ptr<chamber> mychamber)
+void chamberArea::findElementsRec(const std::shared_ptr<chamber> &mychamber,
+                                  std::vector<std::shared_ptr<bElem>> &found) const
 {
-    if (this->children.size() == 0) {
-        for (int x = this->upLeft.x; x <= this->downRight.x; x++) {
-            for (int y = this->upLeft.y; y <= this->downRight.y; y++) {
-                if (mychamber->getElement(x, y)->getType()
-                    == bElemTypes::_floorType) // && this->checkIfElementIsFree(x,y,mychamber))
-                {
-                    chamberArea::foundElements.push_back(mychamber->getElement(x, y));
-                }
-            }
-        }
-
-    } else {
-        for (unsigned int cnt = 0; cnt < this->children.size(); cnt++) {
-            this->children[cnt]->findElementsRec(mychamber);
-        }
+    if (!this->children.empty()) {
+        for (const auto &child : this->children)
+            child->findElementsRec(mychamber, found);
+        return;
     }
+    for (int x = this->upLeft.x; x <= this->downRight.x; x++)
+        for (int y = this->upLeft.y; y <= this->downRight.y; y++) {
+            auto elem = mychamber->getElement(x, y);
+            if (elem->getType() == bElemTypes::_floorType)
+                found.push_back(std::move(elem));
+        }
 }
 
-bool chamberArea::findElementsToStepOn(std::shared_ptr<chamber> myChamber)
+std::vector<std::shared_ptr<bElem>> chamberArea::findElementsToStepOn(
+    std::shared_ptr<chamber> myChamber) const
 {
-    chamberArea::foundElements.clear();
-    this->findElementsRec(myChamber);
-    return chamberArea::foundElements.size() > 0;
+    std::vector<std::shared_ptr<bElem>> found;
+    this->findElementsRec(myChamber, found);
+    return found;
 }
 
-void chamberArea::findChambersCloseToSurface(int s, int tolerance)
+void chamberArea::findChambersRec(int s, std::vector<areaRef> &found)
 {
     bool last = true;
     if (this->surface > s) {
-        for (unsigned int cnt = 0; cnt < this->children.size(); cnt++) {
-            if (this->children[cnt]->surface >= s) {
-                this->children[cnt]->findChambersCloseToSurface(s, tolerance);
+        for (auto &child : this->children) {
+            if (child->surface >= s) {
+                child->findChambersRec(s, found);
                 last = false;
             }
         }
     }
-    if (last == true) {
-        if (this->surface >= s) {
-            chamberArea::foundAreas.push_back(this);
-        }
-    }
-    return;
+    if (last && this->surface >= s)
+        found.push_back(std::ref(*this));
+}
+
+std::vector<chamberArea::areaRef> chamberArea::findChambersCloseToSurface(int s, int /*tolerance*/)
+{
+    std::vector<areaRef> found;
+    this->findChambersRec(s, found);
+    return found;
 }
 
 bool chamberArea::checkIfElementIsFree(int x, int y, std::shared_ptr<chamber> mychamber)
@@ -211,16 +178,7 @@ bool chamberArea::checkIfElementIsFree(int x, int y, std::shared_ptr<chamber> my
 // This should be run as a correct after deleting a node from the tree, we do not need nodes without a surface
 void chamberArea::removeEmptyNodes()
 {
-    for (long int c = 0; c < (long int) this->children.size(); c++) {
-        this->children[c]->removeEmptyNodes();
-    }
-    for (int c = 0; c < (int) this->children.size();) {
-        chamberArea *node = this->children[c];
-        if (node->surface == 0) {
-            this->children.erase(this->children.begin() + c);
-            delete node;
-        } else {
-            c++;
-        }
-    }
+    for (auto &child : this->children)
+        child->removeEmptyNodes();
+    std::erase_if(this->children, [](const auto &child) { return child->surface == 0; });
 }
