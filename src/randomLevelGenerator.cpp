@@ -266,6 +266,8 @@ bool randomLevelGenerator::placeElementCollection(chamberArea *chmbrArea,
 
 bool randomLevelGenerator::generateLevel(int holes)
 {
+    // publish this level's teleporters only once the level is complete
+    teleport::registrationBatch teleporterBatch;
     int tolerance = 10;
     this->headNode = this->lvlGenerate(1, 1, this->width - 2, this->height - 2, _iterations, holes);
 

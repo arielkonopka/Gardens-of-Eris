@@ -23,17 +23,40 @@
 std::once_flag teleport::_onceFlag;
 
 std::vector<std::weak_ptr<teleport>> teleport::allTeleporters;
+std::recursive_mutex teleport::registryMutex;
+thread_local bool teleport::deferRegistration = false;
+thread_local std::vector<std::weak_ptr<teleport>> teleport::pendingTeleporters;
+
+teleport::registrationBatch::registrationBatch()
+{
+    teleport::deferRegistration = true;
+}
+
+teleport::registrationBatch::~registrationBatch()
+{
+    teleport::deferRegistration = false;
+    std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
+    for (const auto &t : teleport::pendingTeleporters)
+        if (auto sp = t.lock(); sp && !sp->getStats()->isDisposed())
+            teleport::allTeleporters.push_back(t);
+    teleport::pendingTeleporters.clear();
+}
 
 bool teleport::additionalProvisioning(int value)
 {
     if (!bElem::additionalProvisioning(value))
         return false;
-    if (teleport::allTeleporters.empty() && this->getAttrs()->getSubtype() == 0) {
+    std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
+    if (teleport::allTeleporters.empty() && teleport::pendingTeleporters.empty()
+        && this->getAttrs()->getSubtype() == 0) {
         this->getStats()->setFacing(dir::direction::LEFT);
         this->getStats()->setMyDirection(this->getStats()->getFacing());
     }
-
-    teleport::allTeleporters.push_back(std::dynamic_pointer_cast<teleport>(shared_from_this()));
+    auto me = std::dynamic_pointer_cast<teleport>(shared_from_this());
+    if (teleport::deferRegistration)
+        teleport::pendingTeleporters.push_back(me);
+    else
+        teleport::allTeleporters.push_back(me);
     return true;
 }
 
@@ -63,6 +86,7 @@ bool teleport::createConnectionsWithinSubtype()
 {
     /// We do this only once, as soon as the first level is created. we can get away with this construct, because we know, that the first mirror is a receiver, and will be inactive.
     /// therefore we have to remove it from all teleporters vector.
+    std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
     if (!teleport::allTeleporters.empty())
         std::call_once(teleport::_onceFlag,
                        []() { teleport::allTeleporters.erase(teleport::allTeleporters.begin()); });
@@ -84,15 +108,9 @@ bool teleport::createConnectionsWithinSubtype()
             }
         }
     }
-    if (candidates.size() > 2 && this->getAttrs()->getSubtype() > 0)
-        for (int c = 0; c < 5555; c++) {
-            unsigned int p = bElem::randomNumberGenerator() % (candidates.size() - 2);
-            std::shared_ptr<teleport> t = candidates[p];
-            candidates[p] = candidates[p + 1];
-            candidates[p + 1] = t;
-        }
     if (!candidates.empty()) {
-        tmpt = candidates[0];
+        // any matching teleporter can be the other end: local ones pick within their level, global ones across levels
+        tmpt = candidates[bElem::randomNumberGenerator() % candidates.size()];
         this->theOtherEnd = tmpt;
         tmpt2 = std::dynamic_pointer_cast<teleport>(shared_from_this());
         std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport> &wp) {
@@ -171,6 +189,11 @@ bool teleport::mechanics()
 
 bool teleport::removeFromAllTeleporters()
 {
+    std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
+    std::erase_if(teleport::pendingTeleporters, [&](const std::weak_ptr<teleport> &wp) {
+        auto sp = wp.lock();
+        return !sp || sp->getStats()->getInstanceId() == this->getStats()->getInstanceId();
+    });
     for (unsigned int c = 0; c < teleport::allTeleporters.size();) {
         std::shared_ptr<teleport> t = teleport::allTeleporters[c].lock();
         if (teleport::allTeleporters[c].expired()
