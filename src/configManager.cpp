@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 #include "configManager.h"
+#include "allegroHandles.h"
+#include <stdexcept>
 
 std::shared_ptr<configManager> configManager::instance = nullptr;
 std::once_flag configManager::_onceFlag;
@@ -40,13 +42,14 @@ const std::shared_ptr<configManager>& configManager::getInstance()
 }
 void configManager::configReload()
 {
-    FILE *fp = fopen(confFname1, "rb"); // non-Windows use "r"
-    if (fp == nullptr)
-        fp = fopen(confFname2, "rb");
+    std::unique_ptr<FILE, goe::destroyWith<fclose>> fp(fopen(confFname1, "rb"));
+    if (!fp)
+        fp.reset(fopen(confFname2, "rb"));
+    if (!fp)
+        throw std::runtime_error(std::string("Cannot open ") + confFname1 + " or " + confFname2);
     char readBuffer[65536];
-    rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+    rapidjson::FileReadStream is(fp.get(), readBuffer, sizeof(readBuffer));
     this->skinDefJson.ParseStream(is);
-    fclose(fp);
     this->gConfObj->gDestroying.clear();
     this->gConfObj->gDying.clear();
     this->gConfObj->gFadingOut.clear();
