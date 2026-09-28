@@ -11,20 +11,18 @@
 #include "commons.h"
 #include "chamber.h"
 
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fixtures
 
-#include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
+#include <gtest/gtest.h>
+#include "testSupport.h"
 #include "floorElement.h"
 #include "bElemStats.h"
 #include "bElemAttr.h"
 #include "inputManager.h"
 
 
-typedef boost::mpl::list<bElem, player, explosives, brickCluster, plainGun, puppetMasterFR> base_test_types;
+using base_test_types = ::testing::Types<bElem, player, explosives, brickCluster, plainGun, puppetMasterFR>;
 
-typedef boost::mpl::list<bElem, bazooka, bazookaMissile, bunker, door, explosives, goldenApple, key, puppetMasterFR, monster, brickCluster, patrollingDrone, plainGun, plainMissile, player, rubbish, teleport, wall, simpleBomb> all_test_types;
+using all_test_types = ::testing::Types<bElem, bazooka, bazookaMissile, bunker, door, explosives, goldenApple, key, puppetMasterFR, monster, brickCluster, patrollingDrone, plainGun, plainMissile, player, rubbish, teleport, wall, simpleBomb>;
 
 auto preClean = []() {
     while (player::getActivePlayer()) player::getActivePlayer()->disposeElement();
@@ -57,7 +55,6 @@ int findHowManyTimesObjectIsInStack(std::shared_ptr<bElem> in, unsigned long ins
 
 /* bElem class unit tests */
 
-BOOST_AUTO_TEST_SUITE(BasicObjectTests)
 //Create a bElem object, and destroy it - smoke test
 
 
@@ -68,10 +65,13 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
  * The test covers scenarios where the element being placed is stepping on another element, ensuring that
  * the relationships and references between objects are correctly maintained.
  *
- * @tparam T The element type to be tested, specified by the BOOST_AUTO_TEST_CASE_TEMPLATE macro.
+ * @tparam T The element type to be tested, one per type in the TYPED_TEST_SUITE list.
  */
-    BOOST_AUTO_TEST_CASE_TEMPLATE(bElemCreateDestroyChamber, T, all_test_types)
+    template <class> class BasicObjectTests_bElemCreateDestroyChamber : public ::testing::Test {};
+TYPED_TEST_SUITE(BasicObjectTests_bElemCreateDestroyChamber, all_test_types);
+TYPED_TEST(BasicObjectTests_bElemCreateDestroyChamber, bElemCreateDestroyChamber)
     {
+    using T = TypeParam;
         coords csize = (coords)
                 {
                         10, 12
@@ -79,84 +79,87 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
 //    std::cout<<"make chamber\n";
         std::shared_ptr<chamber> chmbr = chamber::makeNewChamber(csize); // we need only a small chamber
         coords cs1 = chmbr->getSizeOfChamber();
-        BOOST_ASSERT(chmbr);
-        BOOST_CHECK(cs1.x >=  csize.x);
-        BOOST_CHECK(cs1.y >= csize.y);
+        ASSERT_TRUE(chmbr);
+        EXPECT_TRUE(cs1.x >=  csize.x);
+        EXPECT_TRUE(cs1.y >= csize.y);
         for (int c = 0; c < csize.x; c++) // check that all elements are not nullptr
             for (int d = 0; d < csize.y; d++) {
                 std::shared_ptr<bElem> beOrig = chmbr->getElement(c, d);
                 coords mcoords = {c, d};
-                BOOST_ASSERT(beOrig.get() != nullptr);
-                BOOST_CHECK(beOrig->getType() == bElemTypes::_floorType);
-                BOOST_CHECK(beOrig->getStats()->getMyPosition() == mcoords); // just check if the allocation is correct
-                BOOST_CHECK(beOrig->getStats()->hasParent() == false);
+                ASSERT_TRUE(beOrig.get() != nullptr);
+                EXPECT_TRUE(beOrig->getType() == bElemTypes::_floorType);
+                EXPECT_TRUE(beOrig->getStats()->getMyPosition() == mcoords); // just check if the allocation is correct
+                EXPECT_TRUE(beOrig->getStats()->hasParent() == false);
 
-                BOOST_CHECK(!beOrig->getStats()->getSteppingOn());
+                EXPECT_TRUE(!beOrig->getStats()->getSteppingOn());
             }
 
         std::shared_ptr<bElem> beOrig = chmbr->getElement(0, 0); // ok, now let's step on something
-        BOOST_CHECK(beOrig);
+        EXPECT_TRUE(beOrig);
         std::shared_ptr<bElem> be = elementFactory::generateAnElement<T>(chmbr, 0);
 
-        BOOST_ASSERT(be);
+        ASSERT_TRUE(be);
         inputManager::getInstance(true);
         be->stepOnElement(chmbr->getElement(0, 0));
-        BOOST_CHECK(be->getBoard() == chmbr);
+        EXPECT_TRUE(be->getBoard() == chmbr);
         std::shared_ptr<bElem> be2 = chmbr->getElement(0, 0); // check if the element is placed
-        BOOST_CHECK(be->getStats()->getInstanceId() == be2->getStats()->getInstanceId());
-        BOOST_ASSERT(be->getStats()->getSteppingOn() != nullptr); // something is under the new object
-        BOOST_CHECK(be->getStats()->getSteppingOn()->getStats()->getInstanceId() ==
+        EXPECT_TRUE(be->getStats()->getInstanceId() == be2->getStats()->getInstanceId());
+        ASSERT_TRUE(be->getStats()->getSteppingOn() != nullptr); // something is under the new object
+        EXPECT_TRUE(be->getStats()->getSteppingOn()->getStats()->getInstanceId() ==
                     beOrig->getStats()->getInstanceId()); // check it is original background
-        BOOST_CHECK(beOrig->getStats()->hasParent()); // check, that the object below, "knows" it is below.
-        BOOST_CHECK(beOrig->getStats()->getStandingOn().lock()->getStats()->getInstanceId() ==
+        EXPECT_TRUE(beOrig->getStats()->hasParent()); // check, that the object below, "knows" it is below.
+        EXPECT_TRUE(beOrig->getStats()->getStandingOn().lock()->getStats()->getInstanceId() ==
                     be->getStats()->getInstanceId());
         be->removeElement(); // remove the object from the board
-        BOOST_CHECK(!beOrig->getStats()->hasParent());
-//    BOOST_CHECK(beOrig->getStats()->getStandingOn().lock()->getStats()->hasParent()==false); //check if the original object is being stepped on
+        EXPECT_TRUE(!beOrig->getStats()->hasParent());
+//    EXPECT_TRUE(beOrig->getStats()->getStandingOn().lock()->getStats()->hasParent()==false); //check if the original object is being stepped on
         be2 = chmbr->getElement(0,
                                 0); // fetch the element from the board, and compare it with the original object, there should be a match
-        BOOST_CHECK(beOrig->getStats()->getInstanceId() == be2->getStats()->getInstanceId());
-        BOOST_CHECK(beOrig->getBoard() == chmbr);
-        BOOST_CHECK(be->getBoard() == nullptr);
-        BOOST_CHECK(be->getStats()->getMyPosition() == NOCOORDS);
+        EXPECT_TRUE(beOrig->getStats()->getInstanceId() == be2->getStats()->getInstanceId());
+        EXPECT_TRUE(beOrig->getBoard() == chmbr);
+        EXPECT_TRUE(be->getBoard() == nullptr);
+        EXPECT_TRUE(be->getStats()->getMyPosition() == NOCOORDS);
 
     }
 
-    BOOST_AUTO_TEST_CASE_TEMPLATE(bElemCreateThenDispose, T, all_test_types)
+    template <class> class BasicObjectTests_bElemCreateThenDispose : public ::testing::Test {};
+TYPED_TEST_SUITE(BasicObjectTests_bElemCreateThenDispose, all_test_types);
+TYPED_TEST(BasicObjectTests_bElemCreateThenDispose, bElemCreateThenDispose)
     {
+    using T = TypeParam;
         coords point = {3, 3};
         coords csize = {10, 10};
         std::shared_ptr<chamber> chmbr = chamber::makeNewChamber(csize); // we need only a small chamber
-        BOOST_ASSERT(chmbr != nullptr);
+        ASSERT_TRUE(chmbr != nullptr);
 
         std::shared_ptr<bElem> beOrig = chmbr->getElement(point); // ok, now let's step on something
         std::shared_ptr<bElem> be = elementFactory::generateAnElement<T>(chmbr, 0);
 
-        BOOST_ASSERT(be != nullptr);
+        ASSERT_TRUE(be != nullptr);
         be->stepOnElement(chmbr->getElement(point));
-        BOOST_CHECK(be->getBoard() == chmbr);
-        BOOST_CHECK(be->getStats()->getMyPosition() == point); // we check, that the coordinates are set properly
+        EXPECT_TRUE(be->getBoard() == chmbr);
+        EXPECT_TRUE(be->getStats()->getMyPosition() == point); // we check, that the coordinates are set properly
         std::shared_ptr<bElem> be2 = chmbr->getElement(point); // check if the element is placed
-        BOOST_CHECK(be->getStats()->getInstanceId() == be2->getStats()->getInstanceId());
-        BOOST_ASSERT(be->getStats()->getSteppingOn() != nullptr); // something is under the new object
-        BOOST_CHECK(be->getStats()->getSteppingOn()->getStats()->getInstanceId() ==
+        EXPECT_TRUE(be->getStats()->getInstanceId() == be2->getStats()->getInstanceId());
+        ASSERT_TRUE(be->getStats()->getSteppingOn() != nullptr); // something is under the new object
+        EXPECT_TRUE(be->getStats()->getSteppingOn()->getStats()->getInstanceId() ==
                     beOrig->getStats()->getInstanceId()); // check it is original background
-        BOOST_CHECK(beOrig->getStats()->hasParent()); // check, that the object below, "knows" it is below.
-        BOOST_CHECK(beOrig->getStats()->getStandingOn().lock()->getStats()->getInstanceId() ==
+        EXPECT_TRUE(beOrig->getStats()->hasParent()); // check, that the object below, "knows" it is below.
+        EXPECT_TRUE(beOrig->getStats()->getStandingOn().lock()->getStats()->getInstanceId() ==
                     be->getStats()->getInstanceId());
-        BOOST_CHECK(be->disposeElement() != ERROR); // remove the object from the board
-        BOOST_CHECK(beOrig->getStats()->hasParent() == false); //check if the original object is being stepped on
+        EXPECT_TRUE(be->disposeElement() != ERROR); // remove the object from the board
+        EXPECT_TRUE(beOrig->getStats()->hasParent() == false); //check if the original object is being stepped on
         be2 = chmbr->getElement(
                 point); // fetch the element from the board, and compare it with the original object, there should be a match
-        BOOST_CHECK(beOrig->getStats()->getInstanceId() == be2->getStats()->getInstanceId());
-        BOOST_CHECK(beOrig->getBoard() == chmbr);
-        BOOST_CHECK(be->getBoard() == nullptr);
-        BOOST_CHECK(be->getStats()->getMyPosition() == NOCOORDS);
+        EXPECT_TRUE(beOrig->getStats()->getInstanceId() == be2->getStats()->getInstanceId());
+        EXPECT_TRUE(beOrig->getBoard() == chmbr);
+        EXPECT_TRUE(be->getBoard() == nullptr);
+        EXPECT_TRUE(be->getStats()->getMyPosition() == NOCOORDS);
 
     }
 
 
-    BOOST_AUTO_TEST_CASE(StackAndRemoveFromTheFeet)
+    TEST(BasicObjectTests, StackAndRemoveFromTheFeet)
     {
         coords csize = {10, 10};
         coords point = {3, 3};
@@ -165,17 +168,17 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
         std::shared_ptr<bElem> o = mc->getElement(point);  //                                       o
         std::shared_ptr<bElem> e = elementFactory::generateAnElement<bElem>(mc, 0);//                e
         std::shared_ptr<bElem> e1 = elementFactory::generateAnElement<bElem>(mc, 0);
-        BOOST_CHECK(o->getStats()->getInstanceId() != e->getStats()->getInstanceId() &&
+        EXPECT_TRUE(o->getStats()->getInstanceId() != e->getStats()->getInstanceId() &&
                     o->getStats()->getInstanceId() != e1->getStats()->getInstanceId());
 
         e->stepOnElement(mc->getElement(point));
         e1->stepOnElement(mc->getElement(point));
         o->disposeElement();
-        BOOST_CHECK(mc->getElement(point)->getStats()->getInstanceId() == e1->getStats()->getInstanceId());
+        EXPECT_TRUE(mc->getElement(point)->getStats()->getInstanceId() == e1->getStats()->getInstanceId());
         e1->disposeElement();
-        BOOST_CHECK(mc->getElement(point)->getStats()->getInstanceId() == e->getStats()->getInstanceId());
+        EXPECT_TRUE(mc->getElement(point)->getStats()->getInstanceId() == e->getStats()->getInstanceId());
         e->disposeElement();
-        BOOST_CHECK(mc->getElement(point)->getStats()->getInstanceId() != e->getStats()->getInstanceId());
+        EXPECT_TRUE(mc->getElement(point)->getStats()->getInstanceId() != e->getStats()->getInstanceId());
 
     }
 
@@ -219,8 +222,11 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
 
 /**
  * @brief This unit test tests placing few objects on each other, then randomly removing them and checking, there is still integrity
- */BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndRemovingTest, T, all_test_types)
+ */template <class> class BasicObjectTests_StackingAndRemovingTest : public ::testing::Test {};
+TYPED_TEST_SUITE(BasicObjectTests_StackingAndRemovingTest, all_test_types);
+TYPED_TEST(BasicObjectTests_StackingAndRemovingTest, StackingAndRemovingTest)
     {
+    using T = TypeParam;
         std::shared_ptr<chamber> mc = chamber::makeNewChamber(
                 myUtility::Coords(10, 10)); // we need only a small chamber
         std::shared_ptr<bElem> te;
@@ -229,20 +235,20 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
         for (int x = 0; x < 10; x++) {
             std::shared_ptr<bElem> be = elementFactory::generateAnElement<bElem>(mc, 0);
             be->stepOnElement(mc->getElement(3, 3));
-            BOOST_ASSERT(mc->getElement(3, 3)->getStats()->getInstanceId() == be->getStats()->getInstanceId());
-            BOOST_ASSERT(mc->getElement(3, 3)->getStats()->getSteppingOn() != nullptr);
-            BOOST_CHECK(!mc->getElement(3, 3)->getStats()->getSteppingOn()->getStats()->getStandingOn().expired());
-            BOOST_CHECK(mc->getElement(3, 3)->getStats()->getStandingOn().expired());
+            ASSERT_TRUE(mc->getElement(3, 3)->getStats()->getInstanceId() == be->getStats()->getInstanceId());
+            ASSERT_TRUE(mc->getElement(3, 3)->getStats()->getSteppingOn() != nullptr);
+            EXPECT_TRUE(!mc->getElement(3, 3)->getStats()->getSteppingOn()->getStats()->getStandingOn().expired());
+            EXPECT_TRUE(mc->getElement(3, 3)->getStats()->getStandingOn().expired());
         }
         std::shared_ptr<bElem> last = elementFactory::generateAnElement<T>(mc, 0);
         last->stepOnElement(mc->getElement(3, 3));
-        BOOST_CHECK(last);
+        EXPECT_TRUE(last);
 
         //we at first take the last element, at the bottom, because it usually causes issues
         te = findLastStep(mc->getElement(3, 3));
         te2 = te->removeElement();
         if (mc->getElement(3, 3) != nullptr) //check if element is really removed
-            BOOST_CHECK(searchForIdInSteppers(mc->getElement(3, 3), te2->getStats()->getInstanceId()) == false);
+            EXPECT_TRUE(searchForIdInSteppers(mc->getElement(3, 3), te2->getStats()->getInstanceId()) == false);
         te = mc->getElement(3, 3);
         while (findDepth(mc->getElement(3, 3)) > 2) {
             if (te == nullptr) {
@@ -257,9 +263,9 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
                 te2 = te->removeElement();
 
                 te = te3;
-                BOOST_ASSERT(te2 != nullptr);
+                ASSERT_TRUE(te2 != nullptr);
                 if (mc->getElement(3, 3) != nullptr)
-                    BOOST_CHECK(searchForIdInSteppers(mc->getElement(3, 3), te2->getStats()->getInstanceId()) == false);
+                    EXPECT_TRUE(searchForIdInSteppers(mc->getElement(3, 3), te2->getStats()->getInstanceId()) == false);
             } else {
                 te = te->getStats()->getSteppingOn();
                 ccc++;
@@ -272,25 +278,28 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
 /**
  * @brief This unit test tests placing few objects on eeach other, then randomly disposing them and checking, there is still integrity
  */
-    BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDisposingTest, T, all_test_types)
+    template <class> class BasicObjectTests_StackingAndDisposingTest : public ::testing::Test {};
+TYPED_TEST_SUITE(BasicObjectTests_StackingAndDisposingTest, all_test_types);
+TYPED_TEST(BasicObjectTests_StackingAndDisposingTest, StackingAndDisposingTest)
     {
+    using T = TypeParam;
         std::shared_ptr<chamber> mc = chamber::makeNewChamber(coords(5, 6));
         std::shared_ptr<bElem> te;
         int myId;
         for (int x = 0; x < 100; x++) {
             std::shared_ptr<bElem> be = elementFactory::generateAnElement<bElem>(mc, 0);
             be->stepOnElement(mc->getElement(3, 3));
-            BOOST_ASSERT(mc->getElement(3, 3)->getStats()->getInstanceId() == be->getStats()->getInstanceId());
-            BOOST_ASSERT(mc->getElement(3, 3)->getStats()->getSteppingOn() != nullptr);
+            ASSERT_TRUE(mc->getElement(3, 3)->getStats()->getInstanceId() == be->getStats()->getInstanceId());
+            ASSERT_TRUE(mc->getElement(3, 3)->getStats()->getSteppingOn() != nullptr);
         }
         std::shared_ptr<bElem> last = elementFactory::generateAnElement<T>(mc, 0);
         last->stepOnElement(mc->getElement(3, 3));
         te = findLastStep(mc->getElement(3, 3));
-        BOOST_CHECK(te->getStats()->getInstanceId() != mc->getElement(3, 3)->getStats()->getInstanceId());
+        EXPECT_TRUE(te->getStats()->getInstanceId() != mc->getElement(3, 3)->getStats()->getInstanceId());
         myId = te->getStats()->getInstanceId();
         te->disposeElement();
         if (mc->getElement(3, 3) != nullptr)
-            BOOST_CHECK(searchForIdInSteppers(mc->getElement(3, 3), myId) == false);
+            EXPECT_TRUE(searchForIdInSteppers(mc->getElement(3, 3), myId) == false);
 
         te = mc->getElement(3, 3);
         while (mc->getElement(3, 3) != nullptr && mc->getElement(3, 3)->getStats()->getSteppingOn() != nullptr) {
@@ -301,7 +310,7 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
                 te->disposeElement();
                 te = te3;
                 if (mc->getElement(3, 3) != nullptr)
-                    BOOST_CHECK(searchForIdInSteppers(mc->getElement(3, 3), myId) == false);
+                    EXPECT_TRUE(searchForIdInSteppers(mc->getElement(3, 3), myId) == false);
 
             } else {
                 te = te->getStats()->getSteppingOn();
@@ -325,24 +334,27 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
  *
  * By running the mechanics after all interactions, the test is simulating a scenario where all game objects have interacted with each other and the game is progressing to the next game state.
  */
-    BOOST_AUTO_TEST_CASE_TEMPLATE(StackingAndDestroyingTheWholeChamber, T, all_test_types)
+    template <class> class BasicObjectTests_StackingAndDestroyingTheWholeChamber : public ::testing::Test {};
+TYPED_TEST_SUITE(BasicObjectTests_StackingAndDestroyingTheWholeChamber, all_test_types);
+TYPED_TEST(BasicObjectTests_StackingAndDestroyingTheWholeChamber, StackingAndDestroyingTheWholeChamber)
     {
+    using T = TypeParam;
         std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(12, 12));
         std::shared_ptr<bElem> be = nullptr;
         std::shared_ptr<bElem> be1 = elementFactory::generateAnElement<bElem>(mc, 0);
-        BOOST_CHECK(be1 != nullptr);
-        BOOST_CHECK(be1->stepOnElement(mc->getElement(11, 11)) ==
+        EXPECT_TRUE(be1 != nullptr);
+        EXPECT_TRUE(be1->stepOnElement(mc->getElement(11, 11)) ==
                     true); // this is the object that will be interacting with tested elements
         for (int x = 0; x < 10; x++) {
             for (int y = 0; y < 10; y++) {
 
                 be = elementFactory::generateAnElement<T>(mc, x);
-                BOOST_CHECK(mc->getElement(x, y) != nullptr);
+                EXPECT_TRUE(mc->getElement(x, y) != nullptr);
                 be->stepOnElement(mc->getElement(x, y));
                 be->getStats()->setMyDirection(dir::direction::UP);
-                BOOST_CHECK(be->getStats()->getInstanceId() == mc->getElement(x, y)->getStats()->getInstanceId());
+                EXPECT_TRUE(be->getStats()->getInstanceId() == mc->getElement(x, y)->getStats()->getInstanceId());
                 be->getStats()->setActive(true);
-                BOOST_CHECK(be->getStats()->isActive());
+                EXPECT_TRUE(be->getStats()->isActive());
             }
         }
         for (int x = 0; x < 11; x++) {
@@ -372,20 +384,20 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
  * By checking the state of the pile before and after placing the new game object, the test verifies that the stepOnElement method correctly manages the relationship between game objects that are placed on top of each other.
  * The test finally asserts that the total number of game objects in the pile is greater than 200, which means that all game objects were correctly placed and counted.
  */
-    BOOST_AUTO_TEST_CASE(StepOverElementTests)
+    TEST(BasicObjectTests, StepOverElementTests)
     {
         coords point = {2, 2};
 
         std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(10, 10));
         int stackSize = countTheStack(mc->getElement(point));
         std::shared_ptr<bElem> nElement = nullptr;
-        BOOST_CHECK(mc->getElement(point)->getAttrs()->isSteppable());
+        EXPECT_TRUE(mc->getElement(point)->getAttrs()->isSteppable());
         for (int c = 0; c < 100; c++) {
             nElement = elementFactory::generateAnElement<bElem>(mc, 0);
-            BOOST_CHECK(nElement->stepOnElement(mc->getElement(point)) == true);
-            BOOST_CHECK(nElement->getStats()->getInstanceId() == mc->getElement(point)->getStats()->getInstanceId());
-            BOOST_CHECK(nElement->getStats()->getMyPosition() == point);
-            BOOST_CHECK(stackSize < countTheStack(mc->getElement(point)));
+            EXPECT_TRUE(nElement->stepOnElement(mc->getElement(point)) == true);
+            EXPECT_TRUE(nElement->getStats()->getInstanceId() == mc->getElement(point)->getStats()->getInstanceId());
+            EXPECT_TRUE(nElement->getStats()->getMyPosition() == point);
+            EXPECT_TRUE(stackSize < countTheStack(mc->getElement(point)));
             stackSize = countTheStack(mc->getElement(point));
         }
         nElement = mc->getElement(point);
@@ -398,36 +410,35 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
             std::shared_ptr<bElem> stmp, steppOn;
             stmp = nElement->getStats()->getStandingOn().lock();
             steppOn = nElement->getStats()->getSteppingOn();
-            BOOST_CHECK(nE2->stepOnElement(nElement) == true);
-            BOOST_CHECK(nE2->getStats()->getMyPosition() == point);
-            BOOST_CHECK(findHowManyTimesObjectIsInStack(nElement, nEInstanceId) == 1);
-            BOOST_CHECK(nElement->getStats()->getStandingOn().lock()->getStats()->getInstanceId() ==
+            EXPECT_TRUE(nE2->stepOnElement(nElement) == true);
+            EXPECT_TRUE(nE2->getStats()->getMyPosition() == point);
+            EXPECT_TRUE(findHowManyTimesObjectIsInStack(nElement, nEInstanceId) == 1);
+            EXPECT_TRUE(nElement->getStats()->getStandingOn().lock()->getStats()->getInstanceId() ==
                         nE2->getStats()->getInstanceId());
-            BOOST_CHECK(nE2->getStats()->getSteppingOn()->getStats()->getInstanceId() ==
+            EXPECT_TRUE(nE2->getStats()->getSteppingOn()->getStats()->getInstanceId() ==
                         nElement->getStats()->getInstanceId());
-            BOOST_CHECK(mc->getElement(point)->getStats()->getInstanceId() != nElement->getStats()->getInstanceId());
+            EXPECT_TRUE(mc->getElement(point)->getStats()->getInstanceId() != nElement->getStats()->getInstanceId());
             if (steppOn != nullptr) {
-                BOOST_CHECK(steppOn->getStats()->getInstanceId() ==
+                EXPECT_TRUE(steppOn->getStats()->getInstanceId() ==
                             nElement->getStats()->getSteppingOn()->getStats()->getInstanceId());
-                BOOST_CHECK(steppOn->getStats()->getStandingOn().lock()->getStats()->getInstanceId() ==
+                EXPECT_TRUE(steppOn->getStats()->getStandingOn().lock()->getStats()->getInstanceId() ==
                             nElement->getStats()->getInstanceId());
 
             }
             if (stmp != nullptr) {
-                BOOST_CHECK(origId == mc->getElement(point)->getStats()->getInstanceId());
-                BOOST_CHECK(stmp->getStats()->getInstanceId() ==
+                EXPECT_TRUE(origId == mc->getElement(point)->getStats()->getInstanceId());
+                EXPECT_TRUE(stmp->getStats()->getInstanceId() ==
                             nE2->getStats()->getStandingOn().lock()->getStats()->getInstanceId());
-                BOOST_CHECK(
-                        stmp->getStats()->getSteppingOn()->getStats()->getStandingOn().lock()->getStats()->getInstanceId() ==
+                EXPECT_TRUE(stmp->getStats()->getSteppingOn()->getStats()->getStandingOn().lock()->getStats()->getInstanceId() ==
                         stmp->getStats()->getInstanceId());
             }
-            BOOST_CHECK(stackSize < countTheStack(mc->getElement(point)));
+            EXPECT_TRUE(stackSize < countTheStack(mc->getElement(point)));
             stackSize = countTheStack(mc->getElement(point));
 
             nElement = nElement->getStats()->getSteppingOn();
             elementCnt++;
         }
-        BOOST_CHECK(countTheStack(mc->getElement(point)) >
+        EXPECT_TRUE(countTheStack(mc->getElement(point)) >
                     200); // it is because when we create the chamber, there is already one element placed in the chamber
 
     }
@@ -444,13 +455,16 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
  *
  * Through this, the unit test verifies that the setSubtype and getSubtype methods function correctly for all different types of game objects.
  */
-    BOOST_AUTO_TEST_CASE_TEMPLATE(SubTypeChecker, T, all_test_types)
+    template <class> class BasicObjectTests_SubTypeChecker : public ::testing::Test {};
+TYPED_TEST_SUITE(BasicObjectTests_SubTypeChecker, all_test_types);
+TYPED_TEST(BasicObjectTests_SubTypeChecker, SubTypeChecker)
     {
+    using T = TypeParam;
         std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(10, 10));
         std::shared_ptr<bElem> myobj = elementFactory::generateAnElement<T>(mc, 0);
         for (int x = 0; x < 10; x++) {
             myobj->getAttrs()->setSubtype(x);
-            BOOST_CHECK(myobj->getAttrs()->getSubtype() == x);
+            EXPECT_TRUE(myobj->getAttrs()->getSubtype() == x);
         }
 
     }
@@ -473,8 +487,11 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
  *
  * Through this, the unit test verifies that the waiting mechanism works as intended, including the correct adherence to the maximum waiting time constraint.
  */
-    BOOST_AUTO_TEST_CASE_TEMPLATE(WaitMechanismTest, T, base_test_types)
+    template <class> class BasicObjectTests_WaitMechanismTest : public ::testing::Test {};
+TYPED_TEST_SUITE(BasicObjectTests_WaitMechanismTest, base_test_types);
+TYPED_TEST(BasicObjectTests_WaitMechanismTest, WaitMechanismTest)
     {
+    using T = TypeParam;
         std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(10, 10));
         std::shared_ptr<bElem> testObj = elementFactory::generateAnElement<T>(mc, 0);
         testObj->stepOnElement(mc->getElement(3, 3));
@@ -484,19 +501,19 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
             int c = 0;
             //std::cout<<"d="<<d<<"\n";
             testObj->getStats()->setWaiting(d);
-            BOOST_CHECK(testObj->getStats()->isWaiting());
+            EXPECT_TRUE(testObj->getStats()->isWaiting());
             while (testObj->getStats()->isWaiting()) {
-//            BOOST_ASSERT(testObj->isWaiting()==true); //mechanics is blocked during waiting time
+//            ASSERT_TRUE(testObj->isWaiting()==true); //mechanics is blocked during waiting time
                 c++;
                 bElem::tick();
                 if (c > GoEConstants::_maxWaitingTtime + d + 10) break;
             }
             // std::cout<<"c="<<c<<" d: "<<d<<"\n";
-            BOOST_ASSERT(testObj->getStats()->isWaiting() == false); // mechanics is unblocked after the waiting time
+            ASSERT_TRUE(testObj->getStats()->isWaiting() == false); // mechanics is unblocked after the waiting time
             if (d < GoEConstants::_maxWaitingTtime + 1) {
-                BOOST_ASSERT(c == d);
+                ASSERT_TRUE(c == d);
             } else {
-                BOOST_ASSERT(c == 0);
+                ASSERT_TRUE(c == 0);
             }
 
         }
@@ -524,8 +541,11 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
  *
  * In summary, this unit test verifies that the destruction process of game objects on the board is functioning correctly.
  */
-    BOOST_AUTO_TEST_CASE_TEMPLATE(DestroyObjectOnBoard, T, base_test_types)
+    template <class> class BasicObjectTests_DestroyObjectOnBoard : public ::testing::Test {};
+TYPED_TEST_SUITE(BasicObjectTests_DestroyObjectOnBoard, base_test_types);
+TYPED_TEST(BasicObjectTests_DestroyObjectOnBoard, DestroyObjectOnBoard)
     {
+    using T = TypeParam;
         coords csize = {10, 11};
         std::shared_ptr<chamber> mc = chamber::makeNewChamber({csize});
         std::shared_ptr<bElem> pl = elementFactory::generateAnElement<player>(mc, 0);
@@ -545,18 +565,18 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
         myObj->getStats()->setActive(true);
         myObj->destroy();
         for (int c = 0; c < GoEConstants::_defaultDestroyTime; c++) {
-            BOOST_CHECK(mc->getElement(3, 3)->getStats()->isDestroying() == true);
+            EXPECT_TRUE(mc->getElement(3, 3)->getStats()->isDestroying() == true);
             bElem::runLiveElements();
         }
         bElem::runLiveElements();
         myObj = mc->getElement(3, 3);
 
-        BOOST_CHECK(mc->getElement(3, 3)->getStats()->isDestroying() == false);
+        EXPECT_TRUE(mc->getElement(3, 3)->getStats()->isDestroying() == false);
         bElem::runLiveElements();
         if (!canBeDestroyed) {
-            BOOST_CHECK(mc->getElement(3, 3)->getStats()->getInstanceId() == instance);
+            EXPECT_TRUE(mc->getElement(3, 3)->getStats()->getInstanceId() == instance);
         } else {
-            BOOST_CHECK(mc->getElement(3, 3)->getStats()->getInstanceId() != instance);
+            EXPECT_TRUE(mc->getElement(3, 3)->getStats()->getInstanceId() != instance);
         }
     }
 
@@ -576,8 +596,11 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
  *
  * This test ensures that an element remains locked if it's locked by multiple other elements and that it's only unlocked when all lockers have issued an unlock.
  */
-    BOOST_AUTO_TEST_CASE_TEMPLATE(ElementsLockUnlockFeature, T, all_test_types)
+    template <class> class BasicObjectTests_ElementsLockUnlockFeature : public ::testing::Test {};
+TYPED_TEST_SUITE(BasicObjectTests_ElementsLockUnlockFeature, all_test_types);
+TYPED_TEST(BasicObjectTests_ElementsLockUnlockFeature, ElementsLockUnlockFeature)
     {
+    using T = TypeParam;
         std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(5, 5));
         std::shared_ptr<bElem> myElement = elementFactory::generateAnElement<T>(mc, 0);
         std::shared_ptr<bElem> blocker = elementFactory::generateAnElement<T>(mc, 0);
@@ -585,13 +608,13 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
         myElement->stepOnElement(mc->getElement(2, 2));
         blocker->stepOnElement(mc->getElement(2, 3));
         blocker2->stepOnElement(mc->getElement(3, 2));
-        BOOST_CHECK(myElement->isLocked() == false);
+        EXPECT_TRUE(myElement->isLocked() == false);
         myElement->lockThisObject(blocker);
-        BOOST_CHECK(myElement->isLocked() == true);
+        EXPECT_TRUE(myElement->isLocked() == true);
         myElement->lockThisObject(blocker);
-        BOOST_CHECK(myElement->isLocked() == true);
+        EXPECT_TRUE(myElement->isLocked() == true);
         myElement->lockThisObject(blocker2);
-        BOOST_CHECK(myElement->isLocked() == true);
+        EXPECT_TRUE(myElement->isLocked() == true);
     }
 
 /**
@@ -614,8 +637,11 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
  *
  * Lastly, the element 'tElem' is disposed of.
  */
-    BOOST_AUTO_TEST_CASE_TEMPLATE(InteractTimerMechanismChecker, T, all_test_types)
+    template <class> class BasicObjectTests_InteractTimerMechanismChecker : public ::testing::Test {};
+TYPED_TEST_SUITE(BasicObjectTests_InteractTimerMechanismChecker, all_test_types);
+TYPED_TEST(BasicObjectTests_InteractTimerMechanismChecker, InteractTimerMechanismChecker)
     {
+    using T = TypeParam;
 
         std::shared_ptr<chamber> mc = chamber::makeNewChamber(coords(5, 5));
         std::shared_ptr<bElem> tElem = elementFactory::generateAnElement<T>(mc, 0);
@@ -629,14 +655,14 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
         tElem->interact(mc->getElement(1, 1));
         bElem::tick();
         if (tElem->getAttrs()->isInteractive())
-            BOOST_CHECK(tElem->getStats()->isInteracting());
+            EXPECT_TRUE(tElem->getStats()->isInteracting());
         for (int c = 0; c < GoEConstants::_interactedTime + 1; c++) bElem::tick();
-        BOOST_CHECK((!tElem->getStats()->isInteracting() && tElem->getAttrs()->isInteractive()) ||
+        EXPECT_TRUE((!tElem->getStats()->isInteracting() && tElem->getAttrs()->isInteractive()) ||
                     (!tElem->getStats()->isInteracting() && !tElem->getAttrs()->isInteractive()));
         for (int c = 0; c < 1000; c++) {
             bElem::tick();
 
-            BOOST_CHECK(!tElem->getStats()->isInteracting());
+            EXPECT_TRUE(!tElem->getStats()->isInteracting());
         }
         tElem->disposeElement();
 
@@ -655,8 +681,11 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
  * 6. It is confirmed that mC is not disposed of yet. mC is then disposed and confirmed that it has been disposed of.
  * 7. Lastly, it is verified that the disposed element is not present on the board or in any inventory.
  */
-    BOOST_AUTO_TEST_CASE_TEMPLATE(TryToCollectAnObjectAndDisposeIt, T, all_test_types)
+    template <class> class BasicObjectTests_TryToCollectAnObjectAndDisposeIt : public ::testing::Test {};
+TYPED_TEST_SUITE(BasicObjectTests_TryToCollectAnObjectAndDisposeIt, all_test_types);
+TYPED_TEST(BasicObjectTests_TryToCollectAnObjectAndDisposeIt, TryToCollectAnObjectAndDisposeIt)
     {
+    using T = TypeParam;
         std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(5, 5));
 
         std::shared_ptr<bElem> mO = elementFactory::generateAnElement<T>(mc, 0);
@@ -668,35 +697,35 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
         mC->stepOnElement(mc->getElement(2, 3));
         //Check if the collect method works well with its limits
         bool chk = mO->collect(mc->getElement(2, 3));
-        BOOST_CHECK(chk == (mO->getAttrs()->canCollect() && mC->getAttrs()->isCollectible()));
+        EXPECT_TRUE(chk == (mO->getAttrs()->canCollect() && mC->getAttrs()->isCollectible()));
         if (mO->getAttrs()->canCollect() && mC->getAttrs()->isCollectible()) {
-            BOOST_CHECK(mc->getElement(2, 3)->getStats()->getInstanceId() != mC->getStats()->getInstanceId());
-            BOOST_CHECK(mC->getStats()->isCollected());
+            EXPECT_TRUE(mc->getElement(2, 3)->getStats()->getInstanceId() != mC->getStats()->getInstanceId());
+            EXPECT_TRUE(mC->getStats()->isCollected());
             //  std::cout<<"is in inv?"<<mO->getAttrs()->getInventory()->findInInventory(mC->getStats()->getInstanceId())<<"\n";
         } else {
-            BOOST_CHECK(mc->getElement(2, 3)->getStats()->getInstanceId() == mC->getStats()->getInstanceId());
+            EXPECT_TRUE(mc->getElement(2, 3)->getStats()->getInstanceId() == mC->getStats()->getInstanceId());
         }
 
         mC = elementFactory::generateAnElement<T>(mc, 0);
         mC->stepOnElement(mc->getElement(3, 2));
         mO->collect(mc->getElement(3, 2));
-        BOOST_CHECK(mC->getStats()->isDisposed() == false);
+        EXPECT_TRUE(mC->getStats()->isDisposed() == false);
         mC->disposeElement();
-        BOOST_CHECK(mC->getStats()->isDisposed() == true);
+        EXPECT_TRUE(mC->getStats()->isDisposed() == true);
         // check the disposed element not present in the board or any inventory
         for (int a = 0; a < mc->getSize().x; a++) {
             for (int b = 0; b < mc->getSize().y; b++) {
-                BOOST_CHECK(mc->getElement(a, b)->getStats()->getInstanceId() != mC->getStats()->getInstanceId());
+                EXPECT_TRUE(mc->getElement(a, b)->getStats()->getInstanceId() != mC->getStats()->getInstanceId());
                 if (mc->getElement(a, b)->getAttrs()->canCollect()) {
-                    BOOST_CHECK(mc->getElement(a, b)->getAttrs()->getInventory()->findInInventory(
+                    EXPECT_TRUE(mc->getElement(a, b)->getAttrs()->getInventory()->findInInventory(
                             mC->getStats()->getInstanceId()) == false);
                 }
                 std::shared_ptr<bElem> el = mc->getElement(a, b)->getStats()->getSteppingOn();
 
                 while (el != nullptr) {
-                    BOOST_CHECK(el->getStats()->getInstanceId() != mC->getStats()->getInstanceId());
+                    EXPECT_TRUE(el->getStats()->getInstanceId() != mC->getStats()->getInstanceId());
                     if (el->getAttrs()->canCollect() == true) {
-                        BOOST_CHECK(el->getAttrs()->getInventory()->findInInventory(mC->getStats()->getInstanceId()) ==
+                        EXPECT_TRUE(el->getAttrs()->getInventory()->findInInventory(mC->getStats()->getInstanceId()) ==
                                     false);
                     }
                     el = el->getStats()->getSteppingOn();
@@ -707,8 +736,11 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
     }
 
 
-    BOOST_AUTO_TEST_CASE_TEMPLATE(TryToRemoveElementMoreThanNeeded, T, all_test_types)
+    template <class> class BasicObjectTests_TryToRemoveElementMoreThanNeeded : public ::testing::Test {};
+TYPED_TEST_SUITE(BasicObjectTests_TryToRemoveElementMoreThanNeeded, all_test_types);
+TYPED_TEST(BasicObjectTests_TryToRemoveElementMoreThanNeeded, TryToRemoveElementMoreThanNeeded)
     {
+    using T = TypeParam;
         std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(5, 5));
         std::shared_ptr<bElem> myObj = elementFactory::generateAnElement<T>(mc, 0);
         std::shared_ptr<bElem> relic;
@@ -722,38 +754,37 @@ BOOST_AUTO_TEST_SUITE(BasicObjectTests)
 #endif
 
             relic = mc->getElement(1, 1)->removeElement();
-            BOOST_CHECK(relic != nullptr);
+            EXPECT_TRUE(relic != nullptr);
 #ifdef _VerbousMode_
             std::cout<<" * [2] removing "<<c<<"\n";
 #endif
 
-            BOOST_CHECK(mc->getElement(2, 2)->disposeElement() == DISPOSED);
+            EXPECT_TRUE(mc->getElement(2, 2)->disposeElement() == DISPOSED);
         }
     }
 
-    BOOST_AUTO_TEST_CASE(rwg)
+    TEST(BasicObjectTests, rwg)
     {
         randomLevelGenerator *rwg = new randomLevelGenerator(400, 400);
-        BOOST_CHECK(rwg != nullptr);
-        BOOST_CHECK(rwg->mychamber != nullptr);
+        EXPECT_TRUE(rwg != nullptr);
+        EXPECT_TRUE(rwg->mychamber != nullptr);
         delete rwg;
         rwg = new randomLevelGenerator(40, 40);
-        BOOST_CHECK(rwg != nullptr);
-        BOOST_CHECK(rwg->mychamber != nullptr);
+        EXPECT_TRUE(rwg != nullptr);
+        EXPECT_TRUE(rwg->mychamber != nullptr);
 
         delete rwg;
         rwg = new randomLevelGenerator(10, 10);
-        BOOST_CHECK(rwg != nullptr);
-        BOOST_CHECK(rwg->mychamber != nullptr);
+        EXPECT_TRUE(rwg != nullptr);
+        EXPECT_TRUE(rwg->mychamber != nullptr);
 
         delete rwg;
 
 
     }
 
-// BOOST_AUTO_TEST_CASE()
+// TEST()
 
-BOOST_AUTO_TEST_SUITE_END()
 
 
 

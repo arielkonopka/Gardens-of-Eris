@@ -1,10 +1,8 @@
 #include "elements.h"
 #include "commons.h"
 #include "chamber.h"
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fixtures
-#include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
+#include <gtest/gtest.h>
+#include "testSupport.h"
 #include <cstdlib>
 #include <memory>
 #include <vector>
@@ -36,10 +34,10 @@ rig makeRig(int kind, int size, int dx, int dy)
     r.plr->getStats()->setActive(true);
     r.brain = puppetMasterFR::create(r.mc, kind);
     r.brain->stepOnElement(r.mc->getElement(4, 3));
-    BOOST_REQUIRE(r.plr->collect(r.brain));
+    REQUIRE_IN_HELPER(r.plr->collect(r.brain));
     r.drone = elementFactory::generateAnElement<patrollingDrone>(r.mc, 0);
     r.drone->stepOnElement(r.mc->getElement(dx, dy));
-    BOOST_REQUIRE(r.drone->interact(r.plr));
+    REQUIRE_IN_HELPER(r.drone->interact(r.plr));
     return r;
 }
 
@@ -84,49 +82,48 @@ std::vector<std::shared_ptr<patrollingDrone>> guardiansOf(const std::shared_ptr<
 }
 } // namespace
 
-BOOST_AUTO_TEST_SUITE(ControllerTests)
 
-BOOST_AUTO_TEST_CASE(FactoryCreatesTheRightKind)
+TEST(ControllerTests, FactoryCreatesTheRightKind)
 {
     auto mc = chamber::makeNewChamber(coords(5, 5));
-    BOOST_CHECK(typeid(*puppetMasterFR::create(mc, puppetMasterFR::patrol)) == typeid(puppetMasterFR));
-    BOOST_CHECK(std::dynamic_pointer_cast<puppetMasterCollector>(puppetMasterFR::create(mc, puppetMasterFR::collector)));
-    BOOST_CHECK(std::dynamic_pointer_cast<puppetMasterHunter>(puppetMasterFR::create(mc, puppetMasterFR::hunter)));
-    BOOST_CHECK(std::dynamic_pointer_cast<puppetMasterWallFollower>(puppetMasterFR::create(mc, puppetMasterFR::wallFollower)));
+    EXPECT_TRUE(typeid(*puppetMasterFR::create(mc, puppetMasterFR::patrol)) == typeid(puppetMasterFR));
+    EXPECT_TRUE(std::dynamic_pointer_cast<puppetMasterCollector>(puppetMasterFR::create(mc, puppetMasterFR::collector)));
+    EXPECT_TRUE(std::dynamic_pointer_cast<puppetMasterHunter>(puppetMasterFR::create(mc, puppetMasterFR::hunter)));
+    EXPECT_TRUE(std::dynamic_pointer_cast<puppetMasterWallFollower>(puppetMasterFR::create(mc, puppetMasterFR::wallFollower)));
     for (int k = 0; k < puppetMasterFR::kindCount; k++) {
         auto c = puppetMasterFR::create(mc, k);
-        BOOST_CHECK_EQUAL(c->getType(), bElemTypes::_puppetMasterType);
-        BOOST_CHECK_EQUAL(c->getAttrs()->getSubtype(), k);
+        EXPECT_EQ(c->getType(), bElemTypes::_puppetMasterType);
+        EXPECT_EQ(c->getAttrs()->getSubtype(), k);
     }
 }
 
-BOOST_AUTO_TEST_CASE(EveryKindDrivesItsDrone)
+TEST(ControllerTests, EveryKindDrivesItsDrone)
 {
     for (int k = 0; k < puppetMasterFR::kindCount; k++) {
         auto r = makeRig(k, 20, 12, 12);
-        BOOST_CHECK(r.drone->getBrainModule() == r.brain);
-        BOOST_CHECK(r.brain->getStats()->getCollector().lock() == r.drone);
+        EXPECT_TRUE(r.drone->getBrainModule() == r.brain);
+        EXPECT_TRUE(r.brain->getStats()->getCollector().lock() == r.drone);
         auto start = r.drone->getStats()->getMyPosition();
         bool moved = false;
         for (int c = 0; c < 2000 && !moved; c++) {
             bElem::runLiveElements();
             moved = !(r.drone->getStats()->getMyPosition() == start);
         }
-        BOOST_CHECK_MESSAGE(moved, "controller kind " << k << " never moved its drone");
+        EXPECT_TRUE(moved) << "controller kind " << k << " never moved its drone";
     }
 }
 
-BOOST_AUTO_TEST_CASE(HunterClosesInOnThePlayer)
+TEST(ControllerTests, HunterClosesInOnThePlayer)
 {
     auto r = makeRig(puppetMasterFR::hunter, 20, 9, 9);
     int before = distance(r.drone, r.plr);
     for (int c = 0; c < 400 && distance(r.drone, r.plr) > 1; c++)
         bElem::runLiveElements();
-    BOOST_CHECK_LT(distance(r.drone, r.plr), before);
-    BOOST_CHECK_LE(distance(r.drone, r.plr), 2);
+    EXPECT_LT(distance(r.drone, r.plr), before);
+    EXPECT_LE(distance(r.drone, r.plr), 2);
 }
 
-BOOST_AUTO_TEST_CASE(WallFollowerReachesTheWalls)
+TEST(ControllerTests, WallFollowerReachesTheWalls)
 {
     auto r = makeRig(puppetMasterFR::wallFollower, 20, 10, 10);
     // in an empty room it must not circle in the middle: it reaches a wall and then follows it
@@ -136,22 +133,22 @@ BOOST_AUTO_TEST_CASE(WallFollowerReachesTheWalls)
         auto p = r.drone->getStats()->getMyPosition();
         touchedWall = p.x == 1 || p.y == 1 || p.x == 18 || p.y == 18;
     }
-    BOOST_CHECK(touchedWall);
+    EXPECT_TRUE(touchedWall);
 }
 
-BOOST_AUTO_TEST_CASE(CameraSpawnsItsGuardians)
+TEST(ControllerTests, CameraSpawnsItsGuardians)
 {
     std::shared_ptr<bElem> plr;
     std::shared_ptr<securityCamera> cam;
     auto mc = cameraRoom(coords(40, 40), coords(2, 2), coords(30, 30), plr, cam);
     for (int c = 0; c < 3; c++)
         bElem::runLiveElements();
-    BOOST_CHECK_EQUAL(guardiansOf(mc, cam).size(), (size_t) securityCamera::guardianCount);
+    EXPECT_EQ(guardiansOf(mc, cam).size(), (size_t) securityCamera::guardianCount);
     // the player is far away: no alarm
-    BOOST_CHECK_EQUAL(cam->getAlertNumber(), 0u);
+    EXPECT_EQ(cam->getAlertNumber(), 0u);
 }
 
-BOOST_AUTO_TEST_CASE(CameraCallsGuardiansAndTheyAttack)
+TEST(ControllerTests, CameraCallsGuardiansAndTheyAttack)
 {
     std::shared_ptr<bElem> plr;
     std::shared_ptr<securityCamera> cam;
@@ -163,12 +160,12 @@ BOOST_AUTO_TEST_CASE(CameraCallsGuardiansAndTheyAttack)
         bElem::runLiveElements();
         hurt = plr->getStats()->isDying() || plr->getAttrs()->getEnergy() < energy;
     }
-    BOOST_CHECK_GT(cam->getAlertNumber(), 0u);
-    BOOST_CHECK(cam->getAlertPosition() == coords(13, 20));
-    BOOST_CHECK(hurt);
+    EXPECT_GT(cam->getAlertNumber(), 0u);
+    EXPECT_TRUE(cam->getAlertPosition() == coords(13, 20));
+    EXPECT_TRUE(hurt);
 }
 
-BOOST_AUTO_TEST_CASE(CameraDoesNotSeeThroughWalls)
+TEST(ControllerTests, CameraDoesNotSeeThroughWalls)
 {
     std::shared_ptr<bElem> plr;
     std::shared_ptr<securityCamera> cam;
@@ -177,10 +174,10 @@ BOOST_AUTO_TEST_CASE(CameraDoesNotSeeThroughWalls)
         elementFactory::generateAnElement<wall>(mc, 0)->stepOnElement(mc->getElement(16, y));
     for (int c = 0; c < 300; c++)
         bElem::runLiveElements();
-    BOOST_CHECK_EQUAL(cam->getAlertNumber(), 0u);
+    EXPECT_EQ(cam->getAlertNumber(), 0u);
 }
 
-BOOST_AUTO_TEST_CASE(GuardiansStayOnTheLeash)
+TEST(ControllerTests, GuardiansStayOnTheLeash)
 {
     std::shared_ptr<bElem> plr;
     std::shared_ptr<securityCamera> cam;
@@ -192,8 +189,7 @@ BOOST_AUTO_TEST_CASE(GuardiansStayOnTheLeash)
         for (auto &g : guardiansOf(mc, cam))
             furthest = std::max(furthest, g->getStats()->getMyPosition().x - 5);
     }
-    BOOST_CHECK_GT(furthest, 5); // they do patrol
-    BOOST_CHECK_LE(furthest, securityCamera::leash);
+    EXPECT_GT(furthest, 5); // they do patrol
+    EXPECT_LE(furthest, securityCamera::leash);
 }
 
-BOOST_AUTO_TEST_SUITE_END()

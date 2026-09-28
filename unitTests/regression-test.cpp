@@ -5,9 +5,8 @@
 #include "elements.h"
 #include "commons.h"
 #include "chamber.h"
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fixtures
-#include <boost/test/unit_test.hpp>
+#include <gtest/gtest.h>
+#include "testSupport.h"
 #include <chrono>
 #include <cstdlib>
 #include <memory>
@@ -37,11 +36,10 @@ int manhattan(coords a, coords b)
 }
 } // namespace
 
-BOOST_AUTO_TEST_SUITE(RegressionTests)
 
 // PR #261: every element used to deep-copy the whole sprite config, so a 500x500 level took
 // 107 s to build. 40,000 elements now take a few milliseconds; the bound leaves a wide margin.
-BOOST_AUTO_TEST_CASE(CreatingElementsIsCheap)
+TEST(RegressionTests, CreatingElementsIsCheap)
 {
     inputManager::getInstance(true);
     auto mc = chamber::makeNewChamber(coords(2, 2));
@@ -51,28 +49,28 @@ BOOST_AUTO_TEST_CASE(CreatingElementsIsCheap)
         elementFactory::generateAnElement<floorElement>(mc, 0);
     }
     double seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
-    BOOST_CHECK_LT(seconds, 3.0);
+    EXPECT_LT(seconds, 3.0);
 }
 
 // PR #262: makeNewChamber(Coords) created the floor twice, stacking a second floor on every cell.
-BOOST_AUTO_TEST_CASE(NewChamberHasOneFloorPerCell)
+TEST(RegressionTests, NewChamberHasOneFloorPerCell)
 {
     inputManager::getInstance(true);
     for (auto mc : {chamber::makeNewChamber(coords(7, 5)), chamber::makeNewChamber(myUtility::Coords(7, 5))}) {
-        BOOST_CHECK(mc->getSize() == coords(7, 5));
+        EXPECT_TRUE(mc->getSize() == coords(7, 5));
         for (int x = 0; x < 7; x++)
             for (int y = 0; y < 5; y++) {
                 auto e = mc->getElement(x, y);
-                BOOST_REQUIRE(e);
-                BOOST_CHECK_EQUAL(e->getType(), bElemTypes::_floorType);
-                BOOST_CHECK(e->getStats()->getSteppingOn() == nullptr);
-                BOOST_CHECK(e->getStats()->getMyPosition() == coords(x, y));
+                ASSERT_TRUE(e);
+                EXPECT_EQ(e->getType(), bElemTypes::_floorType);
+                EXPECT_TRUE(e->getStats()->getSteppingOn() == nullptr);
+                EXPECT_TRUE(e->getStats()->getMyPosition() == coords(x, y));
             }
     }
 }
 
 // PR #262: teleporters of a level still being generated must not be paired with.
-BOOST_AUTO_TEST_CASE(TeleportersInABatchStayHiddenUntilItEnds)
+TEST(RegressionTests, TeleportersInABatchStayHiddenUntilItEnds)
 {
     std::shared_ptr<bElem> plr;
     auto mc = roomWithPlayer(coords(30, 10), plr);
@@ -89,8 +87,8 @@ BOOST_AUTO_TEST_CASE(TeleportersInABatchStayHiddenUntilItEnds)
         // while the batch is open, near finds no partner, and sends things around itself
         auto brick = elementFactory::generateAnElement<brickCluster>(mc, 0);
         brick->stepOnElement(mc->getElement(10, 2));
-        BOOST_REQUIRE(near->interact(brick));
-        BOOST_CHECK_LE(manhattan(brick->getStats()->getMyPosition(), coords(3, 5)), 1);
+        ASSERT_TRUE(near->interact(brick));
+        EXPECT_LE(manhattan(brick->getStats()->getMyPosition(), coords(3, 5)), 1);
     }
     // once the batch ends the hidden teleporter is published, and a new one pairs with it
     for (int c = 0; c < 200; c++)
@@ -99,13 +97,13 @@ BOOST_AUTO_TEST_CASE(TeleportersInABatchStayHiddenUntilItEnds)
     late->stepOnElement(mc->getElement(12, 8));
     auto brick = elementFactory::generateAnElement<brickCluster>(mc, 0);
     brick->stepOnElement(mc->getElement(12, 2));
-    BOOST_REQUIRE(late->interact(brick));
+    ASSERT_TRUE(late->interact(brick));
     auto landed = brick->getStats()->getMyPosition();
-    BOOST_CHECK(manhattan(landed, coords(25, 5)) <= 1 || manhattan(landed, coords(3, 5)) <= 1);
+    EXPECT_TRUE(manhattan(landed, coords(25, 5)) <= 1 || manhattan(landed, coords(3, 5)) <= 1);
 }
 
 // PR #262: pairing always took the same candidate; now it picks at random.
-BOOST_AUTO_TEST_CASE(TeleporterPairingIsRandom)
+TEST(RegressionTests, TeleporterPairingIsRandom)
 {
     std::shared_ptr<bElem> plr;
     auto mc = roomWithPlayer(coords(40, 12), plr);
@@ -137,12 +135,12 @@ BOOST_AUTO_TEST_CASE(TeleporterPairingIsRandom)
         for (int c = 0; c < 100; c++)
             bElem::tick();
     }
-    BOOST_CHECK_GE(chosen.size(), 2u);
+    EXPECT_GE(chosen.size(), 2u);
 }
 
 // PR #263: a puppet master handed to a drone was collected, had no board, never became live,
 // and the drone stood still forever.
-BOOST_AUTO_TEST_CASE(DroneWithAPuppetMasterMoves)
+TEST(RegressionTests, DroneWithAPuppetMasterMoves)
 {
     std::shared_ptr<bElem> plr;
     auto mc = roomWithPlayer(coords(15, 15), plr);
@@ -150,48 +148,48 @@ BOOST_AUTO_TEST_CASE(DroneWithAPuppetMasterMoves)
     plr->stepOnElement(mc->getElement(3, 3));
     auto brain = puppetMasterFR::create(mc, puppetMasterFR::patrol);
     brain->stepOnElement(mc->getElement(4, 3));
-    BOOST_REQUIRE(plr->collect(brain));
+    ASSERT_TRUE(plr->collect(brain));
     auto drone = elementFactory::generateAnElement<patrollingDrone>(mc, 0);
     drone->stepOnElement(mc->getElement(8, 8));
-    BOOST_REQUIRE(drone->interact(plr));
-    BOOST_CHECK(drone->getStats()->hasActivatedMechanics());
-    BOOST_CHECK(contains(mc->liveElems, drone));
+    ASSERT_TRUE(drone->interact(plr));
+    EXPECT_TRUE(drone->getStats()->hasActivatedMechanics());
+    EXPECT_TRUE(contains(mc->liveElems, drone));
     auto start = drone->getStats()->getMyPosition();
     bool moved = false;
     for (int c = 0; c < 2000 && !moved; c++) {
         bElem::runLiveElements();
         moved = !(drone->getStats()->getMyPosition() == start);
     }
-    BOOST_CHECK(moved);
+    EXPECT_TRUE(moved);
 }
 
 // PR #264: validate() returned (-65535, 65535) for cells off the board, which never matched NOCOORDS.
-BOOST_AUTO_TEST_CASE(OffBoardCoordinatesAreNOCOORDS)
+TEST(RegressionTests, OffBoardCoordinatesAreNOCOORDS)
 {
-    BOOST_CHECK(coords(5, 5).validate(coords(3, 3)) == NOCOORDS);
-    BOOST_CHECK(coords(-1, 0).validate(coords(3, 3)) == NOCOORDS);
-    BOOST_CHECK(coords(0, -1).validate(coords(3, 3)) == NOCOORDS);
-    BOOST_CHECK(coords(2, 2).validate(coords(3, 3)) == coords(2, 2));
+    EXPECT_TRUE(coords(5, 5).validate(coords(3, 3)) == NOCOORDS);
+    EXPECT_TRUE(coords(-1, 0).validate(coords(3, 3)) == NOCOORDS);
+    EXPECT_TRUE(coords(0, -1).validate(coords(3, 3)) == NOCOORDS);
+    EXPECT_TRUE(coords(2, 2).validate(coords(3, 3)) == coords(2, 2));
 
     inputManager::getInstance(true);
     auto mc = chamber::makeNewChamber(coords(3, 3));
     auto corner = mc->getElement(0, 0);
-    BOOST_CHECK(corner->getAbsCoords(dir::direction::LEFT) == NOCOORDS);
-    BOOST_CHECK(corner->getAbsCoords(dir::direction::UP) == NOCOORDS);
-    BOOST_CHECK(corner->getAbsCoords(dir::direction::RIGHT) == coords(1, 0));
-    BOOST_CHECK(corner->getElementInDirection(dir::direction::LEFT) == nullptr);
-    BOOST_CHECK(corner->getElementInDirection(dir::direction::DOWN) == mc->getElement(0, 1));
-    BOOST_CHECK(!corner->isSteppableDirection(dir::direction::UP));
-    BOOST_CHECK(corner->isSteppableDirection(dir::direction::RIGHT));
+    EXPECT_TRUE(corner->getAbsCoords(dir::direction::LEFT) == NOCOORDS);
+    EXPECT_TRUE(corner->getAbsCoords(dir::direction::UP) == NOCOORDS);
+    EXPECT_TRUE(corner->getAbsCoords(dir::direction::RIGHT) == coords(1, 0));
+    EXPECT_TRUE(corner->getElementInDirection(dir::direction::LEFT) == nullptr);
+    EXPECT_TRUE(corner->getElementInDirection(dir::direction::DOWN) == mc->getElement(0, 1));
+    EXPECT_TRUE(!corner->isSteppableDirection(dir::direction::UP));
+    EXPECT_TRUE(corner->isSteppableDirection(dir::direction::RIGHT));
     // an element that is not on a board has no neighbours
     auto loose = elementFactory::generateAnElement<wall>(mc, 0);
-    BOOST_CHECK(loose->getElementInDirection(dir::direction::RIGHT) == nullptr);
-    BOOST_CHECK(loose->getAbsCoords(dir::direction::RIGHT) == NOCOORDS);
+    EXPECT_TRUE(loose->getElementInDirection(dir::direction::RIGHT) == nullptr);
+    EXPECT_TRUE(loose->getAbsCoords(dir::direction::RIGHT) == NOCOORDS);
 }
 
 // PR #264: runLiveElements was rewritten to compact its lists in one pass; it must still drop
 // deregistered and disposed elements, keep the rest, and run elements registered mid-tick.
-BOOST_AUTO_TEST_CASE(LiveElementBookkeeping)
+TEST(RegressionTests, LiveElementBookkeeping)
 {
     std::shared_ptr<bElem> plr;
     auto mc = roomWithPlayer(coords(20, 20), plr);
@@ -202,43 +200,43 @@ BOOST_AUTO_TEST_CASE(LiveElementBookkeeping)
         monsters.push_back(m);
     }
     for (auto &m : monsters)
-        BOOST_REQUIRE(contains(mc->liveElems, m));
+        ASSERT_TRUE(contains(mc->liveElems, m));
     monsters[1]->deregisterLiveElement(monsters[1]->getStats()->getInstanceId());
     monsters[4]->disposeElement();
     bElem::runLiveElements();
-    BOOST_CHECK(!contains(mc->liveElems, monsters[1]));
-    BOOST_CHECK(!contains(mc->liveElems, monsters[4]));
+    EXPECT_TRUE(!contains(mc->liveElems, monsters[1]));
+    EXPECT_TRUE(!contains(mc->liveElems, monsters[4]));
     for (int i : {0, 2, 3, 5})
-        BOOST_CHECK(contains(mc->liveElems, monsters[i]));
+        EXPECT_TRUE(contains(mc->liveElems, monsters[i]));
     // the player runs separately and is never kept in the list
-    BOOST_CHECK(!contains(mc->liveElems, plr));
+    EXPECT_TRUE(!contains(mc->liveElems, plr));
     // no element is listed twice
     std::set<bElem *> seen;
     for (auto &e : mc->liveElems)
-        BOOST_CHECK(seen.insert(e.get()).second);
+        EXPECT_TRUE(seen.insert(e.get()).second);
     // an element registered again after deregistration comes back
     monsters[1]->registerLiveElement(monsters[1]);
     bElem::runLiveElements();
-    BOOST_CHECK(contains(mc->liveElems, monsters[1]));
+    EXPECT_TRUE(contains(mc->liveElems, monsters[1]));
 }
 
 // PR #264: getActivePlayer used a throw-away mutex; the behaviour to keep is that a disposed
 // active player is replaced, and that an existing active player is returned as is.
-BOOST_AUTO_TEST_CASE(ActivePlayerIsStable)
+TEST(RegressionTests, ActivePlayerIsStable)
 {
     std::shared_ptr<bElem> plr;
     auto mc = roomWithPlayer(coords(5, 5), plr);
-    BOOST_CHECK(player::getActivePlayer() == plr);
-    BOOST_CHECK(player::getActivePlayer() == player::getActivePlayer());
-    BOOST_CHECK(plr->getStats()->isActive());
+    EXPECT_TRUE(player::getActivePlayer() == plr);
+    EXPECT_TRUE(player::getActivePlayer() == player::getActivePlayer());
+    EXPECT_TRUE(plr->getStats()->isActive());
     plr->disposeElement();
-    BOOST_CHECK(player::getActivePlayer() != plr);
+    EXPECT_TRUE(player::getActivePlayer() != plr);
 }
 
 // Found while writing these tests: disposing a collected element removed it from its collector's
 // inventory, which could drop the last reference and free it in the middle of the call
 // (std::bad_weak_ptr). requestTokens also erased the wrong token afterwards.
-BOOST_AUTO_TEST_CASE(DisposingACollectedElementIsSafe)
+TEST(RegressionTests, DisposingACollectedElementIsSafe)
 {
     std::shared_ptr<bElem> plr;
     auto mc = roomWithPlayer(coords(6, 6), plr);
@@ -246,27 +244,26 @@ BOOST_AUTO_TEST_CASE(DisposingACollectedElementIsSafe)
     {
         auto gun = elementFactory::generateAnElement<plainGun>(mc, 0);
         gun->stepOnElement(mc->getElement(1, 0));
-        BOOST_REQUIRE(plr->collect(gun));
+        ASSERT_TRUE(plr->collect(gun));
     }
     // the inventory now holds the only reference
-    BOOST_CHECK_NO_THROW(inv->getActiveWeapon()->disposeElement());
-    BOOST_CHECK(inv->getActiveWeapon() == nullptr);
+    EXPECT_NO_THROW(inv->getActiveWeapon()->disposeElement());
+    EXPECT_TRUE(inv->getActiveWeapon() == nullptr);
 
     std::vector<unsigned long> ids;
     for (int c = 0; c < 3; c++) {
         auto apple = elementFactory::generateAnElement<goldenApple>(mc, 0);
         apple->stepOnElement(mc->getElement(1, 0));
-        BOOST_REQUIRE(plr->collect(apple));
+        ASSERT_TRUE(plr->collect(apple));
         ids.push_back(apple->getStats()->getInstanceId());
     }
     int taken = 0;
-    BOOST_CHECK_NO_THROW(taken = inv->requestTokens(2, bElemTypes::_goldenAppleType, -1));
-    BOOST_CHECK_EQUAL(taken, 2);
+    EXPECT_NO_THROW(taken = inv->requestTokens(2, bElemTypes::_goldenAppleType, -1));
+    EXPECT_EQ(taken, 2);
     // exactly one of the three apples is left
     int left = 0;
     for (auto id : ids)
         left += inv->findInInventory(id) ? 1 : 0;
-    BOOST_CHECK_EQUAL(left, 1);
+    EXPECT_EQ(left, 1);
 }
 
-BOOST_AUTO_TEST_SUITE_END()

@@ -4,21 +4,18 @@
 #include "elements.h"
 #include "commons.h"
 #include "chamber.h"
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fixtures
-#include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
+#include <gtest/gtest.h>
+#include "testSupport.h"
 
 coords point=(coords)
 {
     10,10
 };
-BOOST_AUTO_TEST_SUITE(GoldenAppleTests)
 /***
  * @brief unit test for testing type of the object, its subtype, and the change in subtype after being hurt.
  * We also test whether the interactive flag changed
  */
-BOOST_AUTO_TEST_CASE(GetTypeTest)
+TEST(GoldenAppleTests, GetTypeTest)
 {
 
     std::shared_ptr<chamber> chamber = chamber::makeNewChamber(point);
@@ -29,25 +26,25 @@ BOOST_AUTO_TEST_CASE(GetTypeTest)
         goldenAppleObj2->stepOnElement(chamber->getElement(x,0));
         if(x%3==2)
         {
-            BOOST_CHECK(goldenAppleObj2->getAttrs()->getSubtype()==0);
-            BOOST_CHECK(!goldenAppleObj2->getAttrs()->isInteractive());
+            EXPECT_TRUE(goldenAppleObj2->getAttrs()->getSubtype()==0);
+            EXPECT_TRUE(!goldenAppleObj2->getAttrs()->isInteractive());
             goldenAppleObj2->hurt(1);
             goldenAppleObj2->hurt(1);
-            BOOST_CHECK(goldenAppleObj2->getAttrs()->getSubtype()!=0);
-            BOOST_CHECK(goldenAppleObj2->getAttrs()->isInteractive());
+            EXPECT_TRUE(goldenAppleObj2->getAttrs()->getSubtype()!=0);
+            EXPECT_TRUE(goldenAppleObj2->getAttrs()->isInteractive());
         }
     }
     bElem::tick();
     bElem::tick();
-    BOOST_CHECK(chamber->getElement(point/2)->getType()!=bElemTypes::_goldenAppleType);
+    EXPECT_TRUE(chamber->getElement(point/2)->getType()!=bElemTypes::_goldenAppleType);
     goldenAppleObj->stepOnElement(chamber->getElement(point/2));
-    BOOST_CHECK(goldenAppleObj->getType()==bElemTypes::_goldenAppleType);
-    BOOST_CHECK_EQUAL(chamber->getElement(point/2)->getType(),bElemTypes::_goldenAppleType);
-    BOOST_CHECK(goldenAppleObj->getAttrs()->getSubtype()==0);
-    BOOST_CHECK(!goldenAppleObj->getAttrs()->isInteractive());
+    EXPECT_TRUE(goldenAppleObj->getType()==bElemTypes::_goldenAppleType);
+    EXPECT_EQ(chamber->getElement(point/2)->getType(), bElemTypes::_goldenAppleType);
+    EXPECT_TRUE(goldenAppleObj->getAttrs()->getSubtype()==0);
+    EXPECT_TRUE(!goldenAppleObj->getAttrs()->isInteractive());
     goldenAppleObj->hurt(1);
-    BOOST_CHECK(goldenAppleObj->getAttrs()->getSubtype()!=0);
-    BOOST_CHECK(goldenAppleObj->getAttrs()->isInteractive());
+    EXPECT_TRUE(goldenAppleObj->getAttrs()->getSubtype()!=0);
+    EXPECT_TRUE(goldenAppleObj->getAttrs()->isInteractive());
     goldenAppleObj->disposeElement();
     for(int x=0; x<point.x; x++)
     {
@@ -60,20 +57,20 @@ BOOST_AUTO_TEST_CASE(GetTypeTest)
  * @brief Unit test of kill method
  * We test here only close neighborhood of the apple on the board, when exploding it.
  */
-BOOST_AUTO_TEST_CASE(KillTest)
+TEST(GoldenAppleTests, KillTest)
 {
     std::shared_ptr<chamber> chamber = chamber::makeNewChamber(point);
     std::shared_ptr<goldenApple> goldenAppleObj = elementFactory::generateAnElement<goldenApple>(chamber,0);
     std::shared_ptr<bElem> be=nullptr;
     goldenAppleObj->stepOnElement(chamber->getElement(point/2));
     bElem::tick();
-    BOOST_CHECK(goldenAppleObj->kill());
-    BOOST_CHECK(!goldenAppleObj->kill());
-    BOOST_CHECK(goldenAppleObj->getStats()->isDestroying());
+    EXPECT_TRUE(goldenAppleObj->kill());
+    EXPECT_TRUE(!goldenAppleObj->kill());
+    EXPECT_TRUE(goldenAppleObj->getStats()->isDestroying());
     for(int x=0; x<4; x++)
     {
-        BOOST_CHECK(goldenAppleObj->getElementInDirection((dir::direction)x) && goldenAppleObj->getElementInDirection((dir::direction)x)->getStats()->isDestroying());
-        BOOST_CHECK(goldenAppleObj->getElementInDirection((dir::direction)x) && goldenAppleObj->getElementInDirection((dir::direction)x)->getElementInDirection((dir::direction)((x+3)%4))->getStats()->isDestroying());
+        EXPECT_TRUE(goldenAppleObj->getElementInDirection((dir::direction)x) && goldenAppleObj->getElementInDirection((dir::direction)x)->getStats()->isDestroying());
+        EXPECT_TRUE(goldenAppleObj->getElementInDirection((dir::direction)x) && goldenAppleObj->getElementInDirection((dir::direction)x)->getElementInDirection((dir::direction)((x+3)%4))->getStats()->isDestroying());
     }
     goldenAppleObj->disposeElement();
 }
@@ -82,27 +79,26 @@ BOOST_AUTO_TEST_CASE(KillTest)
  * @brief Unit test of destroy method
  * We test here only close neighborhood of the apple on the board, when exploding it
  */
-BOOST_AUTO_TEST_CASE(DestroyTest)
+TEST(GoldenAppleTests, DestroyTest)
 {
     std::shared_ptr<chamber> chamber = chamber::makeNewChamber(point);
     std::shared_ptr<goldenApple> goldenAppleObj = elementFactory::generateAnElement<goldenApple>(chamber,0);
     std::shared_ptr<bElem> be=nullptr;
     goldenAppleObj->stepOnElement(chamber->getElement(point/2));
     bElem::tick();
-    BOOST_CHECK(goldenAppleObj->destroy());
-    BOOST_CHECK(goldenAppleObj->getStats()->isDestroying());
+    EXPECT_TRUE(goldenAppleObj->destroy());
+    EXPECT_TRUE(goldenAppleObj->getStats()->isDestroying());
     for(int x=0; x<4; x++)
     {
-        BOOST_CHECK(goldenAppleObj->getElementInDirection((dir::direction)x)->getStats()->isDestroying());
-        BOOST_CHECK(goldenAppleObj->getElementInDirection((dir::direction)x)->getElementInDirection((dir::direction)((x+3)%4))->getStats()->isDestroying());
+        EXPECT_TRUE(goldenAppleObj->getElementInDirection((dir::direction)x)->getStats()->isDestroying());
+        EXPECT_TRUE(goldenAppleObj->getElementInDirection((dir::direction)x)->getElementInDirection((dir::direction)((x+3)%4))->getStats()->isDestroying());
     }
     goldenAppleObj->disposeElement();
 }
 
-BOOST_AUTO_TEST_CASE(GetAppleNumberTest)
+TEST(GoldenAppleTests, GetAppleNumberTest)
 {
 //increase number of apples, decrease the number of apples in different ways
 }
 
 
-BOOST_AUTO_TEST_SUITE_END()

@@ -22,7 +22,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            cmake ninja-build libboost-test-dev liballegro5-dev liballegro-ttf5-dev liballegro-image5-dev rapidjson-dev \
+            cmake ninja-build libgtest-dev liballegro5-dev liballegro-ttf5-dev liballegro-image5-dev rapidjson-dev \
             libopenal-dev libsndfile1-dev
 
       - name: Configure
@@ -63,7 +63,7 @@ jobs:
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja
-            mingw-w64-ucrt-x86_64-boost
+            mingw-w64-ucrt-x86_64-gtest
             mingw-w64-ucrt-x86_64-allegro
             mingw-w64-ucrt-x86_64-rapidjson
             mingw-w64-ucrt-x86_64-openal
@@ -105,7 +105,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            cmake ninja-build libboost-test-dev liballegro5-dev liballegro-ttf5-dev liballegro-image5-dev rapidjson-dev \
+            cmake ninja-build libgtest-dev liballegro5-dev liballegro-ttf5-dev liballegro-image5-dev rapidjson-dev \
             libopenal-dev libsndfile1-dev gcovr
 
       - name: Build with coverage

@@ -4,12 +4,9 @@
 #include "elements.h"
 #include "commons.h"
 #include "chamber.h"
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fixtures
-#include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
+#include <gtest/gtest.h>
+#include "testSupport.h"
 
-BOOST_AUTO_TEST_SUITE(ChamberAreaTests)
 
 // Generate a more or less even tree, the result should be repeatable every time.
 chamberArea* generateTree(chamberArea* _root,coords leftUp,coords downRight,int depth)
@@ -54,7 +51,7 @@ chamberArea* generateTreeAsimmetric(chamberArea* _root,coords leftUp,coords down
 
 
 
-BOOST_AUTO_TEST_CASE( TreeCreateAndDestroy)
+TEST(ChamberAreaTests, TreeCreateAndDestroy)
 {
     chamberArea* root=generateTree(nullptr, {0,0}, {100,100},4);
 
@@ -64,7 +61,7 @@ BOOST_AUTO_TEST_CASE( TreeCreateAndDestroy)
 
 
 
-BOOST_AUTO_TEST_CASE( SearchForSurfacesThatFit )
+TEST(ChamberAreaTests, SearchForSurfacesThatFit)
 {
     std::vector<unsigned long int> surfaces1,surfaces2;
     chamberArea* root=generateTree(nullptr, {0,0}, {250,250},5);
@@ -73,7 +70,7 @@ BOOST_AUTO_TEST_CASE( SearchForSurfacesThatFit )
     {
         chamberArea::foundAreas.clear();
         root->findChambersCloseToSurface(cnt,100);
-        BOOST_CHECK(chamberArea::foundAreas.size()>0);
+        EXPECT_TRUE(chamberArea::foundAreas.size()>0);
         surfaces1.push_back(chamberArea::foundAreas.size());
 #ifdef _VerbousMode_
         std::cout<<"[1] how many areas found for "<<cnt<<" surface? "<<chamberArea::foundAreas.size()<<"\nAll Areas list\n";
@@ -96,7 +93,7 @@ BOOST_AUTO_TEST_CASE( SearchForSurfacesThatFit )
         root->calculateInitialSurface();
         chamberArea::foundAreas.clear();
         root->findChambersCloseToSurface(cnt,100);
-        BOOST_CHECK(chamberArea::foundAreas.size()>0);
+        EXPECT_TRUE(chamberArea::foundAreas.size()>0);
         surfaces2.push_back(chamberArea::foundAreas.size());
 #ifdef _VerbousMode_
         std::cout<<"[2] how many areas found for "<<cnt<<" surface? "<<chamberArea::foundAreas.size()<<"\nAll Areas list\n";
@@ -115,7 +112,7 @@ BOOST_AUTO_TEST_CASE( SearchForSurfacesThatFit )
     }
     // Let's check if the recalculating size works properly
     for(unsigned int c=0;c<surfaces1.size();c++)
-        BOOST_CHECK(surfaces1[c]==surfaces2[c]);
+        EXPECT_TRUE(surfaces1[c]==surfaces2[c]);
     bool ex=false;
     while(!ex)
     {
@@ -133,7 +130,7 @@ BOOST_AUTO_TEST_CASE( SearchForSurfacesThatFit )
     delete root;
 }
 
-BOOST_AUTO_TEST_CASE(AsimmetricChamberAreasSearch)
+TEST(ChamberAreaTests, AsimmetricChamberAreasSearch)
 {
     chamberArea* root=generateTreeAsimmetric(nullptr, {0,0}, {250,250},5);
     root->calculateInitialSurface();
@@ -141,7 +138,7 @@ BOOST_AUTO_TEST_CASE(AsimmetricChamberAreasSearch)
     {
         chamberArea::foundAreas.clear();
         root->findChambersCloseToSurface(cnt,100);
-        BOOST_CHECK(chamberArea::foundAreas.size()>0);
+        EXPECT_TRUE(chamberArea::foundAreas.size()>0);
 #ifdef _VerbousMode_
         std::cout<<"how many areas found for "<<cnt<<" surface? "<<chamberArea::foundAreas.size()<<"\nAll Areas list\n";
 #endif
@@ -172,4 +169,3 @@ BOOST_AUTO_TEST_CASE(AsimmetricChamberAreasSearch)
 /* Different element configurations on a board, and checking if placing element on a point is acceptable */
 
 
-BOOST_AUTO_TEST_SUITE_END()

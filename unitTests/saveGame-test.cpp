@@ -3,9 +3,8 @@
 #include "chamber.h"
 #include "gameSerializer.h"
 #include "randomLevelGenerator.h"
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fixtures
-#include <boost/test/unit_test.hpp>
+#include <gtest/gtest.h>
+#include "testSupport.h"
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -55,9 +54,8 @@ std::shared_ptr<chamber> findChamber(int id)
 }
 } // namespace
 
-BOOST_AUTO_TEST_SUITE(SaveGameTests)
 
-BOOST_AUTO_TEST_CASE(SmallWorldRoundTrip)
+TEST(SaveGameTests, SmallWorldRoundTrip)
 {
     inputManager::getInstance(true);
     auto mc = chamber::makeNewChamber(coords(12, 12));
@@ -66,7 +64,7 @@ BOOST_AUTO_TEST_CASE(SmallWorldRoundTrip)
     plr->getStats()->setActive(true);
     auto gun = elementFactory::generateAnElement<plainGun>(mc, 0);
     gun->stepOnElement(mc->getElement(4, 3));
-    BOOST_REQUIRE(plr->collect(gun));
+    ASSERT_TRUE(plr->collect(gun));
     auto k = elementFactory::generateAnElement<key>(mc, 2);
     k->stepOnElement(mc->getElement(5, 5));
     auto w = elementFactory::generateAnElement<wall>(mc, 0);
@@ -82,46 +80,46 @@ BOOST_AUTO_TEST_CASE(SmallWorldRoundTrip)
     auto censusBefore = census();
 
     const std::string f1 = tmpFile("goe-roundtrip-1.goe"), f2 = tmpFile("goe-roundtrip-2.goe");
-    BOOST_REQUIRE(gameSerializer::saveGame(f1));
+    ASSERT_TRUE(gameSerializer::saveGame(f1));
     plr.reset();
     gun.reset();
     k.reset();
     w.reset();
     mc.reset();
-    BOOST_REQUIRE(gameSerializer::loadGame(f1));
+    ASSERT_TRUE(gameSerializer::loadGame(f1));
 
-    BOOST_CHECK_EQUAL(chamber::allChambers.size(), chambersBefore);
-    BOOST_CHECK(census() == censusBefore);
+    EXPECT_EQ(chamber::allChambers.size(), chambersBefore);
+    EXPECT_TRUE(census() == censusBefore);
     auto lc = findChamber(chamberId);
-    BOOST_REQUIRE(lc);
+    ASSERT_TRUE(lc);
     auto lp = lc->getElement(3, 3);
-    BOOST_REQUIRE(lp);
-    BOOST_CHECK_EQUAL(lp->getType(), bElemTypes::_player);
-    BOOST_CHECK_EQUAL(lp->getStats()->getInstanceId(), plrId);
-    BOOST_CHECK(lp->getBoard() == lc);
-    BOOST_CHECK_EQUAL(lp->getStats()->getPoints(COLLECTS), 7);
-    BOOST_REQUIRE(player::getActivePlayer());
-    BOOST_CHECK_EQUAL(player::getActivePlayer()->getStats()->getInstanceId(), activeId);
+    ASSERT_TRUE(lp);
+    EXPECT_EQ(lp->getType(), bElemTypes::_player);
+    EXPECT_EQ(lp->getStats()->getInstanceId(), plrId);
+    EXPECT_TRUE(lp->getBoard() == lc);
+    EXPECT_EQ(lp->getStats()->getPoints(COLLECTS), 7);
+    ASSERT_TRUE(player::getActivePlayer());
+    EXPECT_EQ(player::getActivePlayer()->getStats()->getInstanceId(), activeId);
     auto lgun = lp->getAttrs()->getInventory()->getActiveWeapon();
-    BOOST_REQUIRE(lgun);
-    BOOST_CHECK_EQUAL(lgun->getStats()->getInstanceId(), gunId);
-    BOOST_CHECK(lgun->getStats()->isCollected());
-    BOOST_CHECK(lgun->getStats()->getCollector().lock() == lp);
+    ASSERT_TRUE(lgun);
+    EXPECT_EQ(lgun->getStats()->getInstanceId(), gunId);
+    EXPECT_TRUE(lgun->getStats()->isCollected());
+    EXPECT_TRUE(lgun->getStats()->getCollector().lock() == lp);
     // the key stands on a floor, and the floor knows it
     auto lk = lc->getElement(5, 5);
-    BOOST_REQUIRE(lk);
-    BOOST_CHECK_EQUAL(lk->getStats()->getInstanceId(), keyId);
-    BOOST_CHECK_EQUAL(lk->getAttrs()->getSubtype(), 2);
+    ASSERT_TRUE(lk);
+    EXPECT_EQ(lk->getStats()->getInstanceId(), keyId);
+    EXPECT_EQ(lk->getAttrs()->getSubtype(), 2);
     auto under = lk->getStats()->getSteppingOn();
-    BOOST_REQUIRE(under);
-    BOOST_CHECK_EQUAL(under->getType(), bElemTypes::_floorType);
-    BOOST_CHECK(under->getStats()->getStandingOn().lock() == lk);
-    BOOST_CHECK(under->getStats()->getMyPosition() == coords(5, 5));
-    BOOST_CHECK_EQUAL(lc->getElement(0, 0)->getType(), bElemTypes::_wallType);
+    ASSERT_TRUE(under);
+    EXPECT_EQ(under->getType(), bElemTypes::_floorType);
+    EXPECT_TRUE(under->getStats()->getStandingOn().lock() == lk);
+    EXPECT_TRUE(under->getStats()->getMyPosition() == coords(5, 5));
+    EXPECT_EQ(lc->getElement(0, 0)->getType(), bElemTypes::_wallType);
 
     // saving the loaded world again gives the same file
-    BOOST_REQUIRE(gameSerializer::saveGame(f2));
-    BOOST_CHECK(withoutCounter(readFile(f1)) == withoutCounter(readFile(f2)));
+    ASSERT_TRUE(gameSerializer::saveGame(f2));
+    EXPECT_TRUE(withoutCounter(readFile(f1)) == withoutCounter(readFile(f2)));
 
     // the loaded world is playable
     for (int c = 0; c < 200; c++)
@@ -130,7 +128,7 @@ BOOST_AUTO_TEST_CASE(SmallWorldRoundTrip)
     std::remove(f2.c_str());
 }
 
-BOOST_AUTO_TEST_CASE(GeneratedLevelRoundTrip)
+TEST(SaveGameTests, GeneratedLevelRoundTrip)
 {
     inputManager::getInstance(true);
     auto rl = new randomLevelGenerator(120, 120);
@@ -143,12 +141,12 @@ BOOST_AUTO_TEST_CASE(GeneratedLevelRoundTrip)
     auto censusBefore = census();
     auto apples = goldenApple::getAppleNumber();
     const std::string f1 = tmpFile("goe-level-1.goe"), f2 = tmpFile("goe-level-2.goe");
-    BOOST_REQUIRE(gameSerializer::saveGame(f1));
-    BOOST_REQUIRE(gameSerializer::loadGame(f1));
-    BOOST_CHECK(census() == censusBefore);
-    BOOST_CHECK_EQUAL(goldenApple::getAppleNumber(), apples);
-    BOOST_REQUIRE(gameSerializer::saveGame(f2));
-    BOOST_CHECK(withoutCounter(readFile(f1)) == withoutCounter(readFile(f2)));
+    ASSERT_TRUE(gameSerializer::saveGame(f1));
+    ASSERT_TRUE(gameSerializer::loadGame(f1));
+    EXPECT_TRUE(census() == censusBefore);
+    EXPECT_EQ(goldenApple::getAppleNumber(), apples);
+    ASSERT_TRUE(gameSerializer::saveGame(f2));
+    EXPECT_TRUE(withoutCounter(readFile(f1)) == withoutCounter(readFile(f2)));
 
     // mechanics keep running on the restored world
     for (int c = 0; c < 300; c++)
@@ -157,7 +155,7 @@ BOOST_AUTO_TEST_CASE(GeneratedLevelRoundTrip)
     std::remove(f2.c_str());
 }
 
-BOOST_AUTO_TEST_CASE(BadFilesLeaveTheWorldAlone)
+TEST(SaveGameTests, BadFilesLeaveTheWorldAlone)
 {
     inputManager::getInstance(true);
     auto mc = chamber::makeNewChamber(coords(8, 8));
@@ -165,33 +163,33 @@ BOOST_AUTO_TEST_CASE(BadFilesLeaveTheWorldAlone)
     plr->stepOnElement(mc->getElement(2, 2));
     const std::string good = tmpFile("goe-good.goe"), bad = tmpFile("goe-bad.goe"),
                       cut = tmpFile("goe-cut.goe");
-    BOOST_REQUIRE(gameSerializer::saveGame(good));
+    ASSERT_TRUE(gameSerializer::saveGame(good));
     auto chambersBefore = chamber::allChambers.size();
     auto censusBefore = census();
     auto active = player::getActivePlayer();
 
-    BOOST_CHECK(!gameSerializer::loadGame(tmpFile("goe-does-not-exist.goe")));
+    EXPECT_TRUE(!gameSerializer::loadGame(tmpFile("goe-does-not-exist.goe")));
     {
         std::ofstream out(bad, std::ios::binary);
         out << "this is not a save file at all";
     }
-    BOOST_CHECK(!gameSerializer::loadGame(bad));
+    EXPECT_TRUE(!gameSerializer::loadGame(bad));
     {
         auto data = readFile(good);
         std::ofstream out(cut, std::ios::binary);
         out.write(data.data(), (std::streamsize) data.size() / 2);
     }
-    BOOST_CHECK(!gameSerializer::loadGame(cut));
+    EXPECT_TRUE(!gameSerializer::loadGame(cut));
 
-    BOOST_CHECK_EQUAL(chamber::allChambers.size(), chambersBefore);
-    BOOST_CHECK(census() == censusBefore);
-    BOOST_CHECK(player::getActivePlayer() == active);
+    EXPECT_EQ(chamber::allChambers.size(), chambersBefore);
+    EXPECT_TRUE(census() == censusBefore);
+    EXPECT_TRUE(player::getActivePlayer() == active);
     std::remove(good.c_str());
     std::remove(bad.c_str());
     std::remove(cut.c_str());
 }
 
-BOOST_AUTO_TEST_CASE(ControlledDroneKeepsItsController)
+TEST(SaveGameTests, ControlledDroneKeepsItsController)
 {
     inputManager::getInstance(true);
     // earlier tests leave their player active, and only the active player's chamber ticks
@@ -203,20 +201,20 @@ BOOST_AUTO_TEST_CASE(ControlledDroneKeepsItsController)
     plr->getStats()->setActive(true);
     auto brain = puppetMasterFR::create(mc, puppetMasterFR::collector);
     brain->stepOnElement(mc->getElement(4, 3));
-    BOOST_REQUIRE(plr->collect(brain));
+    ASSERT_TRUE(plr->collect(brain));
     auto drone = elementFactory::generateAnElement<patrollingDrone>(mc, 0);
     drone->stepOnElement(mc->getElement(10, 10));
-    BOOST_REQUIRE(drone->interact(plr));
+    ASSERT_TRUE(drone->interact(plr));
     auto droneId = drone->getStats()->getInstanceId();
     auto brainId = brain->getStats()->getInstanceId();
 
     const std::string f = tmpFile("goe-drone.goe");
-    BOOST_REQUIRE(gameSerializer::saveGame(f));
+    ASSERT_TRUE(gameSerializer::saveGame(f));
     plr.reset();
     brain.reset();
     drone.reset();
     mc.reset();
-    BOOST_REQUIRE(gameSerializer::loadGame(f));
+    ASSERT_TRUE(gameSerializer::loadGame(f));
     std::remove(f.c_str());
 
     std::shared_ptr<bElem> ld;
@@ -226,15 +224,15 @@ BOOST_AUTO_TEST_CASE(ControlledDroneKeepsItsController)
                 for (auto e = c->getElement(x, y); e; e = e->getStats()->getSteppingOn())
                     if (e->getStats()->getInstanceId() == droneId)
                         ld = e;
-    BOOST_REQUIRE(ld);
+    ASSERT_TRUE(ld);
     auto d = std::dynamic_pointer_cast<patrollingDrone>(ld);
-    BOOST_REQUIRE(d);
+    ASSERT_TRUE(d);
     auto lb = d->getBrainModule();
-    BOOST_REQUIRE(lb);
-    BOOST_CHECK_EQUAL(lb->getStats()->getInstanceId(), brainId);
+    ASSERT_TRUE(lb);
+    EXPECT_EQ(lb->getStats()->getInstanceId(), brainId);
     // the loaded controller is the same kind of controller, not a plain puppet master
-    BOOST_CHECK(std::dynamic_pointer_cast<puppetMasterCollector>(lb));
-    BOOST_CHECK(lb->getStats()->getCollector().lock() == ld);
+    EXPECT_TRUE(std::dynamic_pointer_cast<puppetMasterCollector>(lb));
+    EXPECT_TRUE(lb->getStats()->getCollector().lock() == ld);
 
     // and it keeps driving the drone after the load
     auto start = ld->getStats()->getMyPosition();
@@ -243,10 +241,10 @@ BOOST_AUTO_TEST_CASE(ControlledDroneKeepsItsController)
         bElem::runLiveElements();
         moved = !(ld->getStats()->getMyPosition() == start);
     }
-    BOOST_CHECK(moved);
+    EXPECT_TRUE(moved);
 }
 
-BOOST_AUTO_TEST_CASE(CameraAndGuardiansRoundTrip)
+TEST(SaveGameTests, CameraAndGuardiansRoundTrip)
 {
     inputManager::getInstance(true);
     if (auto old = player::getActivePlayer())
@@ -258,18 +256,18 @@ BOOST_AUTO_TEST_CASE(CameraAndGuardiansRoundTrip)
     cam->stepOnElement(mc->getElement(16, 15));
     for (int c = 0; c < 40; c++)
         bElem::runLiveElements();
-    BOOST_REQUIRE_GT(cam->getAlertNumber(), 0u);
+    ASSERT_GT(cam->getAlertNumber(), 0u);
     auto camId = cam->getStats()->getInstanceId();
     auto alerts = cam->getAlertNumber();
 
     const std::string f1 = tmpFile("goe-cam-1.goe"), f2 = tmpFile("goe-cam-2.goe");
-    BOOST_REQUIRE(gameSerializer::saveGame(f1));
+    ASSERT_TRUE(gameSerializer::saveGame(f1));
     plr.reset();
     cam.reset();
     mc.reset();
-    BOOST_REQUIRE(gameSerializer::loadGame(f1));
-    BOOST_REQUIRE(gameSerializer::saveGame(f2));
-    BOOST_CHECK(withoutCounter(readFile(f1)) == withoutCounter(readFile(f2)));
+    ASSERT_TRUE(gameSerializer::loadGame(f1));
+    ASSERT_TRUE(gameSerializer::saveGame(f2));
+    EXPECT_TRUE(withoutCounter(readFile(f1)) == withoutCounter(readFile(f2)));
     std::remove(f1.c_str());
     std::remove(f2.c_str());
 
@@ -282,32 +280,31 @@ BOOST_AUTO_TEST_CASE(CameraAndGuardiansRoundTrip)
                 if (auto sc = std::dynamic_pointer_cast<securityCamera>(e); sc && sc->getStats()->getInstanceId() == camId)
                     lcam = sc;
             }
-    BOOST_REQUIRE(lcam);
-    BOOST_CHECK_EQUAL(lcam->getAlertNumber(), alerts);
+    ASSERT_TRUE(lcam);
+    EXPECT_EQ(lcam->getAlertNumber(), alerts);
     for (int x = 0; x < lcam->getBoard()->getSize().x; x++)
         for (int y = 0; y < lcam->getBoard()->getSize().y; y++)
             if (auto d = std::dynamic_pointer_cast<patrollingDrone>(lcam->getBoard()->getElement(x, y)))
                 if (auto g = std::dynamic_pointer_cast<puppetMasterGuardian>(d->getBrainModule())) {
-                    BOOST_CHECK(g->getCamera() == lcam);
+                    EXPECT_TRUE(g->getCamera() == lcam);
                     guardians++;
                 }
-    BOOST_CHECK_EQUAL(guardians, securityCamera::guardianCount);
+    EXPECT_EQ(guardians, securityCamera::guardianCount);
     for (int c = 0; c < 300; c++)
         bElem::runLiveElements();
 }
 
-BOOST_AUTO_TEST_CASE(SavingTwiceReplacesTheOldSave)
+TEST(SaveGameTests, SavingTwiceReplacesTheOldSave)
 {
     // std::rename cannot overwrite a file on Windows, so the second quick save used to fail there
     inputManager::getInstance(true);
     chamber::makeNewChamber(coords(8, 8));
     const std::string f = tmpFile("goe-twice.goe");
-    BOOST_REQUIRE(gameSerializer::saveGame(f));
-    BOOST_REQUIRE(gameSerializer::saveGame(f));
-    BOOST_CHECK(std::filesystem::exists(f));
-    BOOST_CHECK(!std::filesystem::exists(f + ".tmp"));
-    BOOST_CHECK(gameSerializer::loadGame(f));
+    ASSERT_TRUE(gameSerializer::saveGame(f));
+    ASSERT_TRUE(gameSerializer::saveGame(f));
+    EXPECT_TRUE(std::filesystem::exists(f));
+    EXPECT_TRUE(!std::filesystem::exists(f + ".tmp"));
+    EXPECT_TRUE(gameSerializer::loadGame(f));
     std::remove(f.c_str());
 }
 
-BOOST_AUTO_TEST_SUITE_END()
