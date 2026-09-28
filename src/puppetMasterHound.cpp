@@ -93,7 +93,8 @@ std::shared_ptr<bElem> puppetMasterHound::release(const std::shared_ptr<bElem> &
         auto cell = board->getElement(c);
         if (!cell || !cell->getAttrs()->isSteppable() || cell->getType() != bElemTypes::_floorType)
             continue;
-        auto drone = elementFactory::generateAnElement<patrollingDrone>(board, 0);
+        // subtype 1 is the red hound look in the skin
+        auto drone = elementFactory::generateAnElement<patrollingDrone>(board, 1);
         drone->stepOnElement(cell);
         auto brain = std::static_pointer_cast<puppetMasterHound>(puppetMasterFR::create(board, puppetMasterFR::hound));
         brain->home = difficulty::areaOf(p);

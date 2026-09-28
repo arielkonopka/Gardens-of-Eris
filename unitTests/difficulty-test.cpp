@@ -180,6 +180,7 @@ TEST(DifficultyTests, HoundComesForACampingPlayerAndGivesUpWhenTheyLeave)
     auto hounds = houndsIn(mc);
     ASSERT_EQ(hounds.size(), 1u);
     auto hound = hounds.front();
+    EXPECT_EQ(hound->getAttrs()->getSubtype(), 1); // the red hound look in the skin
 
     // it hunts the player down and bites
     const int energy = plr->getAttrs()->getEnergy();
