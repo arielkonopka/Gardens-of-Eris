@@ -678,7 +678,7 @@ bool gameSerializer::saveGame(const std::string &fileName)
         // header and global state
         w.raw(saveMagic, sizeof(saveMagic));
         w.u32(formatVersion);
-        w.u32(bElem::sTaterCounter);
+        w.u32(gameClock::ticks);
         w.u64(bElemStats::currentInstance);
         w.i32(chamber::lastid);
         std::ostringstream rng;
@@ -961,7 +961,7 @@ bool gameSerializer::loadGame(const std::string &fileName)
         vp._owner = ctx.get(viewOwnerId);
         for (auto &p : ctx.getAll(viewPointIds))
             vp.viewPoints.push_back(p);
-        bElem::sTaterCounter = taterCounter;
+        gameClock::ticks = taterCounter;
         std::istringstream rng(rngState);
         rng >> bElem::randomNumberGenerator;
 

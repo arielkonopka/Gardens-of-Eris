@@ -28,7 +28,6 @@
 //std::vector<std::shared_ptr<bElem>> bElem::liveElems;
 std::vector<std::shared_ptr<bElem>> bElem::toDispose;
 //std::vector<unsigned long int> bElem::toDeregister;
-unsigned int bElem::sTaterCounter = 5;
 
 std::mt19937 bElem::randomNumberGenerator; // NOLINT(*-msc51-cpp)
 std::mutex bElem::mechanicMutex;
@@ -521,16 +520,6 @@ bool bElem::kill()
     this->getStats()->setKilled(GoEConstants::_defaultKillTime);
     return true;
 }
-const std::shared_ptr<bElemAttr>& bElem::getAttrs() const
-{
-    return this->attrs;
-}
-
-const std::shared_ptr<bElemStats>& bElem::getStats() const
-{
-    return this->status;
-}
-
 bool bElem::additionalProvisioning(int subtype)
 {
     bool r = false;
@@ -735,16 +724,6 @@ void bElem::runLiveElements()
 bool bElem::stepOnAction(bool step, std::shared_ptr<bElem> who)
 {
     return false;
-}
-
-void bElem::tick()
-{
-    bElem::sTaterCounter++;
-}
-
-unsigned int bElem::getCntr()
-{
-    return bElem::sTaterCounter;
 }
 
 bool bElem::isLocked()

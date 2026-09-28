@@ -24,6 +24,7 @@
 #ifndef BELEMSTATS_H
 #define BELEMSTATS_H
 #include "Coords.h"
+#include "gameClock.h"
 #include "../include/commons.h"
 #include <memory>
 #include <atomic>
@@ -43,15 +44,15 @@ public:
     unsigned long int getInstanceId() const;
     int getAnimPhase() const;
     std::weak_ptr<bElem> getCollector() ;
-    int getDestroyed() const;
+    int getDestroyed() const { return this->getValueInTime(this->destroyed); }
     unsigned int getDestTimeBeg() const;
     unsigned int getDestTimeReq() const;
     dir::direction getFacing() const;
     int getInteracted() const;
     unsigned int getKillTimeBeg() const;
     unsigned int getKillTimeReq() const;
-    int getKilled() const;
-    int getTelInProgress() const;
+    int getKilled() const { return this->getValueInTime(this->killed); }
+    int getTelInProgress() const { return this->getValueInTime(this->telInProgress); }
     unsigned int getTelReqTime() const;
     unsigned int getTelTimeReq() const;
     std::shared_ptr<bElem> getSteppingOn() const;
@@ -59,9 +60,10 @@ public:
     std::weak_ptr<bElem> getStatsOwner() const;
     int getMoved() const;
     dir::direction getMyDirection() const;
-    coords getMyPosition() ;
+    /// where the element is; a collected element is where its collector is
+    coords getMyPosition() { return this->collected ? this->collectorPosition() : coords(this->myPosition.getX(), this->myPosition.getY()); }
     int getTaterCounter() const;
-    int getWaiting() const;
+    int getWaiting() const { return this->getValueInTime(this->waiting); }
     int getFadingIn() const;
     int getFadingInReq() const;
     int getFadingOutReq() const;
@@ -106,12 +108,12 @@ public:
     // is methods
     bool isActive() const;
     bool isCollected() const;
-    bool isDisposed() const;
-    bool isDying() const;
-    bool isTeleporting() const;
-    bool isWaiting() const;
+    bool isDisposed() const { return this->disposed; }
+    bool isDying() const { return this->getKilled() > 0; }
+    bool isTeleporting() const { return this->getTelInProgress() > 0; }
+    bool isWaiting() const { return this->getWaiting() > 0; }
     bool isInteracting() const;
-    int isDestroying() const;
+    int isDestroying() const { return this->getDestroyed() > 0; }
     bool isMoving() const;
     bool isFadingOut() const;
     bool isFadingIn() const;
@@ -130,7 +132,12 @@ public:
     void setMarked(bool value);
     void setStatsOwner(std::shared_ptr<bElem> own);
 private:
-    inline int getValueInTime(int value) const;
+    int getValueInTime(int value) const
+    {
+        const int now = (int) gameClock::now();
+        return (value > 0 && value >= now) ? value - now : -1;
+    }
+    coords collectorPosition();
     inline int calculateValueInTime(int value) const;
 
     static std::atomic<unsigned long int> currentInstance;

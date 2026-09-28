@@ -26,76 +26,71 @@ bool kiki::mechanics()
 {
     if (!bElem::mechanics())
         return false;
-    auto pos = this->getStats()->getMyPosition();
     const auto mdir = this->direction;
-    auto e = this->getElementInDirection(mdir);
-
-    while (e && e->getType() != this->getType()) {
-        if ((!e->getAttrs()->isSteppable()) && (!e->getAttrs()->isKillable())) {
-            this->getStats()->setMyDirection(dir::direction::NODIRECTION);
-            this->getStats()->setFacing(dir::direction::NODIRECTION);
-            e = this->getElementInDirection(mdir);
-            while (e
-                   && (e->getType() != this->getType()
-                       || (e->getType() == this->getType()
-                           && e->getStats()->getMyDirection()
-                                  != dir::getOppositeDirection(this->getStats()->getMyDirection())
-                           && e->getStats()->getMyDirection() != dir::direction::NODIRECTION
-                           && e->getAttrs()->getSubtype() != this->getType() + 1))) {
-                if (e->getType() == bElemTypes::_boubaType
-                    && ((dir::direction) e->getStats()->getMyDirection() == this->direction)) {
-                    auto e1 = e->getElementInDirection(mdir);
-                    e->disposeElement();
-                    e = e1;
-                    continue;
-                }
-                e = e->getElementInDirection(mdir);
-            }
-            return false;
+    const auto board = this->getBoard();
+    coords pos = this->getStats()->getMyPosition();
+    coords step = dir::dirToCoords(mdir);
+    // Both passes walk the beam cell by cell on the board, reading the top elements in place:
+    // this runs for every kiki on every few ticks, so it must not copy pointers per cell.
+    if (board && pos != NOCOORDS && step != coords(0, 0)) {
+        // is the way to the partner kiki still clear?
+        for (coords p = pos + step;; p = p + step) {
+            const auto &e = board->topAt(p);
+            if (!e || e->getType() == this->getType())
+                break;
+            if (!e->getAttrs()->isSteppable() && !e->getAttrs()->isKillable())
+                return this->beamBlocked(mdir);
         }
-        e = e->getElementInDirection(mdir);
-    }
-    e = this->getElementInDirection(mdir);
-    while (e && e->getType() != this->getType()) {
-        /*
-     *    if (!e->getAttrs()->isSteppable() && e->getAttrs()->isKillable()) {
-            e->hurt(kikiSpace::kikiHurts);
-        }
-    */
-        if(e->getAttrs()->isSteppable()) {
-
-            if (e->getType() != bElemTypes::_boubaType ) {
-                /**
-                 * @brief place boubas on steppable elements
-                 *
-                 */
-                pos = e->getStats()->getMyPosition();
-                auto ne = elementFactory::generateAnElement<bouba>(this->getBoard(), 0);
-                ne->getStats()->setMyDirection(mdir);
-                ne->getStats()->setFacing(mdir);
-                ne->stepOnElement(this->getBoard()->getElement(pos));
-                e = ne;
-            }
-        } else
-        {
-            auto st=e->getStats()->getSteppingOn();
-            if(st && st->getType()!=bElemTypes::_boubaType) {
-                pos = e->getStats()->getMyPosition();
-                auto ne = elementFactory::generateAnElement<bouba>(this->getBoard(), 0);
-                ne->getStats()->setMyDirection(mdir);
-                ne->getStats()->setFacing(mdir);
+        // fill the beam with boubas where they are missing
+        for (coords p = pos + step;; p = p + step) {
+            const auto &e = board->topAt(p);
+            if (!e || e->getType() == this->getType())
+                break;
+            if (e->getAttrs()->isSteppable()) {
+                if (e->getType() != bElemTypes::_boubaType)
+                    this->makeBouba(board, mdir)->stepOnElement(board->getElement(p));
+            } else if (auto st = e->getStats()->getSteppingOn();
+                       st && st->getType() != bElemTypes::_boubaType) {
+                auto ne = this->makeBouba(board, mdir);
                 ne->stepOnElement(st);
                 this->registerLiveElement(ne);
             }
         }
-
-
-
-        //     e->getStats()->setWaiting(boubaSpace::boubaRefresh);
-        e = e->getElementInDirection(mdir);
     }
     this->getStats()->setWaiting(kikiSpace::kikiWaitTime);
     return true;
+}
+
+std::shared_ptr<bElem> kiki::makeBouba(const std::shared_ptr<chamber> &board, dir::direction mdir)
+{
+    auto ne = elementFactory::generateAnElement<bouba>(board, 0);
+    ne->getStats()->setMyDirection(mdir);
+    ne->getStats()->setFacing(mdir);
+    return ne;
+}
+
+bool kiki::beamBlocked(dir::direction mdir)
+{
+    this->getStats()->setMyDirection(dir::direction::NODIRECTION);
+    this->getStats()->setFacing(dir::direction::NODIRECTION);
+    auto e = this->getElementInDirection(mdir);
+    while (e
+           && (e->getType() != this->getType()
+               || (e->getType() == this->getType()
+                   && e->getStats()->getMyDirection()
+                          != dir::getOppositeDirection(this->getStats()->getMyDirection())
+                   && e->getStats()->getMyDirection() != dir::direction::NODIRECTION
+                   && e->getAttrs()->getSubtype() != this->getType() + 1))) {
+        if (e->getType() == bElemTypes::_boubaType
+            && ((dir::direction) e->getStats()->getMyDirection() == this->direction)) {
+            auto e1 = e->getElementInDirection(mdir);
+            e->disposeElement();
+            e = e1;
+            continue;
+        }
+        e = e->getElementInDirection(mdir);
+    }
+    return false;
 }
 
 int kiki::getType() const

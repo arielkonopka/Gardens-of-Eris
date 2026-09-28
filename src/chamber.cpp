@@ -108,11 +108,6 @@ std::string chamber::getName()
     return this->chamberName;
 }
 
-std::shared_ptr<bElem> chamber::getElement(coords point)
-{
-    return this->getElement(point.x, point.y);
-}
-
 bool chamber::visitPosition(coords point)
 {
     bool res = false;
@@ -160,15 +155,6 @@ int chamber::isVisible(coords point)
     if (point.x < this->width && point.y < this->height && point.x >= 0 && point.y >= 0)
         return this->visitedElements[this->cellIndex(point.x, point.y)];
     return false;
-}
-
-std::shared_ptr<bElem> chamber::getElement(int x, int y)
-{
-    if (x < 0 || y < 0)
-        return nullptr;
-    if (x >= this->width || y >= this->height || this->cells.empty())
-        return nullptr;
-    return this->cells[this->cellIndex(x, y)];
 }
 
 void chamber::setElement(int x, int y, std::shared_ptr<bElem> elem)

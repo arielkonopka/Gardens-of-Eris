@@ -207,21 +207,11 @@ double Coords::distance(const Coords &other) const
  *
  * @return The x-coordinate as an integer.
  */
-int Coords::getX() const
-{
-    return x;
-}
-
 /**
  * @brief Gets the y-coordinate.
  *
  * @return The y-coordinate as an integer.
  */
-int Coords::getY() const
-{
-    return y;
-}
-
 /**
  * @brief Sets the x-coordinate.
  *

@@ -74,8 +74,23 @@ public:
 
 
  //   coords player;
-    std::shared_ptr<bElem> getElement(int x, int y);
-    std::shared_ptr<bElem> getElement(coords point);
+    std::shared_ptr<bElem> getElement(int x, int y) const
+    {
+        if (x < 0 || y < 0 || x >= this->width || y >= this->height || this->cells.empty())
+            return nullptr;
+        return this->cells[this->cellIndex(x, y)];
+    }
+    std::shared_ptr<bElem> getElement(coords point) const { return this->getElement(point.x, point.y); }
+    /// the top element at a cell, without copying the pointer; empty outside the board.
+    /// The reference is only valid until that cell changes.
+    const std::shared_ptr<bElem> &topAt(coords point) const
+    {
+        static const std::shared_ptr<bElem> none;
+        if (point.x < 0 || point.y < 0 || point.x >= this->width || point.y >= this->height
+            || this->cells.empty())
+            return none;
+        return this->cells[this->cellIndex(point.x, point.y)];
+    }
     std::shared_ptr<bElem> getElement(myUtility::Coords point);
     void setElement(int x, int y, std::shared_ptr<bElem> elem);
     void setElement(coords point,std::shared_ptr<bElem> elem);

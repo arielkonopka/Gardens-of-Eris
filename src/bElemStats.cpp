@@ -34,11 +34,6 @@ bElemStats::bElemStats()
     : instanceId(++bElemStats::currentInstance)
 {}
 
-bool bElemStats::isDisposed() const
-{
-    return this->disposed;
-}
-
 void bElemStats::setDisposed(bool value)
 {
     if (!this->disposed) // operation is one way, beware, if you set it to disposed, it will stay this way
@@ -98,11 +93,6 @@ void bElemStats::setKillTimeBeg(unsigned int value)
     this->killTimeBeg = value;
 }
 
-bool bElemStats::isDying() const
-{
-    return this->getKilled() > 0;
-}
-
 unsigned int bElemStats::getDestTimeReq() const
 {
     return this->destTimeReq;
@@ -122,16 +112,6 @@ void bElemStats::setDestTimeBeg(unsigned int value)
 {
     this->destTimeBeg = value;
 }
-bool bElemStats::isTeleporting() const
-{
-    return this->getTelInProgress() > 0;
-}
-
-int bElemStats::getTelInProgress() const
-{
-    return this->getValueInTime(this->telInProgress);
-}
-
 void bElemStats::setTelInProgress(unsigned int value)
 {
     this->telInProgress = this->calculateValueInTime(value);
@@ -233,33 +213,13 @@ void bElemStats::setInteracted(unsigned int value)
     this->interacted = this->calculateValueInTime(value);
 }
 
-int bElemStats::getWaiting() const
-{
-    return this->getValueInTime(this->waiting);
-}
-
 void bElemStats::setWaiting(int value)
 {
     this->waiting = this->calculateValueInTime(value);
 }
-bool bElemStats::isWaiting() const
-{
-    return this->getWaiting() > 0;
-}
-
 void bElemStats::stopWaiting()
 {
     this->setWaiting(0);
-}
-
-int bElemStats::getDestroyed() const
-{
-    return this->getValueInTime(this->destroyed);
-}
-
-int bElemStats::isDestroying() const
-{
-    return this->getDestroyed() > 0;
 }
 
 void bElemStats::setDestroyed(int value)
@@ -294,14 +254,10 @@ void bElemStats::setTaterCounter(int value)
     this->taterCounter = value;
 }
 
-coords bElemStats::getMyPosition()
+coords bElemStats::collectorPosition()
 {
-    if (this->collected) {
-        std::shared_ptr<bElem> be = (this->getCollector().lock());
-        if (be) {
-            return be->getStats()->getMyPosition();
-        }
-    }
+    if (std::shared_ptr<bElem> be = this->getCollector().lock())
+        return be->getStats()->getMyPosition();
     return coords(this->myPosition.getX(), this->myPosition.getY());
 }
 
@@ -330,11 +286,6 @@ void bElemStats::setFacing(dir::direction value)
     this->facing = value;
 }
 
-int bElemStats::getKilled() const
-{
-    return this->getValueInTime(this->killed);
-}
-
 void bElemStats::setKilled(int value)
 {
     this->killed = calculateValueInTime(value);
@@ -353,11 +304,6 @@ void bElemStats::setKilled(int value)
  * - present if it's zero
  * - none or past if it's less than zero (specifically -1)
  */
-int bElemStats::getValueInTime(int value) const
-{
-    return (value > 0 && value >= (int) bElem::getCntr()) ? value - (int) bElem::getCntr() : -1;
-}
-
 int bElemStats::calculateValueInTime(int value) const
 {
     return bElem::getCntr() + value;

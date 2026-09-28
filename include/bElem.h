@@ -22,6 +22,7 @@
 
 #ifndef BELEM_H
 #define BELEM_H
+#include "gameClock.h"
 #include <chrono>
 #include <random>
 #include <memory>
@@ -90,8 +91,8 @@ public:
     virtual coords getAbsCoords(coords dir) const;
     virtual  int getType() const;
     virtual int getAnimPh() const;
-    const std::shared_ptr<bElemAttr>& getAttrs() const;
-    const std::shared_ptr<bElemStats>& getStats() const;
+    const std::shared_ptr<bElemAttr>& getAttrs() const { return this->attrs; }
+    const std::shared_ptr<bElemStats>& getStats() const { return this->status; }
 
     virtual  float getViewRadius() const;
     virtual bool collect(std::shared_ptr<bElem> collectible);
@@ -109,8 +110,8 @@ public:
     virtual bool use(std::shared_ptr<bElem> use);
     virtual bool interact(std::shared_ptr<bElem> who);
 
-    static void tick();
-    static unsigned int getCntr() ;
+    static void tick() { gameClock::advance(); }
+    static unsigned int getCntr() { return gameClock::now(); }
 
     std::shared_ptr<bElem> findInDir(dir::direction dir);
 
@@ -134,7 +135,6 @@ private:
     void ps(std::shared_ptr<bElem> who,std::string eventType,std::string event);
     std::weak_ptr<chamber> attachedBoard;
     static std::mutex mechanicMutex;
-    static unsigned int sTaterCounter;
     std::vector<std::shared_ptr<bElem>> lockers;
     static std::vector<std::shared_ptr<bElem>> toDispose;
 };
