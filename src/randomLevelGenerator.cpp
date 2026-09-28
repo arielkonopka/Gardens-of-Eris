@@ -425,7 +425,7 @@ bool randomLevelGenerator::generateLevel(int holes)
                     int keyType = this->gen() % 10;
                     if (dice < (75 / holes)) {
                         if (keyType >= 5)
-                            this->placeDoors({bElemTypes::_brickClusterType, 0, 0, 9},
+                            this->placeDoors({bElemTypes::_brickClusterType, 0, 1, 0, 9},
                                              chamberArea::foundAreas[selectedChamberNo]);
                         else
                             this->placeDoors({bElemTypes::_door, keyType, 1, 0, 9},

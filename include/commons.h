@@ -194,7 +194,7 @@ typedef struct coords
     inline coords validate (coords bottom)
     {
         if (x<0 || x>=bottom.x || y<0 || y>=bottom.y)
-            return coords(-65535,65535);
+            return coords(-65535,-65535); // NOCOORDS
         return coords(x,y);
     }
 

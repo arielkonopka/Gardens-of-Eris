@@ -47,9 +47,6 @@ bool player::additionalProvisioning(int subtype)
 
 std::shared_ptr<bElem> player::getActivePlayer()
 {
-    std::mutex my_mutex;
-    std::lock_guard<std::mutex> lock(my_mutex);
-
     if (player::activePlayer == nullptr
         || (player::activePlayer && player::activePlayer->getStats()->isDisposed())) {
         /* find active player, because it is nullptr */
