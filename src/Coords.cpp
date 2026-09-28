@@ -203,16 +203,6 @@ double Coords::distance(const Coords &other) const
 }
 
 /**
- * @brief Gets the x-coordinate.
- *
- * @return The x-coordinate as an integer.
- */
-/**
- * @brief Gets the y-coordinate.
- *
- * @return The y-coordinate as an integer.
- */
-/**
  * @brief Sets the x-coordinate.
  *
  * @param x_val The new value for the x-coordinate.
