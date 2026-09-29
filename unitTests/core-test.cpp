@@ -414,3 +414,28 @@ TEST(CoreTests, MovingElementsAreDrawnBetweenCells)
         bElem::tick();
     EXPECT_EQ(elementView::offset(*w, coords(64, 64)), coords(-32, 0));
 }
+
+// bElemStats::busy() answers "is something timed going on", which mechanics() used to work out
+// inline for every element.
+TEST(CoreTests, BusyCoversEveryTimedState)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(5, 5), plr);
+    auto m = elementFactory::generateAnElement<monster>(mc, 0);
+    m->stepOnElement(mc->getElement(2, 2));
+    auto st = m->getStats();
+    EXPECT_FALSE(st->busy());
+    EXPECT_TRUE(m->bElem::mechanics());
+    st->setWaiting(5);
+    EXPECT_TRUE(st->busy());
+    EXPECT_FALSE(m->bElem::mechanics());
+    st->stopWaiting();
+    EXPECT_FALSE(st->busy());
+    st->setMoved(5);
+    EXPECT_TRUE(st->busy());
+    for (int t = 0; t < 23; t++)
+        bElem::tick();
+    EXPECT_FALSE(st->busy());
+    st->setFadingOut(5);
+    EXPECT_TRUE(st->busy());
+}

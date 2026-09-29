@@ -286,15 +286,12 @@ bool bElem::hurt(int points)
 
 bool bElem::mechanics()
 {
-    bElemStats &st = *this->getStats();
+    const bElemStats &st = *this->getStats();
     // expired() checks the board without taking a reference to it
-    if ((this->attachedBoard.expired() || st.getMyPosition() == NOCOORDS) && !st.isCollected())
+    if ((this->attachedBoard.expired() || this->getStats()->getMyPosition() == NOCOORDS)
+        && !st.isCollected())
         return false;
-    st.setTaterCounter(st.getTaterCounter() + 1); /// Instances own 'clock'.
-
-    return !(st.isWaiting() || st.isTeleporting() || st.isDying() || st.isDestroying()
-             || st.isMoving() || st.isFadingIn() || st.isFadingOut()
-             || (this->getAttrs()->isInteractive() && st.isInteracting()));
+    return !(st.busy() || (this->getAttrs()->isInteractive() && st.isInteracting()));
 }
 
 bool bElem::isSteppableDirection(coords di) const

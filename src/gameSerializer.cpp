@@ -315,7 +315,6 @@ void gameSerializer::writeElement(writer &w, const std::shared_ptr<bElem> &e)
     w.i32(s.moved);
     w.i32(s.destroyed);
     w.i32(s.animPhase);
-    w.i32(s.taterCounter);
     w.i32(s.ammo);
     w.i32(s.killed);
     bool noPos = s.myPosition == myUtility::NOCOORDS;
@@ -439,7 +438,7 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
         std::vector<std::pair<int, int>> statistics;
         int movingTotalTime, fadingOut, fadingIn;
         uint32_t fadingInReq, fadingOutReq;
-        int waiting, moved, destroyed, animPhase, taterCounter, ammo, killed;
+        int waiting, moved, destroyed, animPhase, ammo, killed;
         bool noPos;
         int x, y;
         uint8_t dir, facing;
@@ -471,7 +470,9 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
     rs.moved = r.i32();
     rs.destroyed = r.i32();
     rs.animPhase = r.i32();
-    rs.taterCounter = r.i32();
+    // version 2 and older saves carry a per-element tick counter nothing read
+    if (ctx.version <= 2)
+        r.i32();
     rs.ammo = r.i32();
     rs.killed = r.i32();
     rs.noPos = r.u8();
@@ -515,7 +516,6 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
     s.moved = rs.moved;
     s.destroyed = rs.destroyed;
     s.animPhase = rs.animPhase;
-    s.taterCounter = rs.taterCounter;
     s.ammo = rs.ammo;
     s.killed = rs.killed;
     s.myPosition = rs.noPos ? myUtility::NOCOORDS : myUtility::Coords(rs.x, rs.y);
