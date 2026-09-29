@@ -29,23 +29,14 @@
 std::vector<std::shared_ptr<bElem>> bElem::toDispose;
 //std::vector<unsigned long int> bElem::toDeregister;
 
-std::mt19937 bElem::randomNumberGenerator; // NOLINT(*-msc51-cpp)
 std::mutex bElem::mechanicMutex;
 
 bElem::bElem()
     : std::enable_shared_from_this<bElem>()
 {
-    static std::once_flag _of;
     this->status = std::make_shared<bElemStats>();
     this->getStats()->setMyDirection(dir::direction::UP);
     this->getStats()->setFacing(this->getStats()->getMyDirection());
-    std::call_once(_of, []() {
-        std::random_device rd;
-        std::array<int, 4> seedData{};
-        std::generate_n(seedData.data(), seedData.size(), std::ref(rd));
-        std::seed_seq seq(std::begin(seedData), std::end(seedData));
-        bElem::randomNumberGenerator.seed(seq);
-    });
 }
 
 coords bElem::getOffset() const

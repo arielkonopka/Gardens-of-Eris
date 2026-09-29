@@ -27,7 +27,7 @@ bool patrollingDrone::additionalProvisioning(int subtype)
     if (!bElem::additionalProvisioning(subtype))
         return false;
     this->getAttrs()->setCollect(true);
-    this->getAttrs()->setEnergy((1024 * bElem::randomNumberGenerator()) % 155);
+    this->getAttrs()->setEnergy((1024 * goe::rng::gameplay()()) % 155);
     return true;
 }
 float patrollingDrone::getViewRadius() const

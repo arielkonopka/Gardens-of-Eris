@@ -115,7 +115,7 @@ bool player::stepOnElement(std::shared_ptr<bElem> step)
         && this->getBoard()->visitPosition(this->getStats()->getMyPosition())) {
         this->getStats()->setStats(STEPS,
                                    this->getStats()->getStats(STEPS)
-                                       + (bElem::randomNumberGenerator() % 2));
+                                       + (goe::rng::gameplay()() % 2));
         this->vRadius = 2 + (std::log(this->getStats()->getStats(STEPS)) / 2);
         this->getStats()->setPoints(TOTAL, this->getStats()->getPoints(TOTAL) + 1);
     }

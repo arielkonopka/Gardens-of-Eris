@@ -59,9 +59,9 @@ void chamber::createFloor()
     for (int c = 0; c < this->width; c++) {
         for (int d = 0; d < this->height; d++) {
             int subtype = 0;
-            if (bElem::randomNumberGenerator() % 10 == 0)
+            if (goe::rng::gameplay()() % 10 == 0)
                 subtype = 1;
-            if (bElem::randomNumberGenerator() % 100 == 0)
+            if (goe::rng::gameplay()() % 100 == 0)
                 subtype = 2;
             auto floor = elementFactory::generateAnElement<floorElement>(shared_from_this(), subtype);
             floor->setBoard(shared_from_this());
@@ -86,9 +86,9 @@ chamber::chamber(int x, int y)
     this->setInstanceId(chamber::lastid++);
     this->chamberName = rwg->generateWord(3);
     this->chamberColour.a = 255;
-    this->chamberColour.r = 30 + rwg->randomNumberGenerator() % 50;
-    this->chamberColour.g = 30 + rwg->randomNumberGenerator() % 50;
-    this->chamberColour.b = 50 + rwg->randomNumberGenerator() % 70;
+    this->chamberColour.r = 30 + goe::rng::gameplay()() % 50;
+    this->chamberColour.g = 30 + goe::rng::gameplay()() % 50;
+    this->chamberColour.b = 50 + goe::rng::gameplay()() % 70;
     //this->createFloor();
 }
 

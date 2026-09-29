@@ -124,7 +124,7 @@ bool puppetMasterFR::wander(std::shared_ptr<bElem> body)
         auto e = body->getElementInDirection(d);
         return e && e->getAttrs()->isSteppable();
     };
-    int roulette = this->randomNumberGenerator() % 555;
+    int roulette = goe::rng::gameplay()() % 555;
     // now and then take a side passage, each side with the same probability
     if (roulette == 5 && open(left)) {
         this->turn(body, left);
@@ -136,7 +136,7 @@ bool puppetMasterFR::wander(std::shared_ptr<bElem> body)
     }
     if (this->step(body, cdir))
         return true;
-    this->turn(body, (this->randomNumberGenerator() % 2 == 0) ? right : left);
+    this->turn(body, (goe::rng::gameplay()() % 2 == 0) ? right : left);
     return true;
 }
 

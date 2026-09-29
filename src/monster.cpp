@@ -25,17 +25,17 @@ bool monster::additionalProvisioning(int subtype)
 {
     if (!bElem::additionalProvisioning(subtype))
         return false;
-    if (bElem::randomNumberGenerator() % 2 == 0) {
+    if (goe::rng::gameplay()() % 2 == 0) {
         this->rotA = 1;
         this->rotB = 3;
     }
-    if (bElem::randomNumberGenerator() % 55 > 5) {
-        if (bElem::randomNumberGenerator() % 55 > 15)
+    if (goe::rng::gameplay()() % 55 > 5) {
+        if (goe::rng::gameplay()() % 55 > 15)
             this->weapon = elementFactory::generateAnElement<plainGun>(this->getBoard(), 1);
         else
             this->weapon = elementFactory::generateAnElement<bazooka>(this->getBoard(), 1);
-        this->weapon->getAttrs()->setEnergy(((bElem::randomNumberGenerator() * 555) % 55) * 5);
-        this->weapon->getAttrs()->setAmmo(5 * (5 + bElem::randomNumberGenerator() % 55));
+        this->weapon->getAttrs()->setEnergy(((goe::rng::gameplay()() * 555) % 55) * 5);
+        this->weapon->getAttrs()->setAmmo(5 * (5 + goe::rng::gameplay()() % 55));
         this->weapon->getAttrs()->setMaxEnergy(5 * 5 * 5);
         this->weapon->getStats()->setCollected(true);
         this->weapon->getStats()->setCollector(shared_from_this());

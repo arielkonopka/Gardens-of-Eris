@@ -684,7 +684,7 @@ bool gameSerializer::saveGame(const std::string &fileName)
         w.u64(bElemStats::currentInstance);
         w.i32(chamber::lastid);
         std::ostringstream rng;
-        rng << bElem::randomNumberGenerator;
+        rng << goe::rng::saved();
         w.str(rng.str());
         w.u8(teleport::firstReceiverRemoved);
         w.u32(goldenApple::appleNumber);
@@ -975,7 +975,7 @@ bool gameSerializer::loadGame(const std::string &fileName)
             vp.viewPoints.push_back(p);
         gameClock::ticks = taterCounter;
         std::istringstream rng(rngState);
-        rng >> bElem::randomNumberGenerator;
+        rng >> goe::rng::saved();
 
         // music of the global teleporters is attached to them when they are placed; redo that
         for (auto &[id, e] : ctx.byId) {

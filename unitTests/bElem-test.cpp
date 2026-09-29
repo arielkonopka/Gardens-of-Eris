@@ -256,7 +256,7 @@ TYPED_TEST(BasicObjectTests_StackingAndRemovingTest, StackingAndRemovingTest)
                 ccc = 0;
             }
             //     std::cout<<"depth="<<ccc<<" "<<findDepth(mc->getElement(3,3))<<" "<<(std::string)((te->getStats()->getSteppingOn()!=nullptr)?"Middle ":"Edge ")<<te->getStats()->getInstanceId()<<"\n";
-            if (bElem::randomNumberGenerator() % 2 == 0) {
+            if (goe::rng::gameplay()() % 2 == 0) {
 
                 //          std::cout<<"Delete\n";
                 std::shared_ptr<bElem> te3 = te->getStats()->getSteppingOn();
@@ -303,7 +303,7 @@ TYPED_TEST(BasicObjectTests_StackingAndDisposingTest, StackingAndDisposingTest)
 
         te = mc->getElement(3, 3);
         while (mc->getElement(3, 3) != nullptr && mc->getElement(3, 3)->getStats()->getSteppingOn() != nullptr) {
-            if (bElem::randomNumberGenerator() % 2 == 0) {
+            if (goe::rng::gameplay()() % 2 == 0) {
 
                 std::shared_ptr<bElem> te3 = te->getStats()->getSteppingOn();
                 myId = te->getStats()->getInstanceId();
