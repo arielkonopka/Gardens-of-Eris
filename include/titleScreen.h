@@ -28,6 +28,7 @@
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
 #include <string>
+#include <vector>
 
 /**
  * @brief Draws the title menu and runs it until the player starts the game or leaves.
@@ -40,6 +41,9 @@ public:
     titleMenu::action run();
     /// clears the menu and shows one line, for example while the first level is being built
     void showBusy(const std::string &text);
+    /// shows a headline and a few lines until the player presses Enter, Space or Esc;
+    /// returns false when the window was closed instead
+    bool showMessage(const std::string &headline, const std::vector<std::string> &lines);
 
 private:
     void draw();

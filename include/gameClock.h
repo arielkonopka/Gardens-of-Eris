@@ -22,13 +22,16 @@
 #ifndef GAMECLOCK_H
 #define GAMECLOCK_H
 
+#include <atomic>
+
 /// The game's tick counter. Every timed state (dying, waiting, teleporting...) is measured in it,
 /// so it lives in its own header where those hot checks can be inlined.
+/// The game thread advances it; threads building levels in the background read it, so it is atomic.
 struct gameClock
 {
-    static inline unsigned int ticks = 5;
-    static unsigned int now() noexcept { return ticks; }
-    static void advance() noexcept { ++ticks; }
+    static inline std::atomic<unsigned int> ticks = 5;
+    static unsigned int now() noexcept { return ticks.load(std::memory_order_relaxed); }
+    static void advance() noexcept { ticks.fetch_add(1, std::memory_order_relaxed); }
 };
 
 #endif // GAMECLOCK_H

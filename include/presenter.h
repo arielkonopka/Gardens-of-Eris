@@ -64,6 +64,8 @@
 namespace presenter
 {
 
+/// why presentEverything returned
+enum class gameEnd { QUIT, LOST, ALL_APPLES };
 enum class presenterMode { MENU=0, SETTINGS=1,EDITOR=2,DEMO=3,GAME=4} ;
 enum class _cp_gameReasonOut { LOST=0, USERREQ=1, PAUSE=2, TELEPORTREQ=3 };
 
@@ -75,7 +77,10 @@ public:
     presenter();
     ~presenter() = default;
     bool initializeDisplay();
-    int presentEverything();
+    /// runs the game until the player quits or the last avatar is gone
+    gameEnd presentEverything();
+    /// the active player's score, as last shown; still there after the last avatar died
+    int getLastScore() const;
     bool presentAChamber(presenterMode mod);
     bool loadCofiguredData();
     void showSplash();
@@ -91,6 +96,7 @@ private:
     void shaderthing(int x, int y);
     void drawCloak();
     bool fin=false;
+    int lastScore=0;
     bool saveKeyDown=false;
     bool loadKeyDown=false;
     /// 0 nothing, 1 save, 2 load; waits here while a level is being generated

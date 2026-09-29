@@ -84,7 +84,7 @@ soundManager &soundManager::getInstance()
 void soundManager::stopSoundsByElementId(unsigned int elId)
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
-    this->pauseSong(elId);
+    this->pauseSongLocked(elId);
     for (auto n : this->registeredSounds) {
         if (n->elId == elId && n->mode > 0) // we kill only looping sounds, other will end anyway
         {
@@ -429,7 +429,8 @@ const bool soundManager::isSongConfigured(int songNo, coords3d position, int cha
 int soundManager::setupSong(
     unsigned int bElemInstanceId, int songNo, coords3d position, int chamberId, bool vaiableVolume)
 {
-    // std::lock_guard<std::mutex> guard(this->snd_mutex);
+    // levels built in the background register music too, while the sound thread plays it
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
     /* no music configured? */
     if (this->gc->music.size() <= 0 || this->isSongConfigured(songNo, position, chamberId)) {
         return -1;
@@ -487,8 +488,6 @@ int soundManager::setupSong(
     }
     alSourceQueueBuffers(muNd.source, buffersNum, &muNd.Abuffers[0]);
     muNd.isRegistered = true;
-    std::lock_guard<std::mutex> guard(this->snd_mutex);
-
     this->registeredMusic.push_back(muNd);
 
     return this->registeredMusic.size() - 1;
@@ -572,6 +571,12 @@ void soundManager::threadLoop()
 
 void soundManager::pauseSong(unsigned int bElemInstanceId)
 {
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
+    this->pauseSongLocked(bElemInstanceId);
+}
+
+void soundManager::pauseSongLocked(unsigned int bElemInstanceId)
+{
     for (auto &c : this->registeredMusic) {
         if (c.bElemInstanceId == bElemInstanceId) {
             c.isRegistered = false;
@@ -582,8 +587,7 @@ void soundManager::pauseSong(unsigned int bElemInstanceId)
 
 void soundManager::resumeSong(unsigned int bElemInstanceId)
 {
-    if (bElemInstanceId < 0)
-        return;
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
     for (auto &c : this->registeredMusic) {
         if (c.bElemInstanceId == bElemInstanceId) {
             c.isRegistered = true;

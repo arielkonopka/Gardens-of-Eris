@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <memory>
 #include <set>
+#include <thread>
 
 namespace {
 /// a fresh chamber with an active player in its corner, so bElem::runLiveElements ticks it
@@ -267,3 +268,52 @@ TEST(RegressionTests, DisposingACollectedElementIsSafe)
     EXPECT_EQ(left, 1);
 }
 
+
+// Crash report of 2026-09-29: a player made while a level was built in the background could
+// become the active player once the last avatar died, dropping the game into a half-built level.
+TEST(RegressionTests, PlayersBuiltInTheBackgroundNeverTakeOverTheGame)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(6, 6), plr);
+    plr->disposeElement();
+    ASSERT_EQ(player::getActivePlayer(), nullptr);
+
+    std::shared_ptr<bElem> built;
+    std::thread([&]() {
+        player::backgroundScope background;
+        built = elementFactory::generateAnElement<player>(mc, 0);
+        built->stepOnElement(mc->getElement(3, 3));
+    }).join();
+    ASSERT_TRUE(built);
+    EXPECT_EQ(player::getActivePlayer(), nullptr);
+    EXPECT_FALSE(built->getStats()->isActive());
+
+    // on the game thread a new player still takes over, as the first level's player does
+    auto next = elementFactory::generateAnElement<player>(mc, 0);
+    EXPECT_EQ(player::getActivePlayer(), next);
+}
+
+// Crash report of 2026-09-29: levels built in the background add golden apples while the game
+// thread removes the ones that get shot or blown up; the apple list had no lock.
+TEST(RegressionTests, ApplesCanBeAddedAndRemovedFromTwoThreads)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(6, 6), plr);
+    const int before = goldenApple::getAppleNumber();
+    constexpr int count = 555;
+    std::vector<std::shared_ptr<bElem>> mine;
+    for (int c = 0; c < count; c++)
+        mine.push_back(elementFactory::generateAnElement<goldenApple>(mc, 0));
+    std::vector<std::shared_ptr<bElem>> theirs;
+    std::thread builder([&]() {
+        for (int c = 0; c < count; c++)
+            theirs.push_back(elementFactory::generateAnElement<goldenApple>(mc, 0));
+    });
+    for (auto &apple : mine)
+        apple->disposeElement();
+    builder.join();
+    EXPECT_EQ(goldenApple::getAppleNumber(), before + count);
+    for (auto &apple : theirs)
+        apple->disposeElement();
+    EXPECT_EQ(goldenApple::getAppleNumber(), before);
+}

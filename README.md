@@ -48,7 +48,7 @@ Now, as a [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism), it fal
 
 The Goddess has dispersed your avatars throughout this peculiar world you now find yourself in. The missing apples are hidden here – collect them with great care, for they may explode or break. Return the apples to the Goddess, and she'll reward you handsomely.
 
-Every time your avatar perishes, you'll respawn in the first unused and activated avatar on your path. If you haven't activated any avatars, you'll meet your end.
+Every time your avatar perishes, you'll respawn in the first unused and activated avatar on your path. If you haven't activated any avatars, you'll meet your end: the game shows your score and takes you back to the title screen.
 
 The labyrinth is inhabited by an assortment of creatures and contraptions. You'll encounter gun modules and worker drones, as well as guard drones, doors, keys, movable turrets, and immobile turrets. Keep an eye out for other malevolent entities (TBC).
 
@@ -76,6 +76,11 @@ The game opens with a title screen: **Start**, **Config** and **Exit**. Config s
 Every new game prints its world seed (`World seed: ...`). `GardenOfEris --seed <number>` builds that same world again, which helps when reporting a bug in a level.
 
 The HUD shows your score (**P**), your level (**Dex**, see Stats) and the current difficulty (**D**, see Difficulty).
+
+When the last avatar is gone, a Game over screen shows your score; Enter takes you back to the title screen, where Start begins a new world.
+
+### If the game crashes
+The game writes a crash report, `crash-<date>-<time>.log`, into the save folder (the game's folder unless Config says otherwise); on Windows a message box says where it went. It holds what went wrong, the world seed, a stack trace and the last lines the game printed. Please attach it to the bug report, with what you were doing.
 
 ## Elements of the gardens
 
@@ -355,6 +360,9 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Losing the last avatar no longer closes the window without a word (it looked like a crash): a Game over screen shows the score and returns to the title screen for a new game. Quitting closes the window at once instead of freezing while a background level finishes.
+* Crash reports: a crash writes `crash-<date>-<time>.log` with a stack trace into the save folder, on Linux and Windows, no debugger needed.
+* Fixed thread races between the game and the levels built in the background: golden apples, music registration, the game clock, and a new level's player taking over the game.
 * Separate randomness for the game, level building, music and visual effects, so building levels in the background no longer shares a random generator with the running game. One world seed rebuilds the same levels (`--seed <number>`).
 * Sounds come from where they happen: a shot to the left is heard on the left.
 * Difficulty D (player level + chamber depth + distance) shown in the HUD; bunkers, cameras, guardians and kiki beams get tougher with it. New landmine and the Hound, with Discordian tiles. Tunings follow the Law of Fives.

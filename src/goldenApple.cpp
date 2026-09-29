@@ -22,6 +22,7 @@
 #include "goldenApple.h"
 
 unsigned int goldenApple::appleNumber = 0;
+std::mutex goldenApple::applesMutex;
 std::vector<std::shared_ptr<bElem>> goldenApple::apples;
 
 int goldenApple::getType() const
@@ -34,16 +35,8 @@ bool goldenApple::hurt(int points)
     if (this->getAttrs()->getSubtype() != 1) {
         this->getAttrs()->setSubtype(1);
         this->getAttrs()->setInteractive(true);
-        for (unsigned int cnt = 0; cnt < goldenApple::apples.size();) {
-            if (!goldenApple::apples[cnt]
-                || goldenApple::apples[cnt]->getStats()->getInstanceId()
-                       == this->getStats()->getInstanceId()) {
-                goldenApple::apples.erase(goldenApple::apples.begin() + cnt);
-            } else
-                cnt++;
-        }
+        this->forget();
     }
-    goldenApple::appleNumber = goldenApple::apples.size();
     return bElem::hurt(points);
 }
 
@@ -58,6 +51,7 @@ bool goldenApple::additionalProvisioning(int subtype)
 {
     if (!explosives::additionalProvisioning(subtype))
         return false;
+    std::lock_guard<std::mutex> lock(goldenApple::applesMutex);
     if (subtype == 0) {
         goldenApple::apples.push_back(shared_from_this());
     }
@@ -67,24 +61,29 @@ bool goldenApple::additionalProvisioning(int subtype)
 
 oState goldenApple::disposeElement()
 {
-    for (unsigned int cnt = 0; cnt < goldenApple::apples.size();) {
-        if (goldenApple::apples[cnt]->getStats()->getInstanceId()
-            == this->getStats()->getInstanceId()) {
-            goldenApple::apples.erase(goldenApple::apples.begin() + cnt);
-        } else
-            cnt++;
-    }
-    goldenApple::appleNumber = goldenApple::apples.size();
+    this->forget();
     return bElem::disposeElement();
+}
+
+void goldenApple::forget()
+{
+    std::lock_guard<std::mutex> lock(goldenApple::applesMutex);
+    const auto id = this->getStats()->getInstanceId();
+    std::erase_if(goldenApple::apples, [id](const std::shared_ptr<bElem> &a) {
+        return !a || a->getStats()->getInstanceId() == id;
+    });
+    goldenApple::appleNumber = goldenApple::apples.size();
 }
 
 int goldenApple::getAppleNumber()
 {
+    std::lock_guard<std::mutex> lock(goldenApple::applesMutex);
     return goldenApple::appleNumber;
 }
 
 std::shared_ptr<bElem> goldenApple::getApple(int num)
 {
+    std::lock_guard<std::mutex> lock(goldenApple::applesMutex);
     return goldenApple::apples.at(num);
 }
 

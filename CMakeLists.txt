@@ -55,6 +55,10 @@ set(LIBRARIES
     sndfile
     pthread
 )
+# std::stacktrace, used by the crash report, lives in libstdc++exp on GCC
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND LIBRARIES stdc++exp)
+endif()
 
 target_link_libraries(GardenOfEris ${LIBRARIES})
 

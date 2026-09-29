@@ -39,6 +39,16 @@ public:
     player()=default;
 
     ~player() final=default;
+    /// While one is alive on a thread, players made on that thread never become the active player.
+    /// The thread building levels in the background holds one, so a half-built level can never
+    /// take over the game when the last avatar dies.
+    struct backgroundScope
+    {
+        backgroundScope() { player::inBackground = true; }
+        ~backgroundScope() { player::inBackground = false; }
+        backgroundScope(const backgroundScope &) = delete;
+        backgroundScope &operator=(const backgroundScope &) = delete;
+    };
     static unsigned int countVisitedPlayers() ;
     static std::shared_ptr<bElem> getActivePlayer();
     bool stepOnElement(std::shared_ptr<bElem> step);
@@ -55,6 +65,7 @@ private:
 
     float vRadius=2;
     static std::shared_ptr<bElem> activePlayer;
+    static thread_local bool inBackground;
     static std::vector<std::shared_ptr<bElem>> visitedPlayers;
     int animPh=0;
     bool activated=false;

@@ -652,6 +652,7 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
 
 void gameSerializer::clearWorld()
 {
+    std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
     {
         std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
         teleport::allTeleporters.clear();
@@ -680,7 +681,7 @@ bool gameSerializer::saveGame(const std::string &fileName)
         // header and global state
         w.raw(saveMagic, sizeof(saveMagic));
         w.u32(formatVersion);
-        w.u32(gameClock::ticks);
+        w.u32(gameClock::now());
         w.u64(bElemStats::currentInstance);
         w.i32(chamber::lastid);
         std::ostringstream rng;

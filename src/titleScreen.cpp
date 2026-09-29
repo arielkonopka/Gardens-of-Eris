@@ -46,6 +46,7 @@ titleScreen::titleScreen(titleMenu &menu)
 
 titleMenu::action titleScreen::run()
 {
+    al_flush_event_queue(this->queue.get()); // keys pressed while a game was running
     al_start_timer(this->timer.get());
     this->draw();
     ALLEGRO_EVENT ev;
@@ -137,4 +138,57 @@ void titleScreen::showBusy(const std::string &text)
     al_clear_to_color(al_map_rgba(15, 15, 25, 255));
     al_draw_text(this->font.get(), al_map_rgb(170, 170, 190), w / 2, h / 2, ALLEGRO_ALIGN_CENTER, text.c_str());
     al_flip_display();
+}
+
+bool titleScreen::showMessage(const std::string &headline, const std::vector<std::string> &lines)
+{
+    auto draw = [&]() {
+        auto *display = al_get_current_display();
+        if (!display || !this->font || !this->bigFont)
+            return;
+        const float w = (float) al_get_display_width(display);
+        const float h = (float) al_get_display_height(display);
+        const float lineH = (float) al_get_font_line_height(this->font.get()) * 1.4f;
+        al_clear_to_color(al_map_rgba(15, 15, 25, 255));
+        float y = h * 0.3f;
+        al_draw_text(this->bigFont.get(), al_map_rgb(235, 235, 255), w / 2, y, ALLEGRO_ALIGN_CENTER, headline.c_str());
+        y += (float) al_get_font_line_height(this->bigFont.get()) * 1.5f;
+        for (const auto &line : lines) {
+            al_draw_text(this->font.get(), al_map_rgb(170, 170, 190), w / 2, y, ALLEGRO_ALIGN_CENTER, line.c_str());
+            y += lineH;
+        }
+        al_draw_text(this->font.get(), al_map_rgb(110, 110, 130), w / 2, h - lineH * 2, ALLEGRO_ALIGN_CENTER,
+                     "Press Enter to continue");
+        al_flip_display();
+    };
+    // keys held while the game ended must not skip the message, so keys count after one second
+    int ticksShown = 0;
+    al_flush_event_queue(this->queue.get());
+    al_start_timer(this->timer.get());
+    draw();
+    ALLEGRO_EVENT ev;
+    bool open = true;
+    for (bool done = false; !done;) {
+        al_wait_for_event(this->queue.get(), &ev);
+        switch (ev.type) {
+        case ALLEGRO_EVENT_DISPLAY_CLOSE:
+            open = false;
+            done = true;
+            break;
+        case ALLEGRO_EVENT_KEY_DOWN:
+            done = ticksShown >= 30
+                   && (ev.keyboard.keycode == ALLEGRO_KEY_ENTER || ev.keyboard.keycode == ALLEGRO_KEY_SPACE
+                       || ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE);
+            break;
+        case ALLEGRO_EVENT_TIMER:
+            ticksShown++;
+            if (al_is_event_queue_empty(this->queue.get()))
+                draw();
+            break;
+        default:
+            break;
+        }
+    }
+    al_stop_timer(this->timer.get());
+    return open;
 }

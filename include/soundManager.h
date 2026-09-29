@@ -120,6 +120,8 @@ public:
     void moveSong(int songNo, coords3d newPosition,int newChamber);
 private:
    const bool isSongConfigured(int songNo,coords3d position,int chamberId);
+    /// pauseSong for a caller that already holds snd_mutex
+    void pauseSongLocked(unsigned int bElemInstanceId);
    int findNearestMusic();
     void threadLoop();
     std::mutex snd_mutex;
