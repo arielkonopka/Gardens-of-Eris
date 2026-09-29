@@ -25,11 +25,7 @@
 #include "rubbish.h"
 #include <algorithm>
 #include <unordered_set>
-//std::vector<std::shared_ptr<bElem>> bElem::liveElems;
 std::vector<std::shared_ptr<bElem>> bElem::toDispose;
-//std::vector<unsigned long int> bElem::toDeregister;
-
-std::mutex bElem::mechanicMutex;
 
 bElem::bElem()
     : std::enable_shared_from_this<bElem>()
@@ -156,61 +152,6 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
     return true;
 }
 
-oState bElem::disposeElementUnsafe()
-{
-    oState res = DISPOSED;
-    std::shared_ptr<chamber> myBoard = this->getBoard();
-    coords mycoords = this->getStats()->getMyPosition();
-    if (this->getStats()->isDisposed())
-        return ERROR;
-    if (this->getStats()->hasActivatedMechanics())
-        this->deregisterLiveElement(this->getStats()->getInstanceId());
-
-    this->getStats()->setDisposed(true);
-    if (mycoords.x >= 0 && mycoords.y >= 0
-        && this->getBoard() != nullptr) // object on a board? need extra steps
-    {
-        if (this->getStats()->getSteppingOn() || this->getStats()->hasParent()) {
-            this->removeElement();
-            res = DISPOSED;
-        } else {
-            this->getBoard()->setElement(this->getStats()->getMyPosition(), nullptr);
-            res = nullptrREACHED;
-        }
-
-        if (this->getType() != bElemTypes::_stash && this->getAttrs()->canCollect()
-            && !this->getAttrs()->getInventory()->isEmpty()
-            && this->getType() != bElemTypes::_rubishType
-            && this->getType() != bElemTypes::_plainMissile
-            && this->getType() != bElemTypes::_plainGun) {
-            std::shared_ptr<bElem> stash = elementFactory::generateAnElement<rubbish>(myBoard, 0);
-            stash->getAttrs()->setInventory(this->getAttrs()->getInventory());
-            stash->getAttrs()->getInventory()->changeOwner(stash);
-            this->getAttrs()->setInventory(nullptr);
-            if (myBoard->getElement(mycoords)->getAttrs()->isSteppable()) {
-                stash->stepOnElement(myBoard->getElement(mycoords));
-            } else {
-                bool stashed = false;
-                for (int c = 0; c < 4; c++) {
-                    if (myBoard->getElement(mycoords)->isSteppableDirection((dir::direction) c)) {
-                        stash->stepOnElement(myBoard->getElement(mycoords)->getElementInDirection(
-                            (dir::direction) c));
-                        stashed = true;
-                        break;
-                    }
-                }
-                if (!stashed)
-                    stash->disposeElement(); // no place for the stash? Burn!
-            }
-        }
-    }
-    soundManager::getInstance().stopSoundsByElementId(this->getStats()->getInstanceId());
-    this->getStats()->setDisposed(true);
-    this->getStats()->setMyPosition(NOCOORDS);
-    this->attachedBoard.reset();
-    return res; // false means that there is no more elements to go.
-}
-
 oState bElem::disposeElement()
 {
     //std::shared_ptr<bElem> t = shared_from_this();
@@ -246,26 +187,6 @@ oState bElem::disposeElement()
     this->getStats()->setMyPosition(NOCOORDS);
     soundManager::getInstance().stopSoundsByElementId(this->getStats()->getInstanceId());
     return DISPOSED;
-}
-
-/*
- * This method returns absolute coordinates, when asked for coordinates of the next cell in a direction from the elements's standpoint, should be resistant for non-provisioned units
- * better use those on a board though
- */
-coords bElem::getAbsCoords(coords dir) const
-{
-    coords pos = this->getStats()->getMyPosition();
-    if (pos == NOCOORDS)
-        return NOCOORDS;
-    auto board = this->getBoard();
-    if (!board)
-        return NOCOORDS;
-    return (pos + dir).validate(board->getSize());
-}
-
-coords bElem::getAbsCoords(dir::direction dir) const
-{
-    return this->getAbsCoords(dir::dirToCoords(dir));
 }
 
 std::shared_ptr<bElem> bElem::getElementInDirection(dir::direction di)
@@ -366,11 +287,6 @@ bool bElem::hurt(int points)
     return true;
 }
 
-bool bElem::readyToShoot() const
-{
-    return false;
-}
-
 bool bElem::mechanics()
 {
     bElemStats &st = *this->getStats();
@@ -382,11 +298,6 @@ bool bElem::mechanics()
     return !(st.isWaiting() || st.isTeleporting() || st.isDying() || st.isDestroying()
              || st.isMoving() || st.isFadingIn() || st.isFadingOut()
              || (this->getAttrs()->isInteractive() && st.isInteracting()));
-}
-
-bool bElem::isSteppableInMyDirection() const
-{
-    return this->isSteppableDirection(this->getStats()->getMyDirection());
 }
 
 bool bElem::isSteppableDirection(coords di) const
@@ -516,13 +427,6 @@ bool bElem::additionalProvisioning(int subtype)
     return r;
 }
 
-int bElem::getTypeInDirection(dir::direction di)
-{
-    std::shared_ptr<bElem> e = this->getElementInDirection(di);
-    if (e.get() != nullptr)
-        return e->getType();
-    return -1;
-}
 int bElem::getType() const
 {
     return bElemTypes::_belemType;
@@ -599,11 +503,7 @@ bool bElem::moveInDirection(dir::direction d)
 }
 bool bElem::dragInDirection(dir::direction dragIntoDirection)
 {
-    return this->dragInDirectionSpeed(dragIntoDirection, GoEConstants::_mov_delay * 2);
-}
-
-bool bElem::dragInDirectionSpeed(dir::direction dragIntoDirection, int speed)
-{
+    const int speed = GoEConstants::_mov_delay * 2;
     dir::direction objFromDir = (dir::direction)((((int) dragIntoDirection) + 2) % 4);
     dir::direction d2 = dragIntoDirection;
     std::shared_ptr<bElem> draggedObj = this->getElementInDirection(objFromDir);
@@ -636,16 +536,6 @@ void bElem::deregisterLiveElement(unsigned int instanceId)
         this->getBoard()->toDeregister.push_back(instanceId);
         this->getStats()->setActivatedMechanics(false);
     }
-}
-
-void bElem::mechLock()
-{
-    bElem::mechanicMutex.lock();
-}
-
-void bElem::mechUnlock()
-{
-    bElem::mechanicMutex.unlock();
 }
 
 void bElem::runLiveElements()
@@ -714,31 +604,6 @@ bool bElem::stepOnAction(bool step, std::shared_ptr<bElem> who)
     return false;
 }
 
-bool bElem::isLocked()
-{
-    return this->lockers.size() != 0;
-}
-
-bool bElem::lockThisObject(std::shared_ptr<bElem> who)
-{
-    this->lockers.push_back(who);
-    return true;
-}
-
-bool bElem::unlockThisObject(std::shared_ptr<bElem> who)
-{
-    for (unsigned int cnt = 0; cnt < this->lockers.size();) {
-        if (!this->lockers.at(cnt)
-            || this->lockers.at(cnt)->getStats()->getInstanceId()
-                   == who->getStats()->getInstanceId()) {
-            this->lockers.erase(this->lockers.begin() + cnt);
-        } else {
-            cnt++;
-        }
-    }
-    return true;
-}
-
 void bElem::setStatsOwner(std::shared_ptr<bElem> owner)
 {
     this->getStats()->setStatsOwner(owner);
@@ -776,18 +641,4 @@ void bElem::ps(std::shared_ptr<bElem> who, std::string eventType, std::string ev
                                                this->getAttrs()->getSubtype(),
                                                eventType,
                                                event);
-}
-
-void bElem::stopMySounds()
-{
-    soundManager::getInstance().stopSoundsByElementId(this->getStats()->getInstanceId());
-}
-
-std::shared_ptr<bElem> bElem::findInDir(dir::direction dir)
-{
-    std::shared_ptr<bElem> r = this->getElementInDirection(dir);
-    while (r && r->getAttrs()->isSteppable() && !r->getAttrs()->isCollectible()) {
-        r = r->getElementInDirection(dir);
-    }
-    return r;
 }

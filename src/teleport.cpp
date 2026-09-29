@@ -213,12 +213,6 @@ oState teleport::disposeElement()
     return bElem::disposeElement();
 }
 
-oState teleport::disposeElementUnsafe()
-{
-    this->removeFromAllTeleporters();
-    return bElem::disposeElementUnsafe();
-}
-
 bool teleport::stepOnElement(std::shared_ptr<bElem> step)
 {
     if (!bElem::stepOnElement(step))

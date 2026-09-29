@@ -368,10 +368,6 @@ void presenter::showGameField()
     colour c = this->_cp_attachedBoard->getChColour();
     al_clear_to_color(al_map_rgba(c.r, c.g, c.b, c.a));
     /***
-    do not conflict in time with mechanics, useful on getting of the glitches"
-    ***/
-    bElem::mechLock();
-    /***
     draw only visible elements, walls are always visible.
     ***/
     this->poses.clear();
@@ -419,7 +415,6 @@ void presenter::showGameField()
     /***
     Draw the cloak on the game field
     ***/
-    bElem::mechUnlock();
 
     al_set_target_bitmap(al_get_backbuffer(videoManager::getInstance().getCurrentDisplay()));
 
@@ -586,10 +581,8 @@ void presenter::handleSaveKeys()
     if (!worldLock.owns_lock())
         return;
     bool save = this->pendingSaveOp == 1;
-    bElem::mechLock();
     const std::string saveFile = gameSettings::getInstance().getSaveFile();
     bool ok = save ? gameSerializer::saveGame(saveFile) : gameSerializer::loadGame(saveFile);
-    bElem::mechUnlock();
     this->pendingSaveOp = 0;
     chamber::worldLockWanted = false;
     if (save)

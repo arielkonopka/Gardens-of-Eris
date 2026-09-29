@@ -31,7 +31,6 @@ std::shared_ptr<bElem> bazooka::createProjectible(std::shared_ptr<bElem> who)
     std::shared_ptr<bElem> pm = elementFactory::generateAnElement<bazookaMissile>(who->getBoard(),
                                                                                   0);
     pm->getStats()->setStatsOwner(who);
-    who->lockThisObject(pm);
     pm->getStats()->setMyDirection(who->getStats()->getFacing());
     pm->getStats()->setFacing(who->getStats()->getFacing());
     pm->stepOnElement(who->getElementInDirection(who->getStats()->getFacing()));

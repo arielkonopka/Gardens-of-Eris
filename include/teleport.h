@@ -40,7 +40,6 @@ public:
     bool interact(std::shared_ptr<bElem> who) override;
     virtual bool teleportIt(std::shared_ptr<bElem> who);
     oState disposeElement() override;
-    oState disposeElementUnsafe() override;
     bool createConnectionsWithinSubtype();
     bool additionalProvisioning(int value) override;
     bool stepOnElement(std::shared_ptr<bElem> step) override;
