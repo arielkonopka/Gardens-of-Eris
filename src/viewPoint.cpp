@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "viewPoint.h"
+#include "elementView.h"
 
 
 bool viewPoint::isElementInVector(const std::vector<std::weak_ptr<bElem>> &vec,
@@ -73,12 +74,12 @@ coords viewPoint::getViewPointOffset()
 {
     std::shared_ptr<bElem> be = this->getOwner();
     if (be && be->getStats()->getMyPosition() != NOCOORDS)
-        return be->getOffset();
+        return elementView::offset(*be);
     else {
         this->setOwner(player::getActivePlayer());
         be = this->getOwner();
         if (be)
-            return be->getOffset();
+            return elementView::offset(*be);
     }
     return NOCOORDS;
 }
@@ -119,7 +120,7 @@ int viewPoint::calculateObscured(const coords point, int divider)
         } else if (wp->getBoard() && wp->getBoard()->getInstanceId() == ownerId) {
             radius = wp->getViewRadius() * divider;
             coords viewPointPos = (wp->getStats()->getMyPosition() * divider)
-                                  + (wp->getOffset() * divider) / 64 + (dh * (8 + 4 + 2)) / 16;
+                                  + (elementView::offset(*wp) * divider) / 64 + (dh * (8 + 4 + 2)) / 16;
             float dist = viewPointPos.distance(point);
             if (dist > radius && dist < radius + 0.8 && obscured > 1024) {
                 obscured = 1024;
@@ -198,7 +199,7 @@ std::vector<vpPoint> viewPoint::getViewPoints(coords start, coords end)
                                  ? NOCOORDS
                                  : b_->getStats()->getCollector().lock()->getStats()->getMyPosition())
                           : b_->getStats()->getMyPosition();
-                coords ofs = (bcoords != NOCOORDS) ? b_->getOffset() : coords(0, 0);
+                coords ofs = (bcoords != NOCOORDS) ? elementView::offset(*b_) : coords(0, 0);
                 bcoords = bcoords - start;
                 vp.x = (bcoords.x * this->tilesize.x) + ofs.x;
                 vp.y = (bcoords.y * this->tilesize.y) + ofs.y;

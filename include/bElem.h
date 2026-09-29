@@ -92,7 +92,6 @@ public:
     virtual oState disposeElement();
     /// false for elements whose inventory must vanish with them instead of being left in a stash
     virtual bool dropsInventoryOnDeath() const;
-    virtual coords getOffset() const;
 
     virtual bool mechanics();
     virtual bool stepOnAction(bool step,std::shared_ptr<bElem> who);
@@ -106,15 +105,12 @@ public:
     virtual void setStatsOwner(std::shared_ptr<bElem> owner);
     virtual bool additionalProvisioning(int subtype);
 
-    void playSound(std::string eventType,std::string event);
-
 private:
     std::shared_ptr<bElemStats> status;
     std::shared_ptr<bElemAttr> attrs;
 
     std::once_flag _provOnce;
     void leaveStash(const std::shared_ptr<chamber> &board, coords at);
-    void ps(std::shared_ptr<bElem> who,std::string eventType,std::string event);
     std::weak_ptr<chamber> attachedBoard;
     static std::vector<std::shared_ptr<bElem>> toDispose;
 };

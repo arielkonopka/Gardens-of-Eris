@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "patrollingDrone.h"
+#include "elementSound.h"
 #include "puppetMasterFR.h"
 
 bool patrollingDrone::additionalProvisioning(int subtype)
@@ -46,14 +47,14 @@ bool patrollingDrone::interact(std::shared_ptr<bElem> who)
         auto token = std::dynamic_pointer_cast<puppetMasterFR>(
             who->getAttrs()->getInventory()->requestToken(bElemTypes::_puppetMasterType, -1, true));
         if (token) {
-            this->playSound("Boot", "Success");
+            goe::sound::play(*this, "Boot", "Success");
             this->attachController(token);
             this->getStats()->setWaiting(55);
             if (who->getType() == bElemTypes::_player)
                 viewPoint::get_instance().setOwner(shared_from_this());
             return true;
         }
-        this->playSound("Boot", "Failure");
+        goe::sound::play(*this, "Boot", "Failure");
     }
     return false;
 }

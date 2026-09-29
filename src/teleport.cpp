@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "teleport.h"
+#include "elementSound.h"
 bool teleport::firstReceiverRemoved = false;
 
 std::vector<std::weak_ptr<teleport>> teleport::allTeleporters;
@@ -68,7 +69,7 @@ bool teleport::interact(std::shared_ptr<bElem> who)
         return false;
     if (this->theOtherEnd.expired())
         this->createConnectionsWithinSubtype();
-    this->playSound("Teleport", "Teleporting");
+    goe::sound::play(*this, "Teleport", "Teleporting");
     if (!this->theOtherEnd.expired())
         r = this->theOtherEnd.lock()->teleportIt(who);
     else
@@ -163,7 +164,7 @@ bool teleport::teleportIt(std::shared_ptr<bElem> who)
 bool teleport::stepOnAction(bool step, std::shared_ptr<bElem> who)
 {
     bElem::stepOnAction(step, who);
-    this->playSound("Teleport", "HummingSound");
+    goe::sound::play(*this, "Teleport", "HummingSound");
     if (this->getStats()->getMyDirection() == dir::direction::LEFT)
         return false;
     if (step && !who->getStats()->isTeleporting() && !this->getStats()->isTeleporting()) {

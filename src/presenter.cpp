@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "presenter.h"
+#include "elementView.h"
 #include "difficulty.h"
 
 namespace presenter {
@@ -164,7 +165,7 @@ bool presenter::showObjectTile(
 
     if (!ignoreOffset) {
         if (elem.get() != nullptr)
-            offset = elem->getOffset();
+            offset = elementView::offset(*elem);
         offsetX = offset.x;
         offsetY = offset.y;
     }

@@ -7,6 +7,7 @@
 #include "chamber.h"
 #include "randomLevelGenerator.h"
 #include "randomWordGen.h"
+#include "elementView.h"
 #include <gtest/gtest.h>
 #include "testSupport.h"
 #include <cctype>
@@ -396,3 +397,20 @@ TEST(GeneratorTests, GeneratedLevelIsWalledAndConsistent)
     EXPECT_EQ(floors, 64 * 64);
 }
 
+
+// The drawing offset of an element moving between cells lives in elementView, outside the model.
+TEST(CoreTests, MovingElementsAreDrawnBetweenCells)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(5, 5), plr);
+    auto w = elementFactory::generateAnElement<monster>(mc, 0);
+    w->stepOnElement(mc->getElement(2, 2));
+    EXPECT_EQ(elementView::offset(*w, coords(64, 64)), coords(0, 0));
+    w->getStats()->setMyDirection(dir::direction::RIGHT);
+    w->getStats()->setMoved(20);
+    // it has just left the cell to its left, so it is drawn a whole tile back
+    EXPECT_EQ(elementView::offset(*w, coords(64, 64)), coords(-64, 0));
+    for (int t = 0; t < 10; t++)
+        bElem::tick();
+    EXPECT_EQ(elementView::offset(*w, coords(64, 64)), coords(-32, 0));
+}

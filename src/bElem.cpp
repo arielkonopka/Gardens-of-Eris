@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "../include/bElem.h"
+#include "elementSound.h"
 #include "elements.h"
 #include "floorElement.h"
 #include "rubbish.h"
@@ -35,25 +36,10 @@ bElem::bElem()
     this->getStats()->setFacing(this->getStats()->getMyDirection());
 }
 
-coords bElem::getOffset() const
-{
-    coords res(0, 0);
-    int rx = configManager::getInstance()->getConfig()->tileWidth;
-    int ry = configManager::getInstance()->getConfig()->tileHeight;
-    if (this->getStats()->isMoving() && this->getStats()->getMovingTotalTime() > 0) {
-        coords interm = {(this->getStats()->getMoved() * rx)
-                             / this->getStats()->getMovingTotalTime(),
-                         (this->getStats()->getMoved() * ry)
-                             / this->getStats()->getMovingTotalTime()};
-        res = dir::dirToCoords(this->getStats()->getMyDirection()) * interm * (-1);
-    }
-    return res;
-}
-
 bool bElem::collectOnAction(bool collected, std::shared_ptr<bElem> who)
 {
     if (collected && who && who->getType() == bElemTypes::_player) {
-        this->playSound("Found", "Collect");
+        goe::sound::play(*this, "Found", "Collect");
     }
     return true;
 }
@@ -86,7 +72,7 @@ bool bElem::dropItem(unsigned long int instanceId)
 
         if (this->isSteppableDirection(dir)) {
             if (this->getType() == bElemTypes::_player)
-                item->playSound("Drop", "Item");
+                goe::sound::play(*item, "Drop", "Item");
             item->stepOnElement(this->getElementInDirection(dir));
             return true;
         }
@@ -491,7 +477,7 @@ bool bElem::moveInDirectionSpeed(dir::direction dir, int speed)
     if (stepOn->getAttrs()->isSteppable()) {
         this->stepOnElement(stepOn);
         this->getStats()->setMoved(speed);
-        this->playSound("Move", "StepOn");
+        goe::sound::play(*this, "Move", "StepOn");
         return true;
     } else if (this->getAttrs()->canCollect() && stepOn->getAttrs()->isCollectible()
                && this->collect(stepOn)) {
@@ -501,7 +487,7 @@ bool bElem::moveInDirectionSpeed(dir::direction dir, int speed)
                && stepOn->moveInDirectionSpeed(dir, speed + 1)) {
         this->stepOnElement(this->getElementInDirection(dir)); // move the initiating object
         this->getStats()->setMoved(speed + 1);
-        this->playSound("Move", "StepOn");
+        goe::sound::play(*this, "Move", "StepOn");
         return true;
     } else if (this->getAttrs()->isInteractive() && stepOn->interact(shared_from_this())) {
         return true;
@@ -618,38 +604,4 @@ bool bElem::stepOnAction(bool step, std::shared_ptr<bElem> who)
 void bElem::setStatsOwner(std::shared_ptr<bElem> owner)
 {
     this->getStats()->setStatsOwner(owner);
-}
-
-void bElem::playSound(std::string eventType, std::string event)
-{
-    if (!this->getStats()->getCollector().expired()) {
-        this->ps(this->getStats()->getCollector().lock(), eventType, event);
-    } else if (this->getBoard()) {
-        this->ps(shared_from_this(), eventType, event);
-    } else if (this->getStats()->hasParent()) {
-        this->ps(this->getStats()->getStandingOn().lock(), eventType, event);
-    } else if (this->getStats()->getSteppingOn()) {
-        this->ps(this->getStats()->getSteppingOn(), eventType, event);
-    }
-}
-
-void bElem::ps(std::shared_ptr<bElem> who, std::string eventType, std::string event)
-{
-    if (!who || !who->getBoard())
-        return;
-    coords3d c3d;
-    c3d.x = (float) who->getStats()->getMyPosition().x;
-    c3d.y = (float) who->getStats()->getMyPosition().y;
-    c3d.z = 0.0f;
-    coords3d vel = {(who->getOffset().x) ? 0.5f : 0.0f,
-                    (who->getOffset().y > 0) ? 0.5f : 0.0f,
-                    0.0f};
-    soundManager::getInstance().registerSound(who->getBoard()->getInstanceId(),
-                                               c3d,
-                                               vel,
-                                               this->getStats()->getInstanceId(),
-                                               this->getType(),
-                                               this->getAttrs()->getSubtype(),
-                                               eventType,
-                                               event);
 }

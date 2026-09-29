@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "explosives.h"
+#include "elementSound.h"
 #include <viewPoint.h>
 
 bool explosives::additionalProvisioning(int subtype)
@@ -46,7 +47,7 @@ bool explosives::explode(float radius)
     {
         std::shared_ptr<chamber> brd = (this->getStats()->isCollected()) ? this->getStats()->getCollector().lock()->getBoard() : this->getBoard();
         coords mc = (this->getStats()->isCollected()) ? this->getStats()->getCollector().lock()->getStats()->getMyPosition() : this->getStats()->getMyPosition();
-        this->playSound("Explosives", "Explode");
+        goe::sound::play(*this, "Explosives", "Explode");
 
         std::shared_ptr<bElem> sowner = this->getStats()->getStatsOwner().lock();
         if (sowner)
@@ -123,7 +124,7 @@ bool explosives::explode(float radius)
         int xe=std::min(bsize.x-1,(int)(mc.x+(int)radius));
         int ys=std::max(0,(int)(mc.y-(int)radius));
         int ye=std::min(bsize.y-1,(int)(mc.y+(int)radius));
-        this->playSound("Explosives","Explode");
+        goe::sound::play(*this, "Explosives", "Explode");
         std::shared_ptr<bElem> sowner=this->getStats()->getStatsOwner().lock();
         if(sowner)
         {
