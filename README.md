@@ -12,8 +12,9 @@ So, here we have a work in progress. It tends to function well enough, but consi
 Main branch build status:
 
 [![CI](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/ci.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/ci.yml)
+[![SonarCloud](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonar.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonar.yml)
 
-Every push builds the game and runs the unit tests on Linux and on Windows (MSYS2), packs a zip of each build, and runs a SonarCloud analysis with test coverage.
+Every push builds the game and runs the unit tests on Linux and on Windows (MSYS2), packs a zip of each build. The SonarCloud analysis with test coverage runs as its own workflow, so its badge is separate from the build badge.
 
 
 ## Why the idea
