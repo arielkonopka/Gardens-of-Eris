@@ -56,12 +56,6 @@ class bElem : public  std::enable_shared_from_this<bElem>
 
 public:
 
-    /*
-     * these three templates below generate objects. I added them because I need bidirectional connection with everything
-     */
-
-    static void mechLock();
-    static void mechUnlock();
     void registerLiveElement(std::shared_ptr<bElem> who);
     void deregisterLiveElement(unsigned int instanceId);
     static void runLiveElements();
@@ -79,17 +73,13 @@ public:
     virtual bool moveInDirection(dir::direction d);
     virtual bool moveInDirectionSpeed(dir::direction dir, int speed);
     virtual bool dragInDirection(dir::direction dragIntoDirection);
-    virtual bool dragInDirectionSpeed(dir::direction dragIntoDirection,int speed);
     virtual bool destroy();
     virtual bool kill();
     virtual bool hurt(int points);
     virtual bool isSteppableDirection(dir::direction di) const;
     virtual bool isSteppableDirection(coords di) const;
-    bool isSteppableInMyDirection() const;
     virtual std::shared_ptr<bElem> getElementInDirection(dir::direction di) ;
     virtual std::shared_ptr<bElem> getElementInDirection(coords di) ;
-    virtual coords getAbsCoords(dir::direction dir) const;
-    virtual coords getAbsCoords(coords dir) const;
     virtual  int getType() const;
     virtual int getAnimPh() const;
     const std::shared_ptr<bElemAttr>& getAttrs() const { return this->attrs; }
@@ -100,9 +90,8 @@ public:
     virtual bool dropItem(unsigned long int  instanceId);
     virtual std::shared_ptr<bElem> removeElement(); // removes element from the board, and returns it for further processing, useful for e.g. for collecting stuff
     virtual oState disposeElement();
-    virtual oState disposeElementUnsafe();
-    virtual coords getOffset() const;
-    virtual bool readyToShoot() const;
+    /// false for elements whose inventory must vanish with them instead of being left in a stash
+    virtual bool dropsInventoryOnDeath() const;
 
     virtual bool mechanics();
     virtual bool stepOnAction(bool step,std::shared_ptr<bElem> who);
@@ -113,29 +102,16 @@ public:
     static void tick() { gameClock::advance(); }
     static unsigned int getCntr() { return gameClock::now(); }
 
-    std::shared_ptr<bElem> findInDir(dir::direction dir);
-
-    virtual bool isLocked();
-    virtual bool lockThisObject(std::shared_ptr<bElem> who);
-    virtual bool unlockThisObject(std::shared_ptr<bElem> who);
-
-   virtual int getTypeInDirection(dir::direction di);
-   virtual void setStatsOwner(std::shared_ptr<bElem> owner);
+    virtual void setStatsOwner(std::shared_ptr<bElem> owner);
     virtual bool additionalProvisioning(int subtype);
 
-    void playSound(std::string eventType,std::string event);
-    void stopMySounds();
-
-//   static std::vector<unsigned long int> toDeregister;
 private:
     std::shared_ptr<bElemStats> status;
     std::shared_ptr<bElemAttr> attrs;
 
     std::once_flag _provOnce;
-    void ps(std::shared_ptr<bElem> who,std::string eventType,std::string event);
+    void leaveStash(const std::shared_ptr<chamber> &board, coords at);
     std::weak_ptr<chamber> attachedBoard;
-    static std::mutex mechanicMutex;
-    std::vector<std::shared_ptr<bElem>> lockers;
     static std::vector<std::shared_ptr<bElem>> toDispose;
 };
 

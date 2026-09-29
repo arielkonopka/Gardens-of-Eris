@@ -213,6 +213,12 @@ It also contains the music and sound information.
 **TBD**
 
 # Mechanics
+## Moving and collecting
+When an element walks into a cell, the rules are tried in this order (`include/motion.h`): collect what is there, step onto it, push it one cell further, interact with it. A collector always collects first and only then steps onto the cell the collectible uncovered, in the same move; if the collect fails, it does not step. Nothing is ever placed on top of a collectible it could pick up.
+
+A cell holds a stack of elements (a floor, maybe something lying on it, maybe someone standing there). Only `chamber::place` and `chamber::lift` change a stack.
+
+## Live elements
 There exists a vector containing "mechanical" elements. We add elements that possess certain mechanics, such as shooting, walking, or performing actions autonomously. However, the animation phases are managed differently, enabling objects without mechanics to still have animated sprites.
 There are two methods:
 
@@ -362,6 +368,9 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Walking into a collectible picks it up and steps onto its cell in the same move; before, the collector stayed where it was and had to move again.
+* Fixed: every missile fired stayed in memory, and in the save file, for the rest of the game. Save files are smaller now; older saves still load.
+* Tidier elements: the base element class lost a dozen unused methods, and moving, sounds, drawing offsets and cell stacks each live in one small place of their own.
 * Choosing guns: Z jumps to the next kind of gun instead of stepping through identical ones, and the HUD shows how many of the selected kind you carry. When a gun runs out of ammo, another gun of the same kind takes over, or any other gun if there is none, without losing the shot.
 * Losing the last avatar no longer closes the window without a word (it looked like a crash): a Game over screen shows the score and returns to the title screen for a new game. Quitting closes the window at once instead of freezing while a background level finishes.
 * Crash reports: a crash writes `crash-<date>-<time>.log` with a stack trace into the save folder, on Linux and Windows, no debugger needed.

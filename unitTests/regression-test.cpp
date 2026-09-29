@@ -175,9 +175,8 @@ TEST(RegressionTests, OffBoardCoordinatesAreNOCOORDS)
     inputManager::getInstance(true);
     auto mc = chamber::makeNewChamber(coords(3, 3));
     auto corner = mc->getElement(0, 0);
-    EXPECT_TRUE(corner->getAbsCoords(dir::direction::LEFT) == NOCOORDS);
-    EXPECT_TRUE(corner->getAbsCoords(dir::direction::UP) == NOCOORDS);
-    EXPECT_TRUE(corner->getAbsCoords(dir::direction::RIGHT) == coords(1, 0));
+    EXPECT_TRUE(corner->getElementInDirection(dir::direction::UP) == nullptr);
+    EXPECT_TRUE(corner->getElementInDirection(dir::direction::RIGHT) == mc->getElement(1, 0));
     EXPECT_TRUE(corner->getElementInDirection(dir::direction::LEFT) == nullptr);
     EXPECT_TRUE(corner->getElementInDirection(dir::direction::DOWN) == mc->getElement(0, 1));
     EXPECT_TRUE(!corner->isSteppableDirection(dir::direction::UP));
@@ -185,7 +184,7 @@ TEST(RegressionTests, OffBoardCoordinatesAreNOCOORDS)
     // an element that is not on a board has no neighbours
     auto loose = elementFactory::generateAnElement<wall>(mc, 0);
     EXPECT_TRUE(loose->getElementInDirection(dir::direction::RIGHT) == nullptr);
-    EXPECT_TRUE(loose->getAbsCoords(dir::direction::RIGHT) == NOCOORDS);
+    EXPECT_TRUE(!loose->isSteppableDirection(dir::direction::RIGHT));
 }
 
 // PR #264: runLiveElements was rewritten to compact its lists in one pass; it must still drop
@@ -328,4 +327,108 @@ TEST(RegressionTests, AskingForAnAppleWhenNoneIsLeftIsSafe)
     EXPECT_TRUE(goldenApple::getApple(goldenApple::getAppleNumber() - 1) == apple);
     EXPECT_NO_THROW(EXPECT_TRUE(goldenApple::getApple(goldenApple::getAppleNumber()) == nullptr));
     EXPECT_TRUE(goldenApple::getApple(-1) == nullptr);
+}
+
+// bElem review of 2026-09-29: guns kept every missile they fired alive through bElem::lockers,
+// which nothing ever emptied, and every one of them was written into the save file.
+TEST(RegressionTests, FiredMissilesAreFreedOnceTheyAreGone)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(23, 5), plr);
+    plr->stepOnElement(mc->getElement(1, 2));
+    auto gun = elementFactory::generateAnElement<plainGun>(mc, 0);
+    std::weak_ptr<bElem> missile;
+    plr->getStats()->setFacing(dir::direction::RIGHT);
+    missile = gun->createProjectible(plr);
+    ASSERT_FALSE(missile.expired());
+    for (int t = 0; t < 555 && !missile.expired(); t++)
+        bElem::runLiveElements();
+    EXPECT_TRUE(missile.expired());
+}
+
+namespace {
+/// a gun that records where its collector stood when it was picked up
+class watchedGun : public plainGun
+{
+public:
+    coords collectorAt = NOCOORDS;
+    bool collectOnAction(bool collected, std::shared_ptr<bElem> who) override
+    {
+        if (collected && who)
+            collectorAt = who->getStats()->getMyPosition();
+        return plainGun::collectOnAction(collected, who);
+    }
+};
+} // namespace
+
+// User rule of 2026-09-29: a collector collects a collectible first and only then steps onto its
+// cell, so it never stands on, or under, the thing it is picking up.
+TEST(RegressionTests, CollectorsCollectBeforeTheyStep)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(5, 5), plr);
+    plr->stepOnElement(mc->getElement(2, 2));
+
+    // walking into a collectible: it is picked up while the player is still next to it, then the
+    // player steps onto the floor it uncovered, in the same move
+    auto gun = elementFactory::generateAnElement<watchedGun>(mc, 0);
+    gun->stepOnElement(mc->getElement(3, 2));
+    auto floorBelow = gun->getStats()->getSteppingOn();
+    ASSERT_TRUE(plr->moveInDirection(dir::direction::RIGHT));
+    EXPECT_EQ(gun->collectorAt, coords(2, 2));
+    EXPECT_TRUE(gun->getStats()->isCollected());
+    EXPECT_EQ(plr->getStats()->getMyPosition(), coords(3, 2));
+    EXPECT_EQ(plr->getStats()->getSteppingOn(), floorBelow);
+    EXPECT_EQ(mc->getElement(3, 2), plr);
+
+    // the same for one that could be stood on
+    for (int t = 0; t < 55; t++)
+        bElem::tick();
+    auto steppable = elementFactory::generateAnElement<watchedGun>(mc, 0);
+    steppable->stepOnElement(mc->getElement(3, 3));
+    steppable->getAttrs()->setSteppable(true);
+    ASSERT_TRUE(plr->moveInDirection(dir::direction::DOWN));
+    EXPECT_EQ(steppable->collectorAt, coords(3, 2));
+    EXPECT_EQ(plr->getStats()->getMyPosition(), coords(3, 3));
+    EXPECT_EQ(mc->getElement(3, 3), plr);
+
+    // placing a collector straight onto a collectible is refused
+    auto placed = elementFactory::generateAnElement<watchedGun>(mc, 0);
+    placed->stepOnElement(mc->getElement(4, 4));
+    placed->getAttrs()->setSteppable(true);
+    EXPECT_FALSE(plr->stepOnElement(placed));
+    EXPECT_EQ(mc->getElement(4, 4), placed);
+
+    // a collectible that cannot be collected (it is dying) is neither collected nor stepped on
+    for (int t = 0; t < 55; t++)
+        bElem::tick();
+    auto dying = elementFactory::generateAnElement<plainGun>(mc, 0);
+    dying->stepOnElement(mc->getElement(4, 3));
+    dying->getStats()->setKilled(55);
+    EXPECT_FALSE(plr->moveInDirection(dir::direction::RIGHT));
+    EXPECT_FALSE(dying->getStats()->isCollected());
+    EXPECT_EQ(mc->getElement(4, 3), dying);
+    EXPECT_EQ(plr->getStats()->getMyPosition(), coords(3, 3));
+}
+
+// bElem review of 2026-09-29: there were two disposal paths with different stash rules. Now one
+// path leaves what a dying collector carried in a rubbish pile, and a pile never leaves another.
+TEST(RegressionTests, DyingCollectorsLeaveTheirInventoryBehind)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(5, 5), plr);
+    auto carrier = elementFactory::generateAnElement<patrollingDrone>(mc, 0);
+    carrier->stepOnElement(mc->getElement(2, 2));
+    auto gun = elementFactory::generateAnElement<plainGun>(mc, 0);
+    gun->stepOnElement(mc->getElement(3, 2));
+    ASSERT_TRUE(carrier->collect(gun));
+
+    carrier->disposeElement();
+    auto pile = mc->getElement(2, 2);
+    ASSERT_EQ(pile->getType(), bElemTypes::_rubishType);
+    EXPECT_TRUE(pile->getAttrs()->getInventory()->findInInventory(gun->getStats()->getInstanceId()));
+
+    pile->disposeElement();
+    EXPECT_NE(mc->getElement(2, 2)->getType(), bElemTypes::_rubishType);
+    EXPECT_TRUE(pile->getAttrs()->getInventory()->isEmpty());
 }

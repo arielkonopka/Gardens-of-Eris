@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Ariel Konopka
+ * Copyright (c) 2026, Ariel Konopka
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,28 +20,16 @@
  * SOFTWARE.
  */
 
-#include "bazooka.h"
+#ifndef ELEMENTSOUND_H
+#define ELEMENTSOUND_H
+#include <string>
 
-int bazooka::getType() const
-{
-    return bElemTypes::_bazookaType;
-}
-std::shared_ptr<bElem> bazooka::createProjectible(std::shared_ptr<bElem> who)
-{
-    std::shared_ptr<bElem> pm = elementFactory::generateAnElement<bazookaMissile>(who->getBoard(),
-                                                                                  0);
-    pm->getStats()->setStatsOwner(who);
-    pm->getStats()->setMyDirection(who->getStats()->getFacing());
-    pm->getStats()->setFacing(who->getStats()->getFacing());
-    pm->stepOnElement(who->getElementInDirection(who->getStats()->getFacing()));
-    pm->getAttrs()->setEnergy(this->getAttrs()->getEnergy());
-    if (who->getType() == bElemTypes::_player)
-        viewPoint::get_instance().setOwner(pm);
-    pm->registerLiveElement(pm);
-    return pm;
-}
+class bElem;
 
-bool bazooka::additionalProvisioning(int subtype)
-{
-    return plainGun::additionalProvisioning(subtype);
-}
+namespace goe::sound {
+/// Plays an element's sound for an event from skins.json. A collected element is heard where its
+/// collector is, one that is not on a board where the element it is stacked with is.
+void play(const bElem &elem, const std::string &eventType, const std::string &event);
+} // namespace goe::sound
+
+#endif // ELEMENTSOUND_H

@@ -7,6 +7,7 @@
 #include "chamber.h"
 #include "randomLevelGenerator.h"
 #include "randomWordGen.h"
+#include "elementView.h"
 #include <gtest/gtest.h>
 #include "testSupport.h"
 #include <cctype>
@@ -396,3 +397,79 @@ TEST(GeneratorTests, GeneratedLevelIsWalledAndConsistent)
     EXPECT_EQ(floors, 64 * 64);
 }
 
+
+// The drawing offset of an element moving between cells lives in elementView, outside the model.
+TEST(CoreTests, MovingElementsAreDrawnBetweenCells)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(5, 5), plr);
+    auto w = elementFactory::generateAnElement<monster>(mc, 0);
+    w->stepOnElement(mc->getElement(2, 2));
+    EXPECT_EQ(elementView::offset(*w, coords(64, 64)), coords(0, 0));
+    w->getStats()->setMyDirection(dir::direction::RIGHT);
+    w->getStats()->setMoved(20);
+    // it has just left the cell to its left, so it is drawn a whole tile back
+    EXPECT_EQ(elementView::offset(*w, coords(64, 64)), coords(-64, 0));
+    for (int t = 0; t < 10; t++)
+        bElem::tick();
+    EXPECT_EQ(elementView::offset(*w, coords(64, 64)), coords(-32, 0));
+}
+
+// bElemStats::busy() answers "is something timed going on", which mechanics() used to work out
+// inline for every element.
+TEST(CoreTests, BusyCoversEveryTimedState)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(5, 5), plr);
+    auto m = elementFactory::generateAnElement<monster>(mc, 0);
+    m->stepOnElement(mc->getElement(2, 2));
+    auto st = m->getStats();
+    EXPECT_FALSE(st->busy());
+    EXPECT_TRUE(m->bElem::mechanics());
+    st->setWaiting(5);
+    EXPECT_TRUE(st->busy());
+    EXPECT_FALSE(m->bElem::mechanics());
+    st->stopWaiting();
+    EXPECT_FALSE(st->busy());
+    st->setMoved(5);
+    EXPECT_TRUE(st->busy());
+    for (int t = 0; t < 23; t++)
+        bElem::tick();
+    EXPECT_FALSE(st->busy());
+    st->setFadingOut(5);
+    EXPECT_TRUE(st->busy());
+}
+
+// chamber::place and chamber::lift own a cell's stack: an element placed on an element that is
+// already covered slides in between, and lifting one closes the gap and leaves it with no links.
+TEST(CoreTests, CellStacksStayLinked)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(5, 5), plr);
+    auto floor = mc->getElement(3, 3);
+    auto top = elementFactory::generateAnElement<monster>(mc, 0);
+    auto middle = elementFactory::generateAnElement<monster>(mc, 0);
+    ASSERT_TRUE(top->stepOnElement(floor));
+    ASSERT_TRUE(middle->stepOnElement(floor));
+    EXPECT_EQ(mc->getElement(3, 3), top);
+    EXPECT_EQ(top->getStats()->getSteppingOn(), middle);
+    EXPECT_EQ(middle->getStats()->getSteppingOn(), floor);
+    EXPECT_EQ(middle->getStats()->getStandingOn().lock(), top);
+    EXPECT_EQ(floor->getStats()->getStandingOn().lock(), middle);
+
+    middle->removeElement();
+    EXPECT_EQ(top->getStats()->getSteppingOn(), floor);
+    EXPECT_EQ(floor->getStats()->getStandingOn().lock(), top);
+    EXPECT_EQ(middle->getStats()->getSteppingOn(), nullptr);
+    EXPECT_FALSE(middle->getStats()->hasParent());
+    EXPECT_EQ(middle->getStats()->getMyPosition(), NOCOORDS);
+
+    // placed on its own again, it is the top of its new cell and stands under nothing
+    ASSERT_TRUE(middle->stepOnElement(mc->getElement(2, 4)));
+    EXPECT_EQ(mc->getElement(2, 4), middle);
+    EXPECT_FALSE(middle->getStats()->hasParent());
+
+    top->removeElement();
+    EXPECT_EQ(mc->getElement(3, 3), floor);
+    EXPECT_FALSE(floor->getStats()->hasParent());
+}

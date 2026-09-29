@@ -109,6 +109,16 @@ public:
     colour getChColour();
     coords getSizeOfChamber();
 
+    /**
+     * The stack of elements on a cell. Only these two change the stepping-on and standing-on
+     * links, so a stack is never half updated. Neither checks game rules (steppable, collectible,
+     * live registration, stepOnAction); bElem::stepOnElement and bElem::removeElement do that.
+     */
+    /// puts elem directly on top of onto, which must be on a board; elem must not be on one
+    static void place(const std::shared_ptr<bElem> &elem, const std::shared_ptr<bElem> &onto);
+    /// takes elem out of its cell's stack; a cell left empty gets a fresh floor
+    static void lift(const std::shared_ptr<bElem> &elem);
+
     bool registerLiveElem(std::shared_ptr<bElem> in);
     bool deregisterLiveElem(std::shared_ptr<bElem>in);
     std::vector<std::shared_ptr<bElem>> liveElems;

@@ -439,6 +439,18 @@ bool inventory::isEmpty()
             && (this->weapons.size() == 0));
 }
 
+void inventory::clear()
+{
+    this->weapons.clear();
+    this->mods.clear();
+    this->tokens.clear();
+    this->usables.clear();
+    this->keys.clear();
+    this->tokenNumbers.clear();
+    this->wPos = 0;
+    this->uPos = 0;
+}
+
 void inventory::updateBoard()
 {
     if (this->owner.expired())

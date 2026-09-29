@@ -156,6 +156,7 @@ struct gameSerializer::loadContext
     std::unordered_map<uint64_t, std::shared_ptr<bElem>> byId;
     std::unordered_map<int, std::shared_ptr<chamber>> chambersById;
     std::vector<std::function<void()>> fixups;
+    uint32_t version = formatVersion;
 
     std::shared_ptr<bElem> get(uint64_t id)
     {
@@ -251,7 +252,7 @@ bool gameSerializer::isCompact(const std::shared_ptr<bElem> &e)
         || s.movingTotalTime != -1 || s.fadingOut != -1 || s.fadingIn != -1 || s.fadingInReq
         || s.fadingOutReq || s.waiting != -1 || s.moved != -1 || s.destroyed != -1
         || s.animPhase != 0 || s.ammo != 0 || s.killed != -1 || !s.collector.expired()
-        || !s.statsOwner.expired() || !e->lockers.empty())
+        || !s.statsOwner.expired())
         return false;
     const auto &a = *e->getAttrs();
     if (a.inv)
@@ -314,7 +315,6 @@ void gameSerializer::writeElement(writer &w, const std::shared_ptr<bElem> &e)
     w.i32(s.moved);
     w.i32(s.destroyed);
     w.i32(s.animPhase);
-    w.i32(s.taterCounter);
     w.i32(s.ammo);
     w.i32(s.killed);
     bool noPos = s.myPosition == myUtility::NOCOORDS;
@@ -365,7 +365,6 @@ void gameSerializer::writeElement(writer &w, const std::shared_ptr<bElem> &e)
         w.i32(inv.wPos);
         w.i32(inv.uPos);
     }
-    w.refs(e->lockers);
 
     // state that only some element types carry
     if (auto p = std::dynamic_pointer_cast<player>(e)) {
@@ -439,7 +438,7 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
         std::vector<std::pair<int, int>> statistics;
         int movingTotalTime, fadingOut, fadingIn;
         uint32_t fadingInReq, fadingOutReq;
-        int waiting, moved, destroyed, animPhase, taterCounter, ammo, killed;
+        int waiting, moved, destroyed, animPhase, ammo, killed;
         bool noPos;
         int x, y;
         uint8_t dir, facing;
@@ -471,7 +470,9 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
     rs.moved = r.i32();
     rs.destroyed = r.i32();
     rs.animPhase = r.i32();
-    rs.taterCounter = r.i32();
+    // version 2 and older saves carry a per-element tick counter nothing read
+    if (ctx.version <= 2)
+        r.i32();
     rs.ammo = r.i32();
     rs.killed = r.i32();
     rs.noPos = r.u8();
@@ -515,7 +516,6 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
     s.moved = rs.moved;
     s.destroyed = rs.destroyed;
     s.animPhase = rs.animPhase;
-    s.taterCounter = rs.taterCounter;
     s.ammo = rs.ammo;
     s.killed = rs.killed;
     s.myPosition = rs.noPos ? myUtility::NOCOORDS : myUtility::Coords(rs.x, rs.y);
@@ -573,8 +573,9 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
         inv->wPos = r.i32();
         inv->uPos = r.i32();
     }
-    auto lockers = r.ids();
-    ctx.fixups.push_back([e, lockers, &ctx]() { e->lockers = ctx.getAll(lockers); });
+    // version 2 and older saves list the missiles an element fired; nothing reads them any more
+    if (ctx.version <= 2)
+        r.ids();
 
     if (auto p = std::dynamic_pointer_cast<player>(e)) {
         p->vRadius = r.f32();
@@ -846,6 +847,7 @@ bool gameSerializer::loadGame(const std::string &fileName)
             bElemStats::currentInstance = instanceCounter;
 
         loadContext ctx;
+        ctx.version = version;
         struct cellEntry
         {
             std::shared_ptr<bElem> compact;

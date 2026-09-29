@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "player.h"
+#include "elementSound.h"
 
 std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
 //std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
@@ -103,7 +104,7 @@ bool player::interact(std::shared_ptr<bElem> who)
         std::cout << "Adding new avatar\n";
 #endif
         player::visitedPlayers.push_back(shared_from_this());
-        this->playSound("Player", "ActivateAvatar");
+        goe::sound::play(*this, "Player", "ActivateAvatar");
         this->getStats()->setMarked(true);
     }
     return true;

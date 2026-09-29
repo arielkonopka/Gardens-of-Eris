@@ -21,13 +21,13 @@
  */
 
 #include "plainGun.h"
+#include "elementSound.h"
 #include "viewPoint.h"
 
 std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
 {
     std::shared_ptr<bElem> pm = elementFactory::generateAnElement<plainMissile>(who->getBoard(), 0);
     pm->getStats()->setStatsOwner(who);
-    who->lockThisObject(pm);
     pm->getStats()->setMyDirection(who->getStats()->getFacing());
     pm->getStats()->setFacing(who->getStats()->getFacing());
     pm->stepOnElement(who->getElementInDirection(who->getStats()->getFacing()));
@@ -69,11 +69,7 @@ bool plainGun::use(std::shared_ptr<bElem> who)
     myel = who->getElementInDirection(who->getStats()->getFacing());
     if (myel != nullptr) {
         if (this->getAttrs()->getAmmo() > 0 || this->getAttrs()->getSubtype() % 2 == 1) {
-            coords3d c3d;
-            c3d.x = who->getStats()->getMyPosition().x * 32 + who->getOffset().x;
-            c3d.z = who->getStats()->getMyPosition().y * 32 + who->getOffset().y;
-            c3d.y = 50;
-            this->playSound("use", "shoot");
+            goe::sound::play(*this, "use", "shoot");
             if (myel->getAttrs()->isSteppable() == true) {
                 this->createProjectible(who);
             } else if (myel->getAttrs()->isKillable()) {

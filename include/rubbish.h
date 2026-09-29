@@ -34,6 +34,8 @@ public:
     virtual ~rubbish() = default;
     bool mechanics() final;
     int getType()  const ;
+    /// a pile is emptied into whoever picks it up, so it never leaves another pile behind
+    bool dropsInventoryOnDeath() const final { return false; }
 
 
 };

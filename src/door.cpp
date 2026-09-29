@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "door.h"
+#include "elementSound.h"
 
 bool door::destroy()
 {
@@ -65,14 +66,14 @@ bool door::stepOnAction(bool step, std::shared_ptr<bElem> who)
             if (!k) {
                 who->kill();
             } else
-                this->playSound("Door", "CollectKey");
+                goe::sound::play(*this, "Door", "CollectKey");
         }
     } else {
         if (this->getAttrs()->getSubtype() % 2 == 1) {
             this->getAttrs()->setOpen(false);
             this->getAttrs()->setSteppable(this->getAttrs()->isOpen());
             this->getAttrs()->setLocked(true);
-            this->playSound("Door", (this->getAttrs()->isOpen()) ? "Unlock" : "Lock");
+            goe::sound::play(*this, "Door", (this->getAttrs()->isOpen()) ? "Unlock" : "Lock");
             this->getStats()->setFacing((!this->getAttrs()->isOpen()) ? dir::direction::UP
                                                                       : dir::direction::LEFT);
         }
@@ -99,7 +100,7 @@ bool door::interact(std::shared_ptr<bElem> who)
         who->getStats()->setWaiting(1);
         this->getAttrs()->setOpen(!this->getAttrs()->isOpen());
         this->_alignWithOpen();
-        this->playSound("Door", (this->getAttrs()->isOpen()) ? "Unlock" : "Lock");
+        goe::sound::play(*this, "Door", (this->getAttrs()->isOpen()) ? "Unlock" : "Lock");
         return true;
     }
     if (!who->getAttrs()->canCollect()) {
@@ -109,7 +110,7 @@ bool door::interact(std::shared_ptr<bElem> who)
                                                   this->getAttrs()->getSubtype(),
                                                   this->getAttrs()->getSubtype() % 2 != 1);
     if (key != nullptr) {
-        this->playSound("Door", "Open");
+        goe::sound::play(*this, "Door", "Open");
         this->getAttrs()->setOpen(true);
         this->getAttrs()->setLocked(false);
         this->_alignWithOpen();
@@ -117,7 +118,7 @@ bool door::interact(std::shared_ptr<bElem> who)
         return false;
     }
     if (key && this->getAttrs()->getSubtype() % 2 != 1) {
-        this->playSound("Door", "CollectKey");
+        goe::sound::play(*this, "Door", "CollectKey");
         key->disposeElement();
     }
     return true;

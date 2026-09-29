@@ -87,6 +87,8 @@ public:
     virtual bool mergeInventory(std::shared_ptr<inventory> theOtherInventory);
     virtual bool removeToken(int position);
     virtual bool isEmpty();
+    /// lets go of everything held, without dropping it anywhere
+    void clear();
     virtual bool removeCollectibleFromInventory(unsigned long int instance);
     virtual std::shared_ptr<bElem> retrieveCollectibleFromInventory(unsigned long int instanceId,bool removeIt);
     virtual bool findInInventory(unsigned long int instanceId);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Ariel Konopka
+ * Copyright (c) 2026, Ariel Konopka
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,28 +20,24 @@
  * SOFTWARE.
  */
 
-#include "bazooka.h"
+#include "elementView.h"
+#include "bElem.h"
+#include "configManager.h"
 
-int bazooka::getType() const
+namespace elementView {
+coords offset(const bElem &elem, coords tileSize)
 {
-    return bElemTypes::_bazookaType;
-}
-std::shared_ptr<bElem> bazooka::createProjectible(std::shared_ptr<bElem> who)
-{
-    std::shared_ptr<bElem> pm = elementFactory::generateAnElement<bazookaMissile>(who->getBoard(),
-                                                                                  0);
-    pm->getStats()->setStatsOwner(who);
-    pm->getStats()->setMyDirection(who->getStats()->getFacing());
-    pm->getStats()->setFacing(who->getStats()->getFacing());
-    pm->stepOnElement(who->getElementInDirection(who->getStats()->getFacing()));
-    pm->getAttrs()->setEnergy(this->getAttrs()->getEnergy());
-    if (who->getType() == bElemTypes::_player)
-        viewPoint::get_instance().setOwner(pm);
-    pm->registerLiveElement(pm);
-    return pm;
+    const auto &st = *elem.getStats();
+    if (!st.isMoving() || st.getMovingTotalTime() <= 0)
+        return coords(0, 0);
+    coords done = {(st.getMoved() * tileSize.x) / st.getMovingTotalTime(),
+                   (st.getMoved() * tileSize.y) / st.getMovingTotalTime()};
+    return dir::dirToCoords(st.getMyDirection()) * done * (-1);
 }
 
-bool bazooka::additionalProvisioning(int subtype)
+coords offset(const bElem &elem)
 {
-    return plainGun::additionalProvisioning(subtype);
+    const auto &cfg = *configManager::getInstance()->getConfig();
+    return offset(elem, coords(cfg.tileWidth, cfg.tileHeight));
 }
+} // namespace elementView

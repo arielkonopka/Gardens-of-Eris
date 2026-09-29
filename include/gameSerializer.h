@@ -45,14 +45,14 @@ class chamber;
  * Plain floor and wall tiles, which are the vast majority of cells, are written in a compact
  * form (type, subtype, facing, direction) and get fresh instance ids on load.
  *
- * Both calls must run on the game thread, between ticks, with bElem::mechLock() held.
+ * Both calls must run on the game thread, between ticks.
  * They take chamber::worldMutex themselves, so they wait for a level that is still being
  * generated in the background. The in-game keys use try_lock instead, so the game never stalls.
  */
 class gameSerializer
 {
 public:
-    static constexpr uint32_t formatVersion = 2;
+    static constexpr uint32_t formatVersion = 3;
     static bool saveGame(const std::string &fileName);
     static bool loadGame(const std::string &fileName);
     /// empties the world (chambers, players, apples, teleporters...), for a load or a new game

@@ -581,43 +581,6 @@ TYPED_TEST(BasicObjectTests_DestroyObjectOnBoard, DestroyObjectOnBoard)
     }
 
 /**
- * @brief This unit test "ElementsLockUnlockFeature" examines whether the lock/unlock functionality of an element works as expected across various element types.
- *
- * The test initiates by generating a new chamber of size 5x5. Then, it generates and positions three elements: myElement, blocker, and blocker2.
- *
- * The test then proceeds to lock and unlock myElement with the other two elements in various orders, checking the status of myElement's lock after each operation:
- * - Initially, myElement is checked to be unlocked.
- * - It's then locked using blocker, and it's confirmed that it's indeed locked.
- * - Attempting to lock myElement again with the same blocker doesn't change the locked status.
- * - Locking myElement with blocker2 also maintains the locked status.
- * - Unlocking myElement with blocker doesn't unlock the element as it's also locked by blocker2.
- * - Finally, unlocking myElement with blocker2 changes its status to unlocked.
- * - An additional unlock attempt with blocker2, when no locks are present, confirms that the element remains unlocked.
- *
- * This test ensures that an element remains locked if it's locked by multiple other elements and that it's only unlocked when all lockers have issued an unlock.
- */
-    template <class> class BasicObjectTests_ElementsLockUnlockFeature : public ::testing::Test {};
-TYPED_TEST_SUITE(BasicObjectTests_ElementsLockUnlockFeature, all_test_types);
-TYPED_TEST(BasicObjectTests_ElementsLockUnlockFeature, ElementsLockUnlockFeature)
-    {
-    using T = TypeParam;
-        std::shared_ptr<chamber> mc = chamber::makeNewChamber(myUtility::Coords(5, 5));
-        std::shared_ptr<bElem> myElement = elementFactory::generateAnElement<T>(mc, 0);
-        std::shared_ptr<bElem> blocker = elementFactory::generateAnElement<T>(mc, 0);
-        std::shared_ptr<bElem> blocker2 = elementFactory::generateAnElement<T>(mc, 0);
-        myElement->stepOnElement(mc->getElement(2, 2));
-        blocker->stepOnElement(mc->getElement(2, 3));
-        blocker2->stepOnElement(mc->getElement(3, 2));
-        EXPECT_TRUE(myElement->isLocked() == false);
-        myElement->lockThisObject(blocker);
-        EXPECT_TRUE(myElement->isLocked() == true);
-        myElement->lockThisObject(blocker);
-        EXPECT_TRUE(myElement->isLocked() == true);
-        myElement->lockThisObject(blocker2);
-        EXPECT_TRUE(myElement->isLocked() == true);
-    }
-
-/**
  * @brief The unit test "InteractTimerMechanismChecker" verifies if the interaction timer mechanism functions correctly for various element types.
  *
  * The test starts by creating a new chamber of size 5x5 and generating an element 'tElem'. The element is then checked if it is not able to interact.

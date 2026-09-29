@@ -36,6 +36,7 @@ class bElem;
 class bElemStats
 {
     friend class gameSerializer;
+    friend class chamber; // only chamber::place and chamber::lift change the stack links
 public:
     bElemStats();
     ~bElemStats() =default;
@@ -62,7 +63,6 @@ public:
     dir::direction getMyDirection() const;
     /// where the element is; a collected element is where its collector is
     coords getMyPosition() { return this->collected ? this->collectorPosition() : coords(this->myPosition.getX(), this->myPosition.getY()); }
-    int getTaterCounter() const { return this->taterCounter; } // the element's own clock
     int getWaiting() const { return this->getValueInTime(this->waiting); }
     int getFadingIn() const { return this->getValueInTime(this->fadingIn); }
     int getFadingInReq() const;
@@ -89,12 +89,9 @@ public:
     void setTelInProgress(unsigned int value);
     void setTelReqTime(unsigned int value);
     void setTelTimeReq(unsigned int value);
-    void setSteppingOn(std::shared_ptr<bElem> value);
-    void setStandingOn(std::weak_ptr<bElem> value);
     void setMoved(int value);
     void setMyDirection(dir::direction value);
     void setMyPosition(coords value);
-    void setTaterCounter(int value) { this->taterCounter = value; }
     void setWaiting(int value);
     void setFadingIn(int value);
     void setFadingOut(int value);
@@ -117,6 +114,12 @@ public:
     bool isMoving() const { return this->getMoved() > 0; }
     bool isFadingOut() const { return this->getFadingOut() > 0; }
     bool isFadingIn() const { return this->getFadingIn() > 0; }
+    /// in the middle of something timed (a move, a fade, a teleport, dying...), so it cannot act
+    bool busy() const
+    {
+        return this->isWaiting() || this->isTeleporting() || this->isDying() || this->isDestroying()
+               || this->isMoving() || this->isFadingIn() || this->isFadingOut();
+    }
     // can methods
     // none present
 
@@ -126,12 +129,14 @@ public:
     // Set methods for boolean values
     void setActivatedMechanics(bool value);
     void setDisposed(bool value);
-    void setHasParent(bool value);
     void setCollected(bool value);
     void setActive(bool value);
     void setMarked(bool value);
     void setStatsOwner(std::shared_ptr<bElem> own);
 private:
+    void setSteppingOn(std::shared_ptr<bElem> value);
+    void setStandingOn(std::weak_ptr<bElem> value);
+    void setHasParent(bool value);
     int getValueInTime(int value) const
     {
         const int now = (int) gameClock::now();
@@ -167,7 +172,6 @@ private:
     int moved = -1;
     int destroyed = -1;
     int animPhase = 0;
-    int taterCounter = 5;
     int ammo = 0;
     int killed = -1;
     myUtility::Coords myPosition = myUtility::NOCOORDS;

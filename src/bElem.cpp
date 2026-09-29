@@ -20,16 +20,14 @@
  * SOFTWARE.
  */
 #include "../include/bElem.h"
+#include "elementSound.h"
 #include "elements.h"
 #include "floorElement.h"
 #include "rubbish.h"
+#include "motion.h"
 #include <algorithm>
 #include <unordered_set>
-//std::vector<std::shared_ptr<bElem>> bElem::liveElems;
 std::vector<std::shared_ptr<bElem>> bElem::toDispose;
-//std::vector<unsigned long int> bElem::toDeregister;
-
-std::mutex bElem::mechanicMutex;
 
 bElem::bElem()
     : std::enable_shared_from_this<bElem>()
@@ -39,25 +37,10 @@ bElem::bElem()
     this->getStats()->setFacing(this->getStats()->getMyDirection());
 }
 
-coords bElem::getOffset() const
-{
-    coords res(0, 0);
-    int rx = configManager::getInstance()->getConfig()->tileWidth;
-    int ry = configManager::getInstance()->getConfig()->tileHeight;
-    if (this->getStats()->isMoving() && this->getStats()->getMovingTotalTime() > 0) {
-        coords interm = {(this->getStats()->getMoved() * rx)
-                             / this->getStats()->getMovingTotalTime(),
-                         (this->getStats()->getMoved() * ry)
-                             / this->getStats()->getMovingTotalTime()};
-        res = dir::dirToCoords(this->getStats()->getMyDirection()) * interm * (-1);
-    }
-    return res;
-}
-
 bool bElem::collectOnAction(bool collected, std::shared_ptr<bElem> who)
 {
     if (collected && who && who->getType() == bElemTypes::_player) {
-        this->playSound("Found", "Collect");
+        goe::sound::play(*this, "Found", "Collect");
     }
     return true;
 }
@@ -90,7 +73,7 @@ bool bElem::dropItem(unsigned long int instanceId)
 
         if (this->isSteppableDirection(dir)) {
             if (this->getType() == bElemTypes::_player)
-                item->playSound("Drop", "Item");
+                goe::sound::play(*item, "Drop", "Item");
             item->stepOnElement(this->getElementInDirection(dir));
             return true;
         }
@@ -116,20 +99,10 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
     };
     if (this->getStats()->isDisposed() || !elig(step))
         return false;
+    // a collector never stands on a collectible: it picks it up first (see motion::collectAndStep)
+    if (step->getAttrs()->isCollectible() && this->getAttrs()->canCollect())
+        return false;
     bool chamberChange = !(step->getBoard() == this->getBoard());
-    std::shared_ptr<bElem> s0;
-    if (step->getAttrs()->isCollectible() && this->getAttrs()->canCollect()) {
-        std::shared_ptr<bElem> s2 = step->getStats()->getSteppingOn();
-        if (!elig(s2))
-            return false;
-        this->collect(step);
-        step = s2;
-        if (step) {
-            return this->stepOnElement(step);
-        } else {
-            return false;
-        }
-    }
     std::shared_ptr<bElem> st = this->getStats()->getSteppingOn();
     if (chamberChange && this->getStats()->hasActivatedMechanics())
         this->deregisterLiveElement(this->getStats()->getInstanceId());
@@ -138,108 +111,28 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
     this->removeElement();
     if (st)
         st->stepOnAction(false, shared_from_this());
-    bool hp = step->getStats()->hasParent();
-    this->setBoard(step->getBoard());
-    this->getStats()->setMyPosition(step->getStats()->getMyPosition());
-    this->getStats()->setSteppingOn(step);
-    s0 = step->getStats()->getStandingOn().lock();
-    step->getStats()->setStandingOn(shared_from_this());
-    if (hp) {
-        s0->getStats()->setSteppingOn(shared_from_this());
-        this->getStats()->setStandingOn(s0);
-    } else {
-        this->getBoard()->setElement(this->getStats()->getMyPosition(), shared_from_this());
-    }
+    chamber::place(shared_from_this(), step);
     if (chamberChange)
         this->registerLiveElement(shared_from_this());
     step->stepOnAction(true, shared_from_this());
     return true;
 }
 
-oState bElem::disposeElementUnsafe()
-{
-    oState res = DISPOSED;
-    std::shared_ptr<chamber> myBoard = this->getBoard();
-    coords mycoords = this->getStats()->getMyPosition();
-    if (this->getStats()->isDisposed())
-        return ERROR;
-    if (this->getStats()->hasActivatedMechanics())
-        this->deregisterLiveElement(this->getStats()->getInstanceId());
-
-    this->getStats()->setDisposed(true);
-    if (mycoords.x >= 0 && mycoords.y >= 0
-        && this->getBoard() != nullptr) // object on a board? need extra steps
-    {
-        if (this->getStats()->getSteppingOn() || this->getStats()->hasParent()) {
-            this->removeElement();
-            res = DISPOSED;
-        } else {
-            this->getBoard()->setElement(this->getStats()->getMyPosition(), nullptr);
-            res = nullptrREACHED;
-        }
-
-        if (this->getType() != bElemTypes::_stash && this->getAttrs()->canCollect()
-            && !this->getAttrs()->getInventory()->isEmpty()
-            && this->getType() != bElemTypes::_rubishType
-            && this->getType() != bElemTypes::_plainMissile
-            && this->getType() != bElemTypes::_plainGun) {
-            std::shared_ptr<bElem> stash = elementFactory::generateAnElement<rubbish>(myBoard, 0);
-            stash->getAttrs()->setInventory(this->getAttrs()->getInventory());
-            stash->getAttrs()->getInventory()->changeOwner(stash);
-            this->getAttrs()->setInventory(nullptr);
-            if (myBoard->getElement(mycoords)->getAttrs()->isSteppable()) {
-                stash->stepOnElement(myBoard->getElement(mycoords));
-            } else {
-                bool stashed = false;
-                for (int c = 0; c < 4; c++) {
-                    if (myBoard->getElement(mycoords)->isSteppableDirection((dir::direction) c)) {
-                        stash->stepOnElement(myBoard->getElement(mycoords)->getElementInDirection(
-                            (dir::direction) c));
-                        stashed = true;
-                        break;
-                    }
-                }
-                if (!stashed)
-                    stash->disposeElement(); // no place for the stash? Burn!
-            }
-        }
-    }
-    soundManager::getInstance().stopSoundsByElementId(this->getStats()->getInstanceId());
-    this->getStats()->setDisposed(true);
-    this->getStats()->setMyPosition(NOCOORDS);
-    this->attachedBoard.reset();
-    return res; // false means that there is no more elements to go.
-}
-
 oState bElem::disposeElement()
 {
-    //std::shared_ptr<bElem> t = shared_from_this();
-    std::shared_ptr<bElem> stash = nullptr;
-    std::shared_ptr<chamber> _myBoard = this->getBoard();
-    coords oCoords = this->getStats()->getMyPosition();
-    if (this->getStats()->isDisposed()) {
+    std::shared_ptr<chamber> board = this->getBoard();
+    const coords at = this->getStats()->getMyPosition();
+    if (this->getStats()->isDisposed())
         return ERROR;
-    }
-    /// We first deal with the activated mechanics, as it will depend on the board attached to the element.
-    if (this->getStats()->hasActivatedMechanics()) {
+    // deregistering needs the board, so it goes before the element leaves it
+    if (this->getStats()->hasActivatedMechanics())
         this->deregisterLiveElement(this->getStats()->getInstanceId());
-    }
     this->removeElement();
-
     if (this->getAttrs() && this->getAttrs()->canCollect()) {
-        if (this->getType() == bElemTypes::_rubishType) {
-            this->getAttrs()->getInventory()->weapons.clear();
-            this->getAttrs()->getInventory()->keys.clear();
-            this->getAttrs()->getInventory()->tokens.clear();
-        } else if (oCoords != NOCOORDS && !this->getAttrs()->getInventory()->isEmpty() && _myBoard) {
-            /*
-                Create a rubbish element on the board, so the inventory would not be lost
-             */
-            stash = elementFactory::generateAnElement<rubbish>(this->getBoard(), 0);
-            stash->getAttrs()->setCollect(true);
-            stash->getAttrs()->getInventory()->mergeInventory(this->getAttrs()->getInventory());
-            stash->stepOnElement(_myBoard->getElement(oCoords));
-        }
+        if (this->dropsInventoryOnDeath())
+            this->leaveStash(board, at);
+        else
+            this->getAttrs()->getInventory()->clear();
     }
     this->getStats()->setDisposed(true);
     this->setBoard(nullptr);
@@ -248,24 +141,29 @@ oState bElem::disposeElement()
     return DISPOSED;
 }
 
-/*
- * This method returns absolute coordinates, when asked for coordinates of the next cell in a direction from the elements's standpoint, should be resistant for non-provisioned units
- * better use those on a board though
- */
-coords bElem::getAbsCoords(coords dir) const
+bool bElem::dropsInventoryOnDeath() const
 {
-    coords pos = this->getStats()->getMyPosition();
-    if (pos == NOCOORDS)
-        return NOCOORDS;
-    auto board = this->getBoard();
-    if (!board)
-        return NOCOORDS;
-    return (pos + dir).validate(board->getSize());
+    return true;
 }
 
-coords bElem::getAbsCoords(dir::direction dir) const
+// Whatever the element carried is left behind in a rubbish pile, on the cell it died on or, when
+// that cell cannot take it, on a free neighbour. With no room anywhere the pile is burnt.
+void bElem::leaveStash(const std::shared_ptr<chamber> &board, coords at)
 {
-    return this->getAbsCoords(dir::dirToCoords(dir));
+    auto inv = this->getAttrs()->getInventory();
+    if (!board || at == NOCOORDS || inv->isEmpty())
+        return;
+    auto stash = elementFactory::generateAnElement<rubbish>(board, 0);
+    stash->getAttrs()->setCollect(true);
+    stash->getAttrs()->getInventory()->mergeInventory(inv);
+    auto here = board->getElement(at);
+    if (stash->stepOnElement(here))
+        return;
+    for (auto d : dir::allDirections)
+        if (here && here->isSteppableDirection(d)
+            && stash->stepOnElement(here->getElementInDirection(d)))
+            return;
+    stash->disposeElement();
 }
 
 std::shared_ptr<bElem> bElem::getElementInDirection(dir::direction di)
@@ -366,27 +264,14 @@ bool bElem::hurt(int points)
     return true;
 }
 
-bool bElem::readyToShoot() const
-{
-    return false;
-}
-
 bool bElem::mechanics()
 {
-    bElemStats &st = *this->getStats();
+    const bElemStats &st = *this->getStats();
     // expired() checks the board without taking a reference to it
-    if ((this->attachedBoard.expired() || st.getMyPosition() == NOCOORDS) && !st.isCollected())
+    if ((this->attachedBoard.expired() || this->getStats()->getMyPosition() == NOCOORDS)
+        && !st.isCollected())
         return false;
-    st.setTaterCounter(st.getTaterCounter() + 1); /// Instances own 'clock'.
-
-    return !(st.isWaiting() || st.isTeleporting() || st.isDying() || st.isDestroying()
-             || st.isMoving() || st.isFadingIn() || st.isFadingOut()
-             || (this->getAttrs()->isInteractive() && st.isInteracting()));
-}
-
-bool bElem::isSteppableInMyDirection() const
-{
-    return this->isSteppableDirection(this->getStats()->getMyDirection());
+    return !(st.busy() || (this->getAttrs()->isInteractive() && st.isInteracting()));
 }
 
 bool bElem::isSteppableDirection(coords di) const
@@ -438,25 +323,7 @@ std::shared_ptr<bElem> bElem::removeElement()
         return shared_from_this(); // it is not yet placed on a board.
     }
 
-    if (this->getStats()->hasParent()) {
-        std::shared_ptr<bElem> p = this->getStats()->getStandingOn().lock();
-        p->getStats()->setSteppingOn(this->getStats()->getSteppingOn());
-        if (this->getStats()->getSteppingOn())
-            this->getStats()->getSteppingOn()->getStats()->setStandingOn(p);
-    } else {
-        std::shared_ptr<bElem> _Stp = this->getStats()->getSteppingOn();
-        _chmbr->setElement(_pos, _Stp);
-        if (_Stp) {
-            _Stp->getStats()->setHasParent(false); /// this is how we do "unstomp" now.
-        } else /// This rather should not happen, but we fix the situation, when we remove the last element, and a null is created, we create a new floor element.
-        {
-            std::shared_ptr<bElem> nf = elementFactory::generateAnElement<floorElement>(_chmbr, 555);
-            nf->getStats()->setMyPosition(_pos);
-            _chmbr->setElement(_pos, nf);
-        }
-    }
-    this->setBoard(nullptr);
-    this->getStats()->setMyPosition(NOCOORDS);
+    chamber::lift(shared_from_this());
     return shared_from_this();
 }
 
@@ -516,13 +383,6 @@ bool bElem::additionalProvisioning(int subtype)
     return r;
 }
 
-int bElem::getTypeInDirection(dir::direction di)
-{
-    std::shared_ptr<bElem> e = this->getElementInDirection(di);
-    if (e.get() != nullptr)
-        return e->getType();
-    return -1;
-}
 int bElem::getType() const
 {
     return bElemTypes::_belemType;
@@ -566,59 +426,17 @@ sNeighboorhood bElem::getSteppableNeighborhood()
 
 bool bElem::moveInDirectionSpeed(dir::direction dir, int speed)
 {
-    std::shared_ptr<bElem> stepOn = this->getElementInDirection(dir);
-    if (stepOn.get() == nullptr || this->getStats()->isMoving() || this->getStats()->isDying()
-        || this->getStats()->isTeleporting() || this->getStats()->isDestroying()
-        || dir == dir::direction::NODIRECTION)
-        return false;
-    std::shared_ptr<bElem> stepOn2 = stepOn->getElementInDirection(dir);
-    this->getStats()->setMyDirection(dir);
-    if (stepOn->getAttrs()->isSteppable()) {
-        this->stepOnElement(stepOn);
-        this->getStats()->setMoved(speed);
-        this->playSound("Move", "StepOn");
-        return true;
-    } else if (this->getAttrs()->canCollect() && stepOn->getAttrs()->isCollectible()
-               && this->collect(stepOn)) {
-        return true;
-    } else if (this->getAttrs()->canPush() && stepOn->getAttrs()->canBePushed()
-               && stepOn->getAttrs()->isMovable() && stepOn2 && stepOn2->getAttrs()->isSteppable()
-               && stepOn->moveInDirectionSpeed(dir, speed + 1)) {
-        this->stepOnElement(this->getElementInDirection(dir)); // move the initiating object
-        this->getStats()->setMoved(speed + 1);
-        this->playSound("Move", "StepOn");
-        return true;
-    } else if (this->getAttrs()->isInteractive() && stepOn->interact(shared_from_this())) {
-        return true;
-    }
-    return false;
+    return motion::step(shared_from_this(), dir, speed);
 }
+
 bool bElem::moveInDirection(dir::direction d)
 {
-    return this->moveInDirectionSpeed(d, GoEConstants::_mov_delay);
+    return motion::step(shared_from_this(), d, GoEConstants::_mov_delay);
 }
+
 bool bElem::dragInDirection(dir::direction dragIntoDirection)
 {
-    return this->dragInDirectionSpeed(dragIntoDirection, GoEConstants::_mov_delay * 2);
-}
-
-bool bElem::dragInDirectionSpeed(dir::direction dragIntoDirection, int speed)
-{
-    dir::direction objFromDir = (dir::direction)((((int) dragIntoDirection) + 2) % 4);
-    dir::direction d2 = dragIntoDirection;
-    std::shared_ptr<bElem> draggedObj = this->getElementInDirection(objFromDir);
-    if (draggedObj.get() == nullptr)
-        return false;
-    if (!draggedObj->getAttrs()->isMovable()) {
-        d2 = (dir::direction)((((int) this->getStats()->getMyDirection()) + 2) % 4);
-        draggedObj = this->getElementInDirection(d2);
-        d2 = this->getStats()->getMyDirection();
-        if (draggedObj.get() == nullptr || !draggedObj->getAttrs()->isMovable())
-            return false;
-    }
-
-    this->moveInDirectionSpeed(dragIntoDirection, speed);
-    return draggedObj->moveInDirectionSpeed(d2, speed);
+    return motion::drag(shared_from_this(), dragIntoDirection, GoEConstants::_mov_delay * 2);
 }
 
 void bElem::registerLiveElement(std::shared_ptr<bElem> who)
@@ -636,16 +454,6 @@ void bElem::deregisterLiveElement(unsigned int instanceId)
         this->getBoard()->toDeregister.push_back(instanceId);
         this->getStats()->setActivatedMechanics(false);
     }
-}
-
-void bElem::mechLock()
-{
-    bElem::mechanicMutex.lock();
-}
-
-void bElem::mechUnlock()
-{
-    bElem::mechanicMutex.unlock();
 }
 
 void bElem::runLiveElements()
@@ -714,80 +522,7 @@ bool bElem::stepOnAction(bool step, std::shared_ptr<bElem> who)
     return false;
 }
 
-bool bElem::isLocked()
-{
-    return this->lockers.size() != 0;
-}
-
-bool bElem::lockThisObject(std::shared_ptr<bElem> who)
-{
-    this->lockers.push_back(who);
-    return true;
-}
-
-bool bElem::unlockThisObject(std::shared_ptr<bElem> who)
-{
-    for (unsigned int cnt = 0; cnt < this->lockers.size();) {
-        if (!this->lockers.at(cnt)
-            || this->lockers.at(cnt)->getStats()->getInstanceId()
-                   == who->getStats()->getInstanceId()) {
-            this->lockers.erase(this->lockers.begin() + cnt);
-        } else {
-            cnt++;
-        }
-    }
-    return true;
-}
-
 void bElem::setStatsOwner(std::shared_ptr<bElem> owner)
 {
     this->getStats()->setStatsOwner(owner);
-}
-
-void bElem::playSound(std::string eventType, std::string event)
-{
-    if (!this->getStats()->getCollector().expired()) {
-        this->ps(this->getStats()->getCollector().lock(), eventType, event);
-    } else if (this->getBoard()) {
-        this->ps(shared_from_this(), eventType, event);
-    } else if (this->getStats()->hasParent()) {
-        this->ps(this->getStats()->getStandingOn().lock(), eventType, event);
-    } else if (this->getStats()->getSteppingOn()) {
-        this->ps(this->getStats()->getSteppingOn(), eventType, event);
-    }
-}
-
-void bElem::ps(std::shared_ptr<bElem> who, std::string eventType, std::string event)
-{
-    if (!who || !who->getBoard())
-        return;
-    coords3d c3d;
-    c3d.x = (float) who->getStats()->getMyPosition().x;
-    c3d.y = (float) who->getStats()->getMyPosition().y;
-    c3d.z = 0.0f;
-    coords3d vel = {(who->getOffset().x) ? 0.5f : 0.0f,
-                    (who->getOffset().y > 0) ? 0.5f : 0.0f,
-                    0.0f};
-    soundManager::getInstance().registerSound(who->getBoard()->getInstanceId(),
-                                               c3d,
-                                               vel,
-                                               this->getStats()->getInstanceId(),
-                                               this->getType(),
-                                               this->getAttrs()->getSubtype(),
-                                               eventType,
-                                               event);
-}
-
-void bElem::stopMySounds()
-{
-    soundManager::getInstance().stopSoundsByElementId(this->getStats()->getInstanceId());
-}
-
-std::shared_ptr<bElem> bElem::findInDir(dir::direction dir)
-{
-    std::shared_ptr<bElem> r = this->getElementInDirection(dir);
-    while (r && r->getAttrs()->isSteppable() && !r->getAttrs()->isCollectible()) {
-        r = r->getElementInDirection(dir);
-    }
-    return r;
 }
