@@ -103,7 +103,6 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
     if (step->getAttrs()->isCollectible() && this->getAttrs()->canCollect())
         return false;
     bool chamberChange = !(step->getBoard() == this->getBoard());
-    std::shared_ptr<bElem> s0;
     std::shared_ptr<bElem> st = this->getStats()->getSteppingOn();
     if (chamberChange && this->getStats()->hasActivatedMechanics())
         this->deregisterLiveElement(this->getStats()->getInstanceId());
@@ -112,18 +111,7 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
     this->removeElement();
     if (st)
         st->stepOnAction(false, shared_from_this());
-    bool hp = step->getStats()->hasParent();
-    this->setBoard(step->getBoard());
-    this->getStats()->setMyPosition(step->getStats()->getMyPosition());
-    this->getStats()->setSteppingOn(step);
-    s0 = step->getStats()->getStandingOn().lock();
-    step->getStats()->setStandingOn(shared_from_this());
-    if (hp) {
-        s0->getStats()->setSteppingOn(shared_from_this());
-        this->getStats()->setStandingOn(s0);
-    } else {
-        this->getBoard()->setElement(this->getStats()->getMyPosition(), shared_from_this());
-    }
+    chamber::place(shared_from_this(), step);
     if (chamberChange)
         this->registerLiveElement(shared_from_this());
     step->stepOnAction(true, shared_from_this());
@@ -335,25 +323,7 @@ std::shared_ptr<bElem> bElem::removeElement()
         return shared_from_this(); // it is not yet placed on a board.
     }
 
-    if (this->getStats()->hasParent()) {
-        std::shared_ptr<bElem> p = this->getStats()->getStandingOn().lock();
-        p->getStats()->setSteppingOn(this->getStats()->getSteppingOn());
-        if (this->getStats()->getSteppingOn())
-            this->getStats()->getSteppingOn()->getStats()->setStandingOn(p);
-    } else {
-        std::shared_ptr<bElem> _Stp = this->getStats()->getSteppingOn();
-        _chmbr->setElement(_pos, _Stp);
-        if (_Stp) {
-            _Stp->getStats()->setHasParent(false); /// this is how we do "unstomp" now.
-        } else /// This rather should not happen, but we fix the situation, when we remove the last element, and a null is created, we create a new floor element.
-        {
-            std::shared_ptr<bElem> nf = elementFactory::generateAnElement<floorElement>(_chmbr, 555);
-            nf->getStats()->setMyPosition(_pos);
-            _chmbr->setElement(_pos, nf);
-        }
-    }
-    this->setBoard(nullptr);
-    this->getStats()->setMyPosition(NOCOORDS);
+    chamber::lift(shared_from_this());
     return shared_from_this();
 }
 

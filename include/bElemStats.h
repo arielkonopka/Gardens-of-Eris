@@ -36,6 +36,7 @@ class bElem;
 class bElemStats
 {
     friend class gameSerializer;
+    friend class chamber; // only chamber::place and chamber::lift change the stack links
 public:
     bElemStats();
     ~bElemStats() =default;
@@ -88,8 +89,6 @@ public:
     void setTelInProgress(unsigned int value);
     void setTelReqTime(unsigned int value);
     void setTelTimeReq(unsigned int value);
-    void setSteppingOn(std::shared_ptr<bElem> value);
-    void setStandingOn(std::weak_ptr<bElem> value);
     void setMoved(int value);
     void setMyDirection(dir::direction value);
     void setMyPosition(coords value);
@@ -130,12 +129,14 @@ public:
     // Set methods for boolean values
     void setActivatedMechanics(bool value);
     void setDisposed(bool value);
-    void setHasParent(bool value);
     void setCollected(bool value);
     void setActive(bool value);
     void setMarked(bool value);
     void setStatsOwner(std::shared_ptr<bElem> own);
 private:
+    void setSteppingOn(std::shared_ptr<bElem> value);
+    void setStandingOn(std::weak_ptr<bElem> value);
+    void setHasParent(bool value);
     int getValueInTime(int value) const
     {
         const int now = (int) gameClock::now();

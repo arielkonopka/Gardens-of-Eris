@@ -23,6 +23,7 @@
 #include "chamber.h"
 #include "floorElement.h"
 #include "player.h"
+#include "elementFactory.h"
 
 std::atomic<int> chamber::lastid = 0;
 std::vector<std::shared_ptr<chamber>> chamber::allChambers;
@@ -240,4 +241,50 @@ std::shared_ptr<bElem> chamber::getLastInLine(myUtility::Coords pos, dir::direct
         c++;
     }
     return el1;
+}
+
+void chamber::place(const std::shared_ptr<bElem> &elem, const std::shared_ptr<bElem> &onto)
+{
+    auto &st = *elem->getStats();
+    auto &below = *onto->getStats();
+    elem->setBoard(onto->getBoard());
+    st.setMyPosition(below.getMyPosition());
+    std::shared_ptr<bElem> above = below.hasParent() ? below.getStandingOn().lock() : nullptr;
+    st.setSteppingOn(onto);
+    below.setStandingOn(elem);
+    if (above) {
+        // slide in between onto and what already stood on it
+        above->getStats()->setSteppingOn(elem);
+        st.setStandingOn(above);
+    } else {
+        st.setStandingOn(std::weak_ptr<bElem>());
+        elem->getBoard()->setElement(st.getMyPosition(), elem);
+    }
+}
+
+void chamber::lift(const std::shared_ptr<bElem> &elem)
+{
+    auto &st = *elem->getStats();
+    auto board = elem->getBoard();
+    const coords at = st.getMyPosition();
+    auto below = st.getSteppingOn();
+    if (st.hasParent()) {
+        auto above = st.getStandingOn().lock();
+        above->getStats()->setSteppingOn(below);
+        if (below)
+            below->getStats()->setStandingOn(above);
+    } else if (below) {
+        board->setElement(at, below);
+        below->getStats()->setHasParent(false);
+    } else {
+        // the last element of a stack left; a cell is never empty
+        auto floor = elementFactory::generateAnElement<floorElement>(board, 555);
+        floor->getStats()->setMyPosition(at);
+        board->setElement(at, floor);
+    }
+    // a lifted element is on no stack, so it keeps no links into one
+    st.setSteppingOn(nullptr);
+    st.setStandingOn(std::weak_ptr<bElem>());
+    elem->setBoard(nullptr);
+    st.setMyPosition(NOCOORDS);
 }
