@@ -21,6 +21,7 @@
  */
 #include "inventory.h"
 #include "bElem.h"
+#include <algorithm>
 
 void inventory::changeOwner(std::shared_ptr<bElem> who)
 {
@@ -131,6 +132,32 @@ bool inventory::nextUsable()
     return true;
 }
 
+namespace {
+/// two weapons are of one kind when they have the same type and subtype
+bool sameKind(const std::shared_ptr<bElem> &a, const std::shared_ptr<bElem> &b)
+{
+    return a->getType() == b->getType() && a->getAttrs()->getSubtype() == b->getAttrs()->getSubtype();
+}
+
+/// a weapon that can still shoot and is still held
+bool canShoot(const std::shared_ptr<bElem> &w)
+{
+    return w->getAttrs()->getAmmo() > 0 && w->getStats()->isCollected();
+}
+} // namespace
+
+void inventory::selectWeapon(int pos)
+{
+    if (this->weapons.empty()) {
+        this->wPos = 0;
+        return;
+    }
+    if ((unsigned int) this->wPos < this->weapons.size())
+        this->weapons[this->wPos]->getStats()->setActive(false);
+    this->wPos = pos % (int) this->weapons.size();
+    this->weapons[this->wPos]->getStats()->setActive(true);
+}
+
 /*
 here we care about the sequence, so we move the other elements. that would be a problem with a lot of weapons being removed at once.
 */
@@ -139,17 +166,22 @@ bool inventory::removeActiveWeapon()
     if ((unsigned int) this->wPos >= this->weapons.size()) {
         return false;
     }
-    this->decrementTokenNumber({this->weapons.at(this->wPos)->getType(),
-                                this->weapons.at(this->wPos)->getAttrs()->getSubtype()});
-
-    std::shared_ptr<bElem> be_ = this->weapons.at(this->wPos);
+    std::shared_ptr<bElem> gone = this->weapons.at(this->wPos);
+    this->decrementTokenNumber({gone->getType(), gone->getAttrs()->getSubtype()});
     this->weapons.erase(this->weapons.begin() + this->wPos);
-    if (!this->weapons.empty())
-        this->wPos = this->wPos % this->weapons.size();
-    else
-        this->wPos = 0;
+    // the next weapon of the same kind takes over; without one, the weapon that came after it
+    int next = this->weapons.empty() ? 0 : this->wPos % (int) this->weapons.size();
+    for (std::size_t step = 0; step < this->weapons.size(); step++) {
+        int c = (next + (int) step) % (int) this->weapons.size();
+        if (sameKind(this->weapons[c], gone) && canShoot(this->weapons[c])) {
+            next = c;
+            break;
+        }
+    }
+    this->wPos = (int) this->weapons.size(); // the removed one is no longer there to switch off
+    this->selectWeapon(next);
 
-    be_->disposeElement();
+    gone->disposeElement();
     return true;
 }
 
@@ -171,18 +203,25 @@ bool inventory::runLives()
 
 std::shared_ptr<bElem> inventory::getActiveWeapon()
 {
-    if (this->weapons.size() <= 0)
-        return nullptr;
-    if (this->weapons.empty())
-        this->wPos = 0;
-    else
+    // an empty weapon is thrown away and the next one is picked right away, so no shot is lost
+    while (!this->weapons.empty()) {
         this->wPos = this->wPos % this->weapons.size();
-    if (this->weapons[this->wPos]->getAttrs()->getAmmo() <= 0
-        || !this->weapons[this->wPos]->getStats()->isCollected()) {
+        if (canShoot(this->weapons[this->wPos]))
+            return this->weapons[this->wPos];
         this->removeActiveWeapon();
-        return nullptr; // We will remove empty Weapons recursively, if it is necessary
     }
-    return this->weapons[this->wPos];
+    this->wPos = 0;
+    return nullptr;
+}
+
+int inventory::countActiveWeaponKind()
+{
+    auto active = this->getActiveWeapon();
+    if (!active)
+        return 0;
+    return (int) std::count_if(this->weapons.begin(), this->weapons.end(), [&active](const auto &w) {
+        return sameKind(w, active);
+    });
 }
 int inventory::cycleElement(std::vector<std::shared_ptr<bElem>> &vec, int &pos)
 {
@@ -199,7 +238,17 @@ bool inventory::nextGun()
 {
     if (this->weapons.size() <= 0)
         return false;
-    this->wPos = this->cycleElement(this->weapons, this->wPos);
+    // skip the other weapons of the kind in hand, so each press offers a different kind
+    const int size = (int) this->weapons.size();
+    const int from = this->wPos % size;
+    for (int step = 1; step < size; step++) {
+        int c = (from + step) % size;
+        if (!sameKind(this->weapons[c], this->weapons[from])) {
+            this->selectWeapon(c);
+            return true;
+        }
+    }
+    this->selectWeapon(from + 1); // every weapon is of one kind
     return true;
 }
 

@@ -65,7 +65,7 @@ The game opens with a title screen: **Start**, **Config** and **Exit**. Config s
 | Ctrl + direction | interact with, or pick up, what is next to you |
 | Alt + direction | drag what is behind you |
 | X | select the next usable item |
-| Z | select the next gun |
+| Z | select the next kind of gun (the HUD shows how many of the selected kind you carry) |
 | Space | use the selected item |
 | R | drop the selected item |
 | Esc | give up this avatar (you come back in the next activated one) |
@@ -235,6 +235,8 @@ Every new teleporter is added to a registry (a vector of weak pointers, guarded 
 
 
 ## Shooting guns
+A gun that runs out of ammo is thrown away. The next gun of the same kind (type and subtype) in the inventory takes over; if there is none, the next gun of any kind does.
+
 
 A plain gun shoots plain missiles. It is used by an element that can collect it (or create it like bunker) and can use it. A gun takes the operators dexterity, then finds a random value that will be used to decrease missile energy.
 Then after the shot, the guns energy is halved. It restores with mechanics() calls. So the faster you shoot, the weaker shots you produce.
@@ -360,6 +362,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Choosing guns: Z jumps to the next kind of gun instead of stepping through identical ones, and the HUD shows how many of the selected kind you carry. When a gun runs out of ammo, another gun of the same kind takes over, or any other gun if there is none, without losing the shot.
 * Losing the last avatar no longer closes the window without a word (it looked like a crash): a Game over screen shows the score and returns to the title screen for a new game. Quitting closes the window at once instead of freezing while a background level finishes.
 * Crash reports: a crash writes `crash-<date>-<time>.log` with a stack trace into the save folder, on Linux and Windows, no debugger needed.
 * Fixed thread races between the game and the levels built in the background: golden apples, music registration, the game clock, and a new level's player taking over the game.

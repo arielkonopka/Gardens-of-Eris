@@ -317,3 +317,15 @@ TEST(RegressionTests, ApplesCanBeAddedAndRemovedFromTwoThreads)
         apple->disposeElement();
     EXPECT_EQ(goldenApple::getAppleNumber(), before);
 }
+
+// The HUD draws goldenApple::getApple(0), which threw std::out_of_range once no apple was left out in
+// the world, ending the game.
+TEST(RegressionTests, AskingForAnAppleWhenNoneIsLeftIsSafe)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(6, 6), plr);
+    auto apple = elementFactory::generateAnElement<goldenApple>(mc, 0);
+    EXPECT_TRUE(goldenApple::getApple(goldenApple::getAppleNumber() - 1) == apple);
+    EXPECT_NO_THROW(EXPECT_TRUE(goldenApple::getApple(goldenApple::getAppleNumber()) == nullptr));
+    EXPECT_TRUE(goldenApple::getApple(-1) == nullptr);
+}

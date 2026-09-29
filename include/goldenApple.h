@@ -34,6 +34,7 @@ class goldenApple : public explosives
 public:
     using bElem::additionalProvisioning;
 
+    /// the apple at num among those still out in the world, nullptr when there is none
     static std::shared_ptr<bElem> getApple(int num);
     static  int getAppleNumber();
     int getType() const override;

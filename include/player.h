@@ -65,7 +65,7 @@ private:
 
     float vRadius=2;
     static std::shared_ptr<bElem> activePlayer;
-    static thread_local bool inBackground;
+    static inline thread_local bool inBackground = false;
     static std::vector<std::shared_ptr<bElem>> visitedPlayers;
     int animPh=0;
     bool activated=false;

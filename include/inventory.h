@@ -75,7 +75,10 @@ public:
     virtual bool nextUsable();
     virtual std::shared_ptr<bElem> getActiveWeapon();
     virtual int countTokens(int type, int subtype);
+    /// selects the next kind of weapon (type and subtype) held, skipping others of the kind in hand
     virtual bool nextGun();
+    /// how many weapons of the active weapon's kind are held, the active one included
+    int countActiveWeaponKind();
     virtual bool addToInventory(std::shared_ptr<bElem> what);  // this will qualify the category of the object, that will be collected, if object could not be collected, return false
     virtual int requestTokens(int number,int type,int subType); // this will "burn" number of tokens, that are of a type and a subType, if there are less tokens, it will return number of tokens remaining, otherwise 0
     virtual std::shared_ptr<bElem> requestToken(int type,int subType,bool removeIt); // this will take one collectible from the inventory, and return it, can be used to transfer elements
@@ -96,6 +99,8 @@ public:
 
 private:
     int cycleElement(std::vector<std::shared_ptr<bElem>>& vec,int& pos);
+    /// makes the weapon at pos (wrapped around) the active one
+    void selectWeapon(int pos);
     virtual void incrementTokenNumber(tType token);
     virtual void decrementTokenNumber(tType token);
     std::weak_ptr<bElem> owner;

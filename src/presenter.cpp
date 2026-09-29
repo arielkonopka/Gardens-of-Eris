@@ -264,6 +264,12 @@ void presenter::prepareStatsThing()
                          _mode_onlyTop);
 
     if (aPlayer->getAttrs()->getInventory()->getActiveWeapon() != nullptr) {
+        // how many weapons of this kind are held
+        this->showText(4,
+                       0,
+                       0,
+                       32,
+                       "x" + std::to_string(aPlayer->getAttrs()->getInventory()->countActiveWeaponKind()));
         this->showText(
             5,
             0,

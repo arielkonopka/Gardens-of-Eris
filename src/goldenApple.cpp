@@ -84,7 +84,10 @@ int goldenApple::getAppleNumber()
 std::shared_ptr<bElem> goldenApple::getApple(int num)
 {
     std::lock_guard<std::mutex> lock(goldenApple::applesMutex);
-    return goldenApple::apples.at(num);
+    // the HUD asks for the first apple even when every apple is gone
+    if (num < 0 || (std::size_t) num >= goldenApple::apples.size())
+        return nullptr;
+    return goldenApple::apples[num];
 }
 
 bool goldenApple::kill()
