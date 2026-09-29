@@ -22,8 +22,11 @@
 
 #include "randomLevelGenerator.h"
 
-randomLevelGenerator::randomLevelGenerator(int w, int h)
+randomLevelGenerator::randomLevelGenerator(int w, int h, goe::rng::seed levelSeed)
+    : eng(levelSeed)
 {
+    // the new chamber's name and colour come from this level's seed too
+    goe::rng::generationScope scope(this->eng);
     this->width = w;
     this->height = h;
     {
@@ -32,11 +35,6 @@ randomLevelGenerator::randomLevelGenerator(int w, int h)
         this->mychamber = chamber::makeNewChamber(myUtility::Coords(w, h));
         this->mychamber->ready = false;
     }
-    std::random_device rd;
-    std::array<int, 4> seedData;
-    std::generate_n(seedData.data(), seedData.size(), std::ref(rd));
-    std::seed_seq seq(std::begin(seedData), std::end(seedData));
-    this->gen.seed(seq);
     this->doorTypes = 0;
 }
 
@@ -117,12 +115,12 @@ std::unique_ptr<chamberArea> randomLevelGenerator::lvlGenerate(
 
     // 수평 길이는 세로 길이의 절반 이상이어야 합니다.
     if (dx > Wmin_ && dx * 2 > dy) {
-        c = (this->gen() % (dx - (Wmin_))) + x1 + (Wmin_ / 2); //find vertical divider location
+        c = (this->eng() % (dx - (Wmin_))) + x1 + (Wmin_ / 2); //find vertical divider location
         dc1 = c - x1;
         dc2 = x2 - c + 2;
     }
     if (dy > Hmin_ && dy * 2 > dx) {
-        d = (this->gen() % (dy - (Hmin_))) + y1 + (Hmin_ / 2); // horizontal divider
+        d = (this->eng() % (dy - (Hmin_))) + y1 + (Hmin_ / 2); // horizontal divider
         dd1 = d - y1;
         dd2 = y2 - d + 2;
     }
@@ -168,13 +166,13 @@ std::unique_ptr<chamberArea> randomLevelGenerator::lvlGenerate(
         //now pick the door gap randomly, and make as many holes, as requested
         for (int cnt = 0; cnt < holes; cnt++) {
             if (doorPlaces1.size() > 0) {
-                int rnd = this->gen() % (doorPlaces1.size());
+                int rnd = this->eng() % (doorPlaces1.size());
                 this->mychamber->getElement(c + 1, doorPlaces1[rnd])->disposeElement();
                 doorPlaces1[rnd] = doorPlaces1[doorPlaces1.size() - 1];
                 doorPlaces1.pop_back();
             }
             if (doorPlaces2.size() > 0) {
-                int rnd = this->gen() % (doorPlaces2.size());
+                int rnd = this->eng() % (doorPlaces2.size());
                 this->mychamber->getElement(c + 1, doorPlaces2[rnd])->disposeElement();
                 doorPlaces2[rnd] = doorPlaces2[doorPlaces2.size() - 1];
                 doorPlaces2.pop_back();
@@ -209,7 +207,7 @@ std::unique_ptr<chamberArea> randomLevelGenerator::lvlGenerate(
         }
         for (int cnt = 0; cnt < holes; cnt++) {
             if (!doorPlaces1.empty()) {
-                int rnd = this->gen() % (doorPlaces1.size());
+                int rnd = this->eng() % (doorPlaces1.size());
                 this->mychamber->getElement(doorPlaces1[rnd], d + 1)->disposeElement();
                 doorPlaces1[rnd] = doorPlaces1[doorPlaces1.size() - 1];
                 doorPlaces1.pop_back();
@@ -217,7 +215,7 @@ std::unique_ptr<chamberArea> randomLevelGenerator::lvlGenerate(
         }
         for (int cnt = 0; cnt < holes; cnt++) {
             if (!doorPlaces2.empty()) {
-                int rnd = this->gen() % (doorPlaces2.size());
+                int rnd = this->eng() % (doorPlaces2.size());
                 this->mychamber->getElement(doorPlaces2[rnd], d + 1)->disposeElement();
                 doorPlaces2[rnd] = doorPlaces2[doorPlaces2.size() - 1];
                 doorPlaces2.pop_back();
@@ -235,7 +233,7 @@ bool randomLevelGenerator::placeElementCollection(const chamberArea &chmbrArea,
         auto freeCells = chmbrArea.findElementsToStepOn(mychamber);
         // We sometimes must create more than one element
         for (int cnt = 0; cnt < element.number && !freeCells.empty(); cnt++) {
-            const std::size_t selectedEl = this->gen() % freeCells.size();
+            const std::size_t selectedEl = this->eng() % freeCells.size();
             std::shared_ptr<bElem> newElem = createElement(element);
             newElem->stepOnElement(freeCells[selectedEl]);
             newElem->selfAlign();
@@ -252,7 +250,7 @@ std::optional<chamberArea::areaRef> randomLevelGenerator::pickArea(int demandedS
     auto found = this->headNode->findChambersCloseToSurface(demandedSurface, tolerance);
     if (found.empty())
         return std::nullopt;
-    return found[this->gen() % found.size()];
+    return found[this->eng() % found.size()];
 }
 
 void randomLevelGenerator::retireArea(const chamberArea &area)
@@ -263,6 +261,8 @@ void randomLevelGenerator::retireArea(const chamberArea &area)
 
 bool randomLevelGenerator::generateLevel(int holes)
 {
+    // elements made while building this level draw their starting stats from its seed
+    goe::rng::generationScope scope(this->eng);
     // keep saving and loading out while this level is being built
     std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
     struct markReady
@@ -385,10 +385,10 @@ bool randomLevelGenerator::generateLevel(int holes)
         std::cout << "Surface total: " << this->headNode->surface << "\n";
 #endif
         int demandedSurface = 0;
-        int elementsToMake = ((this->gen() % 5) + 1) * 5;
+        int elementsToMake = ((this->eng() % 5) + 1) * 5;
         elementCollection.clear();
         for (int cnt = 0; cnt < elementsToMake; cnt++)
-            elementCollection.push_back(elementsToChooseFrom[this->gen() % elementsToChooseFrom.size()]);
+            elementCollection.push_back(elementsToChooseFrom[this->eng() % elementsToChooseFrom.size()]);
         for (const auto &element : elementCollection)
             demandedSurface += element.surface * element.number;
         auto area = this->pickArea(demandedSurface, tolerance);
@@ -400,8 +400,8 @@ bool randomLevelGenerator::generateLevel(int holes)
         if (!parent)
             break; // only the whole level is left, nothing more to fill
         if (!parent->get().childrenLock) {
-            int dice = this->gen() % 100;
-            int keyType = this->gen() % 10;
+            int dice = this->eng() % 100;
+            int keyType = this->eng() % 10;
             if (dice < (75 / holes)) {
                 if (keyType >= 5)
                     this->placeDoors({bElemTypes::_brickClusterType, 0, 1, 0, 9}, *area);
@@ -482,7 +482,7 @@ std::shared_ptr<bElem> randomLevelGenerator::createElement(elementToPlace elemen
     case bElemTypes::_securityCamera:
         return elementFactory::generateAnElement<securityCamera>(this->mychamber, 0);
     case bElemTypes::_puppetMasterType:
-        return puppetMasterFR::create(this->mychamber, (int) (bElem::randomNumberGenerator() % puppetMasterFR::looseKinds));
+        return puppetMasterFR::create(this->mychamber, (int) (this->eng() % puppetMasterFR::looseKinds));
     case bElemTypes::_bazookaType:
         return elementFactory::generateAnElement<bazooka>(this->mychamber, element.eSubType);
     case bElemTypes::_landmineType:

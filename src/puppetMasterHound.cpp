@@ -84,8 +84,8 @@ std::shared_ptr<bElem> puppetMasterHound::release(const std::shared_ptr<bElem> &
     coords p = prey->getStats()->getMyPosition();
     // a free floor cell on the square of cells spawnDistance away, tried at random places
     for (int attempt = 0; attempt < 64; attempt++) {
-        int along = (int) (bElem::randomNumberGenerator() % (2 * spawnDistance + 1)) - spawnDistance;
-        int side = (int) (bElem::randomNumberGenerator() % 4);
+        int along = (int) (goe::rng::gameplay()() % (2 * spawnDistance + 1)) - spawnDistance;
+        int side = (int) (goe::rng::gameplay()() % 4);
         coords c = side == 0   ? coords(p.x + along, p.y - spawnDistance)
                    : side == 1 ? coords(p.x + along, p.y + spawnDistance)
                    : side == 2 ? coords(p.x - spawnDistance, p.y + along)

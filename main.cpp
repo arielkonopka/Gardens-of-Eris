@@ -34,6 +34,8 @@
 #include "gameSettings.h"
 #include "titleScreen.h"
 #include <cstring>
+#include <cstdlib>
+#include "randomStreams.h"
 
 std::atomic<bool> finish=false;
 void createChambers()
@@ -76,10 +78,14 @@ int main( int argc, char * argv[] )
     soundManager::getInstance().setupSong(8,0, {0.0f,0.0f,0.0f},5,true);
     soundManager::getInstance().setupSong(9,0, {0.0f,0.0f,0.0f},6,true);
     // "--load <file>" starts from a saved game instead of a freshly generated world
+    // "--seed <number>" builds the same world again; the seed is printed at every start
     std::string saveToLoad;
-    for (int c = 1; c + 1 < argc; c++)
+    for (int c = 1; c + 1 < argc; c++) {
         if (std::strcmp(argv[c], "--load") == 0)
             saveToLoad = argv[c + 1];
+        else if (std::strcmp(argv[c], "--seed") == 0)
+            goe::rng::setWorldSeed((goe::rng::seed) std::strtoul(argv[c + 1], nullptr, 10));
+    }
     gameSettings::getInstance().load();
     if (saveToLoad.empty()) {
         titleMenu menu(gameSettings::getInstance());
@@ -93,6 +99,7 @@ int main( int argc, char * argv[] )
     if (!saveToLoad.empty() && gameSerializer::loadGame(saveToLoad)) {
         std::cout << "Loaded " << saveToLoad << "\n";
     } else {
+        std::cout << "World seed: " << goe::rng::worldSeed() << "\n";
         randomLevelGenerator(500,500).generateLevel(5);
         /// generate the remaining leveldata in the background, so the user would not be greeted with a delay.
         levelBuilder=std::jthread(&createChambers);

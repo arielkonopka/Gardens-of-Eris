@@ -24,16 +24,8 @@
 
 randomWordGen::randomWordGen()
 {
-    std::random_device rd;
-    std::mt19937::result_type seed
-        = rd()
-          ^ ((std::mt19937::result_type) std::chrono::duration_cast<std::chrono::seconds>(
-                 std::chrono::system_clock::now().time_since_epoch())
-                 .count()
-             + (std::mt19937::result_type) std::chrono::duration_cast<std::chrono::microseconds>(
-                   std::chrono::high_resolution_clock::now().time_since_epoch())
-                   .count());
-    this->randomNumberGenerator.seed(seed);
+    // while a level is built this draws from the level's seed, so its name and colour follow that seed
+    this->randomNumberGenerator.seed(goe::rng::gameplay()());
 }
 
 randomWordGen::~randomWordGen()

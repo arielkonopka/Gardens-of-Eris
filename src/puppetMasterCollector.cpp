@@ -42,7 +42,7 @@ bool puppetMasterCollector::drive(std::shared_ptr<bElem> body)
         if (d == cdir)
             return this->step(body, d) || this->wander(body);
         // turn towards it one quarter at a time, like the original collector did
-        this->turn(body, d == behind(cdir) ? ((this->randomNumberGenerator() % 2) ? leftOf(cdir) : rightOf(cdir)) : d);
+        this->turn(body, d == behind(cdir) ? ((goe::rng::gameplay()() % 2) ? leftOf(cdir) : rightOf(cdir)) : d);
         return true;
     }
     return this->wander(body);

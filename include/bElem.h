@@ -23,6 +23,7 @@
 #ifndef BELEM_H
 #define BELEM_H
 #include "gameClock.h"
+#include "randomStreams.h"
 #include <chrono>
 #include <random>
 #include <memory>
@@ -102,7 +103,6 @@ public:
     virtual oState disposeElementUnsafe();
     virtual coords getOffset() const;
     virtual bool readyToShoot() const;
-    static std::mt19937 randomNumberGenerator;
 
     virtual bool mechanics();
     virtual bool stepOnAction(bool step,std::shared_ptr<bElem> who);

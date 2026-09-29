@@ -73,6 +73,8 @@ The game opens with a title screen: **Start**, **Config** and **Exit**. Config s
 
 `GardenOfEris --load <file>` starts straight from a saved game, without the title screen.
 
+Every new game prints its world seed (`World seed: ...`). `GardenOfEris --seed <number>` builds that same world again, which helps when reporting a bug in a level.
+
 The HUD shows your score (**P**), your level (**Dex**, see Stats) and the current difficulty (**D**, see Difficulty).
 
 ## Elements of the gardens
@@ -353,6 +355,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Separate randomness for the game, level building, music and visual effects, so building levels in the background no longer shares a random generator with the running game. One world seed rebuilds the same levels (`--seed <number>`).
 * Sounds come from where they happen: a shot to the left is heard on the left.
 * Difficulty D (player level + chamber depth + distance) shown in the HUD; bunkers, cameras, guardians and kiki beams get tougher with it. New landmine and the Hound, with Discordian tiles. Tunings follow the Law of Fives.
 * Title screen with Start, Config and Exit; the save folder is set in Config and kept in settings.json.

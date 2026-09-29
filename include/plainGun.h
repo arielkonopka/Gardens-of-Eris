@@ -42,9 +42,9 @@ public:
     bool additionalProvisioning(int subtype);
 
 private:
-    int ammo=1+(bElem::randomNumberGenerator()%GoEConstants::_plainGunAmmo);
+    int ammo=1+(goe::rng::gameplay()()%GoEConstants::_plainGunAmmo);
     unsigned int shot=0;
-    int maxEnergy=20*(1+(bElem::randomNumberGenerator()&3));
+    int maxEnergy=20*(1+(goe::rng::gameplay()()&3));
 
 };
 

@@ -144,7 +144,7 @@ bool kiki::stepOnElement(std::shared_ptr<bElem> step)
             this->getStats()->setMyDirection(dir::direction::NODIRECTION);
             return true;
         }
-        auto md = dirs[this->randomNumberGenerator() % dirs.size()];
+        auto md = dirs[goe::rng::gameplay()() % dirs.size()];
 
         // Update the element's facing direction and its primary movement direction.
         this->getStats()->setFacing(md);

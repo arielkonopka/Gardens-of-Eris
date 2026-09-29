@@ -527,14 +527,14 @@ void presenter::eyeCandy(int flavour)
     coords np;
     if (flavour == 0) {
         for (int x = 0; x < 1000; x++) {
-            np = {(int) (bElem::randomNumberGenerator() % this->scrWidth),
-                  (int) (bElem::randomNumberGenerator() % this->scrHeight)};
-            al_draw_pixel(np.x, np.y, al_map_rgba(255, 0, 255, bElem::randomNumberGenerator() % 10));
+            np = {(int) (goe::rng::cosmetic()() % this->scrWidth),
+                  (int) (goe::rng::cosmetic()() % this->scrHeight)};
+            al_draw_pixel(np.x, np.y, al_map_rgba(255, 0, 255, goe::rng::cosmetic()() % 10));
         }
     }
     if (flavour == 2) {
         for (int c = 0; c < 1000; c++) {
-            top = bElem::randomNumberGenerator() % this->chaosGameTops.size();
+            top = goe::rng::cosmetic()() % this->chaosGameTops.size();
             np = {(this->chaosGameTops[top].x + this->chaosGamelastPoint.x) / 2,
                   (this->chaosGameTops[top].y + this->chaosGamelastPoint.y) / 2};
             this->chaosGamePoints.push_back(np);

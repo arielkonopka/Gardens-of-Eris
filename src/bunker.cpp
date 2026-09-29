@@ -47,7 +47,7 @@ bool bunker::mechanics()
         return false;
     const int level = difficulty::current();
     const int range = difficulty::bunkerRange(level);
-    int randomTest = bElem::randomNumberGenerator() % 55;
+    int randomTest = goe::rng::gameplay()() % 55;
     if (randomTest > 25) {
         this->help = 0;
         this->myGun->use(shared_from_this());
@@ -69,7 +69,7 @@ bool bunker::mechanics()
         }
     }
     this->getStats()->setWaiting(
-        difficulty::bunkerRest((1 + bElem::randomNumberGenerator() % 55) * 5, level));
+        difficulty::bunkerRest((1 + goe::rng::gameplay()() % 55) * 5, level));
     return res;
 }
 

@@ -436,7 +436,7 @@ int soundManager::setupSong(
     }
     /* we deal with the problem of code and configuration mismatch */
     if (songNo < 0 || this->gc->music.size() <= (unsigned int) songNo) {
-        songNo = bElem::randomNumberGenerator() % this->gc->music.size();
+        songNo = goe::rng::audio() % this->gc->music.size();
     }
     muNode muNd;
     ALuint source;

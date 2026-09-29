@@ -79,12 +79,14 @@ class randomLevelGenerator
 {
 public:
     std::unique_ptr<chamberArea> headNode;
-    std::mt19937 gen;
+    /// this level's own randomness: layout, and the starting stats of the elements placed in it
+    goe::rng::engine eng;
     std::shared_ptr<bElem> createElement(elementToPlace element);
 
 
     std::shared_ptr<chamber> mychamber;
-    randomLevelGenerator(int w,int h);
+    /// levelSeed defaults to the next seed derived from the world seed
+    randomLevelGenerator(int w,int h,goe::rng::seed levelSeed=goe::rng::nextLevelSeed());
 
     bool generateLevel(int holes);
 

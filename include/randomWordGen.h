@@ -24,8 +24,7 @@
 #define RANDOMWORDGEN_H
 #include <vector>
 #include <string>
-#include <chrono>
-#include <random>
+#include "randomStreams.h"
 
 
 class randomWordGen
