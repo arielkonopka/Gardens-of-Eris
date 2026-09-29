@@ -56,8 +56,7 @@ std::shared_ptr<bElem> player::getActivePlayer()
                 viewPoint::get_instance().setOwner(plr);
                 player::activePlayer = plr;
                 plr->getStats()->setActive(true);
-                soundManager::getInstance().setListenerChamber(plr->getBoard()->getInstanceId(),
-                                                                plr->getBoard()->getSize());
+                soundManager::getInstance().setListenerChamber(plr->getBoard()->getInstanceId());
                 player::visitedPlayers.erase(player::visitedPlayers.begin() + p);
                 break;
             }
@@ -140,27 +139,8 @@ bool player::mechanics()
     c3d.x = (float) this->getStats()->getMyPosition().x;
     c3d.y = (float) this->getStats()->getMyPosition().y;
     c3d.z = 5;
-    coords3d vel;
-    switch (this->getStats()->getMyDirection()) {
-    case dir::direction::UP:
-        vel = {0, -1, 0};
-        break;
-    case dir::direction::LEFT:
-        vel = {-1, 0, 0};
-        break;
-    case dir::direction::RIGHT:
-        vel = {1, 0, 0};
-        break;
-    case dir::direction::DOWN:
-        vel = {0, 1, 0};
-        break;
-    case dir::direction::NODIRECTION:
-        vel = {0, 0, 0};
-    }
 
-    soundManager::getInstance().setListenerChamber(this->getBoard()->getInstanceId(),
-                                                    this->getBoard()->getSize());
-    soundManager::getInstance().setListenerOrientation({0, 0, -1});
+    soundManager::getInstance().setListenerChamber(this->getBoard()->getInstanceId());
     soundManager::getInstance().setListenerPosition(c3d);
     if (!res)
         return false;

@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "soundManager.h"
+#include "soundSpace.h"
 
 soundManager::soundManager()
 {
@@ -32,10 +33,14 @@ soundManager::soundManager()
         this->sndContext.reset(alcCreateContext(this->sndDevice.get(), nullptr));
         if (this->sndContext)
             alcMakeContextCurrent(this->sndContext.get()); // set active context
-        alDopplerFactor(15.0);
-        alDopplerVelocity(20);
-        alSpeedOfSound(300.0);
-        alDistanceModel(AL_EXPONENT_DISTANCE_CLAMPED);
+        // no Doppler: sounds are placed once per tick and do not carry a velocity
+        alDopplerFactor(0.0f);
+        // gain = reference / distance, the same falloff the manual volume used to give
+        alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
+        // the listener stays at the origin and every source is relative to it (see soundSpace.h)
+        const ALfloat orientation[] = {0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f};
+        alListener3f(AL_POSITION, 0.0f, 0.0f, 0.0f);
+        alListenerfv(AL_ORIENTATION, orientation);
         /* create the queue for sndefx and music */
         for (int c = 0; c < configManager::getInstance()->getConfig()->sndFifoSize; c++) {
             ALuint source;
@@ -45,11 +50,9 @@ soundManager::soundManager()
             srcNode->source = source;
             srcNode->isRegistered = false;
             alSourcei(srcNode->source, AL_SOURCE_RELATIVE, AL_TRUE);
-            alSourcef(srcNode->source,
-                      AL_MAX_DISTANCE,
-                      0.8f); // we want to hear from the distance 10 elements 10*32=3200
-            alSourcef(srcNode->source, AL_REFERENCE_DISTANCE, 0.5f);
-            alSourcef(srcNode->source, AL_ROLLOFF_FACTOR, 4.0f);
+            alSourcef(srcNode->source, AL_REFERENCE_DISTANCE, soundSpace::referenceDistance);
+            alSourcef(srcNode->source, AL_MAX_DISTANCE, (float) this->gc->soundDistance);
+            alSourcef(srcNode->source, AL_ROLLOFF_FACTOR, 1.0f);
             alSourcef(srcNode->source, AL_PITCH, 1.0f);
             alSourcef(srcNode->source, AL_GAIN, 1.0f);
             this->registeredSounds.push_back(srcNode);
@@ -147,8 +150,8 @@ void soundManager::checkQueue()
             continue;
         }
 
-        float newVolume = (n->gain / (n->position.distance(this->listenerPos)));
-        alSourcef(n->source, AL_GAIN, (newVolume > 2) ? 2.0 : newVolume);
+        if (n->isRegistered)
+            this->setSoundPosition(n, n->position); // the listener may have moved
     }
 }
 void soundManager::enableSound()
@@ -232,8 +235,8 @@ std::shared_ptr<stNode> soundManager::registerSound(int chamberId,
     srcNode->event = event;
     srcNode->gain = this->gc->samples[typeId][subtypeId][eventType][event].gain;
     srcNode->soundSpace = chamberId;
-    float newVolume = (srcNode->gain / (position.distance(this->listenerPos)));
-    alSourcef(srcNode->source, AL_GAIN, (newVolume > 2) ? 2.0 : newVolume);
+    alSourcef(srcNode->source, AL_GAIN, srcNode->gain); // OpenAL adds the distance falloff
+    this->setSoundPosition(srcNode, position);
     alSourcei(srcNode->source, AL_LOOPING, (srcNode->mode == 0) ? AL_FALSE : AL_TRUE);
     this->sndRegister[elId][typeId][eventType][event].r = true;
     this->sndRegister[elId][typeId][eventType][event].stn = srcNode;
@@ -300,78 +303,27 @@ std::shared_ptr<stNode> soundManager::getSndNode()
 
 void soundManager::setListenerPosition(coords3d pos)
 {
-    if (this->spaceSize != NOCOORDS)
-        alListener3f(AL_POSITION,
-                     (float) pos.x / this->spaceSize.x,
-                     (float) pos.y / this->spaceSize.y,
-                     (float) pos.z / 1024.0);
-    else
-        alListener3f(AL_POSITION,
-                     (float) pos.x / 1024.0,
-                     (float) pos.y / 1024.0,
-                     (float) pos.z / 1024.0);
+    // OpenAL's listener stays at the origin; sources are placed relative to this position
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->listenerPos = pos;
 }
 
-void soundManager::setListenerOrientation(coords3d pos)
-{
-    if (this->spaceSize != NOCOORDS)
-        return;
-    ALfloat listenerOri[] = {(float) (pos.x / this->spaceSize.x),
-                             (float) (pos.y / this->spaceSize.y),
-                             (float) (pos.z / 1024.0),
-                             0.0,
-                             0.0,
-                             1.0};
-    alListenerfv(AL_ORIENTATION, listenerOri);
-}
-
-void soundManager::setListenerVelocity(coords3d pos)
-{
-    alListener3f(AL_VELOCITY,
-                 (float) pos.x / 1024.0,
-                 (float) pos.y / 1024.0,
-                 (float) pos.z / 1024.0);
-}
-
 /* we just teleported, we need to switch the context, which means stopping all the currently played samples from the previous chamber*/
-void soundManager::setListenerChamber(int chamberId, coords size)
+void soundManager::setListenerChamber(int chamberId)
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->currSoundSpace = chamberId;
-    this->spaceSize = size;
 }
 
-void soundManager::setSoundVelocity(std::shared_ptr<stNode> snd, coords3d pos)
-{
-    if (this->spaceSize != NOCOORDS)
-        alSource3f(snd->source,
-                   AL_VELOCITY,
-                   (float) pos.x / this->spaceSize.x,
-                   (float) pos.y / this->spaceSize.y,
-                   (float) pos.z / 1024.0);
-    else
-        alSource3f(snd->source,
-                   AL_VELOCITY,
-                   (float) pos.x / 1024,
-                   (float) pos.y / 1024,
-                   (float) pos.z / 1024.0);
-}
 void soundManager::setSoundPosition(std::shared_ptr<stNode> snd, coords3d pos)
 {
-    if (this->spaceSize != NOCOORDS)
-        alSource3f(snd->source,
-                   AL_POSITION,
-                   (float) pos.x / this->spaceSize.x,
-                   (float) pos.y / this->spaceSize.y,
-                   (float) pos.z / 1024.0);
-    else
-        alSource3f(snd->source,
-                   AL_POSITION,
-                   (float) pos.x / 1024.0,
-                   (float) pos.y / 1024.0,
-                   (float) pos.z / 1024.0);
+    this->placeSource(snd->source, pos);
+}
+
+void soundManager::placeSource(ALuint source, coords3d pos)
+{
+    auto [x, y, z] = soundSpace::relative(pos, this->listenerPos);
+    alSource3f(source, AL_POSITION, x, y, z);
 }
 
 ALenum soundManager::determineFormat(SF_INFO fileInfo, SNDFILE *sndfile)
@@ -407,6 +359,8 @@ ALuint soundManager::loadSample(std::string fname)
         return 0;
     format = this->determineFormat(sfinfo,
                                    sndfile.get()); /* Get the sound format, and figure out the OpenAL format */
+    // OpenAL only places mono sounds in space; stereo ones would play the same from everywhere
+    const bool downmix = (format == AL_FORMAT_STEREO16);
     if (sfinfo.frames < 1
         || sfinfo.frames > (sf_count_t) (INT_MAX / sizeof(short)) / sfinfo.channels
         || format == AL_NONE) {
@@ -419,7 +373,14 @@ ALuint soundManager::loadSample(std::string fname)
         sndfile.reset();
         if (num_frames < 1)
             return 0;
-        num_bytes = (ALsizei) (num_frames * sfinfo.channels) * (ALsizei) sizeof(short);
+        int channels = sfinfo.channels;
+        if (downmix) {
+            for (sf_count_t f = 0; f < num_frames; f++)
+                buff[f] = (short) (((int) buff[2 * f] + (int) buff[2 * f + 1]) / 2);
+            channels = 1;
+            format = AL_FORMAT_MONO16;
+        }
+        num_bytes = (ALsizei) (num_frames * channels) * (ALsizei) sizeof(short);
         /* Buffer the audio data into a new buffer object, then free the data and
          * close the file.
          */
@@ -504,11 +465,10 @@ int soundManager::setupSong(
     alGenSources(1, &source);
     muNd.source = source;
     muNd.gain = this->gc->music[songNo].gain;
-    alSource3f(source,
-               AL_POSITION,
-               (float) position.x / 1024.0,
-               (float) position.y / 1024.0,
-               (float) position.z / 1024.0);
+    // playSong sets the music volume by distance itself, so OpenAL only pans it
+    alSourcei(source, AL_SOURCE_RELATIVE, AL_TRUE);
+    alSourcef(source, AL_ROLLOFF_FACTOR, 0.0f);
+    this->placeSource(source, position);
     alSourcef(source, AL_GAIN, std::min(muNd.gain, (float) 1.0));
     const int buffersNum = 3;
     alGenBuffers(buffersNum, &muNd.Abuffers[0]);
@@ -545,6 +505,7 @@ void soundManager::playSong(int songNo)
                  : this->registeredMusic[songNo].gain;
     alGetSourcei(this->registeredMusic[songNo].source, AL_BUFFERS_PROCESSED, &buffersProcessed);
     alSourcef(this->registeredMusic[songNo].source, AL_GAIN, newVol);
+    this->placeSource(this->registeredMusic[songNo].source, this->registeredMusic[songNo].position);
     if (buffersProcessed <= 0 || !this->registeredMusic[songNo].isRegistered
         || this->registeredMusic[songNo].delayed > 0) {
         return;
@@ -598,18 +559,7 @@ void soundManager::moveSong(int songNo, coords3d newPosition, int newChamber)
         return;
     this->registeredMusic[songNo].position = newPosition;
     this->registeredMusic[songNo].chamberId = newChamber;
-    if (this->spaceSize != NOCOORDS)
-        alSource3f(this->registeredMusic[songNo].source,
-                   AL_POSITION,
-                   (float) newPosition.x / this->spaceSize.x,
-                   newPosition.y / this->spaceSize.y,
-                   (float) newPosition.z / 1024.0);
-    else
-        alSource3f(this->registeredMusic[songNo].source,
-                   AL_POSITION,
-                   (float) newPosition.x / 1024.0,
-                   newPosition.y / 1024.0,
-                   (float) newPosition.z / 1024.0);
+    this->placeSource(this->registeredMusic[songNo].source, newPosition);
 }
 
 void soundManager::threadLoop()

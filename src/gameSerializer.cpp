@@ -992,9 +992,7 @@ bool gameSerializer::loadGame(const std::string &fileName)
                 soundManager::getInstance().pauseSong(t->getStats()->getInstanceId());
         }
         if (player::activePlayer && player::activePlayer->getBoard())
-            soundManager::getInstance().setListenerChamber(
-                player::activePlayer->getBoard()->getInstanceId(),
-                player::activePlayer->getBoard()->getSize());
+            soundManager::getInstance().setListenerChamber(player::activePlayer->getBoard()->getInstanceId());
     } catch (const std::exception &ex) {
         {
             std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);

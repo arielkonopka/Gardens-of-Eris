@@ -355,7 +355,6 @@ void presenter::showGameField()
     this->previousPosition.y = this->positionOnScreen.y / this->sHeight;
     offX = (this->positionOnScreen.x % this->sWidth);
     offY = (this->positionOnScreen.y % this->sHeight);
-    soundManager::getInstance().setListenerVelocity({(float) d.x, (float) d.y, 0.0f});
     this->prepareStatsThing();
 
     al_set_target_bitmap(this->internalBitmap.get());
