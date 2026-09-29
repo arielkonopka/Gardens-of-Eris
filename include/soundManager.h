@@ -110,9 +110,7 @@ public:
     std::shared_ptr<stNode> registerSound(int chamberId,coords3d position,coords3d velocity,int elId,int typeId,int subtypeId,std::string eventType,std::string event);
     void registerMusic(int musicNo,int chamberId, coords3d position);
     void setListenerPosition(coords3d pos);
-    void setListenerVelocity(coords3d pos);
-    void setListenerChamber(int chamberId,coords size);
-    void setListenerOrientation(coords3d pos);
+    void setListenerChamber(int chamberId);
     void enableSound();
     void stopSoundsByElementId(unsigned int elId);
     int setupSong(unsigned int bElemInstanceId,int songNo,coords3d position,int chamberId,bool vaiableVolume);
@@ -127,7 +125,8 @@ private:
     std::mutex snd_mutex;
     ALenum determineFormat(SF_INFO fileInfo,SNDFILE *sndfile);
     void setSoundPosition(std::shared_ptr<stNode> snd,coords3d pos);
-    void setSoundVelocity(std::shared_ptr<stNode> snd,coords3d pos);
+    /// puts a source where pos is heard from the listener (see soundSpace.h)
+    void placeSource(ALuint source,coords3d pos);
     bool stopSnd(std::shared_ptr<stNode> n);
     std::shared_ptr<stNode> getSndNode();
     ALuint loadSample(std::string fname);
@@ -152,7 +151,6 @@ private:
     int regSndPos=0;
     int currentMusic=1;
     std::jthread myThread;
-    coords spaceSize=NOCOORDS;
 };
 
 #endif // SOUNDMANAGER_H

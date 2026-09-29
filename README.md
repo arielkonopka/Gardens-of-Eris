@@ -270,6 +270,9 @@ However, there are limitations:
 
  * The distance must be accurate; it is in the config file MaxSoundDistance
  * The sound must originate from the same chamber as the listener (player)
+
+Sounds are placed around the player in board cells (include/soundSpace.h): right on the screen is the right ear, up is in front and down is behind, and the volume halves with each doubling of the distance. OpenAL can only place mono sounds, so stereo samples are mixed down to mono when they are loaded; music keeps its stereo.
+
 When the element that generated the sound is removed or disposed of, only looping sounds are stopped, while others have the opportunity to cease playing by themselves.
 
 We manage sounds by maintaining a pool of sources (openAL) in a circular buffer, which aids in locating the oldest samples. When we register the sample (play it), we first search for unregistered samples; if unsuccessful, we look for samples played in a loop.
@@ -343,6 +346,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Sounds come from where they happen: a shot to the left is heard on the left.
 * Difficulty D (player level + chamber depth + distance) shown in the HUD; bunkers, cameras, guardians and kiki beams get tougher with it. New landmine and the Hound, with Discordian tiles. Tunings follow the Law of Fives.
 * Title screen with Start, Config and Exit; the save folder is set in Config and kept in settings.json.
 * Save and load (F5 / F9, `--load <file>`).

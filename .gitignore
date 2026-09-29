@@ -1,2 +1,6 @@
 # Emacs lock files
 .#*
+
+# CMake build folder
+/build/*
+!/build/data
