@@ -24,6 +24,7 @@
 std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
 //std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
 std::shared_ptr<bElem> player::activePlayer = nullptr;
+thread_local bool player::inBackground = false;
 
 bool player::additionalProvisioning(int subtype)
 {
@@ -33,7 +34,8 @@ bool player::additionalProvisioning(int subtype)
     this->getAttrs()->setEnergy(105);
     this->provisioned = true;
     this->registerLiveElement(shared_from_this());
-    if (this->getBoard() && player::activePlayer == nullptr) {
+    // the active player belongs to the game thread; background threads never read or set it
+    if (!player::inBackground && this->getBoard() && player::activePlayer == nullptr) {
         this->getStats()->setActive(true);
         this->getStats()->setMarked(true);
         player::activePlayer = shared_from_this();

@@ -592,17 +592,20 @@ void presenter::handleSaveKeys()
         std::cout << (ok ? "Game loaded from " : "Loading failed: ") << saveFile << "\n";
 }
 
-int presenter::presentEverything()
+gameEnd presenter::presentEverything()
 {
     std::shared_ptr<bElem> currentPlayer = nullptr;
     ALLEGRO_EVENT event;
     controlItem cItem;
+    auto result = gameEnd::QUIT;
 
+    this->fin = false;
+    this->lastScore = 0;
+    al_flush_event_queue(this->evQueue.get()); // ticks queued while the title screen was up
     al_start_timer(this->alTimer.get());
     while (!this->fin) {
         al_wait_for_event(this->evQueue.get(), &event);
         if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-            inputManager::getInstance().stop();
             this->fin = true;
             break;
         }
@@ -610,30 +613,32 @@ int presenter::presentEverything()
             std::lock_guard<std::mutex> guard(this->presenter_mutex);
             this->handleSaveKeys();
             currentPlayer = player::getActivePlayer();
-            //this->_cp_attachedBoard->player=NOCOORDS;
             if (currentPlayer.get() != nullptr) {
-                this->_cp_attachedBoard = player::getActivePlayer()->getBoard();
+                this->_cp_attachedBoard = currentPlayer->getBoard();
+                this->lastScore = currentPlayer->getStats()->getPoints(TOTAL);
                 if (currentPlayer->getAttrs()
                         ->getInventory()
                         ->countTokens(bElemTypes::_goldenAppleType, 0)
                     == goldenApple::getAppleNumber()) {
-                    inputManager::getInstance().stop();
+                    result = gameEnd::ALL_APPLES;
                     this->fin = true;
+                    break;
                 }
             }
             bElem::runLiveElements();
             if (player::getActivePlayer().get() != nullptr)
                 this->showGameField();
             else {
-                std::cout << "Player not created!\n";
-                //this->showSplash();
+                // the last avatar is gone
+                std::cout << "Game over, score " << this->lastScore << "\n";
+                result = gameEnd::LOST;
                 this->fin = true;
             }
         } else {
-            if ((currentPlayer = player::getActivePlayer()).get() == nullptr) {
+            if (player::getActivePlayer().get() == nullptr) {
+                result = gameEnd::LOST;
                 this->fin = true;
-                inputManager::getInstance().stop();
-                return 2;
+                break;
             }
             cItem = inputManager::getInstance()
                         .getCtrlItem(); //We always got a status on what to do. remember, everything must have a timer!
@@ -642,14 +647,19 @@ int presenter::presentEverything()
             // same with movement, object cycling, gun cycling, using things, interacting with things.
             if (cItem.type == 7) {
                 this->fin = true;
-                inputManager::getInstance().stop();
-                return 1;
+                break;
             }
         }
     }
-    this->fin = true;
-    inputManager::getInstance().stop();
-    return 1;
+    al_stop_timer(this->alTimer.get());
+    if (result == gameEnd::QUIT)
+        inputManager::getInstance().stop();
+    return result;
+}
+
+int presenter::getLastScore() const
+{
+    return this->lastScore;
 }
 
 } // namespace namespace

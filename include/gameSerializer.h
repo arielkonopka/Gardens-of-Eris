@@ -55,6 +55,8 @@ public:
     static constexpr uint32_t formatVersion = 2;
     static bool saveGame(const std::string &fileName);
     static bool loadGame(const std::string &fileName);
+    /// empties the world (chambers, players, apples, teleporters...), for a load or a new game
+    static void clearWorld();
 
 private:
     class writer;
@@ -65,7 +67,6 @@ private:
     static std::shared_ptr<bElem> readElement(reader &r, loadContext &ctx);
     static bool isCompact(const std::shared_ptr<bElem> &e);
     static std::shared_ptr<bElem> createByType(int type, int subtype);
-    static void clearWorld();
 };
 
 #endif // GAMESERIALIZER_H
