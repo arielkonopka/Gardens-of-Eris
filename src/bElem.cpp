@@ -154,39 +154,50 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
 
 oState bElem::disposeElement()
 {
-    //std::shared_ptr<bElem> t = shared_from_this();
-    std::shared_ptr<bElem> stash = nullptr;
-    std::shared_ptr<chamber> _myBoard = this->getBoard();
-    coords oCoords = this->getStats()->getMyPosition();
-    if (this->getStats()->isDisposed()) {
+    std::shared_ptr<chamber> board = this->getBoard();
+    const coords at = this->getStats()->getMyPosition();
+    if (this->getStats()->isDisposed())
         return ERROR;
-    }
-    /// We first deal with the activated mechanics, as it will depend on the board attached to the element.
-    if (this->getStats()->hasActivatedMechanics()) {
+    // deregistering needs the board, so it goes before the element leaves it
+    if (this->getStats()->hasActivatedMechanics())
         this->deregisterLiveElement(this->getStats()->getInstanceId());
-    }
     this->removeElement();
-
     if (this->getAttrs() && this->getAttrs()->canCollect()) {
-        if (this->getType() == bElemTypes::_rubishType) {
-            this->getAttrs()->getInventory()->weapons.clear();
-            this->getAttrs()->getInventory()->keys.clear();
-            this->getAttrs()->getInventory()->tokens.clear();
-        } else if (oCoords != NOCOORDS && !this->getAttrs()->getInventory()->isEmpty() && _myBoard) {
-            /*
-                Create a rubbish element on the board, so the inventory would not be lost
-             */
-            stash = elementFactory::generateAnElement<rubbish>(this->getBoard(), 0);
-            stash->getAttrs()->setCollect(true);
-            stash->getAttrs()->getInventory()->mergeInventory(this->getAttrs()->getInventory());
-            stash->stepOnElement(_myBoard->getElement(oCoords));
-        }
+        if (this->dropsInventoryOnDeath())
+            this->leaveStash(board, at);
+        else
+            this->getAttrs()->getInventory()->clear();
     }
     this->getStats()->setDisposed(true);
     this->setBoard(nullptr);
     this->getStats()->setMyPosition(NOCOORDS);
     soundManager::getInstance().stopSoundsByElementId(this->getStats()->getInstanceId());
     return DISPOSED;
+}
+
+bool bElem::dropsInventoryOnDeath() const
+{
+    return true;
+}
+
+// Whatever the element carried is left behind in a rubbish pile, on the cell it died on or, when
+// that cell cannot take it, on a free neighbour. With no room anywhere the pile is burnt.
+void bElem::leaveStash(const std::shared_ptr<chamber> &board, coords at)
+{
+    auto inv = this->getAttrs()->getInventory();
+    if (!board || at == NOCOORDS || inv->isEmpty())
+        return;
+    auto stash = elementFactory::generateAnElement<rubbish>(board, 0);
+    stash->getAttrs()->setCollect(true);
+    stash->getAttrs()->getInventory()->mergeInventory(inv);
+    auto here = board->getElement(at);
+    if (stash->stepOnElement(here))
+        return;
+    for (auto d : dir::allDirections)
+        if (here && here->isSteppableDirection(d)
+            && stash->stepOnElement(here->getElementInDirection(d)))
+            return;
+    stash->disposeElement();
 }
 
 std::shared_ptr<bElem> bElem::getElementInDirection(dir::direction di)

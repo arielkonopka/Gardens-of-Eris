@@ -401,3 +401,25 @@ TEST(RegressionTests, CollectorsCollectBeforeTheyStep)
     EXPECT_EQ(mc->getElement(4, 2), dying);
     EXPECT_EQ(plr->getStats()->getMyPosition(), before);
 }
+
+// bElem review of 2026-09-29: there were two disposal paths with different stash rules. Now one
+// path leaves what a dying collector carried in a rubbish pile, and a pile never leaves another.
+TEST(RegressionTests, DyingCollectorsLeaveTheirInventoryBehind)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(5, 5), plr);
+    auto carrier = elementFactory::generateAnElement<patrollingDrone>(mc, 0);
+    carrier->stepOnElement(mc->getElement(2, 2));
+    auto gun = elementFactory::generateAnElement<plainGun>(mc, 0);
+    gun->stepOnElement(mc->getElement(3, 2));
+    ASSERT_TRUE(carrier->collect(gun));
+
+    carrier->disposeElement();
+    auto pile = mc->getElement(2, 2);
+    ASSERT_EQ(pile->getType(), bElemTypes::_rubishType);
+    EXPECT_TRUE(pile->getAttrs()->getInventory()->findInInventory(gun->getStats()->getInstanceId()));
+
+    pile->disposeElement();
+    EXPECT_NE(mc->getElement(2, 2)->getType(), bElemTypes::_rubishType);
+    EXPECT_TRUE(pile->getAttrs()->getInventory()->isEmpty());
+}

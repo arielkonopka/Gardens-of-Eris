@@ -90,6 +90,8 @@ public:
     virtual bool dropItem(unsigned long int  instanceId);
     virtual std::shared_ptr<bElem> removeElement(); // removes element from the board, and returns it for further processing, useful for e.g. for collecting stuff
     virtual oState disposeElement();
+    /// false for elements whose inventory must vanish with them instead of being left in a stash
+    virtual bool dropsInventoryOnDeath() const;
     virtual coords getOffset() const;
 
     virtual bool mechanics();
@@ -111,6 +113,7 @@ private:
     std::shared_ptr<bElemAttr> attrs;
 
     std::once_flag _provOnce;
+    void leaveStash(const std::shared_ptr<chamber> &board, coords at);
     void ps(std::shared_ptr<bElem> who,std::string eventType,std::string event);
     std::weak_ptr<chamber> attachedBoard;
     static std::vector<std::shared_ptr<bElem>> toDispose;
