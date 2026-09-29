@@ -111,7 +111,7 @@ bool teleport::createConnectionsWithinSubtype()
     }
     if (!candidates.empty()) {
         // any matching teleporter can be the other end: local ones pick within their level, global ones across levels
-        tmpt = candidates[goe::rng::gameplay()() % candidates.size()];
+        tmpt = goe::rng::pick(goe::rng::gameplay(), candidates);
         this->theOtherEnd = tmpt;
         tmpt2 = std::dynamic_pointer_cast<teleport>(shared_from_this());
         std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport> &wp) {
@@ -155,7 +155,7 @@ bool teleport::teleportIt(std::shared_ptr<bElem> who)
             GoEConstants::_teleportationTime);
         return false;
     } else {
-        who->stepOnElement(spots.at(goe::rng::gameplay()() % spots.size()));
+        who->stepOnElement(goe::rng::pick(goe::rng::gameplay(), spots));
         return true;
     }
 }

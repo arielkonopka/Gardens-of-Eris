@@ -233,7 +233,7 @@ bool randomLevelGenerator::placeElementCollection(const chamberArea &chmbrArea,
         auto freeCells = chmbrArea.findElementsToStepOn(mychamber);
         // We sometimes must create more than one element
         for (int cnt = 0; cnt < element.number && !freeCells.empty(); cnt++) {
-            const std::size_t selectedEl = this->eng() % freeCells.size();
+            const std::size_t selectedEl = goe::rng::below(this->eng, freeCells.size());
             std::shared_ptr<bElem> newElem = createElement(element);
             newElem->stepOnElement(freeCells[selectedEl]);
             newElem->selfAlign();
@@ -250,7 +250,7 @@ std::optional<chamberArea::areaRef> randomLevelGenerator::pickArea(int demandedS
     auto found = this->headNode->findChambersCloseToSurface(demandedSurface, tolerance);
     if (found.empty())
         return std::nullopt;
-    return found[this->eng() % found.size()];
+    return goe::rng::pick(this->eng, found);
 }
 
 void randomLevelGenerator::retireArea(const chamberArea &area)
@@ -388,7 +388,7 @@ bool randomLevelGenerator::generateLevel(int holes)
         int elementsToMake = ((this->eng() % 5) + 1) * 5;
         elementCollection.clear();
         for (int cnt = 0; cnt < elementsToMake; cnt++)
-            elementCollection.push_back(elementsToChooseFrom[this->eng() % elementsToChooseFrom.size()]);
+            elementCollection.push_back(goe::rng::pick(this->eng, elementsToChooseFrom));
         for (const auto &element : elementCollection)
             demandedSurface += element.surface * element.number;
         auto area = this->pickArea(demandedSurface, tolerance);

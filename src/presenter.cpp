@@ -534,7 +534,7 @@ void presenter::eyeCandy(int flavour)
     }
     if (flavour == 2) {
         for (int c = 0; c < 1000; c++) {
-            top = goe::rng::cosmetic()() % this->chaosGameTops.size();
+            top = goe::rng::below(goe::rng::cosmetic(), this->chaosGameTops.size());
             np = {(this->chaosGameTops[top].x + this->chaosGamelastPoint.x) / 2,
                   (this->chaosGameTops[top].y + this->chaosGamelastPoint.y) / 2};
             this->chaosGamePoints.push_back(np);

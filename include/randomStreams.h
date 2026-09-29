@@ -21,6 +21,8 @@
  */
 #ifndef RANDOMSTREAMS_H
 #define RANDOMSTREAMS_H
+#include <cstddef>
+#include <iterator>
 #include <random>
 
 /**
@@ -60,6 +62,19 @@ seed worldSeed();
 void setWorldSeed(seed s);
 /// the seed of the next level to be generated: derived from the world seed and the level's number
 seed nextLevelSeed();
+
+/// a number from 0 to n - 1; n must be above 0
+inline std::size_t below(engine &e, std::size_t n)
+{
+    return e() % n;
+}
+
+/// a random item of a non-empty container
+template<class Items>
+decltype(auto) pick(engine &e, Items &items)
+{
+    return items[below(e, std::size(items))];
+}
 
 /// While alive, gameplay() on this thread draws from the given engine. Create it as a local
 /// variable, so scopes always end in the reverse order they started.

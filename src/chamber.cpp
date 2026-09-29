@@ -86,9 +86,9 @@ chamber::chamber(int x, int y)
     this->setInstanceId(chamber::lastid++);
     this->chamberName = rwg->generateWord(3);
     this->chamberColour.a = 255;
-    this->chamberColour.r = 30 + rwg->randomNumberGenerator() % 50;
-    this->chamberColour.g = 30 + rwg->randomNumberGenerator() % 50;
-    this->chamberColour.b = 50 + rwg->randomNumberGenerator() % 70;
+    this->chamberColour.r = 30 + goe::rng::gameplay()() % 50;
+    this->chamberColour.g = 30 + goe::rng::gameplay()() % 50;
+    this->chamberColour.b = 50 + goe::rng::gameplay()() % 70;
     //this->createFloor();
 }
 

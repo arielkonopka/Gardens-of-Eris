@@ -24,8 +24,6 @@
 
 randomWordGen::randomWordGen()
 {
-    // while a level is built this draws from the level's seed, so its name and colour follow that seed
-    this->randomNumberGenerator.seed(goe::rng::gameplay()());
 }
 
 randomWordGen::~randomWordGen()
@@ -36,7 +34,7 @@ std::string randomWordGen::generateWord(int length)
 {
     std::string res = "";
     for (int c = 0; c < length; c++) {
-        res = res + this->sylables[this->randomNumberGenerator() % this->sylables.size()];
+        res = res + goe::rng::pick(goe::rng::gameplay(), this->sylables);
     }
     return res;
 }
