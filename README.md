@@ -9,9 +9,11 @@ So, here we have a work in progress. It tends to function well enough, but consi
 
 # Recent build status
 
-Main branch build status: tests with the game:
+Main branch build status:
 
-[![C/C++ CI](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/c-cpp.yml)
+[![CI](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/ci.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/ci.yml)
+
+Every push builds the game and runs the unit tests on Linux and on Windows (MSYS2), packs a zip of each build, and runs a SonarCloud analysis with test coverage.
 
 
 ## Why the idea
@@ -45,16 +47,69 @@ The labyrinth is inhabited by an assortment of creatures and contraptions. You'l
 
 
 
+## Playing the game
+
+The game opens with a title screen: **Start**, **Config** and **Exit**. Config sets the folder the game is saved to; it is kept in `settings.json` next to the game. Starting a game builds the first maze right away, and the other levels are built in the background while you play.
+
+| Key | What it does |
+|---|---|
+| Arrows or W A S D | walk |
+| Shift + direction | shoot the selected gun |
+| Ctrl + direction | interact with, or pick up, what is next to you |
+| Alt + direction | drag what is behind you |
+| X | select the next usable item |
+| Z | select the next gun |
+| Space | use the selected item |
+| R | drop the selected item |
+| Esc | give up this avatar (you come back in the next activated one) |
+| F5 / F9 | save / load the game (`savegame.goe` in the save folder) |
+
+`GardenOfEris --load <file>` starts straight from a saved game, without the title screen.
+
+The HUD shows your score (**P**), your level (**Dex**, see Stats) and the current difficulty (**D**, see Difficulty).
+
+## Elements of the gardens
+
+| Element | What it does |
+|---|---|
+| Floor, wall | The maze itself. Floors come in a few looks; walls stand until they don't. |
+| Brick cluster | Can't be killed, but can be pushed around and blown up. Also used to block passages instead of a door. |
+| Door and key | A door opens for a key of its colour. Rooms are often locked, and the key is usually placed somewhere else. |
+| Golden apple | The thing you are here for. Shoot one and it becomes a healing item that drains itself and finally explodes in your inventory. |
+| Plain gun, bazooka | Weapons to pick up. Shooting fast makes weaker shots. |
+| Simple bomb | Explodes when shot or hit by another explosion. |
+| Landmine | Looks almost like floor: a pentagon plate with the Sacred Chao on it. Goes off when anything steps on it and takes that thing with it. Only the harder levels have them, and the harder the level, the more. |
+| Monster | Roams the maze. Monsters collect things if their skin allows it (`canCollect` in `skins.json`), and some have no inventory on purpose. |
+| Bunker | A fixed turret that looks along its four lines and fires at you. |
+| Kiki and bouba | Kiki is a death-ray emitter; the beam is made of boubas, which hurt whatever stands in them. |
+| Patrolling drone and puppet master | A drone does nothing until you hand it a puppet master (a controller). The controller decides how it moves: **patrol** (wanders, and becomes an extra camera for you), **collector** (goes for collectibles it can see), **hunter** (chases you around walls when you are near), **wall follower** (keeps a hand on the wall and walks the maze). |
+| Security camera | Watches for you. When it sees you, its guardian drones come to check the spot. Guardians fight you when they see you, shoot along clear lines, and never go further than 55 cells from their camera. |
+| The Hound | A red drone with the golden apple on its hull. It is sent after you when you stay in one 64x64 area too long; it bites, and gives up when you leave that area. |
+| Teleporter | Local teleporters lead somewhere in the same level; global ones (subtype 0) can take you to another level. The pairing is random and made when a teleporter is first used. |
+| Player avatar | You. Interact with an unused avatar (Ctrl + direction) to activate it; when you die you come back in the next activated one. |
+
 ## Building the game
 
-To build the game, you need following libraries:
+You need a C++23 compiler (GCC 13 or newer), CMake, and these libraries:
 * liballegro5 - better install all of it along with dev packages,
 * googletest (libgtest-dev) - for the unit tests
 * rapidjson 
 * openAL - we use it to play sound
 * libsndfile - we use it to decode audio files
 
-The repository is equipped with build.sh shell script (Bash):
+Build and test with CMake:
+
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+Run the game from the `GoEoOL` folder, where the `data` folder is. On Windows, the game builds with MSYS2 (UCRT64) and the same libraries; `.github/workflows/ci.yml` lists the exact packages for both systems.
+
+The `goe-bench` target times level generation, a game tick, and save/load on a large level: `goe-bench 500 3000` from `GoEoOL`.
+
+The repository also has the older build.sh shell script (Bash):
 
 ```
 ./build.sh --help
@@ -86,12 +141,12 @@ examples:
 
 3. In a  chamber, it must be possible to traverse from any steppable spot to another, if we do away with all the doors and teleporters.
 
-4. The game ought to be vast, with five distinct chambers creatin' different levels of challenge, each with a varyin' number of holes in the walls.
+4. The game ought to be vast, with chambers in five levels of challenge, each with a varyin' number of holes in the walls. Fewer holes make a deeper, harder chamber (see Difficulty).
 
 5. The chambers connect through teleporters.
   * Two types of teleporters exist: internal and inter-chamber.
     - Inter-chamber teleporters are a special subtype 0, with one such teleporter in each chamber.
-    - Internal teleporters share a common subtype within a chamber and are walk-in teleporters.
+    - Internal teleporters share a common subtype within a chamber (the chamber's id + 1) and are walk-in teleporters.
 6. When elements on the board move, they don't replace each other but step on top of one another. We start with a board chock-full of empty elements, then create new elements that step onto the empty ones. With mechanics, we manage a vector of live elements (those in need of their mechanics to run). The vector is inspected, and each element's mechanics are executed. 
 7. The destruction of elements occurs by adding their ID and a timestamp to a separate vector. Later on, this vector is scanned, and when their time elapses, the disposeElement() method is executed on the respective element.
 8. We strive to avoid code duplications whenever we can. That said, this rule has been bent a few times, especially with newly introduced code.
@@ -147,15 +202,15 @@ It also contains the music and sound information.
 There exists a vector containing "mechanical" elements. We add elements that possess certain mechanics, such as shooting, walking, or performing actions autonomously. However, the animation phases are managed differently, enabling objects without mechanics to still have animated sprites.
 There are two methods:
 
- 1. void registerLiveElement(bElem* who);
- 2. void deregisterLiveElement(bElem* who);
+ 1. void registerLiveElement(std::shared_ptr<bElem> who);
+ 2. void deregisterLiveElement(unsigned int instanceId);
 
 The first method is for registering a mechanical object (which requires an implemented mechanics method), while the second method is for deregistering the object.
 
 ## Apples
 When an apple is unbeschädigt, it acts as a collectible token that must be gathered. However, if it becomes damaged (for example, by being shot at), it transforms into a healing device. When a player (or any other element capable of collecting) acquires the item, it will heal the collector. But be warned: the apple will deplete its own energy. When the energy reaches zero, the apple will explode in the inventory, resulting in the untimely demise of the collector.
 ## Teleporters
-Every new teleporter is added to a vector (in reality, it's a vector of pointers, so it is). As soon as our player interacts with a teleporter, we're checkin' if it has an attached link to its corresponding teleporter mate. We take a gander at the type of the teleporter, and we follow these steps:
+Every new teleporter is added to a registry (a vector of weak pointers, guarded by a mutex, so it is). A level being built publishes its teleporters only once it is complete, so a teleporter never links into a half-built level. As soon as our player interacts with a teleporter, we're checkin' if it has an attached link to its corresponding teleporter mate. We take a gander at the type of the teleporter, and we follow these steps:
 
  * If there's no established link, we pick a random teleporter from our list and remove the interacted one along with the chosen one. We set the chosen one to be "LEFT" (it will become a receiver) and pause its song. We could unpause them, but I don't think it makes sense.. 
  * We then set the chosen teleporter as the other end of the connection. 
@@ -174,10 +229,11 @@ Then after the shot, the guns energy is halved. It restores with mechanics() cal
 
 Element stats is a class that will be responsible for element's stats. You can have a monster, that could shoot and gain better skills with time. :)
 
+The player's level is **Dex** in the HUD: floor(log5(hits + 1)), where hits counts everything your shots and explosions hit. Level 1 takes 4 hits, level 2 takes 24, level 3 takes 124, and so on in fives. Your sight radius grows with the steps you take.
+
 # Unit tests
 
-The unit tests should be written in *.cpp files that should be located in unitTests directory.
-When running build.sh, the unit tests would be built as well. You can then run them, they are built as separate executables.
+The unit tests use GoogleTest and live in the unitTests directory, one test program per *.cpp file (14 of them now). CMake builds each one, and `ctest` runs them all from the `GoEoOL` folder. regression-test keeps one test for every bug fixed, so it doesn't come back.
 
 
 # Sound
@@ -224,6 +280,9 @@ There are control switches that modify sound handling:
  * modeOfAction - 0 for regular, 1 for looping
  * stacking - If we allow multiple sounds, do we let them play, or should we stop the sound currently playing and start anew upon request (false), or permit all instances to play while avoiding collisions by applying a delay if the previous sound did not have the chance to play?
 
+## Save and load
+F5 saves the whole world (every level, every element with its inventory and timers, the random generator's state) to one binary file, and F9 loads it back. The file starts with a format version; a newer game still loads older saves.
+
 ## Difficulty
 The game gets harder the better you get and the further you go. The difficulty D, shown as "D:" next to "Dex:" in the HUD, is the sum of:
 
@@ -239,7 +298,7 @@ Every rule that depends on D lives in include/difficulty.h: bunker range and res
 ~~- Add sound gain on music and samples~~
 ~~- Add new type of a gun, that would shoot bombs - grenade launcher~~
 ~~- Add landmine, a steppable, that would kill you~~
-- Add a bot and a camera, when a player is near a camera, all bots are notified about the position
+~~- Add a bot and a camera, when a player is near a camera, all bots are notified about the position~~
 - Add fire/electric door that can be switched with a switch (indestructable)
 - Add switches that will be linked to the energy doors
   
@@ -277,7 +336,20 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 
+- Planned next (see the design notes): energy doors with switches, crumbling floor, laser gate, armor as a player stat, the Friend, Hostile and Neutral NPCs (trading on bump, scaling as 5^n with your level), and the Altar of Eris.
+- One endless world made of chunks instead of separate levels.
+
+## Art and numbers
+New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
+
 ## ChangeLog
+* Difficulty D (player level + chamber depth + distance) shown in the HUD; bunkers, cameras, guardians and kiki beams get tougher with it. New landmine and the Hound, with Discordian tiles. Tunings follow the Law of Fives.
+* Title screen with Start, Config and Exit; the save folder is set in Config and kept in settings.json.
+* Save and load (F5 / F9, `--load <file>`).
+* Controllers: a drone's behaviour comes from the puppet master driving it (patrol, collector, hunter, wall follower, guardian). Security cameras with guardian drones.
+* Teleporters pair at random through a thread-safe registry; local and global teleporters.
+* Much faster: a 500x500 level builds in about half a second instead of over a minute, and a game tick takes about a third of a millisecond.
+* Modern C++23 with no raw pointers or new/delete; Boost is gone, tests use GoogleTest; one CI for Linux and Windows.
 * Now kiki si not placed so danesly, still glitches happen.
 * Fixed monster - more to go, whole monster mechanics must be rewritten
 * Added death ray contraption system kiki & bouba
