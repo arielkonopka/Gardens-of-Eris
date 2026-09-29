@@ -209,6 +209,48 @@ TEST(InventoryTests, NextGunCyclesThroughWeapons)
     EXPECT_TRUE(inv->getActiveWeapon() == first);
 }
 
+TEST(InventoryTests, NextGunSkipsWeaponsOfTheKindInHand)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(6, 6), plr);
+    auto inv = plr->getAttrs()->getInventory();
+    auto p1 = give<plainGun>(mc, plr, 0);
+    auto p2 = give<plainGun>(mc, plr, 0);
+    auto bz = give<bazooka>(mc, plr, 0);
+    ASSERT_TRUE(inv->getActiveWeapon() == p1);
+    EXPECT_EQ(inv->countActiveWeaponKind(), 2);
+    EXPECT_TRUE(inv->nextGun());
+    EXPECT_TRUE(inv->getActiveWeapon() == bz);
+    EXPECT_TRUE(bz->getStats()->isActive());
+    EXPECT_EQ(inv->countActiveWeaponKind(), 1);
+    EXPECT_TRUE(inv->nextGun());
+    EXPECT_TRUE(inv->getActiveWeapon() == p1);
+    EXPECT_FALSE(bz->getStats()->isActive());
+    (void) p2;
+}
+
+TEST(InventoryTests, AnEmptyWeaponIsReplacedByOneOfTheSameKind)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(6, 6), plr);
+    auto inv = plr->getAttrs()->getInventory();
+    auto p1 = give<plainGun>(mc, plr, 0);
+    auto bz = give<bazooka>(mc, plr, 0);
+    auto p2 = give<plainGun>(mc, plr, 0);
+    ASSERT_TRUE(inv->getActiveWeapon() == p1);
+    // the bazooka comes next in the list, but the other plain gun takes over
+    p1->getAttrs()->setAmmo(0);
+    EXPECT_TRUE(inv->getActiveWeapon() == p2);
+    EXPECT_TRUE(p2->getStats()->isActive());
+    EXPECT_EQ(inv->countTokens(bElemTypes::_plainGun, 0), 1);
+    // no plain gun left: any other weapon takes over
+    p2->getAttrs()->setAmmo(0);
+    EXPECT_TRUE(inv->getActiveWeapon() == bz);
+    bz->getAttrs()->setAmmo(0);
+    EXPECT_TRUE(inv->getActiveWeapon() == nullptr);
+    EXPECT_FALSE(inv->nextGun());
+}
+
 TEST(InventoryTests, RequestTokensTakesAtMostWhatIsThere)
 {
     std::shared_ptr<bElem> plr;

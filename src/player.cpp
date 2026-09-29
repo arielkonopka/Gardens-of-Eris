@@ -24,7 +24,6 @@
 std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
 //std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
 std::shared_ptr<bElem> player::activePlayer = nullptr;
-thread_local bool player::inBackground = false;
 
 bool player::additionalProvisioning(int subtype)
 {
