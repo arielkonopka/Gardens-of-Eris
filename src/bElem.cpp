@@ -24,6 +24,7 @@
 #include "elements.h"
 #include "floorElement.h"
 #include "rubbish.h"
+#include "motion.h"
 #include <algorithm>
 #include <unordered_set>
 std::vector<std::shared_ptr<bElem>> bElem::toDispose;
@@ -98,20 +99,11 @@ bool bElem::stepOnElement(std::shared_ptr<bElem> step)
     };
     if (this->getStats()->isDisposed() || !elig(step))
         return false;
+    // a collector never stands on a collectible: it picks it up first (see motion::collectAndStep)
+    if (step->getAttrs()->isCollectible() && this->getAttrs()->canCollect())
+        return false;
     bool chamberChange = !(step->getBoard() == this->getBoard());
     std::shared_ptr<bElem> s0;
-    if (step->getAttrs()->isCollectible() && this->getAttrs()->canCollect()) {
-        std::shared_ptr<bElem> s2 = step->getStats()->getSteppingOn();
-        if (!elig(s2))
-            return false;
-        this->collect(step);
-        step = s2;
-        if (step) {
-            return this->stepOnElement(step);
-        } else {
-            return false;
-        }
-    }
     std::shared_ptr<bElem> st = this->getStats()->getSteppingOn();
     if (chamberChange && this->getStats()->hasActivatedMechanics())
         this->deregisterLiveElement(this->getStats()->getInstanceId());
@@ -464,55 +456,17 @@ sNeighboorhood bElem::getSteppableNeighborhood()
 
 bool bElem::moveInDirectionSpeed(dir::direction dir, int speed)
 {
-    std::shared_ptr<bElem> stepOn = this->getElementInDirection(dir);
-    if (stepOn.get() == nullptr || this->getStats()->isMoving() || this->getStats()->isDying()
-        || this->getStats()->isTeleporting() || this->getStats()->isDestroying()
-        || dir == dir::direction::NODIRECTION)
-        return false;
-    std::shared_ptr<bElem> stepOn2 = stepOn->getElementInDirection(dir);
-    this->getStats()->setMyDirection(dir);
-    if (stepOn->getAttrs()->isSteppable()) {
-        this->stepOnElement(stepOn);
-        this->getStats()->setMoved(speed);
-        goe::sound::play(*this, "Move", "StepOn");
-        return true;
-    } else if (this->getAttrs()->canCollect() && stepOn->getAttrs()->isCollectible()
-               && this->collect(stepOn)) {
-        return true;
-    } else if (this->getAttrs()->canPush() && stepOn->getAttrs()->canBePushed()
-               && stepOn->getAttrs()->isMovable() && stepOn2 && stepOn2->getAttrs()->isSteppable()
-               && stepOn->moveInDirectionSpeed(dir, speed + 1)) {
-        this->stepOnElement(this->getElementInDirection(dir)); // move the initiating object
-        this->getStats()->setMoved(speed + 1);
-        goe::sound::play(*this, "Move", "StepOn");
-        return true;
-    } else if (this->getAttrs()->isInteractive() && stepOn->interact(shared_from_this())) {
-        return true;
-    }
-    return false;
+    return motion::step(shared_from_this(), dir, speed);
 }
+
 bool bElem::moveInDirection(dir::direction d)
 {
-    return this->moveInDirectionSpeed(d, GoEConstants::_mov_delay);
+    return motion::step(shared_from_this(), d, GoEConstants::_mov_delay);
 }
+
 bool bElem::dragInDirection(dir::direction dragIntoDirection)
 {
-    const int speed = GoEConstants::_mov_delay * 2;
-    dir::direction objFromDir = (dir::direction)((((int) dragIntoDirection) + 2) % 4);
-    dir::direction d2 = dragIntoDirection;
-    std::shared_ptr<bElem> draggedObj = this->getElementInDirection(objFromDir);
-    if (draggedObj.get() == nullptr)
-        return false;
-    if (!draggedObj->getAttrs()->isMovable()) {
-        d2 = (dir::direction)((((int) this->getStats()->getMyDirection()) + 2) % 4);
-        draggedObj = this->getElementInDirection(d2);
-        d2 = this->getStats()->getMyDirection();
-        if (draggedObj.get() == nullptr || !draggedObj->getAttrs()->isMovable())
-            return false;
-    }
-
-    this->moveInDirectionSpeed(dragIntoDirection, speed);
-    return draggedObj->moveInDirectionSpeed(d2, speed);
+    return motion::drag(shared_from_this(), dragIntoDirection, GoEConstants::_mov_delay * 2);
 }
 
 void bElem::registerLiveElement(std::shared_ptr<bElem> who)

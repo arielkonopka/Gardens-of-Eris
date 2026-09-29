@@ -369,37 +369,46 @@ TEST(RegressionTests, CollectorsCollectBeforeTheyStep)
     auto mc = roomWithPlayer(coords(5, 5), plr);
     plr->stepOnElement(mc->getElement(2, 2));
 
-    // placing a collector on a collectible that can be stood on
+    // walking into a collectible: it is picked up while the player is still next to it, then the
+    // player steps onto the floor it uncovered, in the same move
     auto gun = elementFactory::generateAnElement<watchedGun>(mc, 0);
     gun->stepOnElement(mc->getElement(3, 2));
-    gun->getAttrs()->setSteppable(true);
     auto floorBelow = gun->getStats()->getSteppingOn();
-    ASSERT_TRUE(plr->stepOnElement(gun));
-    EXPECT_EQ(gun->collectorAt, coords(2, 2)); // collected while the player was still next to it
+    ASSERT_TRUE(plr->moveInDirection(dir::direction::RIGHT));
+    EXPECT_EQ(gun->collectorAt, coords(2, 2));
     EXPECT_TRUE(gun->getStats()->isCollected());
     EXPECT_EQ(plr->getStats()->getMyPosition(), coords(3, 2));
     EXPECT_EQ(plr->getStats()->getSteppingOn(), floorBelow);
     EXPECT_EQ(mc->getElement(3, 2), plr);
 
-    // walking into one: it is collected before the player leaves its own cell
-    auto walkedInto = elementFactory::generateAnElement<watchedGun>(mc, 0);
-    walkedInto->stepOnElement(mc->getElement(3, 3));
+    // the same for one that could be stood on
+    for (int t = 0; t < 55; t++)
+        bElem::tick();
+    auto steppable = elementFactory::generateAnElement<watchedGun>(mc, 0);
+    steppable->stepOnElement(mc->getElement(3, 3));
+    steppable->getAttrs()->setSteppable(true);
     ASSERT_TRUE(plr->moveInDirection(dir::direction::DOWN));
-    EXPECT_EQ(walkedInto->collectorAt, coords(3, 2));
-    EXPECT_TRUE(walkedInto->getStats()->isCollected());
+    EXPECT_EQ(steppable->collectorAt, coords(3, 2));
+    EXPECT_EQ(plr->getStats()->getMyPosition(), coords(3, 3));
+    EXPECT_EQ(mc->getElement(3, 3), plr);
+
+    // placing a collector straight onto a collectible is refused
+    auto placed = elementFactory::generateAnElement<watchedGun>(mc, 0);
+    placed->stepOnElement(mc->getElement(4, 4));
+    placed->getAttrs()->setSteppable(true);
+    EXPECT_FALSE(plr->stepOnElement(placed));
+    EXPECT_EQ(mc->getElement(4, 4), placed);
 
     // a collectible that cannot be collected (it is dying) is neither collected nor stepped on
     for (int t = 0; t < 55; t++)
-        bElem::runLiveElements();
+        bElem::tick();
     auto dying = elementFactory::generateAnElement<plainGun>(mc, 0);
-    dying->stepOnElement(mc->getElement(4, 2));
+    dying->stepOnElement(mc->getElement(4, 3));
     dying->getStats()->setKilled(55);
-    const coords before = plr->getStats()->getMyPosition();
-    EXPECT_FALSE(plr->stepOnElement(dying));
     EXPECT_FALSE(plr->moveInDirection(dir::direction::RIGHT));
     EXPECT_FALSE(dying->getStats()->isCollected());
-    EXPECT_EQ(mc->getElement(4, 2), dying);
-    EXPECT_EQ(plr->getStats()->getMyPosition(), before);
+    EXPECT_EQ(mc->getElement(4, 3), dying);
+    EXPECT_EQ(plr->getStats()->getMyPosition(), coords(3, 3));
 }
 
 // bElem review of 2026-09-29: there were two disposal paths with different stash rules. Now one
