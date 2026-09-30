@@ -100,8 +100,6 @@ private:
     static void rebuildStacks(loadContext &ctx, const std::shared_ptr<chamber> &board, cellStacks &stacks);
     /// whether an avatar, an element being disposed or the view's owner is in the chunk
     static bool isPinned(coords chunk);
-    /// the music of global teleporters among the elements
-    static void restartMusic(const std::vector<std::shared_ptr<bElem>> &elements);
 
     static void writeElement(writer &w, const std::shared_ptr<bElem> &e);
     static std::shared_ptr<bElem> readElement(reader &r, loadContext &ctx);

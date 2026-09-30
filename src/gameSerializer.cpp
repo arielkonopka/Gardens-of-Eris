@@ -1025,11 +1025,6 @@ bool gameSerializer::loadGame(const std::string &fileName)
         std::istringstream rng(rngState);
         rng >> goe::rng::saved();
 
-        std::vector<std::shared_ptr<bElem>> all;
-        all.reserve(ctx.byId.size());
-        for (auto &[id, e] : ctx.byId)
-            all.push_back(e);
-        restartMusic(all);
         if (player::activePlayer && player::activePlayer->getBoard())
             soundManager::getInstance().setListenerChamber(player::activePlayer->getBoard()->getInstanceId());
     } catch (const std::exception &ex) {
@@ -1169,27 +1164,6 @@ void gameSerializer::rebuildStacks(loadContext &ctx, const std::shared_ptr<chamb
             below = e;
         }
         board->chunkAt(chamber::chunkOf(cell)).cells[chamber::cellIndex(cell)] = below;
-    }
-}
-
-void gameSerializer::restartMusic(const std::vector<std::shared_ptr<bElem>> &elements)
-{
-    // music of the global teleporters is attached to them when they are placed; redo that
-    auto &sound = soundManager::getInstance();
-    for (const auto &e : elements) {
-        auto t = std::dynamic_pointer_cast<teleport>(e);
-        if (!t || t->getAttrs()->getSubtype() != 0 || !t->getBoard())
-            continue;
-        const auto id = t->getStats()->getInstanceId();
-        const bool had = sound.hasSong(id);
-        if (!had) {
-            auto pos = t->getStats()->getMyPosition();
-            sound.setupSong(id, 1, {(float) pos.x, (float) pos.y, 0.0f}, t->getBoard()->getInstanceId(), true);
-        }
-        if (t->getStats()->getMyDirection() == dir::direction::LEFT)
-            sound.pauseSong(id);
-        else if (had)
-            sound.resumeSong(id); // paused when its chunk went to disk
     }
 }
 
@@ -1372,7 +1346,6 @@ bool gameSerializer::swapInChunk(const std::shared_ptr<chamber> &world, coords k
     world->liveElems.insert(world->liveElems.end(), live.begin(), live.end());
     teleport::unpark(loaded);
     goldenApple::unpark(loaded);
-    restartMusic(loaded);
     world->swapped.erase(chamber::keyOf(key));
     std::error_code ec;
     std::filesystem::remove(file, ec);

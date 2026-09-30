@@ -82,8 +82,7 @@ bool teleport::interact(std::shared_ptr<bElem> who)
 
 /***
  * @brief Find a partner for a teleport
- * this method will select a random counterpart for our teleport, and set it up. the counterpart will become a receiver, in case it is a teleporter of subtype==0,
- * the music started by it will be stopped.
+ * this method will select a random counterpart for our teleport, and set it up. the counterpart will become a receiver.
  * @return whether a partner was found
  */
 bool teleport::createConnectionsWithinSubtype()
@@ -148,7 +147,6 @@ bool teleport::createConnectionsWithinSubtype()
     tmpt->getStats()->setFacing(dir::direction::LEFT);
     tmpt->getStats()->setMyDirection(tmpt->getStats()->getFacing());
     this->linkWith(tmpt);
-    soundManager::getInstance().pauseSong(tmpt->getStats()->getInstanceId());
     this->candidates.clear();
     return true;
 }
@@ -313,21 +311,3 @@ oState teleport::disposeElement()
     return bElem::disposeElement();
 }
 
-bool teleport::stepOnElement(std::shared_ptr<bElem> step)
-{
-    if (!bElem::stepOnElement(step))
-        return false;
-    if (this->getAttrs()->getSubtype() == 0) {
-        soundManager::getInstance().setupSong(this->getStats()->getInstanceId(),
-                                               1,
-                                               {(float) this->getStats()->getMyPosition().x,
-                                                (float) this->getStats()->getMyPosition().y,
-                                                0.0f},
-                                               this->getBoard()->getInstanceId(),
-                                               true);
-
-        if (this->getStats()->getMyDirection() == dir::direction::LEFT)
-            soundManager::getInstance().pauseSong(this->getStats()->getInstanceId());
-    }
-    return true;
-}
