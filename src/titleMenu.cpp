@@ -22,7 +22,9 @@
 
 #include "titleMenu.h"
 #include <allegro5/keycodes.h>
+#include <algorithm>
 #include <exception>
+#include <filesystem>
 #include <string>
 
 namespace {
@@ -52,6 +54,21 @@ void popUtf8(std::string &s)
         s.pop_back();
     if (!s.empty())
         s.pop_back();
+}
+
+/// the stories files next to this one (stories.json, stories.pl.json, ...), sorted by name
+std::vector<std::string> storiesFilesBeside(const std::string &file)
+{
+    std::vector<std::string> found;
+    std::error_code ec;
+    const auto folder = std::filesystem::path(file).parent_path();
+    for (const auto &e : std::filesystem::directory_iterator(folder.empty() ? "." : folder, ec)) {
+        const auto name = e.path().filename().string();
+        if (e.is_regular_file(ec) && name.starts_with("stories") && name.ends_with(".json"))
+            found.push_back((folder / name).generic_string());
+    }
+    std::sort(found.begin(), found.end());
+    return found;
 }
 } // namespace
 
@@ -91,6 +108,25 @@ titleMenu::titleMenu(gameSettings &edited, std::string file)
         "Sound effects volume",
         [this] { return this->settings.getEffectsVolume(); },
         [this](int v) { this->settings.setEffectsVolume(v); }));
+    // Enter, Left and Right all switch it
+    this->options.push_back({"Story scroller",
+                             [this] { return std::string(this->settings.getStoriesShown() ? "On" : "Off"); },
+                             {},
+                             [this](int) { this->settings.setStoriesShown(!this->settings.getStoriesShown()); }});
+    // a typed path, or Left/Right step through the other stories files in the same folder
+    this->options.push_back({"Stories file",
+                             [this] { return this->settings.getStoriesFile(); },
+                             [this](const std::string &v) { return this->settings.setStoriesFile(v); },
+                             [this](int by) {
+                                 const auto chosen = this->settings.getStoriesFile();
+                                 const auto files = storiesFilesBeside(chosen);
+                                 if (files.empty())
+                                     return;
+                                 auto at = std::find(files.begin(), files.end(), std::filesystem::path(chosen).generic_string());
+                                 const int n = (int) files.size();
+                                 const int i = at == files.end() ? (by > 0 ? -1 : 0) : (int) (at - files.begin());
+                                 this->settings.setStoriesFile(files[(std::size_t) ((i + by + n) % n)]);
+                             }});
     this->options.push_back({"Controls", [] { return std::string(); }, {}, {}});
 }
 
@@ -160,11 +196,15 @@ void titleMenu::configKey(int keycode)
         this->selected = 1;
     } else if (enter) {
         this->message.clear();
+        const auto &opt = this->options[this->selected];
         if (this->selected == this->controlsLine()) {
             this->current = screen::CONTROLS;
             this->selected = 0;
+        } else if (!opt.apply && opt.adjust) { // a switch: Enter flips it
+            opt.adjust(1);
+            this->saveSettings();
         } else {
-            this->editBuffer = this->options[this->selected].value();
+            this->editBuffer = opt.value();
             this->current = screen::EDITING;
         }
     }
