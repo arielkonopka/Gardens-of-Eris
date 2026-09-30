@@ -25,10 +25,9 @@
 
 void inventory::changeOwner(std::shared_ptr<bElem> who)
 {
-    auto chg = [](std::shared_ptr<bElem> &w, std::vector<std::shared_ptr<bElem>> &vec) {
-        for (auto w : vec) {
-            w->getStats()->setCollector(w);
-        }
+    auto chg = [](const std::shared_ptr<bElem> &newOwner, std::vector<std::shared_ptr<bElem>> &vec) {
+        for (const auto &item : vec)
+            item->getStats()->setCollector(newOwner);
     };
     this->owner = who;
     chg(who, this->weapons);

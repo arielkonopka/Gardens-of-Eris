@@ -714,8 +714,9 @@ TEST(ElementTests, BoxedInKikiBecomesInert)
     EXPECT_TRUE(k->getStats()->getMyDirection() == dir::direction::NODIRECTION);
     for (int x = 1; x < 4; x++)
         for (int y = 1; y < 4; y++)
-            if (x != 2 || y != 2)
+            if (x != 2 || y != 2) {
                 EXPECT_EQ(typeAt(mc, x, y), bElemTypes::_floorType);
+            }
 }
 
 TEST(ElementTests, BoubaIsHarmlessScenery)
@@ -768,8 +769,9 @@ TEST(ElementTests, BlockingTheKikiRayClearsItUntilUnblocked)
     auto block = place<brickCluster>(mc, 0, 5, 1);
     run(kikiSpace::kikiWaitTime * 3);
     for (int x = 2; x < 8; x++)
-        if (x != 5)
+        if (x != 5) {
             EXPECT_EQ(typeAt(mc, x, 1), bElemTypes::_floorType);
+        }
     EXPECT_TRUE(mc->getElement(5, 1) == block);
     EXPECT_EQ(typeAt(mc, 8, 1), bElemTypes::_kikiType);
     block->disposeElement();

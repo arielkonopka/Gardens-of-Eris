@@ -90,12 +90,9 @@ bool bElem::dropItem(unsigned long int instanceId)
 */
 bool bElem::stepOnElement(std::shared_ptr<bElem> step)
 {
-    auto elig = [](std::shared_ptr<bElem> step) -> bool {
-        if (!step || !step->getAttrs()->isSteppable() || !step->getBoard()
-            || step->getStats()->isDisposed() || step->getStats()->getMyPosition() == NOCOORDS)
-            return false;
-        else
-            return true;
+    auto elig = [](const std::shared_ptr<bElem>& e) -> bool {
+        return e && e->getAttrs()->isSteppable() && e->getBoard()
+            && !e->getStats()->isDisposed() && e->getStats()->getMyPosition() != NOCOORDS;
     };
     if (this->getStats()->isDisposed() || !elig(step))
         return false;
@@ -186,12 +183,12 @@ std::shared_ptr<bElem> bElem::getElementInDirection(coords di)
 }
 
 
-bool bElem::use(std::shared_ptr<bElem> who)
+bool bElem::use(std::shared_ptr<bElem> /*who*/)
 {
     return false;
 }
 
-bool bElem::interact(std::shared_ptr<bElem> who)
+bool bElem::interact(std::shared_ptr<bElem> /*who*/)
 {
     if (this->getAttrs()->isInteractive()
         && !this->getStats()->isInteracting()) /* penalty for getting into counter overflow */
@@ -300,7 +297,6 @@ bool bElem::isSteppableDirection(dir::direction di) const
  */
 std::shared_ptr<bElem> bElem::removeElement()
 {
-    coords _pos = this->getStats()->getMyPosition();
     std::shared_ptr<chamber> _chmbr = this->getBoard();
     if (this->getStats()->isDisposed())
         return nullptr;
@@ -518,7 +514,7 @@ void bElem::runLiveElements()
  *
  * @note This should be used in stepOn methods.
  */
-bool bElem::stepOnAction(bool step, std::shared_ptr<bElem> who)
+bool bElem::stepOnAction(bool /*step*/, std::shared_ptr<bElem> /*who*/)
 {
     return false;
 }

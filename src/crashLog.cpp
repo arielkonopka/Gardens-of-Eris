@@ -64,8 +64,8 @@ std::atomic<bool> crashing{false};
 class teeBuffer : public std::streambuf
 {
 public:
-    explicit teeBuffer(std::streambuf *original)
-        : original(original)
+    explicit teeBuffer(std::streambuf *wrapped)
+        : original(wrapped)
     {}
 
 protected:

@@ -106,7 +106,7 @@ public:
     /// the chunks in memory now (made, or read back from disk)
     const std::vector<coords> &chunkKeys() const { return this->keys; }
     /// whether the chunk was written to disk and dropped from memory (see gameSerializer::swapOutChunk)
-    bool isSwapped(coords chunk) const { return this->swapped.contains(keyOf(chunk)); }
+    bool isSwapped(coords at) const { return this->swapped.contains(keyOf(at)); }
     /// how many chunks are on disk
     std::size_t swappedCount() const { return this->swapped.size(); }
     /**

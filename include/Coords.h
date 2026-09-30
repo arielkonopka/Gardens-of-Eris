@@ -144,7 +144,7 @@ namespace myUtility {
         /**
          * @brief temporary operator of comparison with coords
          */
-        bool operator==(const coords &other);
+        bool operator==(const coords &other) const;
 
 
 

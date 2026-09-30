@@ -7,10 +7,7 @@
 #include <gtest/gtest.h>
 #include "testSupport.h"
 
-coords point=(coords)
-{
-    10,10
-};
+const coords point(10, 10);
 /***
  * @brief unit test for testing type of the object, its subtype, and the change in subtype after being hurt.
  * We also test whether the interactive flag changed

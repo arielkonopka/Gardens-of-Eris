@@ -34,21 +34,21 @@ struct _tType
 {
     int tokenType;
     int tokenSubtype;
-    auto operator=(const _tType& it) const
+    bool operator==(const _tType& it) const
     {
         return (this->tokenType==it.tokenType && (this->tokenSubtype==it.tokenSubtype || this->tokenSubtype==-1 || it.tokenSubtype==-1)); // -1 fits all subtypes, both ways
     };
-    auto operator<(const _tType& it) const
+    bool operator<(const _tType& it) const
     {
         if(it.tokenType==this->tokenType)
             return this->tokenSubtype<it.tokenSubtype;
 
         return this->tokenType<it.tokenType;
     };
-    auto operator>(const _tType& it) const
+    bool operator>(const _tType& it) const
     {
         if(it.tokenType==this->tokenType)
-            return this->tokenSubtype<it.tokenSubtype;
+            return this->tokenSubtype>it.tokenSubtype;
 
         return this->tokenType>it.tokenType;
     };

@@ -87,7 +87,7 @@ void inputManager::stop()
 {
     this->exit = true;
 }
-void inputManager::hapticKick(float strength)
+void inputManager::hapticKick(float /*strength*/)
 {
     /*
         if (!this->haptic)

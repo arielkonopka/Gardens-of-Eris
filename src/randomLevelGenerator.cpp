@@ -43,18 +43,18 @@ randomLevelGenerator::randomLevelGenerator(int w, int h, goe::rng::seed levelSee
     this->mychamber = chamber::makeNewChamber(myUtility::Coords(w, h));
 }
 
-randomLevelGenerator::randomLevelGenerator(std::shared_ptr<chamber> world, coords chunk)
-    : eng(goe::rng::placeSeed(chunk.x, chunk.y))
+randomLevelGenerator::randomLevelGenerator(std::shared_ptr<chamber> world, coords at)
+    : eng(goe::rng::placeSeed(at.x, at.y))
     , mychamber(std::move(world))
-    , chunk(chunk)
+    , chunk(at)
 {
-    this->lo = chamber::chunkOrigin(chunk);
+    this->lo = chamber::chunkOrigin(at);
     this->hi = this->lo + (chamber::chunkSize - 1);
-    this->eastGaps = wallGaps(coords(chunk.x + 1, chunk.y), true);
-    this->southGaps = wallGaps(coords(chunk.x, chunk.y + 1), false);
+    this->eastGaps = wallGaps(coords(at.x + 1, at.y), true);
+    this->southGaps = wallGaps(coords(at.x, at.y + 1), false);
     // the floor's looks come from this chunk's seed too
     goe::rng::generationScope scope(this->eng);
-    this->mychamber->addChunk(chunk);
+    this->mychamber->addChunk(at);
 }
 
 std::vector<int> randomLevelGenerator::wallGaps(coords chunk, bool west)
@@ -445,14 +445,14 @@ bool randomLevelGenerator::placeEverything(int holes, int depth, bool start, boo
 #ifdef _VerbousMode_
         std::cout << "Surface total: " << this->headNode->surface << "\n";
 #endif
-        int demandedSurface = 0;
+        int roomSurface = 0;
         int elementsToMake = ((this->eng() % 5) + 1) * 5;
         elementCollection.clear();
         for (int cnt = 0; cnt < elementsToMake; cnt++)
             elementCollection.push_back(goe::rng::pick(this->eng, elementsToChooseFrom));
         for (const auto &element : elementCollection)
-            demandedSurface += element.surface * element.number;
-        auto area = this->pickArea(demandedSurface, tolerance);
+            roomSurface += element.surface * element.number;
+        auto area = this->pickArea(roomSurface, tolerance);
         if (!area)
             break;
         this->placeElementCollection(*area, elementCollection);

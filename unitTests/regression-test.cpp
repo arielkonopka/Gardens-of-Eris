@@ -282,6 +282,24 @@ TEST(RegressionTests, DisposingACollectedElementIsSafe)
 }
 
 
+// Warnings cleanup of 2026-09-30: inventory::changeOwner made every item its own collector,
+// because the loop variable shadowed the new owner.
+TEST(RegressionTests, ChangingAnInventoryOwnerHandsOverItsItems)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(6, 6), plr);
+    auto inv = plr->getAttrs()->getInventory();
+    auto gun = elementFactory::generateAnElement<plainGun>(mc, 0);
+    gun->stepOnElement(mc->getElement(1, 0));
+    ASSERT_TRUE(plr->collect(gun));
+
+    auto heir = elementFactory::generateAnElement<player>(mc, 0);
+    inv->changeOwner(heir);
+    EXPECT_EQ(gun->getStats()->getCollector().lock(), heir);
+    inv->changeOwner(plr);
+}
+
+
 // Crash report of 2026-09-29: a player made while a level was built in the background could
 // become the active player once the last avatar died, dropping the game into a half-built level.
 TEST(RegressionTests, PlayersBuiltInTheBackgroundNeverTakeOverTheGame)

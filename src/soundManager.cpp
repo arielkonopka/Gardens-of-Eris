@@ -181,7 +181,7 @@ void soundManager::enableSound()
 
 std::shared_ptr<stNode> soundManager::registerSound(int chamberId,
                                                     coords3d position,
-                                                    coords3d velocity,
+                                                    coords3d /*velocity*/,
                                                     int elId,
                                                     int typeId,
                                                     int subtypeId,
@@ -286,11 +286,6 @@ int soundManager::findNearestMusic()
             }
     }
     return no;
-}
-
-void soundManager::registerMusic(int musicNo, int chamberId, coords3d position)
-{
-    /*TBC! we should have all the registered samples for music in the config structure*/
 }
 
 /*
@@ -432,7 +427,7 @@ bool soundManager::stopSnd(std::shared_ptr<stNode> n)
     return this->isSndPlaying(n->source);
 };
 
-const bool soundManager::isSongConfigured(int songNo, coords3d position, int chamberId)
+bool soundManager::isSongConfigured(int songNo, coords3d position, int chamberId)
 {
     for (unsigned int c = 0; c < this->registeredMusic.size(); c++) {
         if (this->registeredMusic[c].songNo == songNo && this->registeredMusic[c].isRegistered

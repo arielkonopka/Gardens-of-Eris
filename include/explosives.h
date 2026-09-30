@@ -41,10 +41,10 @@ public:
  * and processes the explosion effect on the game board using
  * a cellular automata-based approach to determine the affected areas.
  *
- * @param radius The explosion radius.
+ * @param blastRadius The explosion radius.
  * @return True if the explosion logic was executed successfully, false otherwise.
  */
-    bool explode(float radius);
+    bool explode(float blastRadius);
     virtual float getViewRadius() const;
     virtual bool additionalProvisioning(int subtype);
 private:
@@ -57,10 +57,10 @@ private:
  *
  * @param center The center point of the explosion.
  * @param point The current point being evaluated during traversal.
- * @param radius The maximum allowable radius for the explosion's effect.
+ * @param reach The maximum allowable radius for the explosion's effect.
  * @return True if traversal is successful, false if conditions for stopping are met.
  */
-    bool traverser(myUtility::Coords center, myUtility::Coords point, float radius,int plen,dir::direction noGo);
+    bool traverser(myUtility::Coords center, myUtility::Coords point, float reach,int plen,dir::direction noGo);
     std::shared_ptr<chamber> brd;
     float radius=1.5;
 

@@ -108,7 +108,6 @@ public:
     ~soundManager();
     static soundManager& getInstance();
     std::shared_ptr<stNode> registerSound(int chamberId,coords3d position,coords3d velocity,int elId,int typeId,int subtypeId,std::string eventType,std::string event);
-    void registerMusic(int musicNo,int chamberId, coords3d position);
     void setListenerPosition(coords3d pos);
     void setListenerChamber(int chamberId);
     void enableSound();
@@ -121,7 +120,7 @@ public:
     void playSong(int songNo);
     void moveSong(int songNo, coords3d newPosition,int newChamber);
 private:
-   const bool isSongConfigured(int songNo,coords3d position,int chamberId);
+    bool isSongConfigured(int songNo,coords3d position,int chamberId);
     /// pauseSong for a caller that already holds snd_mutex
     void pauseSongLocked(unsigned int bElemInstanceId);
    int findNearestMusic();

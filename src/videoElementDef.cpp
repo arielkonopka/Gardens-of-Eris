@@ -27,16 +27,4 @@ videoElementDef::videoElementDef(std::shared_ptr<ALLEGRO_BITMAP> sprites_)
     this->sprites = std::move(sprites_);
 }
 
-void videoElementDef::initializeDriver() {}
-
-videoElementDef::~videoElementDef()
-{
-    //dtor
-}
-
-videoElementDef::videoElementDef(const videoElementDef &other)
-{
-    //copy ctor
-}
-
 } // namespace videoElement

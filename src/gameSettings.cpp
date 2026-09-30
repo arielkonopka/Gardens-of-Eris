@@ -155,18 +155,18 @@ bool gameSettings::save(const std::string &file) const
     w.Int(this->getEffectsVolume());
     w.Key("controls");
     w.StartObject();
-    const auto controls = this->getControls();
+    const auto bound = this->getControls();
     for (int c = 0; c < goe::controls::actionCount; c++) {
         auto a = (goe::controls::action) c;
         w.Key(goe::controls::bindings::id(a).c_str());
         w.StartObject();
         w.Key("keys");
         w.StartArray();
-        for (int k : controls.of(a).keys)
+        for (int k : bound.of(a).keys)
             w.Int(k);
         w.EndArray();
         w.Key("pad");
-        w.Int(controls.of(a).padButton);
+        w.Int(bound.of(a).padButton);
         w.EndObject();
     }
     w.EndObject();

@@ -131,7 +131,7 @@ bool kiki::stepOnElement(std::shared_ptr<bElem> step)
                                          dir::direction::UP,
                                          dir::direction::LEFT,
                                          dir::direction::RIGHT};
-        for (auto it = 0; it < dirs.size();) {
+        for (std::size_t it = 0; it < dirs.size();) {
             if (this->getBoard()->calculateLine(mycoords, dirs[it]) < 5) {
                 dirs.erase(dirs.begin() + it);
                 continue;

@@ -37,9 +37,9 @@ void setVector(const char *name, const std::array<float, 4> &v)
 
 } // namespace
 
-void fogLayer::setup(int scenePxWidth, int scenePxHeight, coords tileSize, const std::string &patternFile)
+void fogLayer::setup(int scenePxWidth, int scenePxHeight, coords tile, const std::string &patternFile)
 {
-    this->tileSize = tileSize;
+    this->tileSize = tile;
     this->shaderId = videoManager::getInstance().setupShader("data/shaders/vertexShader.glvs",
                                                              "data/shaders/pixelShader.glps");
     this->mask.emplace(scenePxWidth, scenePxHeight);

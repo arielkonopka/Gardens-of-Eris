@@ -22,7 +22,7 @@
 
 #include "simpleBomb.h"
 
-bool simpleBomb::hurt(int points)
+bool simpleBomb::hurt(int /*points*/)
 {
     return this->destroy();
 }
