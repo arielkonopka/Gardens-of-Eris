@@ -166,7 +166,8 @@ void teleport::linkWith(const std::shared_ptr<teleport> &t)
 
 std::shared_ptr<teleport> teleport::partner()
 {
-    if (auto t = this->theOtherEnd.lock())
+    // a copy left behind when its chunk went to disk may still be held somewhere; it is not the other end
+    if (auto t = this->theOtherEnd.lock(); t && !t->getStats()->isDisposed())
         return t;
     auto board = this->getBoard();
     if (this->otherEndId == 0 || !board)
