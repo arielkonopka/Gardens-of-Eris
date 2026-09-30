@@ -75,6 +75,10 @@ void configManager::configReload()
     this->gConfObj->spriteFile = this->gConfObj->baseDir
                                  + this->skinDefJson["SpriteFile"].GetString();
     this->gConfObj->splashScr = this->skinDefJson["splash screen"].GetString();
+    this->gConfObj->fogBitmap = this->skinDefJson.HasMember("FogBitmap")
+                                    ? this->gConfObj->baseDir
+                                          + this->skinDefJson["FogBitmap"].GetString()
+                                    : std::string();
     this->gConfObj->tileWidth = this->skinDefJson["width"].GetInt();
     this->gConfObj->tileHeight = this->skinDefJson["height"].GetInt();
     this->gConfObj->spacing = this->skinDefJson["spacing"].GetInt();
