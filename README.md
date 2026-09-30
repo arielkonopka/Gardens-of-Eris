@@ -246,7 +246,7 @@ When an apple is unbeschädigt, it acts as a collectible token that must be gath
 ## Teleporters
 Every new teleporter is added to a registry (a vector of weak pointers, guarded by a mutex, so it is). A chunk being built publishes its teleporters only once it is complete, so a teleporter never links into a half-built chunk. As soon as our player interacts with a teleporter, we're checkin' if it has an attached link to its corresponding teleporter mate. We take a gander at the type of the teleporter, and we follow these steps:
 
- * If there's no established link, we pick a random teleporter from our list and remove the interacted one along with the chosen one. We set the chosen one to be "LEFT" (it will become a receiver) and pause its song. We could unpause them, but I don't think it makes sense.. 
+ * If there's no established link, we pick a random teleporter from our list and remove the interacted one along with the chosen one. We set the chosen one to be "LEFT" (it will become a receiver). Teleporters play no music: there are no separate chambers any more, only the endless maze.
  * We then set the chosen teleporter as the other end of the connection. 
  * Once the other end is all set up, we inspect the teleporter for any steppable fields. 
  * If we find one, 
@@ -383,6 +383,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Doors stand in the holes they close: at the edges of chunks a door used to stand one cell in front of the hole. Global teleporters no longer play music, since there are no separate chambers any more.
 * The build is warning-free with `-Wall -Wextra -Wpedantic -Wshadow`, which are now on by default. Fixed along the way: handing an inventory to a new owner made every item its own collector.
 * Explosions are heard again: landmines, bombs and bazooka missiles went off in silence because the blast never asked for its sound.
 * Puppet masters speak: each kind of controller says "controller enabled" in its own language, in a S.A.M.-like robot voice (made with espeak-ng by `tools/voices/make-controller-voices.sh`).
