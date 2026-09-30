@@ -153,7 +153,7 @@ private:
     unsigned int cnt=0;
     std::atomic<bool> active=false;
     int regSndPos=0;
-    int currentMusic=1;
+    int currentMusic=-1; ///< index into registeredMusic, -1 while none plays
     std::jthread myThread;
 };
 
