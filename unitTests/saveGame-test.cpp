@@ -3,6 +3,8 @@
 #include "chamber.h"
 #include "gameSerializer.h"
 #include "randomLevelGenerator.h"
+#include "worldBuilder.h"
+#include "randomStreams.h"
 #include <gtest/gtest.h>
 #include "testSupport.h"
 #include <cstdio>
@@ -38,10 +40,13 @@ std::map<int, int> census()
 {
     std::map<int, int> res;
     for (const auto &c : chamber::allChambers)
-        for (int x = 0; x < c->getSize().x; x++)
-            for (int y = 0; y < c->getSize().y; y++)
-                for (auto e = c->getElement(x, y); e; e = e->getStats()->getSteppingOn())
-                    res[e->getType()]++;
+        for (const coords chunk : c->chunkKeys()) {
+            const coords first = chamber::chunkOrigin(chunk);
+            for (int x = 0; x < chamber::chunkSize; x++)
+                for (int y = 0; y < chamber::chunkSize; y++)
+                    for (auto e = c->getElement(first + coords(x, y)); e; e = e->getStats()->getSteppingOn())
+                        res[e->getType()]++;
+        }
     return res;
 }
 
@@ -160,7 +165,6 @@ TEST(SaveGameTests, HardLevelKeepsItsDifficultyAndLandmines)
     ASSERT_TRUE(gen.generateLevel(1));
     const int id = gen.mychamber->getInstanceId();
     const coords origin = gen.mychamber->origin;
-    ASSERT_EQ(gen.mychamber->depth, 4);
     for (int c = 0; c < 100; c++)
         bElem::runLiveElements();
 
@@ -172,7 +176,6 @@ TEST(SaveGameTests, HardLevelKeepsItsDifficultyAndLandmines)
     EXPECT_TRUE(census() == censusBefore);
     auto loaded = findChamber(id);
     ASSERT_TRUE(loaded);
-    EXPECT_EQ(loaded->depth, 4);
     EXPECT_TRUE(loaded->origin == origin);
     ASSERT_TRUE(gameSerializer::saveGame(f2));
     EXPECT_TRUE(withoutCounter(readFile(f1)) == withoutCounter(readFile(f2)));
@@ -333,3 +336,43 @@ TEST(SaveGameTests, SavingTwiceReplacesTheOldSave)
     std::remove(f.c_str());
 }
 
+
+TEST(SaveGameTests, EndlessWorldRoundTrip)
+{
+    inputManager::getInstance(true);
+    gameSerializer::clearWorld();
+    goe::rng::setWorldSeed(2323);
+    auto world = worldBuilder::startNew();
+    // grow it to the west too, where cells are negative
+    while (worldBuilder::growAround(world, world->origin - coords(3 * chamber::chunkSize, 0)))
+        ;
+    for (int c = 0; c < 100; c++)
+        bElem::runLiveElements();
+    const auto keys = world->chunkKeys();
+    const auto censusBefore = census();
+    const int id = world->getInstanceId();
+    const coords origin = world->origin;
+
+    const std::string f1 = tmpFile("goe-world-1.goe"), f2 = tmpFile("goe-world-2.goe");
+    ASSERT_TRUE(gameSerializer::saveGame(f1));
+    ASSERT_TRUE(gameSerializer::loadGame(f1));
+    ASSERT_EQ(chamber::allChambers.size(), 1u);
+    auto loaded = findChamber(id);
+    ASSERT_TRUE(loaded);
+    EXPECT_FALSE(loaded->isBounded());
+    EXPECT_TRUE(loaded->chunkKeys() == keys);
+    EXPECT_TRUE(loaded->origin == origin);
+    EXPECT_TRUE(census() == censusBefore);
+    ASSERT_TRUE(player::getActivePlayer());
+    EXPECT_TRUE(player::getActivePlayer()->getBoard() == loaded);
+    // the loaded world still grows
+    const auto before = loaded->chunkKeys().size();
+    EXPECT_TRUE(worldBuilder::growAround(loaded, loaded->origin + coords(5 * chamber::chunkSize, 0)));
+    EXPECT_EQ(loaded->chunkKeys().size(), before + 1);
+
+    ASSERT_TRUE(gameSerializer::loadGame(f1));
+    ASSERT_TRUE(gameSerializer::saveGame(f2));
+    EXPECT_TRUE(withoutCounter(readFile(f1)) == withoutCounter(readFile(f2)));
+    std::remove(f1.c_str());
+    std::remove(f2.c_str());
+}

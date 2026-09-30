@@ -164,14 +164,9 @@ TEST(RegressionTests, DroneWithAPuppetMasterMoves)
     EXPECT_TRUE(moved);
 }
 
-// PR #264: validate() returned (-65535, 65535) for cells off the board, which never matched NOCOORDS.
+// PR #264: cells off the board were not recognised as missing. There are no cells off a board.
 TEST(RegressionTests, OffBoardCoordinatesAreNOCOORDS)
 {
-    EXPECT_TRUE(coords(5, 5).validate(coords(3, 3)) == NOCOORDS);
-    EXPECT_TRUE(coords(-1, 0).validate(coords(3, 3)) == NOCOORDS);
-    EXPECT_TRUE(coords(0, -1).validate(coords(3, 3)) == NOCOORDS);
-    EXPECT_TRUE(coords(2, 2).validate(coords(3, 3)) == coords(2, 2));
-
     inputManager::getInstance(true);
     auto mc = chamber::makeNewChamber(coords(3, 3));
     auto corner = mc->getElement(0, 0);

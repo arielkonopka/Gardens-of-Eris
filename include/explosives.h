@@ -62,7 +62,6 @@ private:
  */
     bool traverser(myUtility::Coords center, myUtility::Coords point, float radius,int plen,dir::direction noGo);
     std::shared_ptr<chamber> brd;
-    int bx,by;
     float radius=1.5;
 
 };

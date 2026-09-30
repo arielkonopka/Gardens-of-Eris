@@ -36,8 +36,9 @@ class chamber;
 /**
  * @brief Saves the whole game world to a binary file and restores it.
  *
- * What is saved: every chamber registered in chamber::allChambers (its cells, fog of war, name,
- * colour, live elements), every element reachable from them (stacked, collected, held weapons...),
+ * What is saved: every board registered in chamber::allChambers (normally just the endless world:
+ * each chunk built so far with its cells and fog of war, and the board's name, colour and live
+ * elements), every element reachable from them (stacked, collected, held weapons...),
  * the global clock, the instance id counter, the random generator state, and the static registries
  * (active and visited players, golden apples, teleporters, view points, elements being disposed).
  *
@@ -45,14 +46,13 @@ class chamber;
  * Plain floor and wall tiles, which are the vast majority of cells, are written in a compact
  * form (type, subtype, facing, direction) and get fresh instance ids on load.
  *
- * Both calls must run on the game thread, between ticks.
- * They take chamber::worldMutex themselves, so they wait for a level that is still being
- * generated in the background. The in-game keys use try_lock instead, so the game never stalls.
+ * Both calls must run on the game thread, between ticks. They take chamber::worldMutex themselves.
+ * A save from before version 4 (separate bounded levels) still loads.
  */
 class gameSerializer
 {
 public:
-    static constexpr uint32_t formatVersion = 3;
+    static constexpr uint32_t formatVersion = 4;
     static bool saveGame(const std::string &fileName);
     static bool loadGame(const std::string &fileName);
     /// empties the world (chambers, players, apples, teleporters...), for a load or a new game

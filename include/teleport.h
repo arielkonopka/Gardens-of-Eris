@@ -49,9 +49,8 @@ public:
     /**
      * @brief Defers teleporter registration on the current thread until the batch ends.
      *
-     * Levels are generated on a background thread while the game runs. Teleporters created
-     * inside a batch are kept aside and added to the shared registry all at once when the batch
-     * is destroyed, so pairing (especially global, cross-level pairing) only sees complete levels.
+     * Teleporters created inside a batch are kept aside and added to the shared registry all at
+     * once when the batch is destroyed, so pairing only ever sees complete chunks (or levels).
      */
     class registrationBatch
     {

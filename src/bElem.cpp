@@ -179,12 +179,10 @@ std::shared_ptr<bElem> bElem::getElementInDirection(coords di)
     coords pos = this->getStats()->getMyPosition();
     if (pos == NOCOORDS)
         return nullptr;
-    coords crd = (pos + di).validate(board->getSize());
-    if (crd == NOCOORDS)
-        return nullptr;
     if (di == coords(0, 0))
         return shared_from_this();
-    return board->getElement(crd);
+    // nothing where the board has no cell
+    return board->getElement(pos + di);
 }
 
 
@@ -282,10 +280,7 @@ bool bElem::isSteppableDirection(coords di) const
     coords pos = this->getStats()->getMyPosition();
     if (pos == NOCOORDS)
         return false;
-    coords crd = (pos + di).validate(board->getSize());
-    if (crd == NOCOORDS)
-        return false;
-    auto e = board->getElement(crd);
+    const auto &e = board->topAt(pos + di);
     return e && e->getAttrs()->isSteppable();
 }
 bool bElem::isSteppableDirection(dir::direction di) const
@@ -488,12 +483,18 @@ void bElem::runLiveElements()
     // Run every live element, compacting out the disposed ones as we go. Elements registered
     // during this loop are appended to the vector and run in this tick too, as before.
     auto &live = cchmbr->liveElems;
+    const coords here = ap->getStats()->getMyPosition();
     size_t kept = 0;
     for (size_t r = 0; r < live.size(); r++) {
         // moved out and back in: only push_back touches the list while elements run
         std::shared_ptr<bElem> e = std::move(live[r]);
         if (e->getStats()->isDisposed() || e->getType() == bElemTypes::_player)
             continue;
+        // far away on the endless world, elements wait for the player to come back
+        if (!cchmbr->isActiveNear(e->getStats()->getMyPosition(), here)) {
+            live[kept++] = std::move(e);
+            continue;
+        }
         e->mechanics();
         if (e->getAttrs()->canCollect())
             e->getAttrs()->getInventory()->runLives();

@@ -102,6 +102,15 @@ seed nextLevelSeed()
     return out[0];
 }
 
+seed placeSeed(int x, int y, seed salt)
+{
+    // two's complement bits, so negative chunk numbers give their own seeds too
+    std::seed_seq seq{worldSeed(), (seed) x, (seed) y, salt};
+    std::array<seed, 1> out{};
+    seq.generate(out.begin(), out.end());
+    return out[0];
+}
+
 generationScope::generationScope(engine &levelEngine)
 {
     scopes.emplace_back(levelEngine);

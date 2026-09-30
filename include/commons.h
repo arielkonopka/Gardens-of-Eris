@@ -26,6 +26,7 @@
 #define ALLEGRO_UNSTABLE 1
 #define ALLEGRO_SRC
 
+#include <limits>
 #include <cstddef>
 #include <memory>
 #include <vector>
@@ -192,13 +193,6 @@ namespace GoEConstants {
 typedef struct coords
 {
     int x=-1,y=-1;
-    inline coords validate (coords bottom)
-    {
-        if (x<0 || x>=bottom.x || y<0 || y>=bottom.y)
-            return coords(-65535,-65535); // NOCOORDS
-        return coords(x,y);
-    }
-
     inline bool operator==(coords a) const
     {
         if (a.x==x && a.y==y)
@@ -213,11 +207,11 @@ typedef struct coords
             return true;
         return false;
     }
-    inline coords operator+(coords a)
+    inline coords operator+(coords a) const
     {
         return coords(x+a.x,y+a.y);
     }
-    inline coords operator-(coords a)
+    inline coords operator-(coords a) const
     {
         return coords(x-a.x, y-a.y);
     }
@@ -229,44 +223,50 @@ typedef struct coords
 
     float distance(const coords& a) const
     {
-        coords n=coords(x,y)-a;
-
-        return ::sqrt(static_cast<float>(n.x * n.x + n.y * n.y));
+        // in floating point, so cells far apart (or NOCOORDS) never overflow
+        const double dx = (double) x - a.x, dy = (double) y - a.y;
+        return (float) ::sqrt(dx * dx + dy * dy);
     }
-    inline coords operator%(coords a)
+    inline coords operator%(coords a) const
     {
         return coords(x%a.x,y%a.y);
 
     }
-    inline coords operator*(coords a)
+    inline coords operator*(coords a) const
     {
         return coords(x*a.x,y*a.y);
     }
-    inline coords operator*(int a)
+    inline coords operator*(int a) const
     {
         return coords(x*a,y*a);
     }
 
-    inline coords operator+(int a)
+    inline coords operator+(int a) const
     {
         return coords(x+a,y+a);
     }
-    inline coords operator-(int a)
+    inline coords operator-(int a) const
     {
         return coords(x-a,y-a);
     }
-    inline coords operator/(int a)
+    inline coords operator/(int a) const
     {
         return coords(int(x/a),int(y/a));
     }
 
-    inline coords operator/(coords a)
+    inline coords operator/(coords a) const
     {
         return coords(int(floor(x/a.x)),int(floor(y/a.y)));
     }
 
 } coords;
-constexpr coords NOCOORDS = coords(-65535, -65535);
+/// a / b rounded down (b > 0), so negative cells of the endless world are divided like the others
+constexpr int floorDiv(int a, int b) { return a >= 0 ? a / b : -((-a + b - 1) / b); }
+/// what is left after floorDiv: always from 0 to b - 1
+constexpr int floorMod(int a, int b) { return a - floorDiv(a, b) * b; }
+/// "on no cell": far outside any board, even the endless world, and safe to add small offsets to
+constexpr int noCoordinate = std::numeric_limits<int>::min() / 2;
+constexpr coords NOCOORDS = coords(noCoordinate, noCoordinate);
 
 /**
  * @class enum dir::direction

@@ -197,8 +197,8 @@ Coords Coords::operator-(int scalar) const
  */
 double Coords::distance(const Coords &other) const
 {
-    int dx = x - other.getX();
-    int dy = y - other.getY();
+    const double dx = (double) x - other.getX();
+    const double dy = (double) y - other.getY();
     return std::sqrt(dx * dx + dy * dy);
 }
 

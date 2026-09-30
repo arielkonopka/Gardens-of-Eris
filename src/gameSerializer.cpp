@@ -158,6 +158,13 @@ struct gameSerializer::loadContext
     std::vector<std::function<void()>> fixups;
     uint32_t version = formatVersion;
 
+    /// a saved cell position; saves before version 4 wrote "no position" as -65535 or -6502
+    coords position(int x, int y) const
+    {
+        if (version < 4 && x == y && (x == -65535 || x == -6502))
+            return NOCOORDS;
+        return coords(x, y);
+    }
     std::shared_ptr<bElem> get(uint64_t id)
     {
         if (id == 0)
@@ -390,8 +397,6 @@ void gameSerializer::writeElement(writer &w, const std::shared_ptr<bElem> &e)
     }
     if (auto x = std::dynamic_pointer_cast<explosives>(e)) {
         w.i32(x->brd ? x->brd->getInstanceId() : -1);
-        w.i32(x->bx);
-        w.i32(x->by);
         w.f32(x->radius);
     }
     if (auto sb = std::dynamic_pointer_cast<simpleBomb>(e))
@@ -518,7 +523,7 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
     s.animPhase = rs.animPhase;
     s.ammo = rs.ammo;
     s.killed = rs.killed;
-    s.myPosition = rs.noPos ? myUtility::NOCOORDS : myUtility::Coords(rs.x, rs.y);
+    s.myPosition = rs.noPos ? myUtility::NOCOORDS : myUtility::Coords(ctx.position(rs.x, rs.y));
     s.myDirection = (dir::direction) rs.dir;
     s.facing = (dir::direction) rs.facing;
     s.steppingOn = nullptr;
@@ -606,8 +611,11 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
             auto it = ctx.chambersById.find(brdId);
             x->brd = (it != ctx.chambersById.end()) ? it->second : nullptr;
         });
-        x->bx = r.i32();
-        x->by = r.i32();
+        // before version 4 the board's size was kept here too
+        if (ctx.version < 4) {
+            r.i32();
+            r.i32();
+        }
         x->radius = r.f32();
     }
     if (auto sb = std::dynamic_pointer_cast<simpleBomb>(e))
@@ -627,7 +635,7 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
     if (auto c = std::dynamic_pointer_cast<securityCamera>(e)) {
         c->guardiansSpawned = r.u8();
         int x = r.i32();
-        c->alertAt = coords(x, r.i32());
+        c->alertAt = ctx.position(x, r.i32());
         c->alertNumber = r.u32();
     }
     if (auto g = std::dynamic_pointer_cast<puppetMasterGuardian>(e)) {
@@ -636,9 +644,9 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
         });
         ctx.later(r.u64(), [g](std::shared_ptr<bElem> gun) { g->gun = gun; });
         int x = r.i32();
-        g->home = coords(x, r.i32());
+        g->home = ctx.position(x, r.i32());
         x = r.i32();
-        g->target = coords(x, r.i32());
+        g->target = ctx.position(x, r.i32());
         g->handledAlert = r.u32();
     }
 
@@ -712,49 +720,44 @@ bool gameSerializer::saveGame(const std::string &fileName)
                 vps.push_back(sp);
         w.refs(vps);
 
-        // chambers
-        std::vector<std::shared_ptr<chamber>> chambers;
-        for (const auto &c : chamber::allChambers)
-            if (c->ready)
-                chambers.push_back(c);
-        w.u32((uint32_t) chambers.size());
-        for (const auto &c : chambers) {
+        // boards, chunk by chunk
+        w.u32((uint32_t) chamber::allChambers.size());
+        for (const auto &c : chamber::allChambers) {
             w.i32(c->instanceid);
             w.str(c->chamberName);
             w.i32(c->chamberColour.r);
             w.i32(c->chamberColour.g);
             w.i32(c->chamberColour.b);
             w.i32(c->chamberColour.a);
+            w.u8(c->bounded);
             w.i32(c->width);
             w.i32(c->height);
             w.u32(c->applesCount);
-            w.i32(c->depth);
             w.i32(c->origin.x);
             w.i32(c->origin.y);
-            // fog of war, run-length encoded
-            {
+            w.u32((uint32_t) c->chunks.size());
+            std::vector<std::shared_ptr<bElem>> stack;
+            for (std::size_t k = 0; k < c->chunks.size(); k++) {
+                const auto &ch = *c->chunks[k];
+                w.i32(c->keys[k].x);
+                w.i32(c->keys[k].y);
+                // fog of war, run-length encoded
                 std::vector<std::pair<int32_t, uint32_t>> runs;
-                for (int x = 0; x < c->width; x++)
-                    for (int y = 0; y < c->height; y++) {
-                        int v = c->visitedElements[c->cellIndex(x, y)];
-                        if (!runs.empty() && runs.back().first == v)
-                            runs.back().second++;
-                        else
-                            runs.emplace_back(v, 1);
-                    }
+                for (int v : ch.visited) {
+                    if (!runs.empty() && runs.back().first == v)
+                        runs.back().second++;
+                    else
+                        runs.emplace_back(v, 1);
+                }
                 w.u32((uint32_t) runs.size());
                 for (const auto &[v, n] : runs) {
                     w.i32(v);
                     w.u32(n);
                 }
-            }
-            // cells: each stack, bottom first
-            std::vector<std::shared_ptr<bElem>> stack;
-            for (int x = 0; x < c->width; x++)
-                for (int y = 0; y < c->height; y++) {
+                // cells: each stack, bottom first; a cell a bounded board does not have is empty
+                for (const auto &top : ch.cells) {
                     stack.clear();
-                    for (auto e = c->cells[c->cellIndex(x, y)]; e && stack.size() < 255;
-                         e = e->getStats()->getSteppingOn())
+                    for (auto e = top; e && stack.size() < 255; e = e->getStats()->getSteppingOn())
                         stack.push_back(e);
                     w.u8((uint8_t) stack.size());
                     for (auto it = stack.rbegin(); it != stack.rend(); ++it) {
@@ -773,6 +776,7 @@ bool gameSerializer::saveGame(const std::string &fileName)
                         }
                     }
                 }
+            }
             w.refs(c->liveElems);
             w.u32((uint32_t) c->toDeregister.size());
             for (auto id : c->toDeregister)
@@ -856,9 +860,37 @@ bool gameSerializer::loadGame(const std::string &fileName)
         struct chamberData
         {
             std::shared_ptr<chamber> c;
-            std::vector<std::vector<cellEntry>> cells; // x-major, one stack per cell
+            std::vector<std::pair<coords, std::vector<cellEntry>>> stacks; // every cell that has one
             std::vector<uint64_t> liveIds;
             std::vector<uint64_t> toDeregister;
+        };
+        auto readStack = [&r, &ctx]() {
+            std::vector<cellEntry> stack;
+            for (uint8_t k = r.u8(); k > 0; k--) {
+                cellEntry ce;
+                if (r.u8() == cellCompact) {
+                    int type = r.i32();
+                    int subtype = r.i32();
+                    ce.compact = createByType(type, subtype);
+                    ce.compact->getAttrs()->setSubtype(subtype);
+                    ce.compact->getStats()->myDirection = (dir::direction) r.u8();
+                    ce.compact->getStats()->facing = (dir::direction) r.u8();
+                } else {
+                    ce.id = r.u64();
+                }
+                stack.push_back(ce);
+            }
+            return stack;
+        };
+        // fog of war, run-length encoded, for cells in the given order
+        auto readFog = [&r](const std::shared_ptr<chamber> &c, const std::vector<coords> &order) {
+            std::size_t pos = 0;
+            for (uint32_t runs = r.u32(); runs > 0; runs--) {
+                int v = r.i32();
+                uint32_t cnt = r.u32();
+                for (uint32_t k = 0; k < cnt && pos < order.size(); k++, pos++)
+                    c->chunkAt(chamber::chunkOf(order[pos])).visited[chamber::cellIndex(order[pos])] = v;
+            }
         };
         std::vector<chamberData> chambers;
         for (uint32_t n = r.u32(); n > 0; n--) {
@@ -870,48 +902,53 @@ bool gameSerializer::loadGame(const std::string &fileName)
             col.g = r.i32();
             col.b = r.i32();
             col.a = r.i32();
+            const bool bounded = version < 4 || r.u8();
             int w = r.i32(), h = r.i32();
-            if (w <= 0 || h <= 0 || (int64_t) w * h > (1 << 26))
+            if (bounded && (w <= 0 || h <= 0 || (int64_t) w * h > (1 << 26)))
                 throw std::runtime_error("save file has an invalid chamber size");
             auto c = std::make_shared<chamber>(w, h);
+            if (!bounded)
+                c->makeEndless();
             c->instanceid = id;
             c->chamberName = name;
             c->chamberColour = col;
             c->applesCount = r.u32();
-            // version 1 saves have no difficulty data: their chambers load as depth 0, no origin
+            // version 1 saves have no difficulty data, and before version 4 a chamber had a depth
             if (version >= 2) {
-                c->depth = r.i32();
-                c->origin.x = r.i32();
-                c->origin.y = r.i32();
+                if (version < 4)
+                    r.i32();
+                int x = r.i32();
+                c->origin = ctx.position(x, r.i32());
             }
-            c->visitedElements.assign((size_t) w * h, 0);
-            {
-                int64_t pos = 0, total = (int64_t) w * h;
-                for (uint32_t runs = r.u32(); runs > 0; runs--) {
-                    int v = r.i32();
-                    uint32_t cnt = r.u32();
-                    for (uint32_t k = 0; k < cnt && pos < total; k++, pos++)
-                        c->visitedElements[pos] = v;
-                }
-            }
-            c->cells.resize((size_t) w * h);
-            cd.cells.resize((size_t) w * h);
-            for (int x = 0; x < w; x++) {
-                for (int y = 0; y < h; y++) {
-                    auto &stack = cd.cells[(size_t) x * h + y];
-                    for (uint8_t k = r.u8(); k > 0; k--) {
-                        cellEntry ce;
-                        if (r.u8() == cellCompact) {
-                            int type = r.i32();
-                            int subtype = r.i32();
-                            ce.compact = createByType(type, subtype);
-                            ce.compact->getAttrs()->setSubtype(subtype);
-                            ce.compact->getStats()->myDirection = (dir::direction) r.u8();
-                            ce.compact->getStats()->facing = (dir::direction) r.u8();
-                        } else {
-                            ce.id = r.u64();
-                        }
-                        stack.push_back(ce);
+            if (version < 4) {
+                // one grid of w x h cells, column by column
+                std::vector<coords> order;
+                order.reserve((std::size_t) w * h);
+                for (int x = 0; x < w; x++)
+                    for (int y = 0; y < h; y++)
+                        order.emplace_back(x, y);
+                readFog(c, order);
+                for (const coords &cell : order)
+                    cd.stacks.emplace_back(cell, readStack());
+            } else {
+                const uint32_t chunkCount = r.u32();
+                if (chunkCount > (1u << 20))
+                    throw std::runtime_error("save file has too many chunks");
+                std::vector<coords> order(chamber::chunkCells);
+                for (uint32_t k = 0; k < chunkCount; k++) {
+                    int cx = r.i32();
+                    const coords key(cx, r.i32());
+                    const coords first = chamber::chunkOrigin(key);
+                    // the chunk's cells in its own order (chamber::cellIndex)
+                    for (int x = 0; x < chamber::chunkSize; x++)
+                        for (int y = 0; y < chamber::chunkSize; y++)
+                            order[chamber::cellIndex(coords(x, y))] = first + coords(x, y);
+                    c->chunkAt(key);
+                    readFog(c, order);
+                    for (const coords &cell : order) {
+                        auto stack = readStack();
+                        if (!stack.empty())
+                            cd.stacks.emplace_back(cell, std::move(stack));
                     }
                 }
             }
@@ -931,16 +968,15 @@ bool gameSerializer::loadGame(const std::string &fileName)
         // rebuild stacks: bottom element first, the top one sits in the grid
         for (auto &cd : chambers) {
             auto &c = cd.c;
-            for (int x = 0; x < c->width; x++)
-                for (int y = 0; y < c->height; y++) {
+            for (auto &[cell, stack] : cd.stacks) {
                     std::shared_ptr<bElem> below;
-                    for (auto &ce : cd.cells[(size_t) x * c->height + y]) {
+                    for (auto &ce : stack) {
                         auto e = ce.compact ? ce.compact : ctx.get(ce.id);
                         if (!e)
                             continue;
                         auto &s = *e->getStats();
                         e->attachedBoard = c;
-                        s.myPosition = myUtility::Coords(x, y);
+                        s.myPosition = myUtility::Coords(cell);
                         s.steppingOn = below;
                         s.standingOn.reset();
                         s.parent = false;
@@ -950,8 +986,8 @@ bool gameSerializer::loadGame(const std::string &fileName)
                         }
                         below = e;
                     }
-                    c->cells[c->cellIndex(x, y)] = below;
-                }
+                    c->chunkAt(chamber::chunkOf(cell)).cells[chamber::cellIndex(cell)] = below;
+            }
             c->liveElems = ctx.getAll(cd.liveIds);
             c->toDeregister.assign(cd.toDeregister.begin(), cd.toDeregister.end());
         }

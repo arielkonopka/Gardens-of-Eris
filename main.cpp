@@ -22,14 +22,11 @@
  * SOFTWARE.
  */
 
-#include <atomic>
 #include <exception>
 #include <memory>
-#include <stop_token>
-#include <thread>
 #include "elements.h"
 #include "presenter.h"
-#include "randomLevelGenerator.h"
+#include "worldBuilder.h"
 #include "soundManager.h"
 #include "gameSerializer.h"
 #include "gameSettings.h"
@@ -42,34 +39,12 @@
 #include "randomStreams.h"
 
 namespace {
-/// builds the remaining levels in the background, until they are all built or the game ends
-void createChambers(std::stop_token stop)
-{
-    // players in these levels wait to be activated; they never take over the game
-    player::backgroundScope background;
-    for (int cnt=5; cnt>0; cnt--)
-    {
-        for(int c2=0; c2<5; c2++)
-        {
-            // let a pending save or load go first
-            while(chamber::worldLockWanted && !stop.stop_requested())
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            if(stop.stop_requested())
-                return;
-            // the world (chamber::allChambers) keeps the chamber after the generator is gone
-            randomLevelGenerator(500,500).generateLevel(cnt);
-        }
-    }
-}
-
 /// what the player reads when a game ends
-void showEnd(titleScreen &title, presenter::gameEnd end, int score, bool &windowOpen)
+void showEnd(titleScreen &title, int score, bool &windowOpen)
 {
+    // the maze never ends, so a game only ends when the last avatar is lost
     const std::vector<std::string> lines = {"Score: " + std::to_string(score)};
-    if (end == presenter::gameEnd::ALL_APPLES)
-        windowOpen = title.showMessage("All the golden apples are yours", lines);
-    else
-        windowOpen = title.showMessage("Game over", lines);
+    windowOpen = title.showMessage("Game over", lines);
 }
 } // namespace
 
@@ -91,8 +66,6 @@ int main( int argc, char * argv[] )
     // a crash leaves a report in the save folder, for players without a debugger
     goe::crashLog::install(gameSettings::getInstance().getSaveDirectory());
 
-    // builds the remaining levels; declared first so it is joined last, after the window is gone
-    std::jthread levelBuilder;
     {
         auto myPresenter=std::make_unique<presenter::presenter>();
         myPresenter->initializeDisplay();
@@ -127,27 +100,21 @@ int main( int argc, char * argv[] )
                 title.showBusy("Building the maze...");
                 if (game > 0) {
                     // a new game: the old world goes, and "--seed" builds the same world again
-                    levelBuilder = {};
                     gameSerializer::clearWorld();
                     goe::rng::setWorldSeed(seedGiven ? firstSeed : goe::rng::freshSeed());
                 }
                 std::cout << "World seed: " << goe::rng::worldSeed() << "\n";
                 goe::crashLog::setDetail("World seed", std::to_string(goe::rng::worldSeed()));
-                randomLevelGenerator(500,500).generateLevel(5);
-                /// generate the remaining leveldata in the background, so the user would not be greeted with a delay.
-                levelBuilder=std::jthread(&createChambers);
+                // the start of the endless maze; the rest is built around the player while they play
+                worldBuilder::startNew();
             }
             soundManager::getInstance().enableSound();
             const auto end = myPresenter->presentEverything();
-            // stop building levels now; the builder finishes the one it is on while the end screen shows
-            levelBuilder.request_stop();
             if (end == presenter::gameEnd::QUIT)
                 break;
-            showEnd(title, end, myPresenter->getLastScore(), windowOpen);
+            showEnd(title, myPresenter->getLastScore(), windowOpen);
         }
-        levelBuilder.request_stop();
     }
-    // close the window before waiting for the level builder, so leaving never looks like a freeze
     videoManager::getInstance().shutdown();
     return 0;
 }

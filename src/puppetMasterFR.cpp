@@ -146,10 +146,9 @@ dir::direction puppetMasterFR::pathTowards(std::shared_ptr<bElem> body, coords g
     if (!board)
         return dir::direction::NODIRECTION;
     coords start = body->getStats()->getMyPosition();
-    // search a box around the circle, clipped to the board
-    int x0 = std::max(0, centre.x - radius), y0 = std::max(0, centre.y - radius);
-    int x1 = std::min(board->getSize().x - 1, centre.x + radius);
-    int y1 = std::min(board->getSize().y - 1, centre.y + radius);
+    // search a box around the circle; cells the board does not have are never steppable
+    int x0 = centre.x - radius, y0 = centre.y - radius;
+    int x1 = centre.x + radius, y1 = centre.y + radius;
     if (start.x < x0 || start.x > x1 || start.y < y0 || start.y > y1)
         return dir::direction::NODIRECTION;
     int w = x1 - x0 + 1, h = y1 - y0 + 1;

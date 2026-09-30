@@ -40,8 +40,8 @@ public:
 
     ~player() final=default;
     /// While one is alive on a thread, players made on that thread never become the active player.
-    /// The thread building levels in the background holds one, so a half-built level can never
-    /// take over the game when the last avatar dies.
+    /// Every chunk but the start one is built holding one, so a spare avatar found in a new chunk
+    /// never takes over the game by itself.
     struct backgroundScope
     {
         backgroundScope() { player::inBackground = true; }
