@@ -317,14 +317,14 @@ namespace dir
  * This variable signifies the type of command, where -1 indicates no command,
  * 0 is for movement, 1 is for shooting, 2 is for interaction, 3 is for gun cycling,
  * 4 is for using an item in inventory, 5 is for cycling through inventory,
- * 6 is for dying and 7 is for exiting.
+ * 6 is for dying, 7 is for exiting and 10 is for saving and going back to the title menu.
  *
  * @var direction dir
  * This variable specifies the direction for the action. It uses the direction enumeration.
  */
 typedef struct controlItem
 {
-    int type; /*-1 - nocommand, 0-move,1-shoot,2-interact,3-gun cycle,4-use element in inventory,5 - cycle inventory,6 - die, 7 - exit */
+    int type; /*-1 - nocommand, 0-move,1-shoot,2-interact,3-gun cycle,4-use element in inventory,5 - cycle inventory,6 - die, 7 - exit, 10 - save and exit to the menu */
     dir::direction dir;
 
 } controlItem;

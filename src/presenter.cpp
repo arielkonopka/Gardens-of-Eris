@@ -569,6 +569,7 @@ gameEnd presenter::presentEverything()
 
     this->fin = false;
     this->lastScore = 0;
+    inputManager::getInstance().takeExitRequest(); // a press from the title screen does not count
     al_flush_event_queue(this->evQueue.get()); // ticks queued while the title screen was up
     al_start_timer(this->alTimer.get());
     while (!this->fin) {
@@ -580,6 +581,15 @@ gameEnd presenter::presentEverything()
         if (event.type == ALLEGRO_EVENT_TIMER) {
             std::lock_guard<std::mutex> guard(this->presenter_mutex);
             this->handleSaveKeys();
+            if (inputManager::getInstance().takeExitRequest() && player::getActivePlayer()) {
+                // between ticks, so the save holds one consistent moment of the world
+                const std::string saveFile = gameSettings::getInstance().getSaveFile();
+                const bool saved = gameSerializer::saveGame(saveFile);
+                std::cout << (saved ? "Game saved to " : "Saving failed: ") << saveFile << "\n";
+                result = saved ? gameEnd::SAVED : gameEnd::SAVE_FAILED;
+                this->fin = true;
+                break;
+            }
             currentPlayer = player::getActivePlayer();
             if (currentPlayer.get() != nullptr) {
                 this->_cp_attachedBoard = currentPlayer->getBoard();
@@ -588,6 +598,7 @@ gameEnd presenter::presentEverything()
                 const coords at = currentPlayer->getStats()->getMyPosition();
                 if (!worldBuilder::growAround(currentPlayer->getBoard(), at))
                     worldBuilder::shrinkAround(currentPlayer->getBoard(), at);
+                soundManager::getInstance().followDifficulty(difficulty::of(currentPlayer));
             }
             bElem::runLiveElements();
             if (player::getActivePlayer().get() != nullptr)

@@ -50,6 +50,7 @@ titleScreen::titleScreen(titleMenu &shown)
 titleMenu::action titleScreen::run()
 {
     al_flush_event_queue(this->queue.get()); // keys pressed while a game was running
+    this->menu.refresh();                     // a game may have been saved meanwhile
     al_start_timer(this->timer.get());
     this->draw();
     ALLEGRO_EVENT ev;

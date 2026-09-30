@@ -2,6 +2,7 @@
 #include "commons.h"
 #include "chamber.h"
 #include "randomLevelGenerator.h"
+#include "difficultyMusic.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -194,4 +195,27 @@ TEST(DifficultyTests, HoundComesForACampingPlayerAndGivesUpWhenTheyLeave)
     for (int c = 0; c < 200; c++)
         bElem::runLiveElements();
     EXPECT_TRUE(hound->getStats()->isDisposed() || hound->getStats()->isDying());
+}
+
+TEST(DifficultyTests, MusicFollowsTheDifficultyWithAHoldAndACrossfade)
+{
+    using namespace std::chrono_literals;
+    EXPECT_EQ(difficulty::songFor(0, 9), 0);
+    EXPECT_EQ(difficulty::songFor(4, 9), 4);
+    EXPECT_EQ(difficulty::songFor(23, 9), 8); // the last song plays on
+    EXPECT_EQ(difficulty::songFor(3, 0), -1);
+
+    goe::music::byDifficulty music;
+    const auto t0 = goe::music::byDifficulty::clock::now();
+    EXPECT_EQ(music.choose(0, 9, t0), 0); // the first song starts at once, fading in
+    EXPECT_FLOAT_EQ(music.mix(t0), 0.0f);
+    EXPECT_NEAR(music.mix(t0 + 2500ms), 0.5f, 0.01f);
+    EXPECT_FLOAT_EQ(music.mix(t0 + 5s), 1.0f);
+    // D goes up, but the song has not played long enough yet
+    EXPECT_EQ(music.choose(1, 9, t0 + 10s), 0);
+    EXPECT_EQ(music.choose(1, 9, t0 + 23s), 1);
+    EXPECT_FLOAT_EQ(music.mix(t0 + 23s), 0.0f);
+    // walking back over the step does not flip it straight back
+    EXPECT_EQ(music.choose(0, 9, t0 + 30s), 1);
+    EXPECT_EQ(music.choose(0, 9, t0 + 46s), 0);
 }

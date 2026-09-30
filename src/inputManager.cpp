@@ -61,9 +61,17 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT *ev)
         break;
     }
     // the Config menu may have changed the layout since the last event
+    const bool wasExit = this->lastItem.type == 10;
     this->lastItem = gameSettings::getInstance().getControls().translate(this->held);
+    if (this->lastItem.type == 10 && !wasExit)
+        this->exitRequest = true;
     return this->lastItem;
 }
+bool inputManager::takeExitRequest()
+{
+    return this->exitRequest.exchange(false);
+}
+
 controlItem inputManager::getCtrlItem()
 {
     return this->lastItem;

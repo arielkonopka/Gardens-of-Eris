@@ -46,7 +46,8 @@ const std::array<actionInfo, actionCount> &infos()
         {"nextGun", "Next kind of gun", {{ALLEGRO_KEY_Z}, 2}},
         {"use", "Use the item", {{ALLEGRO_KEY_SPACE}, 4}},
         {"drop", "Drop the item", {{ALLEGRO_KEY_R}, 8}},
-        {"giveUp", "Give up this avatar", {{ALLEGRO_KEY_ESCAPE}, 9}},
+        {"giveUp", "Give up this avatar", {{ALLEGRO_KEY_BACKSPACE}, 9}},
+        {"saveAndExit", "Save and exit to the menu", {{ALLEGRO_KEY_ESCAPE, ALLEGRO_KEY_F10}, 7}},
     }};
     return all;
 }
@@ -130,6 +131,8 @@ controlItem bindings::translate(const inputState &in) const
         type = 8;
     if (this->held(in, action::drop))
         type = 9;
+    if (this->held(in, action::saveAndExit))
+        type = 10; // wins over everything, so leaving never costs an avatar
     return controlItem(type, d);
 }
 
