@@ -16,6 +16,11 @@ if(ENABLE_LTO)
   check_ipo_supported(RESULT ipo_ok OUTPUT ipo_msg LANGUAGES CXX)
   if(ipo_ok)
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+    # MinGW's lto-wrapper cannot run link-time jobs in parallel and warns about every serial one,
+    # so link as a single partition there
+    if(MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      add_link_options(-flto-partition=one)
+    endif()
   else()
     message(STATUS "LTO not available: ${ipo_msg}")
   endif()

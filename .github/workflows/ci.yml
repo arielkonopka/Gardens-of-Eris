@@ -17,7 +17,7 @@ jobs:
     name: Linux build and unit tests
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install dependencies
         run: |
@@ -42,7 +42,7 @@ jobs:
           cp -r GoEoOL/data dist/GardensOfEris/
           tar -C dist -czf GardensOfEris-linux-x86_64.tar.gz GardensOfEris
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: GardensOfEris-linux-x86_64
           path: GardensOfEris-linux-x86_64.tar.gz
@@ -54,7 +54,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: msys2/setup-msys2@v2
         with:
@@ -87,7 +87,7 @@ jobs:
           # Ship the MinGW runtime and library DLLs next to the game
           ldd build/GardenOfEris.exe | awk '/\/ucrt64\// {print $3}' | sort -u | xargs -r -I{} cp {} dist/GardensOfEris/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: GardensOfEris-windows-x86_64
           path: dist/GardensOfEris
@@ -101,7 +101,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           path: artifacts
 
@@ -111,7 +111,7 @@ jobs:
           mv GardensOfEris-windows-x86_64 GardensOfEris
           zip -qr ../GardensOfEris-windows-x86_64.zip GardensOfEris
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           name: Gardens of Eris ${{ github.ref_name }}
           generate_release_notes: true

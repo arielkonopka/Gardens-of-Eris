@@ -228,7 +228,6 @@ TYPED_TEST(BasicObjectTests_StackingAndRemovingTest, StackingAndRemovingTest)
                 myUtility::Coords(10, 10)); // we need only a small chamber
         std::shared_ptr<bElem> te;
         std::shared_ptr<bElem> te2;
-        int ccc = 0;
         for (int x = 0; x < 10; x++) {
             std::shared_ptr<bElem> be = elementFactory::generateAnElement<bElem>(mc, 0);
             be->stepOnElement(mc->getElement(3, 3));
@@ -251,12 +250,8 @@ TYPED_TEST(BasicObjectTests_StackingAndRemovingTest, StackingAndRemovingTest)
         while (findDepth(mc->getElement(3, 3)) > 2) {
             if (te == nullptr) {
                 te = mc->getElement(3, 3);
-                ccc = 0;
             }
-            //     std::cout<<"depth="<<ccc<<" "<<findDepth(mc->getElement(3,3))<<" "<<(std::string)((te->getStats()->getSteppingOn()!=nullptr)?"Middle ":"Edge ")<<te->getStats()->getInstanceId()<<"\n";
             if (goe::rng::gameplay()() % 2 == 0) {
-
-                //          std::cout<<"Delete\n";
                 std::shared_ptr<bElem> te3 = te->getStats()->getSteppingOn();
                 te2 = te->removeElement();
 
@@ -267,7 +262,6 @@ TYPED_TEST(BasicObjectTests_StackingAndRemovingTest, StackingAndRemovingTest)
                 }
             } else {
                 te = te->getStats()->getSteppingOn();
-                ccc++;
             }
 
         }
@@ -402,7 +396,6 @@ TYPED_TEST(BasicObjectTests_StackingAndDestroyingTheWholeChamber, StackingAndDes
             stackSize = countTheStack(mc->getElement(point));
         }
         nElement = mc->getElement(point);
-        int elementCnt = 0;
         while (nElement != nullptr) {
             unsigned long int origId = 0;
             unsigned long int nEInstanceId = nElement->getStats()->getInstanceId();
@@ -437,7 +430,6 @@ TYPED_TEST(BasicObjectTests_StackingAndDestroyingTheWholeChamber, StackingAndDes
             stackSize = countTheStack(mc->getElement(point));
 
             nElement = nElement->getStats()->getSteppingOn();
-            elementCnt++;
         }
         EXPECT_TRUE(countTheStack(mc->getElement(point)) >
                     200); // it is because when we create the chamber, there is already one element placed in the chamber

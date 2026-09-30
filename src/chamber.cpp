@@ -315,12 +315,9 @@ std::shared_ptr<bElem> chamber::getLastInLine(myUtility::Coords pos, dir::direct
 {
     auto el = this->getElement(pos);
     std::shared_ptr<bElem> el1 = el;
-    int c = 0;
     el1 = el->getElementInDirection(mydir);
-    while (el1 && el1->getAttrs()->isSteppable()) {
+    while (el1 && el1->getAttrs()->isSteppable())
         el1 = el1->getElementInDirection(mydir);
-        c++;
-    }
     return el1;
 }
 
