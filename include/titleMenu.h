@@ -36,7 +36,8 @@
 class titleMenu
 {
 public:
-    enum class screen { MAIN, CONFIG, EDITING };
+    /// CONTROLS lists the key layout; BINDING waits for the key or pad button of one action
+    enum class screen { MAIN, CONFIG, EDITING, CONTROLS, BINDING };
     enum class action { NONE, START, EXIT };
 
     /// one line of the config screen: a label, its current value, and how to change it
@@ -44,12 +45,19 @@ public:
     {
         std::string label;
         std::function<std::string()> value;
+        /// takes a typed value; empty for a line that opens the controls screen instead
         std::function<bool(const std::string &)> apply;
+        /// Left and Right step the value (-1 or +1); empty when they do nothing
+        std::function<void(int)> adjust;
     };
 
     titleMenu(gameSettings &settings, std::string settingsFile = gameSettings::settingsFile);
 
+    /// menus take repeated key presses (KEY_CHAR); on the BINDING screen send key downs,
+    /// so that Shift, Ctrl and Alt can be bound too
     action keyDown(int keycode);
+    /// a pad button, used on the BINDING screen
+    void padButton(int button);
     /// a typed character (Unicode code point), used while editing a value
     void typed(int codepoint);
 
@@ -57,6 +65,8 @@ public:
     int getSelected() const;
     /// the lines of the current screen, in order; the selected one is getSelected()
     std::vector<std::string> getLines() const;
+    /// the name of the current screen ("Config", "Controls"); empty on the main menu
+    std::string getTitle() const;
     const std::string &getEditBuffer() const;
     /// feedback after applying a value, empty when there is nothing to say
     const std::string &getMessage() const;
@@ -65,6 +75,13 @@ private:
     void move(int by);
     int lineCount() const;
     void applyEdit();
+    void configKey(int keycode);
+    void controlsKey(int keycode);
+    void bindingKey(int keycode);
+    /// stores the settings and says whether that worked
+    void saveSettings();
+    /// the option that opens the controls screen
+    int controlsLine() const;
 
     gameSettings &settings;
     std::string settingsFile;

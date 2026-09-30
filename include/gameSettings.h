@@ -23,6 +23,8 @@
 #ifndef GAMESETTINGS_H
 #define GAMESETTINGS_H
 
+#include "controlBindings.h"
+#include <atomic>
 #include <mutex>
 #include <string>
 
@@ -46,6 +48,18 @@ public:
     /// the full path of the save file inside the save folder
     std::string getSaveFile() const;
 
+    /// volumes in percent, 0 (silent) to 100 (as loud as the files are); the sound thread reads them
+    static constexpr int volumeStep = 5;
+    int getMusicVolume() const { return this->musicVolume; }
+    int getEffectsVolume() const { return this->effectsVolume; }
+    /// out of range values are clamped
+    void setMusicVolume(int percent);
+    void setEffectsVolume(int percent);
+
+    /// the key and pad layout; the input thread copies it on every event
+    goe::controls::bindings getControls() const;
+    void setControls(const goe::controls::bindings &b);
+
     /// missing or unreadable files leave the defaults in place
     bool load(const std::string &file = settingsFile);
     bool save(const std::string &file = settingsFile) const;
@@ -54,6 +68,9 @@ public:
 private:
     mutable std::mutex m;
     std::string saveDirectory = ".";
+    std::atomic<int> musicVolume = 100;
+    std::atomic<int> effectsVolume = 100;
+    goe::controls::bindings controls;
 };
 
 #endif // GAMESETTINGS_H

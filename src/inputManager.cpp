@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "inputManager.h"
+#include "gameSettings.h"
 std::once_flag inputManager::once;
 
 inputManager::inputManager()
@@ -37,142 +38,30 @@ inputManager::~inputManager()
 }
 controlItem inputManager::translateEvent(ALLEGRO_EVENT *ev)
 {
-    dir::direction dir = dir::direction::NODIRECTION;
-    int type = -1;
-
     switch (ev->type) {
-    case (ALLEGRO_EVENT_JOYSTICK_AXIS):
-
-        this->pressed_keys[ALLEGRO_KEY_DOWN] = false;
-        this->pressed_keys[ALLEGRO_KEY_UP] = false;
-        this->pressed_keys[ALLEGRO_KEY_LEFT] = false;
-        this->pressed_keys[ALLEGRO_KEY_RIGHT] = false;
+    case ALLEGRO_EVENT_JOYSTICK_AXIS:
+        // the stick walks: axis 0 is left and right, axis 1 is up and down
         if (ev->joystick.axis == 0) {
-            if (ev->joystick.pos > this->sesitivity)
-                this->pressed_keys[ALLEGRO_KEY_RIGHT] = true;
-            else if (ev->joystick.pos < -this->sesitivity)
-                this->pressed_keys[ALLEGRO_KEY_LEFT] = true;
+            this->held.stick[2] = ev->joystick.pos < -this->sesitivity;
+            this->held.stick[3] = ev->joystick.pos > this->sesitivity;
         } else if (ev->joystick.axis == 1) {
-            if (ev->joystick.pos < -this->sesitivity)
-                this->pressed_keys[ALLEGRO_KEY_UP] = true;
-            else if (ev->joystick.pos > this->sesitivity)
-                this->pressed_keys[ALLEGRO_KEY_DOWN] = true;
-        }
-
-        break;
-    case (ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN):
-        switch (ev->joystick.button) {
-        case 5:
-
-            this->pressed_keys[ALLEGRO_KEY_RSHIFT] = true;
-            break;
-        case 6:
-            this->pressed_keys[ALLEGRO_KEY_SPACE] = true;
-            break;
-        case 0:
-            this->pressed_keys[ALLEGRO_KEY_LCTRL] = true;
-            break;
-        case 1:
-            this->pressed_keys[ALLEGRO_KEY_ALT] = true;
-            break;
-        case 2:
-            this->pressed_keys[ALLEGRO_KEY_Z] = true;
-            break;
-        case 3:
-            this->pressed_keys[ALLEGRO_KEY_X] = true;
-            break;
-        case 9:
-            this->pressed_keys[ALLEGRO_KEY_ESCAPE] = true;
-            break;
-        case 8:
-            this->pressed_keys[ALLEGRO_KEY_R] = true;
-            break;
-        case 4:
-            this->pressed_keys[ALLEGRO_KEY_SPACE] = true;
-            break;
+            this->held.stick[0] = ev->joystick.pos < -this->sesitivity;
+            this->held.stick[1] = ev->joystick.pos > this->sesitivity;
         }
         break;
-    case (ALLEGRO_EVENT_JOYSTICK_BUTTON_UP):
-        switch (ev->joystick.button) {
-        case 5:
-            this->pressed_keys[ALLEGRO_KEY_RSHIFT] = false;
-            break;
-        case 6:
-            this->pressed_keys[ALLEGRO_KEY_SPACE] = false;
-            break;
-        case 0:
-            this->pressed_keys[ALLEGRO_KEY_LCTRL] = false;
-            break;
-        case 1:
-            this->pressed_keys[ALLEGRO_KEY_ALT] = false;
-            break;
-        case 2:
-            this->pressed_keys[ALLEGRO_KEY_Z] = false;
-            break;
-        case 3:
-            this->pressed_keys[ALLEGRO_KEY_X] = false;
-            break;
-        case 9:
-            this->pressed_keys[ALLEGRO_KEY_ESCAPE] = false;
-            break;
-        case 8:
-            this->pressed_keys[ALLEGRO_KEY_R] = false;
-            break;
-        case 4:
-            this->pressed_keys[ALLEGRO_KEY_SPACE] = false;
-            break;
-        }
-
+    case ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN:
+    case ALLEGRO_EVENT_JOYSTICK_BUTTON_UP:
+        if (ev->joystick.button >= 0 && ev->joystick.button < goe::controls::padButtons)
+            this->held.pad[ev->joystick.button] = ev->type == ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN;
         break;
-
-    case (ALLEGRO_EVENT_KEY_DOWN): {
-        int c = ev->keyboard.keycode;
-        this->pressed_keys[c] = true;
-        break;
-    };
-    case (ALLEGRO_EVENT_KEY_UP): {
-        int c = ev->keyboard.keycode;
-        this->pressed_keys[c] = false;
+    case ALLEGRO_EVENT_KEY_DOWN:
+    case ALLEGRO_EVENT_KEY_UP:
+        this->pressed_keys[ev->keyboard.keycode] = ev->type == ALLEGRO_EVENT_KEY_DOWN;
+        this->held.keys[ev->keyboard.keycode] = this->pressed_keys[ev->keyboard.keycode];
         break;
     }
-    }
-    if (this->pressed_keys[ALLEGRO_KEY_W] || this->pressed_keys[ALLEGRO_KEY_UP]) {
-        type = 0;
-        dir = dir::direction::UP;
-    }
-    if (this->pressed_keys[ALLEGRO_KEY_S] || this->pressed_keys[ALLEGRO_KEY_DOWN]) {
-        type = 0;
-        dir = dir::direction::DOWN;
-    }
-    if (this->pressed_keys[ALLEGRO_KEY_A] || this->pressed_keys[ALLEGRO_KEY_LEFT]) {
-        type = 0;
-        dir = dir::direction::LEFT;
-    }
-    if (this->pressed_keys[ALLEGRO_KEY_D] || this->pressed_keys[ALLEGRO_KEY_RIGHT]) {
-        dir = dir::direction::RIGHT;
-        type = 0;
-    }
-    if ((this->pressed_keys[ALLEGRO_KEY_RSHIFT] || this->pressed_keys[ALLEGRO_KEY_LSHIFT])
-        && type >= 0)
-        type = 1;
-    if ((this->pressed_keys[ALLEGRO_KEY_RCTRL] || this->pressed_keys[ALLEGRO_KEY_LCTRL])
-        && type >= 0)
-        type = 2;
-    if (this->pressed_keys[ALLEGRO_KEY_X])
-        type = 3;
-    if ((this->pressed_keys[ALLEGRO_KEY_ALT] || this->pressed_keys[ALLEGRO_KEY_ALTGR]) && type >= 0)
-        type = 4;
-    if (this->pressed_keys[ALLEGRO_KEY_Z])
-        type = 5;
-    if (this->pressed_keys[ALLEGRO_KEY_ESCAPE])
-        type = 6;
-    if (this->pressed_keys[ALLEGRO_KEY_ESCAPE] && this->pressed_keys[ALLEGRO_KEY_LSHIFT])
-        type = 7;
-    if (this->pressed_keys[ALLEGRO_KEY_SPACE])
-        type = 8;
-    if (this->pressed_keys[ALLEGRO_KEY_R])
-        type = 9;
-    this->lastItem = controlItem(type, dir);
+    // the Config menu may have changed the layout since the last event
+    this->lastItem = gameSettings::getInstance().getControls().translate(this->held);
     return this->lastItem;
 }
 controlItem inputManager::getCtrlItem()

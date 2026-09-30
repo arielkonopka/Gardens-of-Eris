@@ -47,8 +47,7 @@ bool patrollingDrone::interact(std::shared_ptr<bElem> who)
         auto token = std::dynamic_pointer_cast<puppetMasterFR>(
             who->getAttrs()->getInventory()->requestToken(bElemTypes::_puppetMasterType, -1, true));
         if (token) {
-            goe::sound::play(*this, "Boot", "Success");
-            this->attachController(token);
+            this->attachController(token); // the controller announces itself
             this->getStats()->setWaiting(55);
             if (who->getType() == bElemTypes::_player)
                 viewPoint::get_instance().setOwner(shared_from_this());
@@ -66,6 +65,8 @@ void patrollingDrone::attachController(std::shared_ptr<puppetMasterFR> controlle
     controller->getStats()->setCollected(true);
     controller->getStats()->setCollector(shared_from_this());
     controller->onAttach(shared_from_this());
+    // every kind says "controller enabled" in its own language, from where the drone is
+    goe::sound::play(*controller, "Controller", "Enabled");
     // the drone runs its controller from its own mechanics, so the drone must be live
     this->registerLiveElement(shared_from_this());
 }

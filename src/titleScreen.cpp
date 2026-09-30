@@ -30,6 +30,7 @@ titleScreen::titleScreen(titleMenu &menu)
     : menu(menu)
 {
     al_install_keyboard();
+    al_install_joystick(); // pad buttons can be bound in Config
     al_init_font_addon();
     al_init_ttf_addon();
     auto cfg = configManager::getInstance()->getConfig();
@@ -39,6 +40,8 @@ titleScreen::titleScreen(titleMenu &menu)
     this->timer.reset(al_create_timer(1.0 / 30));
     this->queue.reset(al_create_event_queue());
     al_register_event_source(this->queue.get(), al_get_keyboard_event_source());
+    if (auto *pad = al_get_joystick_event_source())
+        al_register_event_source(this->queue.get(), pad);
     al_register_event_source(this->queue.get(), al_get_timer_event_source(this->timer.get()));
     if (auto *display = videoManager::getInstance().getCurrentDisplay())
         al_register_event_source(this->queue.get(), al_get_display_event_source(display));
@@ -51,21 +54,43 @@ titleMenu::action titleScreen::run()
     this->draw();
     ALLEGRO_EVENT ev;
     auto result = titleMenu::action::NONE;
+    int swallowCharOf = -1;
     while (result == titleMenu::action::NONE) {
         al_wait_for_event(this->queue.get(), &ev);
         switch (ev.type) {
         case ALLEGRO_EVENT_DISPLAY_CLOSE:
             result = titleMenu::action::EXIT;
             break;
+        case ALLEGRO_EVENT_KEY_DOWN:
+            // a key being bound is read as it goes down, so Shift, Ctrl and Alt count too;
+            // the KEY_CHAR that follows for the same key must not also move the menu
+            if (this->menu.getScreen() == titleMenu::screen::BINDING) {
+                this->menu.keyDown(ev.keyboard.keycode);
+                swallowCharOf = ev.keyboard.keycode;
+            }
+            break;
         case ALLEGRO_EVENT_KEY_CHAR:
             // KEY_CHAR repeats while a key is held, which is what menus and text fields want
         {
+            if (ev.keyboard.keycode == swallowCharOf) {
+                swallowCharOf = -1;
+                break;
+            }
+            swallowCharOf = -1;
+            if (this->menu.getScreen() == titleMenu::screen::BINDING)
+                break;
             // only text typed inside the editor is text; the key that opens it is not
             bool wasEditing = this->menu.getScreen() == titleMenu::screen::EDITING;
             result = this->menu.keyDown(ev.keyboard.keycode);
             if (wasEditing && this->menu.getScreen() == titleMenu::screen::EDITING)
                 this->menu.typed(ev.keyboard.unichar);
         }
+            break;
+        case ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN:
+            this->menu.padButton(ev.joystick.button);
+            break;
+        case ALLEGRO_EVENT_JOYSTICK_CONFIGURATION:
+            al_reconfigure_joysticks();
             break;
         case ALLEGRO_EVENT_TIMER:
             if (al_is_event_queue_empty(this->queue.get()))
@@ -91,8 +116,11 @@ void titleScreen::draw()
     const ALLEGRO_COLOR note = al_map_rgb(140, 200, 140);
     al_clear_to_color(al_map_rgba(15, 15, 25, 255));
 
+    const auto lines = this->menu.getLines();
+    const float lineH = (float) al_get_font_line_height(this->font.get()) * 1.4f;
     float y = h * 0.05f;
-    if (this->splash) {
+    // the picture is for the main menu; the settings lists need the room
+    if (this->splash && this->menu.getScreen() == titleMenu::screen::MAIN) {
         float sw = (float) al_get_bitmap_width(this->splash.get());
         float sh = (float) al_get_bitmap_height(this->splash.get());
         // keep the picture in the top third of the screen
@@ -104,12 +132,13 @@ void titleScreen::draw()
     y += (float) al_get_font_line_height(this->bigFont.get()) * 1.3f;
 
     if (this->menu.getScreen() != titleMenu::screen::MAIN) {
-        al_draw_text(this->font.get(), normal, w / 2, y, ALLEGRO_ALIGN_CENTER, "Config");
+        al_draw_text(this->font.get(), normal, w / 2, y, ALLEGRO_ALIGN_CENTER, this->menu.getTitle().c_str());
         y += (float) al_get_font_line_height(this->font.get()) * 1.5f;
     }
-    const auto lines = this->menu.getLines();
-    const float lineH = (float) al_get_font_line_height(this->font.get()) * 1.4f;
-    for (int c = 0; c < (int) lines.size(); c++) {
+    // lines that do not fit above the message and the help scroll, keeping the selection in view
+    const int fits = std::max(1, (int) ((h - lineH * 3.5f - y) / lineH));
+    const int first = std::clamp(this->menu.getSelected() - fits / 2, 0, std::max(0, (int) lines.size() - fits));
+    for (int c = first; c < (int) lines.size() && c < first + fits; c++) {
         bool sel = c == this->menu.getSelected();
         std::string text = sel ? "> " + lines[c] + " <" : lines[c];
         al_draw_text(this->font.get(), sel ? chosen : normal, w / 2, y, ALLEGRO_ALIGN_CENTER, text.c_str());
@@ -120,10 +149,22 @@ void titleScreen::draw()
         al_draw_text(this->font.get(), note, w / 2, y, ALLEGRO_ALIGN_CENTER, this->menu.getMessage().c_str());
     }
     const char *help = "Up/Down to choose, Enter to select";
-    if (this->menu.getScreen() == titleMenu::screen::CONFIG)
-        help = "Enter to edit, Esc to go back";
-    else if (this->menu.getScreen() == titleMenu::screen::EDITING)
-        help = "Type the folder, Enter to keep it, Esc to cancel";
+    switch (this->menu.getScreen()) {
+    case titleMenu::screen::CONFIG:
+        help = "Enter to edit, Left/Right to change a volume, Esc to go back";
+        break;
+    case titleMenu::screen::EDITING:
+        help = "Type the value, Enter to keep it, Esc to cancel";
+        break;
+    case titleMenu::screen::CONTROLS:
+        help = "Enter to change a control, Esc to go back";
+        break;
+    case titleMenu::screen::BINDING:
+        help = "Press the new key or pad button; Backspace clears it, Esc cancels";
+        break;
+    default:
+        break;
+    }
     al_draw_text(this->font.get(), al_map_rgb(110, 110, 130), w / 2, h - lineH * 2, ALLEGRO_ALIGN_CENTER, help);
     al_flip_display();
 }

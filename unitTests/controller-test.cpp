@@ -3,7 +3,11 @@
 #include "chamber.h"
 #include <gtest/gtest.h>
 #include "testSupport.h"
+#include "elementSound.h"
+#include "configManager.h"
 #include <cstdlib>
+#include <filesystem>
+#include <set>
 #include <memory>
 #include <vector>
 #include <algorithm>
@@ -193,3 +197,28 @@ TEST(ControllerTests, GuardiansStayOnTheLeash)
     EXPECT_LE(furthest, securityCamera::leash);
 }
 
+
+// Every controller kind says "controller enabled" in its own language when it takes over a drone.
+TEST(ControllerTests, EveryKindAnnouncesItselfInItsOwnVoice)
+{
+    auto cfg = configManager::getInstance()->getConfig();
+    std::set<std::string> files;
+    for (int kind = 0; kind < puppetMasterFR::kindCount; kind++) {
+        const auto &sample = cfg->samples[bElemTypes::_puppetMasterType][kind]["Controller"]["Enabled"];
+        ASSERT_TRUE(sample.configured) << "kind " << kind;
+        EXPECT_TRUE(std::filesystem::exists(sample.fname)) << sample.fname;
+        files.insert(sample.fname);
+    }
+    EXPECT_EQ(files.size(), (size_t) puppetMasterFR::kindCount) << "each kind needs its own language";
+
+    for (int kind = 0; kind < puppetMasterFR::looseKinds; kind++) {
+        std::vector<int> announced;
+        goe::sound::observe([&announced](const bElem &e, const std::string &type, const std::string &event) {
+            if (e.getType() == bElemTypes::_puppetMasterType && type == "Controller" && event == "Enabled")
+                announced.push_back(e.getAttrs()->getSubtype());
+        });
+        auto r = makeRig(kind, 9, 5, 5);
+        goe::sound::observe({});
+        EXPECT_EQ(announced, std::vector<int>{kind});
+    }
+}

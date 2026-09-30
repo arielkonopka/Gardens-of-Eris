@@ -22,6 +22,19 @@
 #include <algorithm>
 #include "soundManager.h"
 #include "soundSpace.h"
+#include "gameSettings.h"
+
+namespace {
+/// the Config menu's volumes, as OpenAL gain factors
+float effectsVolume()
+{
+    return (float) gameSettings::getInstance().getEffectsVolume() / 100.0f;
+}
+float musicVolume()
+{
+    return (float) gameSettings::getInstance().getMusicVolume() / 100.0f;
+}
+} // namespace
 
 soundManager::soundManager()
 {
@@ -125,6 +138,7 @@ void soundManager::checkQueue()
         this->playSong(this->currentMusic);
     }
 
+    const float fx = effectsVolume();
     for (auto n : this->registeredSounds) {
         /* stop sounds from different board */
         if (n->isRegistered && this->isSndPlaying(n->source)
@@ -151,8 +165,10 @@ void soundManager::checkQueue()
             continue;
         }
 
-        if (n->isRegistered)
+        if (n->isRegistered) {
             this->setSoundPosition(n, n->position); // the listener may have moved
+            alSourcef(n->source, AL_GAIN, n->gain * fx); // the volume may have changed
+        }
     }
 }
 void soundManager::enableSound()
@@ -236,7 +252,7 @@ std::shared_ptr<stNode> soundManager::registerSound(int chamberId,
     srcNode->event = event;
     srcNode->gain = this->gc->samples[typeId][subtypeId][eventType][event].gain;
     srcNode->soundSpace = chamberId;
-    alSourcef(srcNode->source, AL_GAIN, srcNode->gain); // OpenAL adds the distance falloff
+    alSourcef(srcNode->source, AL_GAIN, srcNode->gain * effectsVolume()); // OpenAL adds the distance falloff
     this->setSoundPosition(srcNode, position);
     alSourcei(srcNode->source, AL_LOOPING, (srcNode->mode == 0) ? AL_FALSE : AL_TRUE);
     this->sndRegister[elId][typeId][eventType][event].r = true;
@@ -471,7 +487,7 @@ int soundManager::setupSong(
     alSourcei(source, AL_SOURCE_RELATIVE, AL_TRUE);
     alSourcef(source, AL_ROLLOFF_FACTOR, 0.0f);
     this->placeSource(source, position);
-    alSourcef(source, AL_GAIN, std::min(muNd.gain, (float) 1.0));
+    alSourcef(source, AL_GAIN, std::min(muNd.gain, (float) 1.0) * musicVolume());
     const int buffersNum = 3;
     alGenBuffers(buffersNum, &muNd.Abuffers[0]);
     for (int n = 0; n < buffersNum; n++) {
@@ -503,6 +519,7 @@ void soundManager::playSong(int songNo)
     newVol = (this->registeredMusic[songNo].variableVol)
                  ? std::min((float) this->registeredMusic[songNo].gain, newVol)
                  : this->registeredMusic[songNo].gain;
+    newVol *= musicVolume();
     alGetSourcei(this->registeredMusic[songNo].source, AL_BUFFERS_PROCESSED, &buffersProcessed);
     alSourcef(this->registeredMusic[songNo].source, AL_GAIN, newVol);
     this->placeSource(this->registeredMusic[songNo].source, this->registeredMusic[songNo].position);

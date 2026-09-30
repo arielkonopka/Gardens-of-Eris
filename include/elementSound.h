@@ -22,6 +22,7 @@
 
 #ifndef ELEMENTSOUND_H
 #define ELEMENTSOUND_H
+#include <functional>
 #include <string>
 
 class bElem;
@@ -30,6 +31,11 @@ namespace goe::sound {
 /// Plays an element's sound for an event from skins.json. A collected element is heard where its
 /// collector is, one that is not on a board where the element it is stacked with is.
 void play(const bElem &elem, const std::string &eventType, const std::string &event);
+
+/// sees every play() call before it reaches the sound device; for tests, which have no device.
+/// Set it before elements run and clear it with an empty function.
+using observer = std::function<void(const bElem &elem, const std::string &eventType, const std::string &event)>;
+void observe(observer o);
 } // namespace goe::sound
 
 #endif // ELEMENTSOUND_H

@@ -7,6 +7,8 @@
 #include "chamber.h"
 #include <gtest/gtest.h>
 #include "testSupport.h"
+#include "elementSound.h"
+#include "configManager.h"
 #include <chrono>
 #include <cstdlib>
 #include <memory>
@@ -30,6 +32,23 @@ bool contains(const std::vector<std::shared_ptr<bElem>> &v, const std::shared_pt
 {
     return std::find(v.begin(), v.end(), e) != v.end();
 }
+
+/// records every sound an element asks for while it lives
+struct soundLog
+{
+    std::vector<std::pair<int, std::string>> heard; ///< element type, "EventType/Event"
+    soundLog()
+    {
+        goe::sound::observe([this](const bElem &e, const std::string &type, const std::string &event) {
+            heard.emplace_back(e.getType(), type + "/" + event);
+        });
+    }
+    ~soundLog() { goe::sound::observe({}); }
+    bool has(int type, const std::string &what) const
+    {
+        return std::find(heard.begin(), heard.end(), std::make_pair(type, what)) != heard.end();
+    }
+};
 
 int manhattan(coords a, coords b)
 {
@@ -426,4 +445,31 @@ TEST(RegressionTests, DyingCollectorsLeaveTheirInventoryBehind)
     pile->disposeElement();
     EXPECT_NE(mc->getElement(2, 2)->getType(), bElemTypes::_rubishType);
     EXPECT_TRUE(pile->getAttrs()->getInventory()->isEmpty());
+}
+
+// Sounds thread: the live explosives::explode never played its sound (only an old, commented-out
+// version did), so landmines, bombs and missiles all went off in silence.
+TEST(RegressionTests, ExplosionsAreHeard)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(15, 15), plr);
+    ASSERT_TRUE(configManager::getInstance()->getConfig()->samples[bElemTypes::_landmineType][-1]["Explosives"]["Explode"].configured
+                || configManager::getInstance()->getConfig()->samples[bElemTypes::_landmineType][0]["Explosives"]["Explode"].configured);
+    soundLog log;
+    auto mine = elementFactory::generateAnElement<landmine>(mc, 0);
+    mine->stepOnElement(mc->getElement(10, 10));
+    auto victim = elementFactory::generateAnElement<monster>(mc, 0);
+    victim->stepOnElement(mc->getElement(9, 10));
+    victim->stepOnElement(mine);
+    for (int c = 0; c < 100 && !mine->getStats()->isDisposed(); c++)
+        bElem::runLiveElements();
+    ASSERT_TRUE(mine->getStats()->isDisposed());
+    EXPECT_TRUE(log.has(bElemTypes::_landmineType, "Explosives/Explode"));
+
+    auto bomb = elementFactory::generateAnElement<simpleBomb>(mc, 0);
+    bomb->stepOnElement(mc->getElement(4, 4));
+    bomb->destroy();
+    for (int c = 0; c < 100 && !bomb->getStats()->isDisposed(); c++)
+        bElem::runLiveElements();
+    EXPECT_TRUE(log.has(bElemTypes::_simpleBombType, "Explosives/Explode"));
 }
