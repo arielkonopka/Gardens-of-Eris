@@ -32,6 +32,7 @@
 #include <array>
 #include <cstdlib>
 #include <cstdint>
+#include <filesystem>
 #include <unordered_map>
 #include <vector>
 #include <allegro5/allegro5.h>
@@ -102,8 +103,12 @@ public:
     bool hasChunk(coords chunk) const;
     /// makes the chunk if it is missing, and covers it with floor; the endless world only
     void addChunk(coords chunk);
-    /// the chunks made so far, in the order they were made
+    /// the chunks in memory now (made, or read back from disk)
     const std::vector<coords> &chunkKeys() const { return this->keys; }
+    /// whether the chunk was written to disk and dropped from memory (see gameSerializer::swapOutChunk)
+    bool isSwapped(coords chunk) const { return this->swapped.contains(keyOf(chunk)); }
+    /// how many chunks are on disk
+    std::size_t swappedCount() const { return this->swapped.size(); }
     /**
      * While alive, the board has no cells outside lo..hi (both included). A chunk is built inside
      * such a fence, so nothing placed while building it (a kiki's beam, say) reaches into the
@@ -217,6 +222,10 @@ private:
     }
     /// turns a new board into the endless world: no size, every cell may exist
     void makeEndless();
+    /// forgets the chunk's cells; whatever holds on to its elements keeps them
+    void removeChunk(coords chunk);
+    /// the folder this board's swapped chunks are written to; made on first use
+    const std::filesystem::path &swapFolder();
     /// the chunk, made empty (no elements, all in fog) if it is missing
     chunk &chunkAt(coords chunkKey);
     /// covers every cell of the chunk that belongs to this board with floor
@@ -232,6 +241,10 @@ private:
     std::unordered_map<std::uint64_t, std::size_t> chunkByKey;
     mutable std::uint64_t lastKey = 0;
     mutable long lastIndex = -1;
+    /// chunks on disk: key -> file
+    std::unordered_map<std::uint64_t, std::filesystem::path> swapped;
+    /// removed with the board
+    std::filesystem::path swapDir;
     colour chamberColour;
     std::string chamberName;
     void setInstanceId(int id);

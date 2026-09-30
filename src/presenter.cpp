@@ -610,8 +610,10 @@ gameEnd presenter::presentEverything()
             if (currentPlayer.get() != nullptr) {
                 this->_cp_attachedBoard = currentPlayer->getBoard();
                 this->lastScore = currentPlayer->getStats()->getPoints(TOTAL);
-                // the maze grows ahead of the player, one chunk per tick
-                worldBuilder::growAround(currentPlayer->getBoard(), currentPlayer->getStats()->getMyPosition());
+                // the maze grows ahead of the player and far chunks go to disk, one chunk per tick
+                const coords at = currentPlayer->getStats()->getMyPosition();
+                if (!worldBuilder::growAround(currentPlayer->getBoard(), at))
+                    worldBuilder::shrinkAround(currentPlayer->getBoard(), at);
             }
             bElem::runLiveElements();
             if (player::getActivePlayer().get() != nullptr)

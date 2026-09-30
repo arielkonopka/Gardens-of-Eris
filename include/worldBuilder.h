@@ -32,6 +32,10 @@
  * Chunks are built on the game thread, at most one per tick (a chunk takes a few milliseconds),
  * the nearest missing one first. Every chunk within buildRadius of the player exists, so the
  * player always walks into a built maze; beyond that, an unbuilt chunk is solid rock.
+ *
+ * Chunks further than keepRadius from the player go to disk, one per tick, so memory stays
+ * bounded however far the player walks; they come back, as they were left, when the player nears
+ * them again (or a teleporter leads into one). The chunks of every avatar stay in memory.
  */
 namespace worldBuilder {
     /// chunks up to this many chunks from the player are built: the 5 x 5 around them
@@ -40,8 +44,17 @@ namespace worldBuilder {
 
     /// a new game: the world with its start chunk (where the player is) and every chunk around it
     std::shared_ptr<chamber> startNew();
-    /// builds the nearest missing chunk within buildRadius of the cell; false when none is missing
+    /// chunks further than this many chunks from the player go to disk: 7 x 7 stay in memory
+    constexpr int keepRadius = 3;
+    static_assert(keepRadius > buildRadius, "a chunk is not dropped right after it is built");
+
+    /// builds, or reads back from disk, the nearest missing chunk within buildRadius of the cell;
+    /// false when none is missing
     bool growAround(const std::shared_ptr<chamber> &world, coords cell);
+    /// puts the furthest chunk beyond keepRadius of the cell on disk; false when there is none
+    bool shrinkAround(const std::shared_ptr<chamber> &world, coords cell);
+    /// makes sure the cell's chunk is in memory, reading it back from disk if it went there
+    void bringIn(const std::shared_ptr<chamber> &world, coords cell);
 }
 
 #endif // WORLDBUILDER_H

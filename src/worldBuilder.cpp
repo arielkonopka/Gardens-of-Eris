@@ -22,6 +22,8 @@
 #include "worldBuilder.h"
 #include "chamber.h"
 #include "randomLevelGenerator.h"
+#include "gameSerializer.h"
+#include <algorithm>
 #include <cstdlib>
 
 std::shared_ptr<chamber> worldBuilder::startNew()
@@ -47,8 +49,37 @@ bool worldBuilder::growAround(const std::shared_ptr<chamber> &world, coords cell
                 const coords chunk = centre + coords(dx, dy);
                 if (world->hasChunk(chunk))
                     continue;
-                randomLevelGenerator(world, chunk).generateChunk(false);
+                if (!world->isSwapped(chunk) || !gameSerializer::swapInChunk(world, chunk))
+                    randomLevelGenerator(world, chunk).generateChunk(false);
                 return true;
             }
     return false;
+}
+
+bool worldBuilder::shrinkAround(const std::shared_ptr<chamber> &world, coords cell)
+{
+    if (!world || world->isBounded() || cell == NOCOORDS)
+        return false;
+    const coords centre = chamber::chunkOf(cell);
+    std::vector<std::pair<int, coords>> far;
+    for (const coords &chunk : world->chunkKeys()) {
+        const int ring = std::max(std::abs(chunk.x - centre.x), std::abs(chunk.y - centre.y));
+        if (ring > worldBuilder::keepRadius)
+            far.emplace_back(ring, chunk);
+    }
+    // the furthest first; a chunk where an avatar stands is refused, so try the next one
+    std::sort(far.begin(), far.end(), [](const auto &a, const auto &b) { return a.first > b.first; });
+    for (const auto &[ring, chunk] : far)
+        if (gameSerializer::swapOutChunk(world, chunk))
+            return true;
+    return false;
+}
+
+void worldBuilder::bringIn(const std::shared_ptr<chamber> &world, coords cell)
+{
+    if (!world || cell == NOCOORDS)
+        return;
+    const coords chunk = chamber::chunkOf(cell);
+    if (world->isSwapped(chunk))
+        gameSerializer::swapInChunk(world, chunk);
 }

@@ -201,6 +201,8 @@ bool explosives::explode(float radius)
               radius,
               (int) radius + 2,
               dir::direction::UP);
+    // the board is only needed during the blast; holding on to it would keep it alive for good
+    this->brd.reset();
     return true;
 }
 /***

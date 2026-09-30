@@ -20,10 +20,12 @@
  * SOFTWARE.
  */
 #include "teleport.h"
+#include "worldBuilder.h"
 #include "elementSound.h"
 bool teleport::firstReceiverRemoved = false;
 
 std::vector<std::weak_ptr<teleport>> teleport::allTeleporters;
+std::vector<teleport::parkedTeleporter> teleport::parked;
 std::recursive_mutex teleport::registryMutex;
 thread_local bool teleport::deferRegistration = false;
 thread_local std::vector<std::weak_ptr<teleport>> teleport::pendingTeleporters;
@@ -67,11 +69,12 @@ bool teleport::interact(std::shared_ptr<bElem> who)
     bool r;
     if (this->getStats()->getMyDirection() == dir::direction::LEFT || !bElem::interact(who))
         return false;
-    if (this->theOtherEnd.expired())
-        this->createConnectionsWithinSubtype();
+    auto other = this->partner();
+    if (!other && this->createConnectionsWithinSubtype())
+        other = this->partner();
     goe::sound::play(*this, "Teleport", "Teleporting");
-    if (!this->theOtherEnd.expired())
-        r = this->theOtherEnd.lock()->teleportIt(who);
+    if (other)
+        r = other->teleportIt(who);
     else
         r = this->teleportIt(who);
     return r;
@@ -81,7 +84,7 @@ bool teleport::interact(std::shared_ptr<bElem> who)
  * @brief Find a partner for a teleport
  * this method will select a random counterpart for our teleport, and set it up. the counterpart will become a receiver, in case it is a teleporter of subtype==0,
  * the music started by it will be stopped.
- * @return always true;
+ * @return whether a partner was found
  */
 bool teleport::createConnectionsWithinSubtype()
 {
@@ -92,7 +95,7 @@ bool teleport::createConnectionsWithinSubtype()
         teleport::allTeleporters.erase(teleport::allTeleporters.begin());
         teleport::firstReceiverRemoved = true;
     }
-    std::shared_ptr<teleport> tmpt, tmpt2;
+    std::shared_ptr<teleport> tmpt;
     std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport> &wp) {
         if (auto sp = wp.lock()) {
             return sp->getStats()->getInstanceId() == this->getStats()->getInstanceId();
@@ -110,26 +113,121 @@ bool teleport::createConnectionsWithinSubtype()
             }
         }
     }
-    if (!candidates.empty()) {
-        // any matching teleporter can be the other end: local ones pick within their region of
-        // the world, global ones (subtype 0) anywhere in it
-        tmpt = goe::rng::pick(goe::rng::gameplay(), candidates);
-        this->theOtherEnd = tmpt;
-        tmpt2 = std::dynamic_pointer_cast<teleport>(shared_from_this());
-        std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport> &wp) {
-            if (auto sp = wp.lock()) {
-                return sp->getStats()->getInstanceId() == tmpt->getStats()->getInstanceId();
-            }
-            return true;
-        });
-        tmpt->getStats()->setFacing(dir::direction::LEFT);
-        tmpt->getStats()->setMyDirection(tmpt->getStats()->getFacing());
-        tmpt->theOtherEnd = tmpt2;
-        soundManager::getInstance().pauseSong(tmpt->getStats()->getInstanceId());
-        this->candidates.clear();
-        return true;
+    std::vector<parkedTeleporter> parkedCandidates;
+    for (const auto &p : teleport::parked)
+        if (p.subtype == this->getAttrs()->getSubtype())
+            parkedCandidates.push_back(p);
+    const std::size_t total = candidates.size() + parkedCandidates.size();
+    if (total == 0)
+        return false;
+    // any matching teleporter can be the other end: local ones pick within their region of
+    // the world, global ones (subtype 0) anywhere in it, also in chunks that are on disk
+    const std::size_t pick = goe::rng::below(goe::rng::gameplay(), total);
+    if (pick < candidates.size()) {
+        tmpt = candidates[pick];
+    } else {
+        const parkedTeleporter chosen = parkedCandidates[pick - candidates.size()];
+        // reading the chunk back puts its teleporters into the registry again
+        if (auto board = this->getBoard())
+            worldBuilder::bringIn(board, chosen.at);
+        for (const auto &tel : teleport::allTeleporters)
+            if (auto t = tel.lock(); t && t->getStats()->getInstanceId() == chosen.id)
+                tmpt = t;
+        if (!tmpt) {
+            std::erase_if(teleport::parked, [&chosen](const parkedTeleporter &p) { return p.id == chosen.id; });
+            this->candidates.clear();
+            return false;
+        }
     }
-    return false;
+    std::erase_if(teleport::allTeleporters, [&](const std::weak_ptr<teleport> &wp) {
+        if (auto sp = wp.lock()) {
+            return sp->getStats()->getInstanceId() == tmpt->getStats()->getInstanceId();
+        }
+        return true;
+    });
+    tmpt->getStats()->setFacing(dir::direction::LEFT);
+    tmpt->getStats()->setMyDirection(tmpt->getStats()->getFacing());
+    this->linkWith(tmpt);
+    soundManager::getInstance().pauseSong(tmpt->getStats()->getInstanceId());
+    this->candidates.clear();
+    return true;
+}
+
+void teleport::linkWith(const std::shared_ptr<teleport> &t)
+{
+    auto me = std::dynamic_pointer_cast<teleport>(shared_from_this());
+    this->theOtherEnd = t;
+    this->otherEndId = t->getStats()->getInstanceId();
+    this->otherEndAt = t->getStats()->getMyPosition();
+    t->theOtherEnd = me;
+    t->otherEndId = this->getStats()->getInstanceId();
+    t->otherEndAt = this->getStats()->getMyPosition();
+}
+
+std::shared_ptr<teleport> teleport::partner()
+{
+    // a copy left behind when its chunk went to disk may still be held somewhere; it is not the other end
+    if (auto t = this->theOtherEnd.lock(); t && !t->getStats()->isDisposed())
+        return t;
+    auto board = this->getBoard();
+    if (this->otherEndId == 0 || !board)
+        return nullptr;
+    // the other end's chunk went to disk; read it back and find the other end in its cell
+    worldBuilder::bringIn(board, this->otherEndAt);
+    for (auto e = board->getElement(this->otherEndAt); e; e = e->getStats()->getSteppingOn())
+        if (e->getStats()->getInstanceId() == this->otherEndId)
+            if (auto t = std::dynamic_pointer_cast<teleport>(e)) {
+                this->theOtherEnd = t;
+                return t;
+            }
+    // it is gone for good
+    this->otherEndId = 0;
+    this->otherEndAt = NOCOORDS;
+    return nullptr;
+}
+
+void teleport::park(const std::vector<std::shared_ptr<bElem>> &elements)
+{
+    std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
+    for (const auto &e : elements) {
+        auto t = std::dynamic_pointer_cast<teleport>(e);
+        if (!t)
+            continue;
+        // both ends learn where the other is, so the link survives either going to disk
+        if (auto other = t->theOtherEnd.lock()) {
+            t->otherEndId = other->getStats()->getInstanceId();
+            t->otherEndAt = other->getStats()->getMyPosition();
+            other->otherEndId = t->getStats()->getInstanceId();
+            other->otherEndAt = t->getStats()->getMyPosition();
+        }
+        const auto id = t->getStats()->getInstanceId();
+        const auto before = teleport::allTeleporters.size();
+        std::erase_if(teleport::allTeleporters, [id](const std::weak_ptr<teleport> &wp) {
+            auto sp = wp.lock();
+            return !sp || sp->getStats()->getInstanceId() == id;
+        });
+        if (teleport::allTeleporters.size() != before)
+            teleport::parked.push_back({id, t->getAttrs()->getSubtype(), t->getStats()->getMyPosition()});
+    }
+}
+
+void teleport::unpark(const std::vector<std::shared_ptr<bElem>> &elements)
+{
+    std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
+    for (const auto &e : elements) {
+        auto t = std::dynamic_pointer_cast<teleport>(e);
+        if (!t)
+            continue;
+        const auto id = t->getStats()->getInstanceId();
+        if (std::erase_if(teleport::parked, [id](const parkedTeleporter &p) { return p.id == id; }) > 0)
+            teleport::allTeleporters.push_back(t);
+    }
+}
+
+std::size_t teleport::parkedCount()
+{
+    std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
+    return teleport::parked.size();
 }
 
 int teleport::getType() const
