@@ -46,7 +46,7 @@ Once upon a time, the [Goddes](https://en.wikipedia.org/wiki/Eris_(mythology))  
 
 Now, as a [Discordian Pope](https://en.wikipedia.org/wiki/Discordianism), it falls upon you to recover the lost apples scattered throughout various realities.
 
-The Goddess has dispersed your avatars throughout this peculiar world you now find yourself in. The missing apples are hidden here – collect them with great care, for they may explode or break. Return the apples to the Goddess, and she'll reward you handsomely.
+The Goddess has dispersed your avatars throughout this peculiar world you now find yourself in. The missing apples are hidden here – collect them with great care, for they may explode or break. The garden has no end, and neither has the search: the maze keeps growing wherever you go, so there is no winning, only your score.
 
 Every time your avatar perishes, you'll respawn in the first unused and activated avatar on your path. If you haven't activated any avatars, you'll meet your end: the game shows your score and takes you back to the title screen.
 
@@ -56,7 +56,7 @@ The labyrinth is inhabited by an assortment of creatures and contraptions. You'l
 
 ## Playing the game
 
-The game opens with a title screen: **Start**, **Config** and **Exit**. Config sets the folder the game is saved to; it is kept in `settings.json` next to the game. Starting a game builds the first maze right away, and the other levels are built in the background while you play.
+The game opens with a title screen: **Start**, **Config** and **Exit**. Config sets the folder the game is saved to; it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
 
 | Key | What it does |
 |---|---|
@@ -73,7 +73,7 @@ The game opens with a title screen: **Start**, **Config** and **Exit**. Config s
 
 `GardenOfEris --load <file>` starts straight from a saved game, without the title screen.
 
-Every new game prints its world seed (`World seed: ...`). `GardenOfEris --seed <number>` builds that same world again, which helps when reporting a bug in a level.
+Every new game prints its world seed (`World seed: ...`). `GardenOfEris --seed <number>` builds that same world again, which helps when reporting a bug in the maze.
 
 The HUD shows your score (**P**), your level (**Dex**, see Stats) and the current difficulty (**D**, see Difficulty).
 
@@ -92,14 +92,14 @@ The game writes a crash report, `crash-<date>-<time>.log`, into the save folder 
 | Golden apple | The thing you are here for. Shoot one and it becomes a healing item that drains itself and finally explodes in your inventory. |
 | Plain gun, bazooka | Weapons to pick up. Shooting fast makes weaker shots. |
 | Simple bomb | Explodes when shot or hit by another explosion. |
-| Landmine | Looks almost like floor: a pentagon plate with the Sacred Chao on it. Goes off when anything steps on it and takes that thing with it. Only the harder levels have them, and the harder the level, the more. |
+| Landmine | Looks almost like floor: a pentagon plate with the Sacred Chao on it. Goes off when anything steps on it and takes that thing with it. Only the maze further from the start has them, and the further out, the more. |
 | Monster | Roams the maze. Monsters collect things if their skin allows it (`canCollect` in `skins.json`), and some have no inventory on purpose. |
 | Bunker | A fixed turret that looks along its four lines and fires at you. |
 | Kiki and bouba | Kiki is a death-ray emitter; the beam is made of boubas, which hurt whatever stands in them. |
 | Patrolling drone and puppet master | A drone does nothing until you hand it a puppet master (a controller). The controller decides how it moves: **patrol** (wanders, and becomes an extra camera for you), **collector** (goes for collectibles it can see), **hunter** (chases you around walls when you are near), **wall follower** (keeps a hand on the wall and walks the maze). |
 | Security camera | Watches for you. When it sees you, its guardian drones come to check the spot. Guardians fight you when they see you, shoot along clear lines, and never go further than 55 cells from their camera. |
 | The Hound | A red drone with the golden apple on its hull. It is sent after you when you stay in one 64x64 area too long; it bites, and gives up when you leave that area. |
-| Teleporter | Local teleporters lead somewhere in the same level; global ones (subtype 0) can take you to another level. The pairing is random and made when a teleporter is first used. |
+| Teleporter | Local teleporters lead somewhere in the same region of the world (5 x 5 chunks); global ones (subtype 0), each in its own locked room, can take you anywhere in the maze built so far. The pairing is random and made when a teleporter is first used. |
 | Player avatar | You. Interact with an unused avatar (Ctrl + direction) to activate it; when you die you come back in the next activated one. |
 
 ## Building the game
@@ -121,7 +121,7 @@ ctest --test-dir build --output-on-failure
 
 Run the game from the `GoEoOL` folder, where the `data` folder is. On Windows, the game builds with MSYS2 (UCRT64) and the same libraries; `.github/workflows/ci.yml` lists the exact packages for both systems.
 
-The `goe-bench` target times level generation, a game tick, and save/load on a large level: `goe-bench 500 3000` from `GoEoOL`.
+The `goe-bench` target times building the world (the start, then one chunk at a time), a game tick, and save/load: `goe-bench 61 3000` from `GoEoOL` builds 61 chunks, about as many cells as one of the old 500x500 levels.
 
 The repository also has the older build.sh shell script (Bash):
 
@@ -149,18 +149,18 @@ examples:
 
 ## Main assumptions
 
-1. The game features only randomly generated levels, so it does.
+1. The game features only a randomly generated maze, so it does.
 
 2. Everythin' should be placed willy-nilly, with no discernible pattern.
 
-3. In a  chamber, it must be possible to traverse from any steppable spot to another, if we do away with all the doors and teleporters.
+3. It must be possible to walk from any steppable spot to any other, if we do away with all the doors and teleporters.
 
-4. The game ought to be vast, with chambers in five levels of challenge, each with a varyin' number of holes in the walls. Fewer holes make a deeper, harder chamber (see Difficulty).
+4. The game has no end: one endless maze, built chunk by chunk as the player walks (see The endless world). The further from the start, the fewer holes in the maze walls, and the harder it gets, in five steps (see Difficulty).
 
-5. The chambers connect through teleporters.
-  * Two types of teleporters exist: internal and inter-chamber.
-    - Inter-chamber teleporters are a special subtype 0, with one such teleporter in each chamber.
-    - Internal teleporters share a common subtype within a chamber (the chamber's id + 1) and are walk-in teleporters.
+5. Teleporters add shortcuts.
+  * Two types of teleporters exist: local and global.
+    - Global teleporters are a special subtype 0, each in its own locked room, in about every fifth chunk. They pair with any other global teleporter in the world.
+    - Local teleporters share a subtype within a region of 5 x 5 chunks and are walk-in teleporters.
 6. When elements on the board move, they don't replace each other but step on top of one another. We start with a board chock-full of empty elements, then create new elements that step onto the empty ones. With mechanics, we manage a vector of live elements (those in need of their mechanics to run). The vector is inspected, and each element's mechanics are executed. 
 7. The destruction of elements occurs by adding their ID and a timestamp to a separate vector. Later on, this vector is scanned, and when their time elapses, the disposeElement() method is executed on the respective element.
 8. We strive to avoid code duplications whenever we can. That said, this rule has been bent a few times, especially with newly introduced code.
@@ -169,6 +169,13 @@ examples:
 ## Random maze generator
 
 My implementation of [recursive division](https://en.wikipedia.org/wiki/Maze_generation_algorithm) has some deliberate modifications. For eg. first few divisions are made to be more or less equal - the dividing walls can be set only in certin range of places, instead all.
+
+# The endless world
+The whole game happens on one board that has no edges. Its cells are kept in chunks of 64 x 64 (`chamber`), and cell coordinates may be negative. A new game builds the start chunk, where the player is, and every chunk up to two chunks away (`worldBuilder`). While you play, the nearest missing chunk within those two chunks is built, one per tick; a chunk takes a few milliseconds. Beyond that the world is not there yet, and nothing can step into it.
+
+Each chunk owns the wall along its west and north edges. The gaps in a wall come from the world seed and the wall's place only, so both chunks beside a wall know where it is open whichever is built first. The cells next to every gap are cleared, so every gap leads into the maze of both chunks. Inside, a chunk is the recursive-division maze above, filled like the old levels were. A chunk is built behind a fence (`chamber::fence`): nothing placed while it is built can reach into the chunks next to it, so a chunk comes out the same for one world seed, in whatever order the player makes the chunks appear.
+
+Only elements within two chunks of the player run; the ones further away wait until the player comes back. Chunks stay in memory once built (about 3 MB each) and are saved with the game.
 
 # Random element placement
 
@@ -230,7 +237,7 @@ The first method is for registering a mechanical object (which requires an imple
 ## Apples
 When an apple is unbeschädigt, it acts as a collectible token that must be gathered. However, if it becomes damaged (for example, by being shot at), it transforms into a healing device. When a player (or any other element capable of collecting) acquires the item, it will heal the collector. But be warned: the apple will deplete its own energy. When the energy reaches zero, the apple will explode in the inventory, resulting in the untimely demise of the collector.
 ## Teleporters
-Every new teleporter is added to a registry (a vector of weak pointers, guarded by a mutex, so it is). A level being built publishes its teleporters only once it is complete, so a teleporter never links into a half-built level. As soon as our player interacts with a teleporter, we're checkin' if it has an attached link to its corresponding teleporter mate. We take a gander at the type of the teleporter, and we follow these steps:
+Every new teleporter is added to a registry (a vector of weak pointers, guarded by a mutex, so it is). A chunk being built publishes its teleporters only once it is complete, so a teleporter never links into a half-built chunk. As soon as our player interacts with a teleporter, we're checkin' if it has an attached link to its corresponding teleporter mate. We take a gander at the type of the teleporter, and we follow these steps:
 
  * If there's no established link, we pick a random teleporter from our list and remove the interacted one along with the chosen one. We set the chosen one to be "LEFT" (it will become a receiver) and pause its song. We could unpause them, but I don't think it makes sense.. 
  * We then set the chosen teleporter as the other end of the connection. 
@@ -255,7 +262,7 @@ The player's level is **Dex** in the HUD: floor(log5(hits + 1)), where hits coun
 
 # Unit tests
 
-The unit tests use GoogleTest and live in the unitTests directory, one test program per *.cpp file (14 of them now). CMake builds each one, and `ctest` runs them all from the `GoEoOL` folder. regression-test keeps one test for every bug fixed, so it doesn't come back.
+The unit tests use GoogleTest and live in the unitTests directory, one test program per *.cpp file (18 of them now). CMake builds each one, and `ctest` runs them all from the `GoEoOL` folder. regression-test keeps one test for every bug fixed, so it doesn't come back.
 
 
 # Sound
@@ -306,16 +313,17 @@ There are control switches that modify sound handling:
  * stacking - If we allow multiple sounds, do we let them play, or should we stop the sound currently playing and start anew upon request (false), or permit all instances to play while avoiding collisions by applying a delay if the previous sound did not have the chance to play?
 
 ## Save and load
-F5 saves the whole world (every level, every element with its inventory and timers, the random generator's state) to one binary file, and F9 loads it back. The file starts with a format version; a newer game still loads older saves.
+F5 saves the whole world (every chunk built so far, every element with its inventory and timers, the random generator's state) to one binary file, and F9 loads it back. The file starts with a format version; a newer game still loads older saves.
 
 ## Difficulty
 The game gets harder the better you get and the further you go. The difficulty D, shown as "D:" next to "Dex:" in the HUD, is the sum of:
 
  * the player level: floor(log5(hits + 1)), the same number as Dex,
- * the depth of the chamber: 0 for the easiest levels up to 4 for the ones with the fewest holes,
- * the distance: floor(log2(1 + d / 64)), where d is how far the player is from the chamber's starting room.
+ * the distance: floor(log2(1 + d / 64)), where d is how far the player is from the starting room.
 
-Every rule that depends on D lives in include/difficulty.h: bunker range and rest between shots, camera and guardian sight, guardians per camera, kiki beam damage, landmines per level, and the Hound. The Hound is a drone sent after a player who stays in one 64x64 area too long (230 seconds at D 1, 23 seconds less per step, never under 55 seconds); it bites, and gives up when the player leaves the area. The tunings follow the Law of Fives: every step, cap and floor is built from 5 or 23.
+The maze gets harder with distance too. A chunk's depth is the same distance rule counted from the start chunk, capped at 4: 0 at the start, 1 from the next chunk, 2 from three chunks out, 3 from seven, 4 from fifteen. Its maze walls have 5 - depth holes, and it gets 23 landmines per step of depth in its pick table.
+
+Every rule that depends on D or depth lives in include/difficulty.h: bunker range and rest between shots, camera and guardian sight, guardians per camera, kiki beam damage, maze holes and landmines per chunk, and the Hound. The Hound is a drone sent after a player who stays in one 64x64 area too long (230 seconds at D 1, 23 seconds less per step, never under 55 seconds); it bites, and gives up when the player leaves the area. The tunings follow the Law of Fives: every step, cap and floor is built from 5 or 23.
 
 - Refactor sound engine
 - Refactor chamber, to contain bElem container, which then would have the stepOnElement routines???
@@ -362,12 +370,13 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 - Planned next (see the design notes): energy doors with switches, crumbling floor, laser gate, armor as a player stat, the Friend, Hostile and Neutral NPCs (trading on bump, scaling as 5^n with your level), and the Altar of Eris.
-- One endless world made of chunks instead of separate levels.
+- The endless world, next steps (see the chunked world design): drop far chunks from memory, and swap changed ones to disk; regions of chunks with their own name, colour and music; global teleporters that open a far away chunk.
 
 ## Art and numbers
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* One endless maze instead of separate levels: the maze is built in 64x64 chunks around you as you walk and never ends, so no other levels are built in the background any more. There is no winning; collecting every apple found so far no longer ends the game. The maze gets harder the further you go from the start (fewer holes in its walls, more landmines), and D is now your level plus your distance from the start. Global teleporters link anywhere in the maze built so far. Older saves still load.
 * Walking into a collectible picks it up and steps onto its cell in the same move; before, the collector stayed where it was and had to move again.
 * Fixed: every missile fired stayed in memory, and in the save file, for the rest of the game. Save files are smaller now; older saves still load.
 * Tidier elements: the base element class lost a dozen unused methods, and moving, sounds, drawing offsets and cell stacks each live in one small place of their own.

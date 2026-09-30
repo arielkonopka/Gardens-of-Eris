@@ -178,8 +178,6 @@ bool explosives::explode(float radius)
     if (!brd || this->getStats()->isDestroying() || this->getStats()->isDisposed())
         return false;
     viewPoint::get_instance().addViewPoint(shared_from_this());
-    this->bx = brd->getSize().x;
-    this->by = brd->getSize().y;
     myUtility::Coords mpos = myUtility::Coords(this->getStats()->getMyPosition());
     bElem::destroy();
     viewPoint::get_instance().addViewPoint(brd->getElement(mpos));
@@ -215,9 +213,9 @@ bool explosives::explode(float radius)
 bool explosives::traverser(
     myUtility::Coords center, myUtility::Coords point, float radius, int plen, dir::direction noGo)
 {
-    if (point.getX() >= bx || point.getX() < 0 || point.getY() < 0 || point.getY() >= by
-        || (point.distance(center) > radius) || plen <= 0)
+    if (point.distance(center) > radius || plen <= 0)
         return false;
+    // a cell the board does not have stops the blast like a wall
     auto elem = brd->getElement(point);
     if (!elem || elem->getStats()->isDestroying()
         || (!elem->getAttrs()->isDestroyable() && !elem->getAttrs()->isSteppable()))

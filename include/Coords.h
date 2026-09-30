@@ -15,8 +15,8 @@ namespace myUtility {
 
     class Coords {
     private:
-        int x=-6502; ///< x coordinate value
-        int y=-6502; ///< y coordinate value
+        int x=noCoordinate; ///< x coordinate value; a default Coords is NOCOORDS
+        int y=noCoordinate; ///< y coordinate value
         int z=-6502; ///< z coordonate if 3d
         bool flat=true;
     public:
@@ -27,15 +27,15 @@ namespace myUtility {
          Coords()=default;
         /**
          * @brief Constructor that initializes Coords with specific x and y values.
-         * @param x_val Set x coordinate value (default is -6502).
-         * @param y_val Set y coordinate value (default is -6502).
+         * @param x_val Set x coordinate value.
+         * @param y_val Set y coordinate value.
          */
 
         Coords(int x_val, int y_val);
         /**
                 * @brief Constructor that initializes Coords with specific x and y values.
-                * @param x_val Set x coordinate value (default is -6502).
-                * @param y_val Set y coordinate value (default is -6502).
+                * @param x_val Set x coordinate value.
+                * @param y_val Set y coordinate value.
                 * @param z_val set z coordinate value (default is -6502).
                 */
 

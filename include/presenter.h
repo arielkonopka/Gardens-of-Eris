@@ -65,7 +65,7 @@ namespace presenter
 {
 
 /// why presentEverything returned
-enum class gameEnd { QUIT, LOST, ALL_APPLES };
+enum class gameEnd { QUIT, LOST };
 enum class presenterMode { MENU=0, SETTINGS=1,EDITOR=2,DEMO=3,GAME=4} ;
 enum class _cp_gameReasonOut { LOST=0, USERREQ=1, PAUSE=2, TELEPORTREQ=3 };
 

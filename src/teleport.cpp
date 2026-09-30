@@ -111,7 +111,8 @@ bool teleport::createConnectionsWithinSubtype()
         }
     }
     if (!candidates.empty()) {
-        // any matching teleporter can be the other end: local ones pick within their level, global ones across levels
+        // any matching teleporter can be the other end: local ones pick within their region of
+        // the world, global ones (subtype 0) anywhere in it
         tmpt = goe::rng::pick(goe::rng::gameplay(), candidates);
         this->theOtherEnd = tmpt;
         tmpt2 = std::dynamic_pointer_cast<teleport>(shared_from_this());

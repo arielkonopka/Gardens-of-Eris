@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "presenter.h"
+#include "worldBuilder.h"
 #include "elementView.h"
 #include "difficulty.h"
 
@@ -338,30 +339,32 @@ void presenter::prepareStatsThing()
 void presenter::showGameField()
 {
     int x, y;
-    coords boardsize = coords(0, 0);
     coords d;
     coords halfscreen = coords((this->scrTilesX) / 2, (this->scrTilesY) / 2);
     int offX = 0, offY = 0;
     std::vector<movingSprite> mSprites;
     std::shared_ptr<bElem> player = player::getActivePlayer();
-    if (player)
-        boardsize = player->getBoard()->getSize();
     // Calculate LeftUpper corner of the viewpoint
     // BEGIN:upperLeft
     coords b = viewPoint::get_instance().getViewPoint() - halfscreen;
-    b.x = std::max(0, std::min(boardsize.x - (this->scrTilesX), b.x));
-    b.y = std::max(0, std::min(boardsize.y - (this->scrTilesY), b.y));
+    // a bounded board keeps the view inside it; on the endless world the view just follows
+    if (player && player->getBoard() && player->getBoard()->isBounded()) {
+        const coords boardsize = player->getBoard()->getSize();
+        b.x = std::max(0, std::min(boardsize.x - (this->scrTilesX), b.x));
+        b.y = std::max(0, std::min(boardsize.y - (this->scrTilesY), b.y));
+    }
     // END:upperLeft
     d = b - this->previousPosition;
-    if (d.x == 0 && this->positionOnScreen.x % this->sWidth > 0)
+    // rounded down, so the view scrolls the same way where the endless world goes negative
+    if (d.x == 0 && floorMod(this->positionOnScreen.x, this->sWidth) > 0)
         d.x = -1;
-    if (d.y == 0 && this->positionOnScreen.y % this->sHeight > 0)
+    if (d.y == 0 && floorMod(this->positionOnScreen.y, this->sHeight) > 0)
         d.y = -1;
     this->positionOnScreen = this->positionOnScreen + (d * 8);
-    this->previousPosition.x = this->positionOnScreen.x / this->sWidth;
-    this->previousPosition.y = this->positionOnScreen.y / this->sHeight;
-    offX = (this->positionOnScreen.x % this->sWidth);
-    offY = (this->positionOnScreen.y % this->sHeight);
+    this->previousPosition.x = floorDiv(this->positionOnScreen.x, this->sWidth);
+    this->previousPosition.y = floorDiv(this->positionOnScreen.y, this->sHeight);
+    offX = floorMod(this->positionOnScreen.x, this->sWidth);
+    offY = floorMod(this->positionOnScreen.y, this->sHeight);
     this->prepareStatsThing();
 
     al_set_target_bitmap(this->internalBitmap.get());
@@ -402,10 +405,8 @@ void presenter::showGameField()
         } else
             this->showObjectTile(ms.x, ms.y, 0, 0, ms.elem, false, 1);
     }
-    if (player->getStats()->isMoving() && boardsize.x > viewPoint::get_instance().getViewPoint().x
-        && viewPoint::get_instance().getViewPoint().x >= 0
-        && boardsize.y > viewPoint::get_instance().getViewPoint().y
-        && viewPoint::get_instance().getViewPoint().y >= 0)
+    if (player->getStats()->isMoving() && player->getBoard()
+        && player->getBoard()->getElement(viewPoint::get_instance().getViewPoint()))
         this->showObjectTile(px,
                              py,
                              0,
@@ -575,17 +576,10 @@ void presenter::handleSaveKeys()
     this->loadKeyDown = im.pressed_keys[ALLEGRO_KEY_F9];
     if (this->pendingSaveOp == 0)
         return;
-    // the background generator holds the world lock while it builds a level; never freeze the game
-    // waiting for it, ask it to pause after the current level and try again on the next tick
-    chamber::worldLockWanted = true;
-    std::unique_lock<std::recursive_mutex> worldLock(chamber::worldMutex, std::try_to_lock);
-    if (!worldLock.owns_lock())
-        return;
     bool save = this->pendingSaveOp == 1;
     const std::string saveFile = gameSettings::getInstance().getSaveFile();
     bool ok = save ? gameSerializer::saveGame(saveFile) : gameSerializer::loadGame(saveFile);
     this->pendingSaveOp = 0;
-    chamber::worldLockWanted = false;
     if (save)
         std::cout << (ok ? "Game saved to " : "Saving failed: ") << saveFile << "\n";
     else
@@ -616,14 +610,8 @@ gameEnd presenter::presentEverything()
             if (currentPlayer.get() != nullptr) {
                 this->_cp_attachedBoard = currentPlayer->getBoard();
                 this->lastScore = currentPlayer->getStats()->getPoints(TOTAL);
-                if (currentPlayer->getAttrs()
-                        ->getInventory()
-                        ->countTokens(bElemTypes::_goldenAppleType, 0)
-                    == goldenApple::getAppleNumber()) {
-                    result = gameEnd::ALL_APPLES;
-                    this->fin = true;
-                    break;
-                }
+                // the maze grows ahead of the player, one chunk per tick
+                worldBuilder::growAround(currentPlayer->getBoard(), currentPlayer->getStats()->getMyPosition());
             }
             bElem::runLiveElements();
             if (player::getActivePlayer().get() != nullptr)

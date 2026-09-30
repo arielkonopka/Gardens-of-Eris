@@ -23,21 +23,22 @@
 #define DIFFICULTY_H
 
 #include "commons.h"
+#include "chamber.h"
 #include <algorithm>
 #include <memory>
 
 class bElem;
-class chamber;
 
 /**
  * @brief How hard the game is right now, and what that means for every element that scales with it.
  *
- * The difficulty D is the sum of three parts:
+ * The difficulty D is the sum of two parts:
  * - the player level: floor(log5(shots + 1)), the "Dex" in the HUD. Every hit the player lands counts.
- * - the depth of the chamber: set by the level generator (0 for the easiest levels, 4 for the hardest).
- * - the distance: floor(log2(1 + d / distanceUnit)), where d is how far the player is from where the
- *   chamber was entered. The unit is the size of a chunk in the planned endless world, so the same
- *   rule keeps working once the world is made of chunks.
+ * - the distance: floor(log2(1 + d / distanceUnit)), where d is how far the player is from where
+ *   the game started. The unit is the size of a chunk of the endless world.
+ *
+ * The maze itself gets harder with distance too: a chunk's depth (chunkDepth) sets how few holes
+ * its walls have and how many landmines it gets.
  *
  * Every tuning rule lives here, so the whole difficulty curve can be read and changed in one place.
  * D is never capped; each rule caps its own value where it stops making sense.
@@ -45,6 +46,7 @@ class chamber;
 namespace difficulty {
     /// the distance that adds one difficulty step the first time (doubling after that)
     constexpr int distanceUnit = 64;
+    static_assert(distanceUnit == chamber::chunkSize, "one distance step is one chunk");
     /// game ticks per second (the presenter's timer)
     constexpr int ticksPerSecond = 50;
 
@@ -54,7 +56,7 @@ namespace difficulty {
     int playerLevel(const std::shared_ptr<bElem> &who);
     /// floor(log2(1 + d / distanceUnit)) for the longer axis distance d between the two cells
     int distanceLevel(coords from, coords to);
-    /// the area a cell belongs to: distanceUnit x distanceUnit squares, like the planned chunks
+    /// the area a cell belongs to: distanceUnit x distanceUnit squares, the chunks of the world
     coords areaOf(coords cell);
     /// the difficulty for a player at their current place
     int of(const std::shared_ptr<bElem> &who);
@@ -82,6 +84,11 @@ namespace difficulty {
     constexpr int guardianCount(int d) { return std::min(2 + d / five, five); }
     /// how much a kiki beam (a bouba) hurts at once: 5, one more per step, up to 23
     constexpr int beamDamage(int d) { return std::min(GoEConstants::_radioActivityPower + d, twentyThree); }
+    /// how hard a chunk's maze is, from 0 to 4: the distance level of the chunk from the start
+    /// chunk (0, 0), capped at 4. It depends on the chunk's place only, so its neighbours know it.
+    int chunkDepth(coords chunk);
+    /// holes in each maze wall at that depth: 5 near the start, down to 1 from depth 4 on
+    constexpr int mazeHoles(int depth) { return five - depth; }
     /// landmines in the level generator's pick table: 23 per level of depth
     constexpr int landmineCopies(int depth) { return depth * twentyThree; }
     /**

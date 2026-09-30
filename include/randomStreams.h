@@ -37,8 +37,8 @@
  *
  * While a level is built, gameplay() on that thread draws from the level's own engine (see
  * generationScope), so building levels in the background never touches the running game's
- * randomness, and the same level seed always builds the same level. Every level seed is derived
- * from the world seed and the level's number, so one world seed rebuilds the whole world.
+ * randomness, and the same level seed always builds the same level. Every seed is derived from
+ * the world seed (a chunk's from its place, see placeSeed), so one world seed rebuilds the whole world.
  */
 namespace goe::rng {
 using engine = std::mt19937;
@@ -62,6 +62,10 @@ seed worldSeed();
 void setWorldSeed(seed s);
 /// the seed of the next level to be generated: derived from the world seed and the level's number
 seed nextLevelSeed();
+
+/// a seed for one place of the endless world (a chunk, or one of its walls): derived from the
+/// world seed, the place and the salt only, so it does not depend on the order places are built in
+seed placeSeed(int x, int y, seed salt = 0);
 
 /// a number from 0 to n - 1; n must be above 0
 inline std::size_t below(engine &e, std::size_t n)

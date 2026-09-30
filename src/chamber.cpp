@@ -28,37 +28,86 @@
 std::atomic<int> chamber::lastid = 0;
 std::vector<std::shared_ptr<chamber>> chamber::allChambers;
 std::recursive_mutex chamber::worldMutex;
-std::atomic<bool> chamber::worldLockWanted{false};
 
 std::shared_ptr<chamber> chamber::makeNewChamber(coords csize)
 {
-#ifdef _VerbousMode_
-    std::cout << "generate chamber" << csize.x << "," << csize.y << "\n";
-#endif
     return makeNewChamber(myUtility::Coords(csize.x, csize.y));
 }
 
 std::shared_ptr<chamber> chamber::makeNewChamber(myUtility::Coords csize)
 {
-#ifdef _VerbousMode_
-    std::cout << "generate chamber" << csize.getX() << "," << csize.getY() << "\n";
-#endif
     std::shared_ptr<chamber> c = std::make_shared<chamber>(csize.getX(), csize.getY());
-#ifdef _VerbousMode_
-    std::cout << "generated object\n";
-#endif
-    c->createFloor();
+    for (int x = 0; x < c->width; x += chunkSize)
+        for (int y = 0; y < c->height; y += chunkSize)
+            c->createFloor(chunkOf(coords(x, y)));
     std::lock_guard<std::recursive_mutex> lock(chamber::worldMutex);
     chamber::allChambers.push_back(c);
     return c;
 }
 
-void chamber::createFloor()
+std::shared_ptr<chamber> chamber::makeWorld()
 {
-    this->visitedElements.assign((std::size_t) this->width * this->height, 555);
-    this->cells.resize((std::size_t) this->width * this->height);
-    for (int c = 0; c < this->width; c++) {
-        for (int d = 0; d < this->height; d++) {
+    std::shared_ptr<chamber> c = std::make_shared<chamber>(0, 0);
+    c->makeEndless();
+    std::lock_guard<std::recursive_mutex> lock(chamber::worldMutex);
+    chamber::allChambers.push_back(c);
+    return c;
+}
+
+chamber::fence::fence(chamber &board, coords lo, coords hi)
+    : board(board)
+    , savedLo(board.limitLo)
+    , savedHi(board.limitHi)
+{
+    board.limitLo = coords(std::max(lo.x, savedLo.x), std::max(lo.y, savedLo.y));
+    board.limitHi = coords(std::min(hi.x, savedHi.x), std::min(hi.y, savedHi.y));
+}
+
+chamber::fence::~fence()
+{
+    this->board.limitLo = this->savedLo;
+    this->board.limitHi = this->savedHi;
+}
+
+void chamber::makeEndless()
+{
+    this->bounded = false;
+    this->limitLo = coords(std::numeric_limits<int>::min(), std::numeric_limits<int>::min());
+    this->limitHi = coords(std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
+}
+
+bool chamber::hasChunk(coords chunkKey) const
+{
+    return this->chunkByKey.contains(keyOf(chunkKey));
+}
+
+void chamber::addChunk(coords chunkKey)
+{
+    if (this->bounded || this->hasChunk(chunkKey))
+        return;
+    this->createFloor(chunkKey);
+}
+
+chamber::chunk &chamber::chunkAt(coords chunkKey)
+{
+    const auto key = keyOf(chunkKey);
+    auto it = this->chunkByKey.find(key);
+    if (it != this->chunkByKey.end())
+        return *this->chunks[it->second];
+    this->chunkByKey.emplace(key, this->chunks.size());
+    this->keys.push_back(chunkKey);
+    this->chunks.push_back(std::make_unique<chunk>());
+    return *this->chunks.back();
+}
+
+void chamber::createFloor(coords chunkKey)
+{
+    chunk &ch = this->chunkAt(chunkKey);
+    const coords first = chunkOrigin(chunkKey);
+    for (int x = first.x; x < first.x + chunkSize; x++) {
+        for (int y = first.y; y < first.y + chunkSize; y++) {
+            if (this->bounded && (x >= this->width || y >= this->height))
+                continue;
             int subtype = 0;
             if (goe::rng::gameplay()() % 10 == 0)
                 subtype = 1;
@@ -66,22 +115,23 @@ void chamber::createFloor()
                 subtype = 2;
             auto floor = elementFactory::generateAnElement<floorElement>(shared_from_this(), subtype);
             floor->setBoard(shared_from_this());
-            floor->getStats()->setMyPosition(coords(c, d));
+            floor->getStats()->setMyPosition(coords(x, y));
             floor->getAttrs()->setSubtype(subtype);
-            this->cells[this->cellIndex(c, d)] = std::move(floor);
+            ch.cells[cellIndex(coords(x, y))] = std::move(floor);
         }
     }
 }
 
 coords chamber::getSizeOfChamber()
 {
-    return this->cells.empty() ? coords(0, -1) : coords(this->width, this->height);
+    return this->chunks.empty() ? coords(0, -1) : coords(this->width, this->height);
 }
 
 chamber::chamber(int x, int y)
     : std::enable_shared_from_this<chamber>()
     , width(x)
     , height(y)
+    , limitHi(x - 1, y - 1)
 {
     std::shared_ptr<randomWordGen> rwg = std::make_shared<randomWordGen>();
     this->setInstanceId(chamber::lastid++);
@@ -90,7 +140,6 @@ chamber::chamber(int x, int y)
     this->chamberColour.r = 30 + goe::rng::gameplay()() % 50;
     this->chamberColour.g = 30 + goe::rng::gameplay()() % 50;
     this->chamberColour.b = 50 + goe::rng::gameplay()() % 70;
-    //this->createFloor();
 }
 
 chamber::chamber(coords csize)
@@ -115,23 +164,14 @@ bool chamber::visitPosition(coords point)
     if (point == NOCOORDS)
         return false;
     const int vradius = player::getActivePlayer()->getViewRadius() / 2;
-    int x0 = ((point.x - vradius) < 0)
-                 ? 0
-                 : ((point.x - vradius >= this->width) ? this->width - 1 : point.x - vradius);
-    int y0 = ((point.y - vradius) < 0)
-                 ? 0
-                 : ((point.y - vradius >= this->height) ? this->height - 1 : point.y - vradius);
-    int x1 = ((point.x + vradius) < 0)
-                 ? 0
-                 : ((point.x + vradius >= this->width) ? this->width - 1 : point.x + vradius);
-    int y1 = ((point.y + vradius) < 0)
-                 ? 0
-                 : ((point.y + vradius >= this->height) ? this->height - 1 : point.y + vradius);
-    for (int x = x0; x <= x1; x++) {
-        for (int y = y0; y <= y1; y++) {
-            float distance = point.distance(coords(x, y));
-            int &seen = this->visitedElements[this->cellIndex(x, y)];
-            if (distance <= vradius && seen != 0) {
+    for (int x = point.x - vradius; x <= point.x + vradius; x++) {
+        for (int y = point.y - vradius; y <= point.y + vradius; y++) {
+            const coords cell(x, y);
+            const auto idx = this->chunkIndex(cell);
+            if (idx < 0)
+                continue;
+            int &seen = this->chunks[(std::size_t) idx]->visited[cellIndex(cell)];
+            if (seen != 0 && point.distance(cell) <= vradius) {
                 res = true;
                 seen = 0;
             }
@@ -142,8 +182,8 @@ bool chamber::visitPosition(coords point)
 
 void chamber::setVisible(coords point, int v)
 {
-    if (point.x >= 0 && point.y >= 0 && point.x < this->width && point.y < this->height)
-        this->visitedElements[this->cellIndex(point.x, point.y)] = v;
+    if (const auto idx = this->chunkIndex(point); idx >= 0)
+        this->chunks[(std::size_t) idx]->visited[cellIndex(point)] = v;
 }
 
 int chamber::isVisible(int x, int y)
@@ -153,19 +193,19 @@ int chamber::isVisible(int x, int y)
 
 int chamber::isVisible(coords point)
 {
-    if (point.x < this->width && point.y < this->height && point.x >= 0 && point.y >= 0)
-        return this->visitedElements[this->cellIndex(point.x, point.y)];
+    if (const auto idx = this->chunkIndex(point); idx >= 0)
+        return this->chunks[(std::size_t) idx]->visited[cellIndex(point)];
     return false;
 }
 
 void chamber::setElement(int x, int y, std::shared_ptr<bElem> elem)
 {
-    if (!elem || x < 0 || x > this->width - 1 || y < 0 || y > this->height - 1)
-        return;
-    if (this->cells.empty())
+    const coords cell(x, y);
+    const auto idx = this->chunkIndex(cell);
+    if (!elem || idx < 0)
         return;
     elem->setBoard(shared_from_this());
-    this->cells[this->cellIndex(x, y)] = std::move(elem);
+    this->chunks[(std::size_t) idx]->cells[cellIndex(cell)] = std::move(elem);
 }
 
 void chamber::setElement(coords point, std::shared_ptr<bElem> elem)
@@ -209,12 +249,13 @@ bool chamber::deregisterLiveElem(std::shared_ptr<bElem> in)
 
 coords chamber::getSize()
 {
-    return coords(this->width, this->height);
+    return this->bounded ? coords(this->width, this->height) : coords(0, 0);
 }
 
 myUtility::Coords chamber::getSizeCrd()
 {
-    return myUtility::Coords(this->width, this->height);
+    const coords size = this->getSize();
+    return myUtility::Coords(size.x, size.y);
 }
 
 int chamber::calculateLine(myUtility::Coords position, dir::direction Odir)
@@ -225,7 +266,7 @@ int chamber::calculateLine(myUtility::Coords position, dir::direction Odir)
     return 0;
 }
 
-std::shared_ptr<bElem> chamber::getElement(myUtility::Coords point)
+std::shared_ptr<bElem> chamber::getElement(myUtility::Coords point) const
 {
     return getElement(point.getX(), point.getY());
 }

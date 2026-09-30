@@ -57,9 +57,14 @@ int difficulty::distanceLevel(coords from, coords to)
 
 coords difficulty::areaOf(coords cell)
 {
-    // floor division, so negative cells of the endless world land in the right area too
-    auto floorDiv = [](int a) { return a >= 0 ? a / distanceUnit : -((-a + distanceUnit - 1) / distanceUnit); };
-    return coords(floorDiv(cell.x), floorDiv(cell.y));
+    // rounded down, so negative cells of the endless world land in the right area too
+    return coords(floorDiv(cell.x, distanceUnit), floorDiv(cell.y, distanceUnit));
+}
+
+int difficulty::chunkDepth(coords chunk)
+{
+    const int level = difficulty::distanceLevel(chamber::chunkOrigin(coords(0, 0)), chamber::chunkOrigin(chunk));
+    return std::clamp(level, 0, difficulty::five - 1);
 }
 
 int difficulty::of(const std::shared_ptr<bElem> &who)
@@ -68,7 +73,7 @@ int difficulty::of(const std::shared_ptr<bElem> &who)
         return 0;
     int d = difficulty::playerLevel(who);
     if (auto board = who->getBoard())
-        d += board->depth + difficulty::distanceLevel(board->origin, who->getStats()->getMyPosition());
+        d += difficulty::distanceLevel(board->origin, who->getStats()->getMyPosition());
     return d;
 }
 

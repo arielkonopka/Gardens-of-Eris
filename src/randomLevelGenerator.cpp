@@ -21,60 +21,63 @@
  */
 
 #include "randomLevelGenerator.h"
+#include "difficulty.h"
+#include "player.h"
+
+namespace {
+/// gaps in a chunk wall are picked from these offsets, so a gap is never at a wall's corner
+constexpr int firstGap = 1, lastGap = chamber::chunkSize - 2;
+/// one global teleporter room in about every fifth chunk
+constexpr int globalTeleporterOdds = difficulty::five;
+/// local teleporters pair within a region of five by five chunks
+constexpr int regionChunks = difficulty::five;
+} // namespace
 
 randomLevelGenerator::randomLevelGenerator(int w, int h, goe::rng::seed levelSeed)
     : eng(levelSeed)
 {
     // the new chamber's name and colour come from this level's seed too
     goe::rng::generationScope scope(this->eng);
-    this->width = w;
-    this->height = h;
-    {
-        // the chamber is registered in the world right away, but must not be saved until generated
-        std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
-        this->mychamber = chamber::makeNewChamber(myUtility::Coords(w, h));
-        this->mychamber->ready = false;
-    }
-    this->doorTypes = 0;
+    this->hi = coords(w - 1, h - 1);
+    std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
+    this->mychamber = chamber::makeNewChamber(myUtility::Coords(w, h));
 }
 
-int randomLevelGenerator::checkWalls(int x, int y)
+randomLevelGenerator::randomLevelGenerator(std::shared_ptr<chamber> world, coords chunk)
+    : eng(goe::rng::placeSeed(chunk.x, chunk.y))
+    , mychamber(std::move(world))
+    , chunk(chunk)
 {
-    bool walls[] = {false, false, false, false};
-    coords chambersize = this->mychamber->getSize();
-    if (x > 0) {
-        if (this->mychamber->getElement(x - 1, y)->getType() == bElemTypes::_wallType)
-            walls[0] = true;
-    }
-    if (x < chambersize.x) {
-        if (this->mychamber->getElement(x + 1, y)->getType() == bElemTypes::_wallType)
-            walls[1] = true;
-    }
-    if (y > 0) {
-        if (this->mychamber->getElement(x, y - 1)->getType() == bElemTypes::_wallType)
-            walls[2] = true;
-    }
-    if (y < chambersize.y) {
-        if (this->mychamber->getElement(x, y + 1)->getType() == bElemTypes::_wallType)
-            walls[3] = true;
-    }
-    if (walls[0] && walls[1] && walls[2] && !walls[3]) {
-        this->mychamber->getElement(x - 1, y)->disposeElement();
-        this->mychamber->setElement(coords(x, y),
-                                    elementFactory::generateAnElement<wall>(this->mychamber, 0));
-    }
-    if (walls[0] && walls[1] && walls[3] && !walls[2]) {
-        this->mychamber->getElement(x + 1, y)->disposeElement();
-    }
+    this->lo = chamber::chunkOrigin(chunk);
+    this->hi = this->lo + (chamber::chunkSize - 1);
+    this->eastGaps = wallGaps(coords(chunk.x + 1, chunk.y), true);
+    this->southGaps = wallGaps(coords(chunk.x, chunk.y + 1), false);
+    // the floor's looks come from this chunk's seed too
+    goe::rng::generationScope scope(this->eng);
+    this->mychamber->addChunk(chunk);
+}
 
-    if (walls[0] && !walls[1] && walls[3] && walls[2]) {
-        this->mychamber->getElement(x, y + 1)->disposeElement();
-    }
-    if (!walls[0] && walls[1] && walls[3] && walls[2]) {
-        this->mychamber->getElement(x, y - 1)->disposeElement();
-    }
+std::vector<int> randomLevelGenerator::wallGaps(coords chunk, bool west)
+{
+    goe::rng::engine wallEngine(goe::rng::placeSeed(chunk.x, chunk.y, west ? 1 : 2));
+    // a wall has as many gaps as the maze walls of the chunk that owns it have holes
+    const int gaps = difficulty::mazeHoles(difficulty::chunkDepth(chunk));
+    std::vector<int> offsets;
+    for (int g = 0; g < gaps; g++)
+        offsets.push_back(firstGap + (int) goe::rng::below(wallEngine, lastGap - firstGap + 1));
+    return offsets;
+}
 
-    return 0;
+std::shared_ptr<bElem> randomLevelGenerator::at(int x, int y) const
+{
+    // a chunk is built inside a fence (generateChunk), so the board has no cells outside lo..hi
+    return this->mychamber->getElement(x, y);
+}
+
+bool randomLevelGenerator::steppableAt(int x, int y) const
+{
+    const auto e = this->at(x, y);
+    return e && e->getAttrs()->isSteppable();
 }
 
 /* 이것은 순환 분할 구현입니다 */
@@ -145,19 +148,17 @@ std::unique_ptr<chamberArea> randomLevelGenerator::lvlGenerate(
     {
         //we draw vertical line
         for (int a = y1; a <= y2; a++) {
-            if (this->mychamber->getElement(c + 2, a) && a != d
-                && this->mychamber->getElement(c, a)->getAttrs()->isSteppable()
-                && this->mychamber->getElement(c + 2, a)->getAttrs()->isSteppable()) {
+            if (a != d && this->steppableAt(c, a) && this->steppableAt(c + 2, a)) {
                 if (a < d + 2) {
                     doorPlaces1.push_back(a);
                 } else {
                     doorPlaces2.push_back(a);
                 }
             }
-            if (this->mychamber->getElement(c + 1, a)->getAttrs()->isSteppable()) {
+            if (this->steppableAt(c + 1, a)) {
                 std::shared_ptr<bElem> newElement
                     = elementFactory::generateAnElement<wall>(this->mychamber, 0);
-                newElement->stepOnElement(this->mychamber->getElement(c + 1, a));
+                newElement->stepOnElement(this->at(c + 1, a));
             } else {
                 break;
             }
@@ -167,13 +168,13 @@ std::unique_ptr<chamberArea> randomLevelGenerator::lvlGenerate(
         for (int cnt = 0; cnt < holes; cnt++) {
             if (doorPlaces1.size() > 0) {
                 int rnd = this->eng() % (doorPlaces1.size());
-                this->mychamber->getElement(c + 1, doorPlaces1[rnd])->disposeElement();
+                this->at(c + 1, doorPlaces1[rnd])->disposeElement();
                 doorPlaces1[rnd] = doorPlaces1[doorPlaces1.size() - 1];
                 doorPlaces1.pop_back();
             }
             if (doorPlaces2.size() > 0) {
                 int rnd = this->eng() % (doorPlaces2.size());
-                this->mychamber->getElement(c + 1, doorPlaces2[rnd])->disposeElement();
+                this->at(c + 1, doorPlaces2[rnd])->disposeElement();
                 doorPlaces2[rnd] = doorPlaces2[doorPlaces2.size() - 1];
                 doorPlaces2.pop_back();
             }
@@ -186,29 +187,23 @@ std::unique_ptr<chamberArea> randomLevelGenerator::lvlGenerate(
         doorPlaces1.clear();
         doorPlaces2.clear();
         for (int a = x1; a <= x2; a++) {
-            if (!this->mychamber->getElement(a, d)) {
-                std::cout << "Nulls on board!\n";
-                continue;
-            }
-
-            if (a != c && this->mychamber->getElement(a, d)->getAttrs()->isSteppable()
-                && this->mychamber->getElement(a, d + 2)->getAttrs()->isSteppable()) {
+            if (a != c && this->steppableAt(a, d) && this->steppableAt(a, d + 2)) {
                 if (a < c + 2) {
                     doorPlaces1.push_back(a);
                 } else {
                     doorPlaces2.push_back(a);
                 }
             }
-            if (mychamber->getElement(a, d + 1)->getAttrs()->isSteppable()) {
+            if (this->steppableAt(a, d + 1)) {
                 std::shared_ptr<bElem> newElement
                     = elementFactory::generateAnElement<wall>(this->mychamber, 0);
-                newElement->stepOnElement(this->mychamber->getElement(a, d + 1));
+                newElement->stepOnElement(this->at(a, d + 1));
             }
         }
         for (int cnt = 0; cnt < holes; cnt++) {
             if (!doorPlaces1.empty()) {
                 int rnd = this->eng() % (doorPlaces1.size());
-                this->mychamber->getElement(doorPlaces1[rnd], d + 1)->disposeElement();
+                this->at(doorPlaces1[rnd], d + 1)->disposeElement();
                 doorPlaces1[rnd] = doorPlaces1[doorPlaces1.size() - 1];
                 doorPlaces1.pop_back();
             }
@@ -216,7 +211,7 @@ std::unique_ptr<chamberArea> randomLevelGenerator::lvlGenerate(
         for (int cnt = 0; cnt < holes; cnt++) {
             if (!doorPlaces2.empty()) {
                 int rnd = this->eng() % (doorPlaces2.size());
-                this->mychamber->getElement(doorPlaces2[rnd], d + 1)->disposeElement();
+                this->at(doorPlaces2[rnd], d + 1)->disposeElement();
                 doorPlaces2[rnd] = doorPlaces2[doorPlaces2.size() - 1];
                 doorPlaces2.pop_back();
             }
@@ -259,45 +254,107 @@ void randomLevelGenerator::retireArea(const chamberArea &area)
     this->headNode->removeEmptyNodes();
 }
 
+void randomLevelGenerator::buildMaze(int holes)
+{
+    // a bounded level has walls on all four sides; a chunk only on its west and north side,
+    // the other two are the walls of the next chunks
+    const bool bounded = this->chunk == NOCOORDS;
+    this->headNode = this->lvlGenerate(this->lo.x + 1,
+                                       this->lo.y + 1,
+                                       bounded ? this->hi.x - 1 : this->hi.x,
+                                       bounded ? this->hi.y - 1 : this->hi.y,
+                                       _iterations,
+                                       holes);
+    this->headNode->calculateInitialSurface();
+    if (!bounded) {
+        this->buildChunkWalls();
+        return;
+    }
+    for (int x = this->lo.x; x <= this->hi.x; x++) {
+        elementFactory::generateAnElement<wall>(this->mychamber, 0)->stepOnElement(this->at(x, this->lo.y));
+        elementFactory::generateAnElement<wall>(this->mychamber, 0)->stepOnElement(this->at(x, this->hi.y));
+    }
+    for (int y = this->lo.y; y <= this->hi.y; y++) {
+        elementFactory::generateAnElement<wall>(this->mychamber, 0)->stepOnElement(this->at(this->lo.x, y));
+        elementFactory::generateAnElement<wall>(this->mychamber, 0)->stepOnElement(this->at(this->hi.x, y));
+    }
+}
+
+void randomLevelGenerator::buildChunkWalls()
+{
+    const auto westGaps = wallGaps(this->chunk, true);
+    const auto northGaps = wallGaps(this->chunk, false);
+    auto isGap = [](const std::vector<int> &gaps, int offset) {
+        return std::find(gaps.begin(), gaps.end(), offset) != gaps.end();
+    };
+    for (int o = 0; o < chamber::chunkSize; o++) {
+        if (!isGap(westGaps, o))
+            elementFactory::generateAnElement<wall>(this->mychamber, 0)->stepOnElement(this->at(this->lo.x, this->lo.y + o));
+        if (!isGap(northGaps, o))
+            elementFactory::generateAnElement<wall>(this->mychamber, 0)->stepOnElement(this->at(this->lo.x + o, this->lo.y));
+    }
+    // a maze wall may run right past a gap; open the cell next to every gap, so each one leads in
+    auto clear = [this](int x, int y) {
+        if (!this->steppableAt(x, y))
+            this->at(x, y)->disposeElement();
+    };
+    for (int g : westGaps)
+        clear(this->lo.x + 1, this->lo.y + g);
+    for (int g : northGaps)
+        clear(this->lo.x + g, this->lo.y + 1);
+    for (int g : this->eastGaps)
+        clear(this->hi.x, this->lo.y + g);
+    for (int g : this->southGaps)
+        clear(this->lo.x + g, this->hi.y);
+}
+
+int randomLevelGenerator::localTeleporterSubtype() const
+{
+    if (this->chunk == NOCOORDS)
+        return this->mychamber->getInstanceId() + 1;
+    // one number per region, above 0 (0 is the global kind); regions up to 2^14 away stay apart
+    const int rx = floorDiv(this->chunk.x, regionChunks) & 0x3FFF;
+    const int ry = floorDiv(this->chunk.y, regionChunks) & 0x3FFF;
+    return 1 + ((rx << 14) | ry);
+}
+
 bool randomLevelGenerator::generateLevel(int holes)
 {
     // elements made while building this level draw their starting stats from its seed
     goe::rng::generationScope scope(this->eng);
     // keep saving and loading out while this level is being built
     std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
-    struct markReady
-    {
-        std::shared_ptr<chamber> c;
-        ~markReady() { c->ready = true; }
-    } readyWhenDone{this->mychamber};
     // publish this level's teleporters only once the level is complete
     teleport::registrationBatch teleporterBatch;
+    this->buildMaze(holes);
+    // fewer holes make a harder level
+    return this->placeEverything(holes, std::max(0, difficulty::five - holes), true, true);
+}
+
+bool randomLevelGenerator::generateChunk(bool start)
+{
+    goe::rng::generationScope scope(this->eng);
+    std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
+    teleport::registrationBatch teleporterBatch;
+    // players found in a new chunk are spare avatars; only the start chunk's player takes over
+    std::optional<player::backgroundScope> spareAvatars;
+    if (!start)
+        spareAvatars.emplace();
+    // nothing built here may reach into the chunks next to this one
+    chamber::fence onlyThisChunk(*this->mychamber, this->lo, this->hi);
+    const int depth = difficulty::chunkDepth(this->chunk);
+    const int holes = difficulty::mazeHoles(depth);
+    this->buildMaze(holes);
+    const bool globalTeleporter = start || goe::rng::below(this->eng, globalTeleporterOdds) == 0;
+    return this->placeEverything(holes, depth, start, globalTeleporter);
+}
+
+bool randomLevelGenerator::placeEverything(int holes, int depth, bool start, bool globalTeleporter)
+{
     int tolerance = 10;
-    // fewer holes make a harder level; the difficulty of this chamber starts from that
-    this->mychamber->depth = std::max(0, 5 - holes);
-    this->headNode = this->lvlGenerate(1, 1, this->width - 2, this->height - 2, _iterations, holes);
-
-    this->headNode->calculateInitialSurface();
-
     std::vector<elementToPlace>
         elementCollection; // here we will store the elements to be placed on the board
     std::vector<elementToPlace> elementsToChooseFrom;
-    //draw the walls around the whole chamber
-    for (int c = 0; c < this->width; c++) {
-        std::shared_ptr<bElem> newElem = elementFactory::generateAnElement<wall>(this->mychamber, 0);
-        std::shared_ptr<bElem> newElem1 = elementFactory::generateAnElement<wall>(this->mychamber,
-                                                                                  0);
-        newElem->stepOnElement(this->mychamber->getElement(c, 0));
-        newElem1->stepOnElement(this->mychamber->getElement(c, this->height - 1));
-    }
-    for (int c = 0; c < this->height; c++) {
-        std::shared_ptr<bElem> newElem2 = elementFactory::generateAnElement<wall>(this->mychamber,
-                                                                                  0);
-        std::shared_ptr<bElem> newElem3 = elementFactory::generateAnElement<wall>(this->mychamber,
-                                                                                  0);
-        newElem2->stepOnElement(this->mychamber->getElement(0, c));
-        newElem3->stepOnElement(this->mychamber->getElement(this->width - 1, c));
-    }
 
     // build probablility table - this way we can pick random objects with different probablilities
     for (int c = 1; c < (50 / holes); c++) {
@@ -323,18 +380,18 @@ bool randomLevelGenerator::generateLevel(int holes)
         elementsToChooseFrom.push_back({bElemTypes::_plainGun, 0, 1, 0, 3});
     }
 
-    for (int c = 0; c < difficulty::landmineCopies(this->mychamber->depth); c++)
+    for (int c = 0; c < difficulty::landmineCopies(depth); c++)
         elementsToChooseFrom.push_back({bElemTypes::_landmineType, 0, 1, 0, 3});
 
+    const int localTeleporters = this->localTeleporterSubtype();
     for (int c = 0; c < 50; c++) {
         elementsToChooseFrom.push_back({bElemTypes::_brickClusterType, 0, 1, 0, 3});
         elementsToChooseFrom.push_back({bElemTypes::_key, 0, 1, 0, 3});
         elementsToChooseFrom.push_back({bElemTypes::_key, 2, 1, 0, 3});
         elementsToChooseFrom.push_back({bElemTypes::_key, 4, 1, 0, 3});
-        elementsToChooseFrom.push_back(
-            {bElemTypes::_teleporter, this->mychamber->getInstanceId() + 1, 1, 0, 3});
+        elementsToChooseFrom.push_back({bElemTypes::_teleporter, localTeleporters, 1, 0, 3});
     }
-    //  elementsToChooseFrom.push_back({_teleporter,0,1,0,6});
+    // a spare avatar now and then
     elementsToChooseFrom.push_back({bElemTypes::_player, 0, 1, 0, 3});
 
     //
@@ -352,32 +409,36 @@ bool randomLevelGenerator::generateLevel(int holes)
     int demandedSurface = 0;
     for (unsigned int cnt = 0; cnt < elementCollection.size(); cnt++)
         demandedSurface += elementCollection[cnt].surface * (elementCollection[cnt].number);
-    // the player's starting area, behind doors that need the key placed with the player
-    auto playerArea = this->pickArea(demandedSurface, tolerance);
-    if (!playerArea) {
-        std::cout << "Found areas is empty!\n";
-        return false;
+    if (start) {
+        // the player's starting area, behind doors that need the key placed with the player
+        auto playerArea = this->pickArea(demandedSurface, tolerance);
+        if (!playerArea) {
+            std::cout << "Found areas is empty!\n";
+            return false;
+        }
+        this->placeElementCollection(*playerArea, elementCollection);
+        // the distance part of the difficulty is measured from the player's starting room
+        {
+            const chamberArea &startArea = *playerArea;
+            this->mychamber->origin = coords((startArea.upLeft.x + startArea.downRight.x) / 2,
+                                             (startArea.upLeft.y + startArea.downRight.y) / 2);
+        }
+        this->placeDoors({bElemTypes::_door, 1, 1, 0, 9}, *playerArea);
+        if (auto parent = this->headNode->parentOf(*playerArea))
+            parent->get().childrenLock = true;
+        this->retireArea(*playerArea);
     }
-    this->placeElementCollection(*playerArea, elementCollection);
-    // the distance part of the difficulty is measured from the player's starting room
-    {
-        const chamberArea &start = *playerArea;
-        this->mychamber->origin = coords((start.upLeft.x + start.downRight.x) / 2,
-                                         (start.upLeft.y + start.downRight.y) / 2);
-    }
-    this->placeDoors({bElemTypes::_door, 1, 1, 0, 9}, *playerArea);
-    if (auto parent = this->headNode->parentOf(*playerArea))
-        parent->get().childrenLock = true;
-    this->retireArea(*playerArea);
     elementCollection.clear();
 
-    elementCollection.push_back({bElemTypes::_teleporter, 0, 1, 0, 5});
-    if (auto teleportArea = this->pickArea(demandedSurface, tolerance)) {
-        this->placeElementCollection(*teleportArea, elementCollection);
-        this->placeDoors({bElemTypes::_door, 0, 1, 0, 9}, *teleportArea);
-        if (auto parent = this->headNode->parentOf(*teleportArea))
-            parent->get().childrenLock = true;
-        this->retireArea(*teleportArea);
+    if (globalTeleporter) {
+        elementCollection.push_back({bElemTypes::_teleporter, 0, 1, 0, 5});
+        if (auto teleportArea = this->pickArea(demandedSurface, tolerance)) {
+            this->placeElementCollection(*teleportArea, elementCollection);
+            this->placeDoors({bElemTypes::_door, 0, 1, 0, 9}, *teleportArea);
+            if (auto parent = this->headNode->parentOf(*teleportArea))
+                parent->get().childrenLock = true;
+            this->retireArea(*teleportArea);
+        }
     }
 
     while (true) {
@@ -419,37 +480,37 @@ bool randomLevelGenerator::generateLevel(int holes)
     return true;
 }
 
+void randomLevelGenerator::placeDoorAt(const elementToPlace &element, int x, int y)
+{
+    if (!this->steppableAt(x, y))
+        return;
+    this->createElement(element)->stepOnElement(this->at(x, y));
+}
+
 bool randomLevelGenerator::placeDoors(elementToPlace element, const chamberArea &location)
 {
-    /*
-    Place doors at the location
-
-    */
 #ifdef _VerbousMode_
     std::cout << "door " << element.eSubType << "\n";
 #endif
-    //Ok, now we need to place the door.
+    // every open cell around the area gets a door
     for (int c1 = location.upLeft.x - 1; c1 <= location.downRight.x + 1; c1++) {
-        if (this->mychamber->getElement(c1, location.upLeft.y - 1)->getAttrs()->isSteppable()) {
-            std::shared_ptr<bElem> neEl = this->createElement(element);
-            neEl->stepOnElement(this->mychamber->getElement(c1, location.upLeft.y - 1));
-        }
-        if (this->mychamber->getElement(c1, location.downRight.y + 1)->getAttrs()->isSteppable()) {
-            std::shared_ptr<bElem> neEl = this->createElement(element);
-            neEl->stepOnElement(this->mychamber->getElement(c1, location.downRight.y + 1));
-        }
+        this->placeDoorAt(element, c1, location.upLeft.y - 1);
+        this->placeDoorAt(element, c1, location.downRight.y + 1);
     }
     for (int c2 = location.upLeft.y; c2 <= location.downRight.y; c2++) {
-        if (this->mychamber->getElement(location.upLeft.x - 1, c2)->getAttrs()->isSteppable()) {
-            std::shared_ptr<bElem> neEl = this->createElement(element);
-            neEl->stepOnElement(this->mychamber->getElement(location.upLeft.x - 1, c2));
-        }
-        if (this->mychamber->getElement(location.downRight.x + 1, c2)->getAttrs()->isSteppable()) {
-            std::shared_ptr<bElem> neEl = this->createElement(element);
-            neEl->stepOnElement(this->mychamber->getElement(location.downRight.x + 1, c2));
-        }
+        this->placeDoorAt(element, location.upLeft.x - 1, c2);
+        this->placeDoorAt(element, location.downRight.x + 1, c2);
     }
-
+    // an area along a chunk's east or south side may reach a gap in the next chunk's wall, which
+    // is not ours to change; the door goes on the area's own cell in front of that gap
+    if (location.downRight.x == this->hi.x)
+        for (int g : this->eastGaps)
+            if (this->lo.y + g >= location.upLeft.y && this->lo.y + g <= location.downRight.y)
+                this->placeDoorAt(element, this->hi.x, this->lo.y + g);
+    if (location.downRight.y == this->hi.y)
+        for (int g : this->southGaps)
+            if (this->lo.x + g >= location.upLeft.x && this->lo.x + g <= location.downRight.x)
+                this->placeDoorAt(element, this->lo.x + g, this->hi.y);
     return true;
 }
 

@@ -107,18 +107,16 @@ TEST(DifficultyTests, RulesStartAtTheOldValuesAndNeverGetEasier)
     }
 }
 
-TEST(DifficultyTests, DifficultyAddsLevelDepthAndDistance)
+TEST(DifficultyTests, DifficultyAddsPlayerLevelAndDistance)
 {
     std::shared_ptr<bElem> plr;
     auto mc = room(coords(150, 10), coords(3, 3), plr);
     EXPECT_EQ(difficulty::current(), 0);
-    mc->depth = 2;
-    EXPECT_EQ(difficulty::current(), 2);
     plr->getStats()->setPoints(SHOOT, 4);
-    EXPECT_EQ(difficulty::current(), 3);
+    EXPECT_EQ(difficulty::current(), 1);
     mc->origin = coords(3, 3);
     plr->stepOnElement(mc->getElement(3 + difficulty::distanceUnit, 3));
-    EXPECT_EQ(difficulty::current(), 4);
+    EXPECT_EQ(difficulty::current(), 2);
     EXPECT_EQ(difficulty::of(nullptr), 0);
 }
 
@@ -148,13 +146,11 @@ TEST(DifficultyTests, DeeperLevelsGetLandminesAndADifficultyOrigin)
     inputManager::getInstance(true);
     randomLevelGenerator easy(120, 120);
     ASSERT_TRUE(easy.generateLevel(5));
-    EXPECT_EQ(easy.mychamber->depth, 0);
     EXPECT_EQ(countOfType(easy.mychamber, bElemTypes::_landmineType), 0);
     EXPECT_FALSE(easy.mychamber->origin == NOCOORDS);
 
     randomLevelGenerator hard(120, 120);
     ASSERT_TRUE(hard.generateLevel(1));
-    EXPECT_EQ(hard.mychamber->depth, 4);
     EXPECT_GT(countOfType(hard.mychamber, bElemTypes::_landmineType), 0);
     EXPECT_FALSE(hard.mychamber->origin == NOCOORDS);
 }
