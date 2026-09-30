@@ -24,72 +24,72 @@
 videoDriver::videoDriver()
     : std::enable_shared_from_this<videoDriver>()
 {
-    auto gameConfig = configManager::getInstance()->getConfig();
-    if (gameConfig == nullptr || gameConfig->FontFile.size() == 0
-        || gameConfig->spriteFile.size() == 0) {
+    auto config = configManager::getInstance()->getConfig();
+    if (config == nullptr || config->FontFile.size() == 0
+        || config->spriteFile.size() == 0) {
         std::cout << "Graphical assets are not defined in the config file\n";
         exit(0);
     }
     al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
     // every element definition shares the one sprite sheet
-    std::shared_ptr<ALLEGRO_BITMAP> spriteTs(al_load_bitmap(gameConfig->spriteFile.c_str()),
+    std::shared_ptr<ALLEGRO_BITMAP> spriteTs(al_load_bitmap(config->spriteFile.c_str()),
                                              goe::destroyWith<al_destroy_bitmap>());
     if (spriteTs == nullptr) {
         std::cout << "Could not load sprites tile-set, please check your configuration.\n"
-                  << gameConfig->spriteFile.c_str() << "\n";
+                  << config->spriteFile.c_str() << "\n";
         exit(0);
     }
 
-    for (unsigned int c = 0; c < gameConfig->sprites.size(); c++) {
+    for (unsigned int c = 0; c < config->sprites.size(); c++) {
         vElement ved = std::make_shared<videoElement::videoElementDef>(spriteTs);
-        if (gameConfig->sprites[c].dying.size() > 0) {
-            for (auto e : gameConfig->sprites[c].dying)
+        if (config->sprites[c].dying.size() > 0) {
+            for (auto e : config->sprites[c].dying)
                 ved->dying.push_back(e);
         } else {
-            for (auto e : gameConfig->gDying)
+            for (auto e : config->gDying)
                 ved->dying.push_back(e);
         }
-        if (gameConfig->sprites[c].destroying.size() > 0) {
-            for (auto e : gameConfig->sprites[c].destroying)
+        if (config->sprites[c].destroying.size() > 0) {
+            for (auto e : config->sprites[c].destroying)
                 ved->destroying.push_back(e);
         } else {
-            for (auto e : gameConfig->gDestroying)
+            for (auto e : config->gDestroying)
                 ved->destroying.push_back(e);
         }
-        if (gameConfig->sprites[c].teleporting.size() > 0) {
-            for (auto e : gameConfig->sprites[c].teleporting)
+        if (config->sprites[c].teleporting.size() > 0) {
+            for (auto e : config->sprites[c].teleporting)
                 ved->teleporting.push_back(e);
         } else {
-            for (auto e : gameConfig->gTeleporting)
+            for (auto e : config->gTeleporting)
                 ved->teleporting.push_back(e);
         }
 
-        if (gameConfig->sprites[c].fadingOut.size() > 0) {
-            for (auto e : gameConfig->sprites[c].fadingOut)
+        if (config->sprites[c].fadingOut.size() > 0) {
+            for (auto e : config->sprites[c].fadingOut)
                 ved->fadingOut.push_back(e);
         } else {
-            for (auto e : gameConfig->gFadingOut)
+            for (auto e : config->gFadingOut)
                 ved->fadingOut.push_back(e);
         }
-        if (gameConfig->sprites[c].fadingIn.size() > 0) {
-            for (auto e : gameConfig->sprites[c].fadingIn)
+        if (config->sprites[c].fadingIn.size() > 0) {
+            for (auto e : config->sprites[c].fadingIn)
                 ved->fadingIn.push_back(e);
         } else {
-            for (auto e : gameConfig->gFadingIn)
+            for (auto e : config->gFadingIn)
                 ved->fadingIn.push_back(e);
         }
-        for (unsigned int c1 = 0; c1 < gameConfig->sprites[c].animDef.size(); c1++) {
+        for (unsigned int c1 = 0; c1 < config->sprites[c].animDef.size(); c1++) {
             std::vector<std::vector<coords>> dirs;
-            for (unsigned int c2 = 0; c2 < gameConfig->sprites[c].animDef[c1].size(); c2++) {
+            for (unsigned int c2 = 0; c2 < config->sprites[c].animDef[c1].size(); c2++) {
                 std::vector<coords> phs;
-                for (unsigned int c3 = 0; c3 < gameConfig->sprites[c].animDef[c1][c2].size(); c3++) {
-                    phs.push_back(gameConfig->sprites[c].animDef[c1][c2][c3]);
+                for (unsigned int c3 = 0; c3 < config->sprites[c].animDef[c1][c2].size(); c3++) {
+                    phs.push_back(config->sprites[c].animDef[c1][c2][c3]);
                 }
                 dirs.push_back(phs);
             }
             ved->defArray.push_back(dirs);
         }
-        this->sprites[gameConfig->sprites[c].eType] = ved;
+        this->sprites[config->sprites[c].eType] = ved;
     }
 }
 

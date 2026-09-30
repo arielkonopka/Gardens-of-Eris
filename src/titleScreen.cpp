@@ -26,8 +26,8 @@
 #include <algorithm>
 #include <allegro5/allegro_ttf.h>
 
-titleScreen::titleScreen(titleMenu &menu)
-    : menu(menu)
+titleScreen::titleScreen(titleMenu &shown)
+    : menu(shown)
 {
     al_install_keyboard();
     al_install_joystick(); // pad buttons can be bound in Config

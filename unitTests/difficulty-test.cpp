@@ -102,8 +102,9 @@ TEST(DifficultyTests, RulesStartAtTheOldValuesAndNeverGetEasier)
         EXPECT_GE(difficulty::beamDamage(d), difficulty::beamDamage(d - 1));
         EXPECT_GE(difficulty::landmineCopies(d), difficulty::landmineCopies(d - 1));
         EXPECT_GE(difficulty::houndPatience(d), 55 * difficulty::ticksPerSecond);
-        if (d > 1)
+        if (d > 1) {
             EXPECT_LE(difficulty::houndPatience(d), difficulty::houndPatience(d - 1));
+        }
     }
 }
 

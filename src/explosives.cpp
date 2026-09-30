@@ -171,9 +171,9 @@ float explosives::getViewRadius() const
     return this->radius;
 }
 
-bool explosives::explode(float radius)
+bool explosives::explode(float blastRadius)
 {
-    this->radius = radius * (float) 2.5;
+    this->radius = blastRadius * (float) 2.5;
     this->brd = this->getBoard();
     if (!brd || this->getStats()->isDestroying() || this->getStats()->isDisposed())
         return false;
@@ -185,23 +185,23 @@ bool explosives::explode(float radius)
     viewPoint::get_instance().addViewPoint(brd->getElement(mpos));
     traverser(mpos,
               mpos + myUtility::Coords::dir2coords(dir::direction::RIGHT),
-              radius,
-              (int) radius + 2,
+              blastRadius,
+              (int) blastRadius + 2,
               dir::direction::LEFT);
     traverser(mpos,
               mpos + myUtility::Coords::dir2coords(dir::direction::LEFT),
-              radius,
-              (int) radius + 2,
+              blastRadius,
+              (int) blastRadius + 2,
               dir::direction::RIGHT);
     traverser(mpos,
               mpos + myUtility::Coords::dir2coords(dir::direction::UP),
-              radius,
-              (int) radius + 2,
+              blastRadius,
+              (int) blastRadius + 2,
               dir::direction::DOWN);
     traverser(mpos,
               mpos + myUtility::Coords::dir2coords(dir::direction::DOWN),
-              radius,
-              (int) radius + 2,
+              blastRadius,
+              (int) blastRadius + 2,
               dir::direction::UP);
     // the board is only needed during the blast; holding on to it would keep it alive for good
     this->brd.reset();
@@ -215,9 +215,9 @@ bool explosives::explode(float radius)
  * @return
  */
 bool explosives::traverser(
-    myUtility::Coords center, myUtility::Coords point, float radius, int plen, dir::direction noGo)
+    myUtility::Coords center, myUtility::Coords point, float reach, int plen, dir::direction noGo)
 {
-    if (point.distance(center) > radius || plen <= 0)
+    if (point.distance(center) > reach || plen <= 0)
         return false;
     // a cell the board does not have stops the blast like a wall
     auto elem = brd->getElement(point);
@@ -228,25 +228,25 @@ bool explosives::traverser(
     if (noGo != dir::direction::RIGHT)
         traverser(center,
                   point + myUtility::Coords::dir2coords(dir::direction::RIGHT),
-                  radius,
+                  reach,
                   plen - 1,
                   noGo);
     if (noGo != dir::direction::LEFT)
         traverser(center,
                   point + myUtility::Coords::dir2coords(dir::direction::LEFT),
-                  radius,
+                  reach,
                   plen - 1,
                   noGo);
     if (noGo != dir::direction::UP)
         traverser(center,
                   point + myUtility::Coords::dir2coords(dir::direction::UP),
-                  radius,
+                  reach,
                   plen - 1,
                   noGo);
     if (noGo != dir::direction::DOWN)
         traverser(center,
                   point + myUtility::Coords::dir2coords(dir::direction::DOWN),
-                  radius,
+                  reach,
                   plen - 1,
                   noGo);
     return true;

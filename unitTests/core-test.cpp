@@ -376,8 +376,9 @@ TEST(GeneratorTests, GeneratedLevelIsWalledAndConsistent)
             auto top = mc->getElement(x, y);
             ASSERT_TRUE(top);
             // the outer border is solid wall
-            if (x == 0 || y == 0 || x == 63 || y == 63)
+            if (x == 0 || y == 0 || x == 63 || y == 63) {
                 EXPECT_EQ(top->getType(), bElemTypes::_wallType);
+            }
             // every element in the stack knows where it is and on which board
             for (auto e = top; e; e = e->getStats()->getSteppingOn()) {
                 EXPECT_TRUE(e->getStats()->getMyPosition() == coords(x, y));

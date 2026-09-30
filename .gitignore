@@ -4,3 +4,7 @@
 # CMake build folder
 /build/*
 !/build/data
+
+# Code::Blocks per-user state
+*.depend
+*.layout

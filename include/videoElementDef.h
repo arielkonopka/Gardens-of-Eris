@@ -49,12 +49,7 @@ class videoElementDef
         coordVector fadingOut;
         coordVector fadingIn;
         explicit videoElementDef(std::shared_ptr<ALLEGRO_BITMAP> sprites_);
-        ~videoElementDef();
-        videoElementDef(const videoElementDef& other);
         std::shared_ptr<ALLEGRO_BITMAP> sprites;
-        static void initializeDriver();
-    private:
-
 };
 
 

@@ -152,13 +152,13 @@ TEST(PlayerTests, PlayerStepsIntoExplodingBomb)
         {
             for (int b = 0; b < 10; b++)
             {
-                std::shared_ptr<bElem> e = mc->getElement(a, b);
-                ASSERT_TRUE(e != nullptr);
-                while (e != nullptr)
+                std::shared_ptr<bElem> cell = mc->getElement(a, b);
+                ASSERT_TRUE(cell != nullptr);
+                while (cell != nullptr)
                 {
-                    if (e->getStats()->getInstanceId() == p->getStats()->getInstanceId())
+                    if (cell->getStats()->getInstanceId() == p->getStats()->getInstanceId())
                         instances++;
-                    e = e->getStats()->getSteppingOn();
+                    cell = cell->getStats()->getSteppingOn();
                 }
             }
         }
@@ -215,8 +215,9 @@ TEST(PlayerTests, PlayerActivationOnPlayerDeath)
         iid = tp->getStats()->getInstanceId();
         tp->disposeElement();
         tp1 = player::getActivePlayer();
-        if (p1 != nullptr)
+        if (p1 != nullptr) {
             EXPECT_TRUE(iid != p1->getStats()->getInstanceId());
+        }
         tp = tp1;
     }
     m.clear();
@@ -302,7 +303,7 @@ TEST(PlayerTests, PlayerCollectApplesThenDestroyedByBombAndThenTheStashDestroyed
  * The 'direction' indicates the direction of the player's movement.
  */
 
-void controlPlayer(std::shared_ptr<chamber> mc, controlItem cntrlItm)
+void controlPlayer(controlItem cntrlItm)
 {
     std::shared_ptr<bElem> p = player::getActivePlayer();
     EXPECT_TRUE(p.get() != nullptr);
@@ -376,13 +377,13 @@ TEST(PlayerTests, MovePlayer)
         }
         ci.type = c;
         ci.dir = dir::direction::UP;
-        controlPlayer(mc, ci);
+        controlPlayer(ci);
         ci.dir = dir::direction::DOWN;
-        controlPlayer(mc, ci);
+        controlPlayer(ci);
         ci.dir = dir::direction::LEFT;
-        controlPlayer(mc, ci);
+        controlPlayer(ci);
         ci.dir = dir::direction::RIGHT;
-        controlPlayer(mc, ci);
+        controlPlayer(ci);
     }
 }
 

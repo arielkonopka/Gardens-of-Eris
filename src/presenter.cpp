@@ -98,7 +98,6 @@ void presenter::showSplash()
 }
 bool presenter::loadCofiguredData()
 {
-    videoElement::videoElementDef::initializeDriver();
     std::shared_ptr<gameConfig> gcfg = configManager::getInstance()->getConfig();
     al_init_font_addon();
     al_init_ttf_addon();
@@ -191,7 +190,7 @@ bool presenter::showObjectTile(
             && !elem->getStats()->isTeleporting())) {
         coords = ve->defArray[sType][sDir][sPh];
         draw_sprite();
-        if (!elem->getType() == bElemTypes::_floorType)
+        if (elem->getType() != bElemTypes::_floorType)
             return res;
     }
     if (elem->getStats()->isDying()) {

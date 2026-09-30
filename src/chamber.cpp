@@ -56,10 +56,10 @@ std::shared_ptr<chamber> chamber::makeWorld()
     return c;
 }
 
-chamber::fence::fence(chamber &board, coords lo, coords hi)
-    : board(board)
-    , savedLo(board.limitLo)
-    , savedHi(board.limitHi)
+chamber::fence::fence(chamber &fenced, coords lo, coords hi)
+    : board(fenced)
+    , savedLo(fenced.limitLo)
+    , savedHi(fenced.limitHi)
 {
     board.limitLo = coords(std::max(lo.x, savedLo.x), std::max(lo.y, savedLo.y));
     board.limitHi = coords(std::min(hi.x, savedHi.x), std::min(hi.y, savedHi.y));

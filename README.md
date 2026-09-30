@@ -383,6 +383,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* The build is warning-free with `-Wall -Wextra -Wpedantic -Wshadow`, which are now on by default. Fixed along the way: handing an inventory to a new owner made every item its own collector.
 * Explosions are heard again: landmines, bombs and bazooka missiles went off in silence because the blast never asked for its sound.
 * Puppet masters speak: each kind of controller says "controller enabled" in its own language, in a S.A.M.-like robot voice (made with espeak-ng by `tools/voices/make-controller-voices.sh`).
 * Config has music and sound effects volumes, and a Controls screen to choose the keys and pad buttons for every action.

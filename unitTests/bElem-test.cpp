@@ -72,10 +72,7 @@ TYPED_TEST_SUITE(BasicObjectTests_bElemCreateDestroyChamber, all_test_types);
 TYPED_TEST(BasicObjectTests_bElemCreateDestroyChamber, bElemCreateDestroyChamber)
     {
     using T = TypeParam;
-        coords csize = (coords)
-                {
-                        10, 12
-                };
+        coords csize(10, 12);
 //    std::cout<<"make chamber\n";
         std::shared_ptr<chamber> chmbr = chamber::makeNewChamber(csize); // we need only a small chamber
         coords cs1 = chmbr->getSizeOfChamber();
@@ -247,8 +244,9 @@ TYPED_TEST(BasicObjectTests_StackingAndRemovingTest, StackingAndRemovingTest)
         //we at first take the last element, at the bottom, because it usually causes issues
         te = findLastStep(mc->getElement(3, 3));
         te2 = te->removeElement();
-        if (mc->getElement(3, 3) != nullptr) //check if element is really removed
+        if (mc->getElement(3, 3) != nullptr) { //check if element is really removed
             EXPECT_TRUE(searchForIdInSteppers(mc->getElement(3, 3), te2->getStats()->getInstanceId()) == false);
+        }
         te = mc->getElement(3, 3);
         while (findDepth(mc->getElement(3, 3)) > 2) {
             if (te == nullptr) {
@@ -264,8 +262,9 @@ TYPED_TEST(BasicObjectTests_StackingAndRemovingTest, StackingAndRemovingTest)
 
                 te = te3;
                 ASSERT_TRUE(te2 != nullptr);
-                if (mc->getElement(3, 3) != nullptr)
+                if (mc->getElement(3, 3) != nullptr) {
                     EXPECT_TRUE(searchForIdInSteppers(mc->getElement(3, 3), te2->getStats()->getInstanceId()) == false);
+                }
             } else {
                 te = te->getStats()->getSteppingOn();
                 ccc++;
@@ -298,8 +297,9 @@ TYPED_TEST(BasicObjectTests_StackingAndDisposingTest, StackingAndDisposingTest)
         EXPECT_TRUE(te->getStats()->getInstanceId() != mc->getElement(3, 3)->getStats()->getInstanceId());
         myId = te->getStats()->getInstanceId();
         te->disposeElement();
-        if (mc->getElement(3, 3) != nullptr)
+        if (mc->getElement(3, 3) != nullptr) {
             EXPECT_TRUE(searchForIdInSteppers(mc->getElement(3, 3), myId) == false);
+        }
 
         te = mc->getElement(3, 3);
         while (mc->getElement(3, 3) != nullptr && mc->getElement(3, 3)->getStats()->getSteppingOn() != nullptr) {
@@ -309,8 +309,9 @@ TYPED_TEST(BasicObjectTests_StackingAndDisposingTest, StackingAndDisposingTest)
                 myId = te->getStats()->getInstanceId();
                 te->disposeElement();
                 te = te3;
-                if (mc->getElement(3, 3) != nullptr)
+                if (mc->getElement(3, 3) != nullptr) {
                     EXPECT_TRUE(searchForIdInSteppers(mc->getElement(3, 3), myId) == false);
+                }
 
             } else {
                 te = te->getStats()->getSteppingOn();
@@ -617,8 +618,9 @@ TYPED_TEST(BasicObjectTests_InteractTimerMechanismChecker, InteractTimerMechanis
         for (int c = 0; c < 1000; c++) bElem::tick();
         tElem->interact(mc->getElement(1, 1));
         bElem::tick();
-        if (tElem->getAttrs()->isInteractive())
+        if (tElem->getAttrs()->isInteractive()) {
             EXPECT_TRUE(tElem->getStats()->isInteracting());
+        }
         for (int c = 0; c < GoEConstants::_interactedTime + 1; c++) bElem::tick();
         EXPECT_TRUE((!tElem->getStats()->isInteracting() && tElem->getAttrs()->isInteractive()) ||
                     (!tElem->getStats()->isInteracting() && !tElem->getAttrs()->isInteractive()));

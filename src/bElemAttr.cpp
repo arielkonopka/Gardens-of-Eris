@@ -23,14 +23,14 @@
 #include "../include/bElem.h"
 #include "../include/inventory.h"
 
-bElemAttr::bElemAttr(std::shared_ptr<bElem> owner, int type, int subtype)
+bElemAttr::bElemAttr(std::shared_ptr<bElem> newOwner, int type, int subtype)
 {
-    this->owner = owner;
+    this->owner = newOwner;
     this->setSubtype(subtype);
 
-    if (owner == nullptr)
+    if (newOwner == nullptr)
         return; // no point getting values, set it yourself then
-    this->ownerStats = owner->getStats();
+    this->ownerStats = newOwner->getStats();
     this->getDefaultValues(type, subtype);
 }
 

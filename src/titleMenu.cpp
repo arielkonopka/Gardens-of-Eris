@@ -55,9 +55,9 @@ void popUtf8(std::string &s)
 }
 } // namespace
 
-titleMenu::titleMenu(gameSettings &settings, std::string settingsFile)
-    : settings(settings)
-    , settingsFile(std::move(settingsFile))
+titleMenu::titleMenu(gameSettings &edited, std::string file)
+    : settings(edited)
+    , settingsFile(std::move(file))
 {
     this->options.push_back({"Save location",
                              [this] { return this->settings.getSaveDirectory(); },

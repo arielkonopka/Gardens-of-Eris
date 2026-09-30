@@ -265,7 +265,7 @@ Coords &Coords::operator=(const coords &other)
  * @brief Temporary operator for the transition from coords
  */
 
-bool Coords::operator==(const coords &other)
+bool Coords::operator==(const coords &other) const
 {
     return this->x == other.x && this->y == other.y;
 }
