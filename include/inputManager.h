@@ -28,6 +28,7 @@
 #define INPUTMANAGER_H
 #include "commons.h"
 #include "allegroHandles.h"
+#include "controlBindings.h"
 
 
 #include <allegro5/allegro.h>
@@ -68,6 +69,7 @@ private:
     inputManager();
     void startInput();
     controlItem lastItem=controlItem(0,dir::direction::NODIRECTION);
+    goe::controls::inputState held; ///< keys, pad buttons and stick, as the input thread last saw them
 
     static std::once_flag once;
     goe::eventQueueHandle evQueue;

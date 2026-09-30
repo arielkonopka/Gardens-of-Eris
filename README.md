@@ -56,7 +56,9 @@ The labyrinth is inhabited by an assortment of creatures and contraptions. You'l
 
 ## Playing the game
 
-The game opens with a title screen: **Start**, **Config** and **Exit**. Config sets the folder the game is saved to; it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
+The game opens with a title screen: **Start**, **Config** and **Exit**. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
+
+These are the default keys. Config, Controls lets you choose other keys (two per action) and a pad button for each action: pick the action, then press the new key or pad button. Backspace leaves an action without keys, and Reset to defaults brings this layout back. The pad's stick always walks.
 
 | Key | What it does |
 |---|---|
@@ -69,6 +71,7 @@ The game opens with a title screen: **Start**, **Config** and **Exit**. Config s
 | Space | use the selected item |
 | R | drop the selected item |
 | Esc | give up this avatar (you come back in the next activated one) |
+| Shift + Esc | quit the game (the shoot key and the give-up key together) |
 | F5 / F9 | save / load the game (`savegame.goe` in the save folder) |
 
 `GardenOfEris --load <file>` starts straight from a saved game, without the title screen.
@@ -96,7 +99,7 @@ The game writes a crash report, `crash-<date>-<time>.log`, into the save folder 
 | Monster | Roams the maze. Monsters collect things if their skin allows it (`canCollect` in `skins.json`), and some have no inventory on purpose. |
 | Bunker | A fixed turret that looks along its four lines and fires at you. |
 | Kiki and bouba | Kiki is a death-ray emitter; the beam is made of boubas, which hurt whatever stands in them. |
-| Patrolling drone and puppet master | A drone does nothing until you hand it a puppet master (a controller). The controller decides how it moves: **patrol** (wanders, and becomes an extra camera for you), **collector** (goes for collectibles it can see), **hunter** (chases you around walls when you are near), **wall follower** (keeps a hand on the wall and walks the maze). |
+| Patrolling drone and puppet master | A drone does nothing until you hand it a puppet master (a controller). The controller decides how it moves: **patrol** (wanders, and becomes an extra camera for you), **collector** (goes for collectibles it can see), **hunter** (chases you around walls when you are near), **wall follower** (keeps a hand on the wall and walks the maze). When a controller takes over a drone it says "controller enabled" in a robot voice, each kind in its own language: patrol in English, collector in Polish, hunter in German, wall follower in French, a camera's guardian in Russian and the Hound in Latin. |
 | Security camera | Watches for you. When it sees you, its guardian drones come to check the spot. Guardians fight you when they see you, shoot along clear lines, and never go further than 55 cells from their camera. |
 | The Hound | A red drone with the golden apple on its hull. It is sent after you when you stay in one 64x64 area too long; it bites, and gives up when you leave that area. |
 | Teleporter | Local teleporters lead somewhere in the same region of the world (5 x 5 chunks); global ones (subtype 0), each in its own locked room, can take you anywhere in the maze built so far. The pairing is random and made when a teleporter is first used. |
@@ -380,6 +383,9 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Explosions are heard again: landmines, bombs and bazooka missiles went off in silence because the blast never asked for its sound.
+* Puppet masters speak: each kind of controller says "controller enabled" in its own language, in a S.A.M.-like robot voice (made with espeak-ng by `tools/voices/make-controller-voices.sh`).
+* Config has music and sound effects volumes, and a Controls screen to choose the keys and pad buttons for every action.
 * The fog is a bitmap now, set by `FogBitmap` in skins.json (a dark Discordian haze with gold pentagons by default), and the light is centred on whoever sees. The fog shaders are lighter and GLSL ES compatible for a later phone port: a small visibility mask is painted on the CPU and read with one filtered lookup, instead of every pixel looping over every view point.
 * Far chunks go to disk: chunks more than three chunks from you are written to a temporary folder and read back, as you left them, when you come near again, so memory stays flat however far you walk. Saves keep them (save format 5; older saves still load).
 * Fixed: after a load or a new game, the old world could stay in memory for the rest of the game, because an explosive kept holding on to its board.

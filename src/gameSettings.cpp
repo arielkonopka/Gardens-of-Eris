@@ -21,12 +21,13 @@
  */
 
 #include "gameSettings.h"
+#include <algorithm>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
+#include <rapidjson/prettywriter.h>
 #include <sstream>
 
 gameSettings &gameSettings::getInstance()
@@ -69,6 +70,54 @@ std::string gameSettings::getSaveFile() const
     return (std::filesystem::path(this->getSaveDirectory()) / saveFileName).string();
 }
 
+void gameSettings::setMusicVolume(int percent)
+{
+    this->musicVolume = std::clamp(percent, 0, 100);
+}
+
+void gameSettings::setEffectsVolume(int percent)
+{
+    this->effectsVolume = std::clamp(percent, 0, 100);
+}
+
+goe::controls::bindings gameSettings::getControls() const
+{
+    std::lock_guard<std::mutex> lock(this->m);
+    return this->controls;
+}
+
+void gameSettings::setControls(const goe::controls::bindings &b)
+{
+    std::lock_guard<std::mutex> lock(this->m);
+    this->controls = b;
+}
+
+namespace {
+/// reads the "controls" object; actions it does not name keep what they had
+goe::controls::bindings readControls(const rapidjson::Value &v, goe::controls::bindings b)
+{
+    using goe::controls::bindings;
+    for (auto it = v.MemberBegin(); it != v.MemberEnd(); ++it) {
+        auto a = bindings::fromId(it->name.GetString());
+        if (!a || !it->value.IsObject())
+            continue;
+        b.clear(*a);
+        if (it->value.HasMember("pad") && it->value["pad"].IsInt())
+            b.bindPadButton(*a, it->value["pad"].GetInt());
+        if (it->value.HasMember("keys") && it->value["keys"].IsArray()) {
+            const auto &keys = it->value["keys"].GetArray();
+            // bindKey puts each key first, so the main key goes in last
+            for (auto k = keys.End(); k != keys.Begin();) {
+                --k;
+                if (k->IsInt())
+                    b.bindKey(*a, k->GetInt());
+            }
+        }
+    }
+    return b;
+}
+} // namespace
+
 bool gameSettings::load(const std::string &file)
 {
     std::ifstream in(file);
@@ -84,16 +133,43 @@ bool gameSettings::load(const std::string &file)
         std::lock_guard<std::mutex> lock(this->m);
         this->saveDirectory = doc["saveDirectory"].GetString();
     }
+    if (doc.HasMember("musicVolume") && doc["musicVolume"].IsInt())
+        this->setMusicVolume(doc["musicVolume"].GetInt());
+    if (doc.HasMember("effectsVolume") && doc["effectsVolume"].IsInt())
+        this->setEffectsVolume(doc["effectsVolume"].GetInt());
+    if (doc.HasMember("controls") && doc["controls"].IsObject())
+        this->setControls(readControls(doc["controls"], this->getControls()));
     return true;
 }
 
 bool gameSettings::save(const std::string &file) const
 {
     rapidjson::StringBuffer sb;
-    rapidjson::Writer<rapidjson::StringBuffer> w(sb);
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> w(sb); // people edit it by hand too
     w.StartObject();
     w.Key("saveDirectory");
     w.String(this->getSaveDirectory().c_str());
+    w.Key("musicVolume");
+    w.Int(this->getMusicVolume());
+    w.Key("effectsVolume");
+    w.Int(this->getEffectsVolume());
+    w.Key("controls");
+    w.StartObject();
+    const auto controls = this->getControls();
+    for (int c = 0; c < goe::controls::actionCount; c++) {
+        auto a = (goe::controls::action) c;
+        w.Key(goe::controls::bindings::id(a).c_str());
+        w.StartObject();
+        w.Key("keys");
+        w.StartArray();
+        for (int k : controls.of(a).keys)
+            w.Int(k);
+        w.EndArray();
+        w.Key("pad");
+        w.Int(controls.of(a).padButton);
+        w.EndObject();
+    }
+    w.EndObject();
     w.EndObject();
     std::ofstream out(file, std::ios::trunc);
     if (!out)
@@ -106,4 +182,7 @@ void gameSettings::resetToDefaults()
 {
     std::lock_guard<std::mutex> lock(this->m);
     this->saveDirectory = ".";
+    this->musicVolume = 100;
+    this->effectsVolume = 100;
+    this->controls = {};
 }

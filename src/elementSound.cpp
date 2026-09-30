@@ -26,6 +26,12 @@
 
 namespace goe::sound {
 namespace {
+observer &watcher()
+{
+    static observer o;
+    return o;
+}
+
 /// the element whose place the sound comes from
 std::shared_ptr<bElem> heardAt(const bElem &elem)
 {
@@ -40,8 +46,15 @@ std::shared_ptr<bElem> heardAt(const bElem &elem)
 }
 } // namespace
 
+void observe(observer o)
+{
+    watcher() = std::move(o);
+}
+
 void play(const bElem &elem, const std::string &eventType, const std::string &event)
 {
+    if (auto &w = watcher())
+        w(elem, eventType, event);
     auto where = heardAt(elem);
     auto board = where ? where->getBoard() : nullptr;
     if (!board)

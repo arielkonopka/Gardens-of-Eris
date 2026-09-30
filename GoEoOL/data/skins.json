@@ -1404,6 +1404,120 @@
                   ]
                }
              ]
+          },
+          {
+             "SubType": 0,
+             "stEvents": [
+               {
+                  "EventType": "Controller",
+                  "eventData": [
+                    {
+                       "Event": "Enabled",
+                       "fname": "data/sounds/voice-controller-patrol.ogg",
+                       "name": "controller enabled",
+                       "description": "patrol controller says it is enabled, in English",
+                       "allowMulti": false,
+                       "stacking": false,
+                       "modeOfAction": 0
+                    }
+                  ]
+               }
+             ]
+          },
+          {
+             "SubType": 1,
+             "stEvents": [
+               {
+                  "EventType": "Controller",
+                  "eventData": [
+                    {
+                       "Event": "Enabled",
+                       "fname": "data/sounds/voice-controller-collector.ogg",
+                       "name": "controller enabled",
+                       "description": "collector controller says it is enabled, in Polish",
+                       "allowMulti": false,
+                       "stacking": false,
+                       "modeOfAction": 0
+                    }
+                  ]
+               }
+             ]
+          },
+          {
+             "SubType": 2,
+             "stEvents": [
+               {
+                  "EventType": "Controller",
+                  "eventData": [
+                    {
+                       "Event": "Enabled",
+                       "fname": "data/sounds/voice-controller-hunter.ogg",
+                       "name": "controller enabled",
+                       "description": "hunter controller says it is enabled, in German",
+                       "allowMulti": false,
+                       "stacking": false,
+                       "modeOfAction": 0
+                    }
+                  ]
+               }
+             ]
+          },
+          {
+             "SubType": 3,
+             "stEvents": [
+               {
+                  "EventType": "Controller",
+                  "eventData": [
+                    {
+                       "Event": "Enabled",
+                       "fname": "data/sounds/voice-controller-wallfollower.ogg",
+                       "name": "controller enabled",
+                       "description": "wallfollower controller says it is enabled, in French",
+                       "allowMulti": false,
+                       "stacking": false,
+                       "modeOfAction": 0
+                    }
+                  ]
+               }
+             ]
+          },
+          {
+             "SubType": 4,
+             "stEvents": [
+               {
+                  "EventType": "Controller",
+                  "eventData": [
+                    {
+                       "Event": "Enabled",
+                       "fname": "data/sounds/voice-controller-guardian.ogg",
+                       "name": "controller enabled",
+                       "description": "guardian controller says it is enabled, in Russian",
+                       "allowMulti": false,
+                       "stacking": false,
+                       "modeOfAction": 0
+                    }
+                  ]
+               }
+             ]
+          },
+          {
+             "SubType": 5,
+             "stEvents": [
+               {
+                  "EventType": "Controller",
+                  "eventData": [
+                    {
+                       "Event": "Enabled",
+                       "fname": "data/sounds/voice-controller-hound.ogg",
+                       "name": "controller enabled",
+                       "description": "hound controller says it is enabled, in Latin",
+                       "allowMulti": false,
+                       "stacking": false,
+                       "modeOfAction": 0
+                    }
+                  ]
+               }
+             ]
           }
         ]
      }

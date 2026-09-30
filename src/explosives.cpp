@@ -177,6 +177,8 @@ bool explosives::explode(float radius)
     this->brd = this->getBoard();
     if (!brd || this->getStats()->isDestroying() || this->getStats()->isDisposed())
         return false;
+    // heard from where the blast is, while the element is still on the board
+    goe::sound::play(*this, "Explosives", "Explode");
     viewPoint::get_instance().addViewPoint(shared_from_this());
     myUtility::Coords mpos = myUtility::Coords(this->getStats()->getMyPosition());
     bElem::destroy();
