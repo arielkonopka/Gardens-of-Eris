@@ -218,6 +218,8 @@ This file contains the skin definition for the game. It has quite a flexible des
 
 It also contains the music and sound information.
 
+`FogBitmap` sets what covers the places nobody sees, e.g. `"FogBitmap": "data/graph/fog.png"`. The bitmap is tiled over the world and stays put while the view scrolls; a power-of-two size such as 256x256 is safest on phones. Without the entry, or when the file cannot be loaded, the fog is the plain dark colour. The default fog is drawn by `tools/make-fog.py`.
+
 
 **TBD**
 
@@ -378,6 +380,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* The fog is a bitmap now, set by `FogBitmap` in skins.json (a dark Discordian haze with gold pentagons by default), and the light is centred on whoever sees. The fog shaders are lighter and GLSL ES compatible for a later phone port: a small visibility mask is painted on the CPU and read with one filtered lookup, instead of every pixel looping over every view point.
 * Far chunks go to disk: chunks more than three chunks from you are written to a temporary folder and read back, as you left them, when you come near again, so memory stays flat however far you walk. Saves keep them (save format 5; older saves still load).
 * Fixed: after a load or a new game, the old world could stay in memory for the rest of the game, because an explosive kept holding on to its board.
 * One endless maze instead of separate levels: the maze is built in 64x64 chunks around you as you walk and never ends, so no other levels are built in the background any more. There is no winning; collecting every apple found so far no longer ends the game. The maze gets harder the further you go from the start (fewer holes in its walls, more landmines), and D is now your level plus your distance from the start. Global teleporters link anywhere in the maze built so far. Older saves still load.

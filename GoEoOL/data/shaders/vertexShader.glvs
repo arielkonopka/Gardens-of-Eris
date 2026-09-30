@@ -1,12 +1,26 @@
+// Fog of view, vertex part. GLSL ES 1.00 compatible, so the same file runs on OpenGL ES.
+// Everything that is linear across the quad is worked out here, once per vertex, so the
+// fragment shader only does texture reads and one mix.
 attribute vec4 al_pos;
 attribute vec4 al_color;
 attribute vec2 al_texcoord;
 uniform mat4 al_projview_matrix;
+uniform vec4 sceneMap;      // scene texture: true width, true height, bitmap height
+uniform vec4 maskMap;       // fog mask: 1/(cell*true width), 1/(cell*true height), height/true height
+uniform vec4 patternMap;    // fog pattern: width, height, width/true width, height/true height
+uniform vec2 patternOffset; // where the pattern starts, so it stays put in the world as the view scrolls
 varying vec4 varying_color;
 varying vec2 varying_texcoord;
+varying vec2 varying_maskcoord;
+varying vec2 varying_patterncoord;
+
 void main()
 {
-   varying_color = al_color;
-   varying_texcoord = al_texcoord;
-   gl_Position = al_projview_matrix * al_pos;
+    varying_color = al_color;
+    varying_texcoord = al_texcoord;
+    // Allegro keeps bitmaps upside down in their textures: row y sits at t = (h - y) / true height
+    vec2 scenePx = vec2(al_texcoord.x * sceneMap.x, sceneMap.z - al_texcoord.y * sceneMap.y);
+    varying_maskcoord = vec2(scenePx.x * maskMap.x, maskMap.z - scenePx.y * maskMap.y);
+    varying_patterncoord = (scenePx + patternOffset) / patternMap.xy;
+    gl_Position = al_projview_matrix * al_pos;
 }

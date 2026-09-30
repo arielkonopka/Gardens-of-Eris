@@ -2,6 +2,7 @@
    "FontFile": "data/FreeSerifBold.ttf",
    "SpriteFile": "data/graph/icons64.png",
    "splash screen": "data/graph/ErisDiscordiaclr.png",
+   "FogBitmap": "data/graph/fog.png",
    "SndFifoSize": 100,
    "MaxSoundDistance":45,
    "width": 64,

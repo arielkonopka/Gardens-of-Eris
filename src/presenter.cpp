@@ -61,10 +61,6 @@ bool presenter::initializeDisplay()
                                  videoManager::getInstance().getCurrentDisplay()));
     this->internalBitmap.reset(al_create_bitmap(this->scrWidth + 64, this->scrHeight + 64));
     this->statsStripe.reset(al_create_bitmap(this->scrWidth, this->scrHeight / 3));
-    this->pointsTexture.reset(al_create_bitmap(this->pointsTextureWidth, this->pointsTextureHeight));
-    this->shaderId = videoManager::getInstance().setupShader("data/shaders/vertexShader.glvs",
-                                                             "data/shaders/pixelShader.glps");
-    std::cerr << "Created shader no:" << this->shaderId << "\n";
     return true;
 }
 
@@ -121,6 +117,10 @@ bool presenter::loadCofiguredData()
     this->scrTilesY = ((this->scrHeight - (2 * _offsetY)) / this->sHeight) - 1;
     this->bsWidth = this->scrTilesX * this->sWidth;
     this->bsHeight = this->scrTilesY * this->sHeight;
+    this->fog.setup(al_get_bitmap_width(this->internalBitmap.get()),
+                    al_get_bitmap_height(this->internalBitmap.get()),
+                    coords(this->sWidth, this->sHeight),
+                    gcfg->fogBitmap);
     return true;
 }
 
@@ -375,7 +375,6 @@ void presenter::showGameField()
     draw only visible elements, walls are always visible.
     ***/
     this->poses.clear();
-    this->radiuses.clear();
     if (player->getBoard()) {
         for (x = 0; x < this->scrTilesX + 1; x++)
             for (y = 0; y < this->scrTilesY + 1; y++) {
@@ -420,7 +419,7 @@ void presenter::showGameField()
 
     al_set_target_bitmap(al_get_backbuffer(videoManager::getInstance().getCurrentDisplay()));
 
-    al_clear_to_color(al_map_rgba(15, 25, 45, 255));
+    al_clear_to_color(fogLayer::plainColour());
     al_draw_bitmap_region(this->statsStripe.get(),
                           0,
                           0,
@@ -429,45 +428,21 @@ void presenter::showGameField()
                           _offsetX,
                           this->bsHeight + (_offsetY / 2),
                           0);
-    this->shaderthing(offX, offY);
-
-    //al_set_shader_sampler("internalBitmap", this->internalBitmap.get(),0);
-    //al_set_shader_float_vector("vertices",3,verts,4);
-    al_draw_bitmap_region(this->internalBitmap.get(),
-                          offX,
-                          offY,
-                          this->bsWidth,
-                          this->bsHeight,
-                          _offsetX,
-                          _offsetY / 2,
-                          0);
-    //al_draw_filled_rectangle(_offsetX,_offsetY/2,_offsetX+this->bsWidth,this->bsHeight+_offsetY/2, al_map_rgba(255,255,255,255));
-    al_use_shader(nullptr);
+    const auto points = viewPoint::get_instance()
+                            .getViewPoints(this->previousPosition,
+                                           this->previousPosition
+                                               + coords(this->scrTilesX + 1, this->scrTilesY + 1));
+    this->fog.draw(this->internalBitmap.get(),
+                   points,
+                   coords(this->previousPosition.x * this->sWidth,
+                          this->previousPosition.y * this->sHeight),
+                   offX,
+                   offY,
+                   this->bsWidth,
+                   this->bsHeight,
+                   _offsetX,
+                   _offsetY / 2);
     al_flip_display();
-}
-
-void presenter::shaderthing(int _x, int _y)
-{
-    float texWidth = this->scrWidth, texHeight = this->scrHeight;
-    float points[300];
-    std::fill(std::begin(points), std::end(points), 0.0f);
-    auto rads = viewPoint::get_instance().getViewPoints(this->previousPosition,
-                                                         this->previousPosition
-                                                             + coords(scrTilesX + 1, scrTilesY + 1));
-    int i = 0;
-    for (auto c : rads) {
-        points[i++] = c.x;
-        points[i++] = c.y;
-        points[i++] = c.radius;
-        if (i >= 299)
-            break;
-    };
-
-    al_use_shader(videoManager::getInstance().getShader(this->shaderId));
-    al_set_shader_float_vector("viewPoints", 3, points, 100);
-    al_set_shader_float("texWidth", texWidth);
-    al_set_shader_float("texHeight", texHeight);
-    al_set_shader_int("pnum", std::min(i, 100));
 }
 
 void presenter::drawCloak()

@@ -102,6 +102,8 @@ using musicData=struct ErisMusicData
 typedef struct gameConfig
 {
     std::string FontFile,spriteFile,splashScr;
+    /// the fog bitmap, tiled over the world; empty for the plain dark fog
+    std::string fogBitmap;
     int sndFifoSize=0;
     int soundDistance=250;
     int tileWidth,tileHeight;

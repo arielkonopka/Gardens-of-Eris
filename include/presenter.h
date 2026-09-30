@@ -49,6 +49,7 @@
 #include "videoManager.h"
 #include "gameSerializer.h"
 #include "gameSettings.h"
+#include "fogLayer.h"
 
 #define _offsetX 64
 #define _offsetY 64
@@ -93,7 +94,6 @@ public:
 
 
 private:
-    void shaderthing(int x, int y);
     void drawCloak();
     bool fin=false;
     int lastScore=0;
@@ -110,7 +110,7 @@ private:
     coords chaosGamelastPoint;
     goe::fontHandle myfont;
     std::string splashFname;
-    int shaderId=-1;
+    fogLayer fog;
     int sWidth;
     int sHeight;
     int scrHeight;
@@ -132,11 +132,6 @@ private:
     std::shared_ptr<chamber> _cp_attachedBoard;
     goe::timerHandle alTimer;
     goe::eventQueueHandle evQueue; // after the timer, so the queue goes first
-
-    std::vector<float> radiuses;
-    goe::bitmapHandle pointsTexture;
-    int pointsTextureWidth = 2;
-    int pointsTextureHeight = 100;
     typedef struct movingSprite
     {
         int x;
