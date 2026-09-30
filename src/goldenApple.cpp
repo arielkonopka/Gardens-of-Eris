@@ -24,6 +24,7 @@
 unsigned int goldenApple::appleNumber = 0;
 std::mutex goldenApple::applesMutex;
 std::vector<std::shared_ptr<bElem>> goldenApple::apples;
+std::vector<unsigned long> goldenApple::parked;
 
 int goldenApple::getType() const
 {
@@ -55,7 +56,7 @@ bool goldenApple::additionalProvisioning(int subtype)
     if (subtype == 0) {
         goldenApple::apples.push_back(shared_from_this());
     }
-    goldenApple::appleNumber = goldenApple::apples.size();
+    goldenApple::recount();
     return true;
 }
 
@@ -72,7 +73,7 @@ void goldenApple::forget()
     std::erase_if(goldenApple::apples, [id](const std::shared_ptr<bElem> &a) {
         return !a || a->getStats()->getInstanceId() == id;
     });
-    goldenApple::appleNumber = goldenApple::apples.size();
+    goldenApple::recount();
 }
 
 int goldenApple::getAppleNumber()
@@ -142,4 +143,33 @@ bool goldenApple::collectOnAction(bool collected, std::shared_ptr<bElem> who)
     }
     bool r = bElem::collectOnAction(collected, who);
     return r;
+}
+
+void goldenApple::recount()
+{
+    goldenApple::appleNumber = (unsigned int) (goldenApple::apples.size() + goldenApple::parked.size());
+}
+
+void goldenApple::park(const std::vector<std::shared_ptr<bElem>> &elements)
+{
+    std::lock_guard<std::mutex> lock(goldenApple::applesMutex);
+    for (const auto &e : elements) {
+        const auto id = e->getStats()->getInstanceId();
+        if (std::erase_if(goldenApple::apples, [id](const std::shared_ptr<bElem> &a) {
+                return a && a->getStats()->getInstanceId() == id;
+            }) > 0)
+            goldenApple::parked.push_back(id);
+    }
+    goldenApple::recount();
+}
+
+void goldenApple::unpark(const std::vector<std::shared_ptr<bElem>> &elements)
+{
+    std::lock_guard<std::mutex> lock(goldenApple::applesMutex);
+    for (const auto &e : elements) {
+        const auto id = e->getStats()->getInstanceId();
+        if (std::erase(goldenApple::parked, id) > 0)
+            goldenApple::apples.push_back(e);
+    }
+    goldenApple::recount();
 }

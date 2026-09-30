@@ -28,6 +28,7 @@
 #include "worldBuilder.h"
 #include <gtest/gtest.h>
 #include <deque>
+#include <filesystem>
 #include <set>
 
 namespace {
@@ -245,4 +246,212 @@ TEST(WorldTests, LocalTeleportersPairWithinTheirRegion)
     EXPECT_LE(subtypes.size(), 4u);
     for (int s : subtypes)
         EXPECT_GT(s, 0);
+}
+
+namespace {
+/// the fog of war of every cell of a chunk
+std::vector<int> fog(const std::shared_ptr<chamber> &world, coords chunk)
+{
+    std::vector<int> res;
+    const coords first = chamber::chunkOrigin(chunk);
+    for (int x = 0; x < chamber::chunkSize; x++)
+        for (int y = 0; y < chamber::chunkSize; y++)
+            res.push_back(world->isVisible(first + coords(x, y)));
+    return res;
+}
+
+/// a cell of the chunk whose top is plain floor
+coords floorIn(const std::shared_ptr<chamber> &world, coords chunk, int skip = 0)
+{
+    const coords first = chamber::chunkOrigin(chunk);
+    for (int x = 1; x < chamber::chunkSize - 1; x++)
+        for (int y = 1; y < chamber::chunkSize - 1; y++) {
+            auto e = world->getElement(first + coords(x, y));
+            if (e && e->getType() == bElemTypes::_floorType && !e->getStats()->getSteppingOn() && skip-- <= 0)
+                return first + coords(x, y);
+        }
+    return NOCOORDS;
+}
+
+std::size_t liveIn(const std::shared_ptr<chamber> &world, coords chunk)
+{
+    return (std::size_t) std::ranges::count_if(world->liveElems, [chunk](const std::shared_ptr<bElem> &e) {
+        const coords at = e->getStats()->getMyPosition();
+        return at != NOCOORDS && chamber::chunkOf(at) == chunk;
+    });
+}
+
+/// walks the player's view far away and back: grow and shrink until there is nothing left to do
+void settleAround(const std::shared_ptr<chamber> &world, coords cell)
+{
+    while (worldBuilder::growAround(world, cell) || worldBuilder::shrinkAround(world, cell))
+        ;
+}
+} // namespace
+
+TEST(WorldTests, ASwappedChunkComesBackAsItWasLeft)
+{
+    auto world = newWorld(2323);
+    const coords chunk(2, 1);
+    // something the generator would not have put there
+    const coords cell = floorIn(world, chunk);
+    ASSERT_FALSE(cell == NOCOORDS);
+    auto k = elementFactory::generateAnElement<key>(world, 3);
+    ASSERT_TRUE(k->stepOnElement(world->getElement(cell)));
+    const auto keyId = k->getStats()->getInstanceId();
+    k.reset();
+    world->setVisible(cell, 0);
+    const auto cells = layout(world, chunk);
+    const auto seen = fog(world, chunk);
+    const auto live = liveIn(world, chunk);
+    const auto liveTotal = world->liveElems.size();
+    const auto apples = goldenApple::getAppleNumber();
+    const auto chunksBefore = world->chunkKeys().size();
+
+    ASSERT_TRUE(gameSerializer::swapOutChunk(world, chunk));
+    EXPECT_FALSE(world->hasChunk(chunk));
+    EXPECT_TRUE(world->isSwapped(chunk));
+    EXPECT_EQ(world->swappedCount(), 1u);
+    EXPECT_EQ(world->chunkKeys().size(), chunksBefore - 1);
+    EXPECT_FALSE(world->getElement(cell));
+    EXPECT_EQ(liveIn(world, chunk), 0u);
+    EXPECT_EQ(world->liveElems.size(), liveTotal - live);
+    // its apples still count
+    EXPECT_EQ(goldenApple::getAppleNumber(), apples);
+    // a chunk can go to disk only once
+    EXPECT_FALSE(gameSerializer::swapOutChunk(world, chunk));
+
+    ASSERT_TRUE(gameSerializer::swapInChunk(world, chunk));
+    EXPECT_TRUE(world->hasChunk(chunk));
+    EXPECT_FALSE(world->isSwapped(chunk));
+    EXPECT_TRUE(layout(world, chunk) == cells);
+    EXPECT_TRUE(fog(world, chunk) == seen);
+    EXPECT_EQ(liveIn(world, chunk), live);
+    EXPECT_EQ(world->liveElems.size(), liveTotal);
+    EXPECT_EQ(goldenApple::getAppleNumber(), apples);
+    auto back = world->getElement(cell);
+    ASSERT_TRUE(back);
+    EXPECT_EQ(back->getType(), bElemTypes::_key);
+    EXPECT_EQ(back->getStats()->getInstanceId(), keyId);
+    // every element knows where it stands again
+    const coords first = chamber::chunkOrigin(chunk);
+    for (int x = 0; x < chamber::chunkSize; x++)
+        for (int y = 0; y < chamber::chunkSize; y++)
+            for (auto e = world->getElement(first + coords(x, y)); e; e = e->getStats()->getSteppingOn()) {
+                EXPECT_TRUE(e->getStats()->getMyPosition() == first + coords(x, y));
+                EXPECT_TRUE(e->getBoard() == world);
+                EXPECT_FALSE(e->getStats()->isDisposed());
+            }
+}
+
+TEST(WorldTests, TheChunkWhereThePlayerStandsStays)
+{
+    auto world = newWorld();
+    const coords here = chamber::chunkOf(player::getActivePlayer()->getStats()->getMyPosition());
+    EXPECT_FALSE(gameSerializer::swapOutChunk(world, here));
+    EXPECT_TRUE(world->hasChunk(here));
+    // walking far away does not drop it either
+    settleAround(world, chamber::chunkOrigin(here + coords(12, 0)));
+    EXPECT_TRUE(world->hasChunk(here));
+}
+
+TEST(WorldTests, WalkingFarKeepsTheChunksInMemoryBounded)
+{
+    auto world = newWorld(5555);
+    const coords start = world->origin;
+    const coords marked = floorIn(world, coords(1, 1));
+    auto k = elementFactory::generateAnElement<key>(world, 2);
+    ASSERT_TRUE(k->stepOnElement(world->getElement(marked)));
+    k.reset();
+    const auto cells = layout(world, coords(1, 1));
+    const std::size_t window = (2 * worldBuilder::keepRadius + 1) * (2 * worldBuilder::keepRadius + 1);
+    std::size_t most = 0;
+    for (int step = 1; step <= 15; step++) {
+        settleAround(world, start + coords(step * chamber::chunkSize, 0));
+        most = std::max(most, world->chunkKeys().size());
+    }
+    // the window around the view, and the chunk the player stands in
+    EXPECT_LE(most, window + 1);
+    EXPECT_GT(world->swappedCount(), 0u);
+    EXPECT_GT(teleport::parkedCount(), 0u);
+
+    // coming back brings the old chunks back as they were, not new ones
+    settleAround(world, start);
+    EXPECT_TRUE(layout(world, coords(1, 1)) == cells);
+    EXPECT_EQ(world->getElement(marked)->getType(), bElemTypes::_key);
+    EXPECT_LE(world->chunkKeys().size(), window + 1);
+}
+
+TEST(WorldTests, ATeleporterLinkSurvivesTheOtherEndGoingToDisk)
+{
+    auto world = newWorld();
+    const int subtype = 555; // no generated teleporter has it
+    const coords a = floorIn(world, coords(0, 0), 7), b = floorIn(world, coords(2, 2));
+    auto here = elementFactory::generateAnElement<teleport>(world, subtype);
+    auto there = elementFactory::generateAnElement<teleport>(world, subtype);
+    ASSERT_TRUE(here->stepOnElement(world->getElement(a)));
+    ASSERT_TRUE(there->stepOnElement(world->getElement(b)));
+    there.reset();
+    // something to send through, standing next to the teleporter
+    auto box = elementFactory::generateAnElement<rubbish>(world, 0);
+    ASSERT_TRUE(box->getAttrs()->isMovable());
+    const coords boxAt = floorIn(world, coords(0, 0), 20);
+    ASSERT_TRUE(box->stepOnElement(world->getElement(boxAt)));
+
+    ASSERT_TRUE(here->interact(box));
+    EXPECT_TRUE(chamber::chunkOf(box->getStats()->getMyPosition()) == coords(2, 2));
+    // the other end's chunk goes to disk; the link brings it back
+    ASSERT_TRUE(gameSerializer::swapOutChunk(world, coords(2, 2)));
+    ASSERT_TRUE(box->getStats()->isDisposed()); // it stood there, so it went with the chunk
+    auto box2 = elementFactory::generateAnElement<rubbish>(world, 0);
+    ASSERT_TRUE(box2->stepOnElement(world->getElement(floorIn(world, coords(0, 0), 30))));
+    // let both ends and the interaction cool down
+    for (int t = 0; t < 555; t++)
+        bElem::tick();
+    ASSERT_TRUE(here->interact(box2));
+    EXPECT_TRUE(world->hasChunk(coords(2, 2)));
+    EXPECT_TRUE(chamber::chunkOf(box2->getStats()->getMyPosition()) == coords(2, 2));
+}
+
+TEST(WorldTests, AParkedTeleporterCanStillBeTheOtherEnd)
+{
+    auto world = newWorld();
+    const int subtype = 556;
+    auto here = elementFactory::generateAnElement<teleport>(world, subtype);
+    auto there = elementFactory::generateAnElement<teleport>(world, subtype);
+    ASSERT_TRUE(here->stepOnElement(world->getElement(floorIn(world, coords(0, 0), 7))));
+    ASSERT_TRUE(there->stepOnElement(world->getElement(floorIn(world, coords(-2, 2)))));
+    there.reset();
+    const auto parked = teleport::parkedCount();
+    ASSERT_TRUE(gameSerializer::swapOutChunk(world, coords(-2, 2)));
+    EXPECT_GT(teleport::parkedCount(), parked);
+    auto box = elementFactory::generateAnElement<rubbish>(world, 0);
+    ASSERT_TRUE(box->stepOnElement(world->getElement(floorIn(world, coords(0, 0), 20))));
+    ASSERT_TRUE(here->interact(box));
+    EXPECT_TRUE(world->hasChunk(coords(-2, 2)));
+    EXPECT_TRUE(chamber::chunkOf(box->getStats()->getMyPosition()) == coords(-2, 2));
+}
+
+TEST(WorldTests, SwappedChunksAreKeptInASave)
+{
+    auto world = newWorld(777);
+    const coords chunk(-2, -1);
+    const auto cells = layout(world, chunk);
+    const auto apples = goldenApple::getAppleNumber();
+    ASSERT_TRUE(gameSerializer::swapOutChunk(world, chunk));
+    const auto parked = teleport::parkedCount();
+    const std::string file = (std::filesystem::temp_directory_path() / "goe-swapped-chunks.goe").string();
+    ASSERT_TRUE(gameSerializer::saveGame(file));
+    world.reset();
+    ASSERT_TRUE(gameSerializer::loadGame(file));
+    std::filesystem::remove(file);
+    ASSERT_EQ(chamber::allChambers.size(), 1u);
+    auto loaded = chamber::allChambers.front();
+    EXPECT_FALSE(loaded->hasChunk(chunk));
+    EXPECT_TRUE(loaded->isSwapped(chunk));
+    EXPECT_EQ(teleport::parkedCount(), parked);
+    EXPECT_EQ(goldenApple::getAppleNumber(), apples);
+    ASSERT_TRUE(gameSerializer::swapInChunk(loaded, chunk));
+    EXPECT_TRUE(layout(loaded, chunk) == cells);
+    EXPECT_EQ(goldenApple::getAppleNumber(), apples);
 }

@@ -47,13 +47,21 @@ public:
     oState disposeElement() final;
     bool additionalProvisioning(int subtype) final;
     bool collectOnAction(bool collected, std::shared_ptr<bElem> who) override;
+    /// the given elements' apples leave the list while their chunk is on disk; they still count
+    static void park(const std::vector<std::shared_ptr<bElem>> &elements);
+    /// puts the given elements' parked apples back into the list
+    static void unpark(const std::vector<std::shared_ptr<bElem>> &elements);
 
 private:
     /// drops this apple from the list of apples still out in the world
     void forget();
     static unsigned int appleNumber;
     static std::vector<std::shared_ptr<bElem>> apples;
-    /// levels built in the background add apples while the game thread removes them
+    /// apples in chunks that are on disk
+    static std::vector<unsigned long> parked;
+    /// appleNumber from the lists; applesMutex must be held
+    static void recount();
+    /// guards the lists
     static std::mutex applesMutex;
 };
 

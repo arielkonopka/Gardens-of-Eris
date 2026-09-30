@@ -121,7 +121,7 @@ ctest --test-dir build --output-on-failure
 
 Run the game from the `GoEoOL` folder, where the `data` folder is. On Windows, the game builds with MSYS2 (UCRT64) and the same libraries; `.github/workflows/ci.yml` lists the exact packages for both systems.
 
-The `goe-bench` target times building the world (the start, then one chunk at a time), a game tick, and save/load: `goe-bench 61 3000` from `GoEoOL` builds 61 chunks, about as many cells as one of the old 500x500 levels.
+The `goe-bench` target times building the world (the start, then one chunk at a time), a game tick, save/load, and a walk that swaps chunks to disk and back: `goe-bench 61 3000 60` from `GoEoOL` builds 61 chunks, about as many cells as one of the old 500x500 levels, then walks 60 chunks east and back, reporting the chunks in memory, the time per chunk written or read, and the memory used.
 
 The repository also has the older build.sh shell script (Bash):
 
@@ -175,7 +175,9 @@ The whole game happens on one board that has no edges. Its cells are kept in chu
 
 Each chunk owns the wall along its west and north edges. The gaps in a wall come from the world seed and the wall's place only, so both chunks beside a wall know where it is open whichever is built first. The cells next to every gap are cleared, so every gap leads into the maze of both chunks. Inside, a chunk is the recursive-division maze above, filled like the old levels were. A chunk is built behind a fence (`chamber::fence`): nothing placed while it is built can reach into the chunks next to it, so a chunk comes out the same for one world seed, in whatever order the player makes the chunks appear.
 
-Only elements within two chunks of the player run; the ones further away wait until the player comes back. Chunks stay in memory once built (about 3 MB each) and are saved with the game.
+Only elements within two chunks of the player run; the ones further away wait until the player comes back.
+
+A chunk takes about 3 MB of memory, so chunks more than three chunks from the player go to disk, one per tick, into a folder in the system's temporary folder that is removed when the game closes (`gameSerializer::swapOutChunk`). When the player comes within two chunks of one again, it is read back as it was left, with its fog of war, its monsters where they were and whatever you dropped there; a chunk on disk is never built anew. So memory stays at about 7 x 7 chunks however far you walk (`goe-bench` walking 120 chunks out and back: about 155 MB, where keeping every chunk took about 500 MB after only 30). A chunk where an avatar stands stays in memory. Teleporters and golden apples in a chunk on disk still count: a teleporter can pick one on disk as its other end, and a link to one on disk reads that chunk back when it is used. A save keeps the chunks on disk too.
 
 # Random element placement
 
@@ -313,7 +315,7 @@ There are control switches that modify sound handling:
  * stacking - If we allow multiple sounds, do we let them play, or should we stop the sound currently playing and start anew upon request (false), or permit all instances to play while avoiding collisions by applying a delay if the previous sound did not have the chance to play?
 
 ## Save and load
-F5 saves the whole world (every chunk built so far, every element with its inventory and timers, the random generator's state) to one binary file, and F9 loads it back. The file starts with a format version; a newer game still loads older saves.
+F5 saves the whole world (every chunk built so far, also the ones on disk, every element with its inventory and timers, the random generator's state) to one binary file, and F9 loads it back. The file starts with a format version; a newer game still loads older saves.
 
 ## Difficulty
 The game gets harder the better you get and the further you go. The difficulty D, shown as "D:" next to "Dex:" in the HUD, is the sum of:
@@ -370,12 +372,14 @@ The config file now will have entries to configure elements attributes, like bei
 
 
 - Planned next (see the design notes): energy doors with switches, crumbling floor, laser gate, armor as a player stat, the Friend, Hostile and Neutral NPCs (trading on bump, scaling as 5^n with your level), and the Altar of Eris.
-- The endless world, next steps (see the chunked world design): drop far chunks from memory, and swap changed ones to disk; regions of chunks with their own name, colour and music; global teleporters that open a far away chunk.
+- The endless world, next steps (see the chunked world design): regions of chunks with their own name, colour and music; global teleporters that open a far away chunk.
 
 ## Art and numbers
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Far chunks go to disk: chunks more than three chunks from you are written to a temporary folder and read back, as you left them, when you come near again, so memory stays flat however far you walk. Saves keep them (save format 5; older saves still load).
+* Fixed: after a load or a new game, the old world could stay in memory for the rest of the game, because an explosive kept holding on to its board.
 * One endless maze instead of separate levels: the maze is built in 64x64 chunks around you as you walk and never ends, so no other levels are built in the background any more. There is no winning; collecting every apple found so far no longer ends the game. The maze gets harder the further you go from the start (fewer holes in its walls, more landmines), and D is now your level plus your distance from the start. Global teleporters link anywhere in the maze built so far. Older saves still load.
 * Walking into a collectible picks it up and steps onto its cell in the same move; before, the collector stayed where it was and had to move again.
 * Fixed: every missile fired stayed in memory, and in the save file, for the rest of the game. Save files are smaller now; older saves still load.

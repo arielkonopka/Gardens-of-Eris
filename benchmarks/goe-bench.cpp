@@ -1,6 +1,6 @@
 /*
  * Headless benchmark: builds the endless world the way the game does and times the parts that matter.
- * Run it from GoEoOL/ (it reads data/skins.json):  ../build/goe-bench [chunks] [ticks]
+ * Run it from GoEoOL/ (it reads data/skins.json):  ../build/goe-bench [chunks] [ticks] [walk]
  * 61 chunks of 64 x 64 cells are about as many cells as one of the old 500 x 500 levels.
  */
 #include "elements.h"
@@ -70,6 +70,44 @@ int main(int argc, char **argv)
     std::filesystem::remove(saveFile);
 
     const std::size_t total = world->chunkKeys().size();
+    world.reset(); // the board from before the load
+    // walk on east and back as the game does: one chunk built, read back or dropped per tick
+    const int walk = argc > 3 ? std::max(0, std::atoi(argv[3])) : 60;
+    auto walked = chamber::allChambers.empty() ? nullptr : chamber::allChambers.front();
+    int swapsOut = 0, swapsIn = 0;
+    double outMs = 0, inMs = 0;
+    std::size_t mostChunks = 0;
+    long rssWalk = rss0, rssMost = rss0;
+    const auto step = [&](coords p) {
+        for (;;) {
+            const std::size_t swappedBefore = walked->swappedCount();
+            auto s = clk::now();
+            if (worldBuilder::growAround(walked, p)) {
+                if (walked->swappedCount() < swappedBefore) {
+                    swapsIn++;
+                    inMs += msSince(s);
+                }
+                continue;
+            }
+            s = clk::now();
+            if (!worldBuilder::shrinkAround(walked, p))
+                break;
+            swapsOut++;
+            outMs += msSince(s);
+        }
+        mostChunks = std::max(mostChunks, walked->chunkKeys().size());
+        rssMost = std::max(rssMost, rssKb());
+    };
+    if (walked && !walked->isBounded()) {
+        const coords home = walked->origin;
+        for (int c = 1; c <= walk; c++)
+            step(home + coords(c * chamber::chunkSize, 0));
+        rssWalk = rssKb();
+        for (int c = walk; c >= 0; c--)
+            step(home + coords(c * chamber::chunkSize, 0));
+    }
+
+
     std::printf("world of %zu chunks\n", total);
     std::printf("start         %9.1f ms (%zu chunks)\n", startMs, startChunks);
     std::printf("one chunk     %9.1f ms (average of %zu)\n", grown ? growMs / grown : 0.0, grown);
@@ -78,5 +116,13 @@ int main(int argc, char **argv)
     std::printf("tick          %9.3f ms (average of %d)\n", tickMs, ticks);
     std::printf("save          %9.1f ms%s\n", saveMs, saved ? "" : " FAILED");
     std::printf("load          %9.1f ms%s\n", loadMs, loaded ? "" : " FAILED");
+    if (walk > 0 && walked) {
+        std::printf("walk          %d chunks out and back: at most %zu chunks in memory, %zu on disk\n", walk,
+                    mostChunks, walked->swappedCount());
+        std::printf("swap out      %9.1f ms (average of %d)\n", swapsOut ? outMs / swapsOut : 0.0, swapsOut);
+        std::printf("swap in       %9.1f ms (average of %d)\n", swapsIn ? inMs / swapsIn : 0.0, swapsIn);
+        std::printf("memory walked %9.1f MB at the far end, at most %.1f MB\n", (rssWalk - rss0) / 1024.0,
+                    (rssMost - rss0) / 1024.0);
+    }
     return saved && loaded ? 0 : 1;
 }

@@ -37,6 +37,7 @@
 
 namespace {
 constexpr char saveMagic[8] = {'G', 'O', 'E', 'S', 'A', 'V', 'E', '\0'};
+constexpr char chunkMagic[8] = {'G', 'O', 'E', 'C', 'H', 'U', 'N', 'K'};
 constexpr uint8_t cellCompact = 0;
 constexpr uint8_t cellRecord = 1;
 } // namespace
@@ -84,7 +85,13 @@ public:
             return;
         }
         u64(id);
-        if (seen.insert(id).second)
+        if (!keep || keep(e))
+            own(e);
+    }
+    /// queues the element to be written as a record
+    void own(const std::shared_ptr<bElem> &e)
+    {
+        if (seen.insert(e->getStats()->getInstanceId()).second)
             queue.push_back(e);
     }
     void ref(const std::weak_ptr<bElem> &e) { ref(e.lock()); }
@@ -98,6 +105,10 @@ public:
     std::unordered_set<unsigned long> seen;
     std::unordered_set<unsigned long> compactIds;
     std::deque<std::shared_ptr<bElem>> queue;
+    /// the elements written as records, in order
+    std::vector<std::shared_ptr<bElem>> written;
+    /// when set, only referenced elements it accepts are written; the rest are left as ids
+    std::function<bool(const std::shared_ptr<bElem> &)> keep;
 
 private:
     std::ofstream out;
@@ -145,6 +156,16 @@ public:
             v.push_back(u64());
         return v;
     }
+    std::string bytes(uint64_t n)
+    {
+        if (n > (1ull << 32))
+            throw std::runtime_error("save file block is too long");
+        std::string s((std::size_t) n, '\0');
+        in.read(s.data(), (std::streamsize) n);
+        if (!in)
+            throw std::runtime_error("save file is truncated");
+        return s;
+    }
 
 private:
     std::ifstream in;
@@ -157,6 +178,8 @@ struct gameSerializer::loadContext
     std::unordered_map<int, std::shared_ptr<chamber>> chambersById;
     std::vector<std::function<void()>> fixups;
     uint32_t version = formatVersion;
+    /// for a swapped chunk: finds an element outside it (nullptr when it is gone)
+    std::function<std::shared_ptr<bElem>(uint64_t)> external;
 
     /// a saved cell position; saves before version 4 wrote "no position" as -65535 or -6502
     coords position(int x, int y) const
@@ -170,8 +193,11 @@ struct gameSerializer::loadContext
         if (id == 0)
             return nullptr;
         auto it = byId.find(id);
-        if (it == byId.end())
+        if (it == byId.end()) {
+            if (external)
+                return external(id);
             throw std::runtime_error("save file references a missing element");
+        }
         return it->second;
     }
     /// resolve reference `id` once all records are read, and hand it to `set`
@@ -407,8 +433,12 @@ void gameSerializer::writeElement(writer &w, const std::shared_ptr<bElem> &e)
         w.i32(bo->timer);
     if (auto g = std::dynamic_pointer_cast<plainGun>(e))
         w.u32(g->shot);
-    if (auto t = std::dynamic_pointer_cast<teleport>(e))
+    if (auto t = std::dynamic_pointer_cast<teleport>(e)) {
         w.ref(std::static_pointer_cast<bElem>(t->theOtherEnd.lock()));
+        w.u64(t->otherEndId);
+        w.i32(t->otherEndAt.x);
+        w.i32(t->otherEndAt.y);
+    }
     if (auto k = std::dynamic_pointer_cast<kiki>(e))
         w.u8((uint8_t) k->direction);
     if (auto c = std::dynamic_pointer_cast<securityCamera>(e)) {
@@ -626,10 +656,19 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
         bo->timer = r.i32();
     if (auto g = std::dynamic_pointer_cast<plainGun>(e))
         g->shot = r.u32();
-    if (auto t = std::dynamic_pointer_cast<teleport>(e))
+    if (auto t = std::dynamic_pointer_cast<teleport>(e)) {
         ctx.later(r.u64(), [t](std::shared_ptr<bElem> o) {
             t->theOtherEnd = std::dynamic_pointer_cast<teleport>(o);
+            if (o && t->otherEndId == 0)
+                t->otherEndId = o->getStats()->getInstanceId();
         });
+        // before version 5 the other end was only a reference
+        if (ctx.version >= 5) {
+            t->otherEndId = r.u64();
+            int x = r.i32();
+            t->otherEndAt = ctx.position(x, r.i32());
+        }
+    }
     if (auto k = std::dynamic_pointer_cast<kiki>(e))
         k->direction = (dir::direction) r.u8();
     if (auto c = std::dynamic_pointer_cast<securityCamera>(e)) {
@@ -666,10 +705,12 @@ void gameSerializer::clearWorld()
         std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
         teleport::allTeleporters.clear();
         teleport::pendingTeleporters.clear();
+        teleport::parked.clear();
     }
     player::activePlayer = nullptr;
     player::visitedPlayers.clear();
     goldenApple::apples.clear();
+    goldenApple::parked.clear();
     goldenApple::appleNumber = 0;
     bElem::toDispose.clear();
     viewPoint::get_instance().viewPoints.clear();
@@ -719,6 +760,23 @@ bool gameSerializer::saveGame(const std::string &fileName)
             if (auto sp = p.lock())
                 vps.push_back(sp);
         w.refs(vps);
+        // teleporters and apples in chunks on disk
+        {
+            std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
+            w.u32((uint32_t) teleport::parked.size());
+            for (const auto &p : teleport::parked) {
+                w.u64(p.id);
+                w.i32(p.subtype);
+                w.i32(p.at.x);
+                w.i32(p.at.y);
+            }
+        }
+        {
+            std::lock_guard<std::mutex> lock(goldenApple::applesMutex);
+            w.u32((uint32_t) goldenApple::parked.size());
+            for (auto id : goldenApple::parked)
+                w.u64(id);
+        }
 
         // boards, chunk by chunk
         w.u32((uint32_t) chamber::allChambers.size());
@@ -736,61 +794,32 @@ bool gameSerializer::saveGame(const std::string &fileName)
             w.i32(c->origin.x);
             w.i32(c->origin.y);
             w.u32((uint32_t) c->chunks.size());
-            std::vector<std::shared_ptr<bElem>> stack;
             for (std::size_t k = 0; k < c->chunks.size(); k++) {
-                const auto &ch = *c->chunks[k];
                 w.i32(c->keys[k].x);
                 w.i32(c->keys[k].y);
-                // fog of war, run-length encoded
-                std::vector<std::pair<int32_t, uint32_t>> runs;
-                for (int v : ch.visited) {
-                    if (!runs.empty() && runs.back().first == v)
-                        runs.back().second++;
-                    else
-                        runs.emplace_back(v, 1);
-                }
-                w.u32((uint32_t) runs.size());
-                for (const auto &[v, n] : runs) {
-                    w.i32(v);
-                    w.u32(n);
-                }
-                // cells: each stack, bottom first; a cell a bounded board does not have is empty
-                for (const auto &top : ch.cells) {
-                    stack.clear();
-                    for (auto e = top; e && stack.size() < 255; e = e->getStats()->getSteppingOn())
-                        stack.push_back(e);
-                    w.u8((uint8_t) stack.size());
-                    for (auto it = stack.rbegin(); it != stack.rend(); ++it) {
-                        const auto &e = *it;
-                        auto id = e->getStats()->getInstanceId();
-                        if (!w.seen.count(id) && isCompact(e)) {
-                            w.compactIds.insert(id);
-                            w.u8(cellCompact);
-                            w.i32(e->getType());
-                            w.i32(e->getAttrs()->getSubtype());
-                            w.u8((uint8_t) e->getStats()->myDirection);
-                            w.u8((uint8_t) e->getStats()->facing);
-                        } else {
-                            w.u8(cellRecord);
-                            w.ref(e);
-                        }
-                    }
-                }
+                writeChunk(w, *c, k);
             }
             w.refs(c->liveElems);
             w.u32((uint32_t) c->toDeregister.size());
             for (auto id : c->toDeregister)
                 w.u64(id);
+            // chunks on disk, as they are
+            w.u32((uint32_t) c->swapped.size());
+            for (const auto &[key, file] : c->swapped) {
+                std::ifstream in(file, std::ios::binary);
+                std::string blob((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+                if (!in.good() && !in.eof()) {
+                    std::cout << "Cannot read swapped chunk " << file << "\n";
+                    return false;
+                }
+                w.i32((int32_t) (key >> 32));
+                w.i32((int32_t) (key & 0xffffffffu));
+                w.u64(blob.size());
+                w.raw(blob.data(), blob.size());
+            }
         }
 
-        // every element referenced so far, and whatever those reference in turn
-        while (!w.queue.empty()) {
-            auto e = w.queue.front();
-            w.queue.pop_front();
-            w.u8(1);
-            writeElement(w, e);
-        }
-        w.u8(0);
+        writeRecords(w);
         if (!w.good()) {
             std::cout << "Writing save file " << tmpName << " failed\n";
             return false;
@@ -850,47 +879,36 @@ bool gameSerializer::loadGame(const std::string &fileName)
         if (bElemStats::currentInstance < instanceCounter)
             bElemStats::currentInstance = instanceCounter;
 
+        struct parkedTeleporterData
+        {
+            uint64_t id;
+            int subtype;
+            coords at;
+        };
+        std::vector<parkedTeleporterData> parkedTeleporters;
+        std::vector<uint64_t> parkedApples;
+        if (version >= 5) {
+            for (uint32_t k = r.u32(); k > 0; k--) {
+                parkedTeleporterData p;
+                p.id = r.u64();
+                p.subtype = r.i32();
+                int x = r.i32();
+                p.at = coords(x, r.i32());
+                parkedTeleporters.push_back(p);
+            }
+            for (uint32_t k = r.u32(); k > 0; k--)
+                parkedApples.push_back(r.u64());
+        }
+
         loadContext ctx;
         ctx.version = version;
-        struct cellEntry
-        {
-            std::shared_ptr<bElem> compact;
-            uint64_t id = 0;
-        };
         struct chamberData
         {
             std::shared_ptr<chamber> c;
-            std::vector<std::pair<coords, std::vector<cellEntry>>> stacks; // every cell that has one
+            cellStacks stacks; // every cell that has one
             std::vector<uint64_t> liveIds;
             std::vector<uint64_t> toDeregister;
-        };
-        auto readStack = [&r, &ctx]() {
-            std::vector<cellEntry> stack;
-            for (uint8_t k = r.u8(); k > 0; k--) {
-                cellEntry ce;
-                if (r.u8() == cellCompact) {
-                    int type = r.i32();
-                    int subtype = r.i32();
-                    ce.compact = createByType(type, subtype);
-                    ce.compact->getAttrs()->setSubtype(subtype);
-                    ce.compact->getStats()->myDirection = (dir::direction) r.u8();
-                    ce.compact->getStats()->facing = (dir::direction) r.u8();
-                } else {
-                    ce.id = r.u64();
-                }
-                stack.push_back(ce);
-            }
-            return stack;
-        };
-        // fog of war, run-length encoded, for cells in the given order
-        auto readFog = [&r](const std::shared_ptr<chamber> &c, const std::vector<coords> &order) {
-            std::size_t pos = 0;
-            for (uint32_t runs = r.u32(); runs > 0; runs--) {
-                int v = r.i32();
-                uint32_t cnt = r.u32();
-                for (uint32_t k = 0; k < cnt && pos < order.size(); k++, pos++)
-                    c->chunkAt(chamber::chunkOf(order[pos])).visited[chamber::cellIndex(order[pos])] = v;
-            }
+            std::vector<std::pair<coords, std::string>> swapped; // chunk, blob
         };
         std::vector<chamberData> chambers;
         for (uint32_t n = r.u32(); n > 0; n--) {
@@ -927,34 +945,31 @@ bool gameSerializer::loadGame(const std::string &fileName)
                 for (int x = 0; x < w; x++)
                     for (int y = 0; y < h; y++)
                         order.emplace_back(x, y);
-                readFog(c, order);
+                readFog(r, *c, order);
                 for (const coords &cell : order)
-                    cd.stacks.emplace_back(cell, readStack());
+                    cd.stacks.emplace_back(cell, readStack(r));
             } else {
                 const uint32_t chunkCount = r.u32();
                 if (chunkCount > (1u << 20))
                     throw std::runtime_error("save file has too many chunks");
-                std::vector<coords> order(chamber::chunkCells);
                 for (uint32_t k = 0; k < chunkCount; k++) {
                     int cx = r.i32();
-                    const coords key(cx, r.i32());
-                    const coords first = chamber::chunkOrigin(key);
-                    // the chunk's cells in its own order (chamber::cellIndex)
-                    for (int x = 0; x < chamber::chunkSize; x++)
-                        for (int y = 0; y < chamber::chunkSize; y++)
-                            order[chamber::cellIndex(coords(x, y))] = first + coords(x, y);
-                    c->chunkAt(key);
-                    readFog(c, order);
-                    for (const coords &cell : order) {
-                        auto stack = readStack();
-                        if (!stack.empty())
-                            cd.stacks.emplace_back(cell, std::move(stack));
-                    }
+                    readChunk(r, c, coords(cx, r.i32()), cd.stacks);
                 }
             }
             cd.liveIds = r.ids();
             for (uint32_t k = r.u32(); k > 0; k--)
                 cd.toDeregister.push_back(r.u64());
+            if (version >= 5) {
+                const uint32_t swappedCount = r.u32();
+                if (swappedCount > (1u << 20))
+                    throw std::runtime_error("save file has too many chunks");
+                for (uint32_t k = 0; k < swappedCount; k++) {
+                    int cx = r.i32();
+                    const coords key(cx, r.i32());
+                    cd.swapped.emplace_back(key, r.bytes(r.u64()));
+                }
+            }
             cd.c = c;
             ctx.chambersById[id] = c;
             chambers.push_back(std::move(cd));
@@ -965,37 +980,28 @@ bool gameSerializer::loadGame(const std::string &fileName)
         for (auto &f : ctx.fixups)
             f();
 
-        // rebuild stacks: bottom element first, the top one sits in the grid
         for (auto &cd : chambers) {
-            auto &c = cd.c;
-            for (auto &[cell, stack] : cd.stacks) {
-                    std::shared_ptr<bElem> below;
-                    for (auto &ce : stack) {
-                        auto e = ce.compact ? ce.compact : ctx.get(ce.id);
-                        if (!e)
-                            continue;
-                        auto &s = *e->getStats();
-                        e->attachedBoard = c;
-                        s.myPosition = myUtility::Coords(cell);
-                        s.steppingOn = below;
-                        s.standingOn.reset();
-                        s.parent = false;
-                        if (below) {
-                            below->getStats()->standingOn = e;
-                            below->getStats()->parent = true;
-                        }
-                        below = e;
-                    }
-                    c->chunkAt(chamber::chunkOf(cell)).cells[chamber::cellIndex(cell)] = below;
-            }
-            c->liveElems = ctx.getAll(cd.liveIds);
-            c->toDeregister.assign(cd.toDeregister.begin(), cd.toDeregister.end());
+            rebuildStacks(ctx, cd.c, cd.stacks);
+            cd.c->liveElems = ctx.getAll(cd.liveIds);
+            cd.c->toDeregister.assign(cd.toDeregister.begin(), cd.toDeregister.end());
         }
 
         // the file is good: swap the loaded world in
         clearWorld();
-        for (auto &cd : chambers)
+        for (auto &cd : chambers) {
             chamber::allChambers.push_back(cd.c);
+            // the chunks that were on disk go to this world's own swap folder
+            for (const auto &[key, blob] : cd.swapped) {
+                auto file = cd.c->swapFolder()
+                            / ("chunk_" + std::to_string(key.x) + "_" + std::to_string(key.y) + ".bin");
+                std::ofstream out(file, std::ios::binary | std::ios::trunc);
+                out.write(blob.data(), (std::streamsize) blob.size());
+                if (!out.good())
+                    std::cout << "Cannot write swapped chunk " << file << "\n";
+                else
+                    cd.c->swapped[chamber::keyOf(key)] = file;
+            }
+        }
         chamber::lastid = lastChamberId;
         player::activePlayer = ctx.get(activePlayerId);
         player::visitedPlayers = ctx.getAll(visitedPlayerIds);
@@ -1006,7 +1012,10 @@ bool gameSerializer::loadGame(const std::string &fileName)
             for (auto &t : ctx.getAll(teleporterIds))
                 teleport::allTeleporters.push_back(std::dynamic_pointer_cast<teleport>(t));
             teleport::firstReceiverRemoved = firstReceiverRemoved;
+            for (const auto &p : parkedTeleporters)
+                teleport::parked.push_back({(unsigned long) p.id, p.subtype, p.at});
         }
+        goldenApple::parked.assign(parkedApples.begin(), parkedApples.end());
         bElem::toDispose = ctx.getAll(toDisposeIds);
         auto &vp = viewPoint::get_instance();
         vp._owner = ctx.get(viewOwnerId);
@@ -1016,20 +1025,11 @@ bool gameSerializer::loadGame(const std::string &fileName)
         std::istringstream rng(rngState);
         rng >> goe::rng::saved();
 
-        // music of the global teleporters is attached to them when they are placed; redo that
-        for (auto &[id, e] : ctx.byId) {
-            auto t = std::dynamic_pointer_cast<teleport>(e);
-            if (!t || t->getAttrs()->getSubtype() != 0 || !t->getBoard())
-                continue;
-            auto pos = t->getStats()->getMyPosition();
-            soundManager::getInstance().setupSong(t->getStats()->getInstanceId(),
-                                                   1,
-                                                   {(float) pos.x, (float) pos.y, 0.0f},
-                                                   t->getBoard()->getInstanceId(),
-                                                   true);
-            if (t->getStats()->getMyDirection() == dir::direction::LEFT)
-                soundManager::getInstance().pauseSong(t->getStats()->getInstanceId());
-        }
+        std::vector<std::shared_ptr<bElem>> all;
+        all.reserve(ctx.byId.size());
+        for (auto &[id, e] : ctx.byId)
+            all.push_back(e);
+        restartMusic(all);
         if (player::activePlayer && player::activePlayer->getBoard())
             soundManager::getInstance().setListenerChamber(player::activePlayer->getBoard()->getInstanceId());
     } catch (const std::exception &ex) {
@@ -1042,5 +1042,339 @@ bool gameSerializer::loadGame(const std::string &fileName)
         std::cout << "Cannot load " << fileName << ": " << ex.what() << "\n";
         return false;
     }
+    return true;
+}
+
+void gameSerializer::writeChunk(writer &w, const chamber &board, std::size_t index)
+{
+    const auto &ch = *board.chunks[index];
+    // fog of war, run-length encoded
+    std::vector<std::pair<int32_t, uint32_t>> runs;
+    for (int v : ch.visited) {
+        if (!runs.empty() && runs.back().first == v)
+            runs.back().second++;
+        else
+            runs.emplace_back(v, 1);
+    }
+    w.u32((uint32_t) runs.size());
+    for (const auto &[v, n] : runs) {
+        w.i32(v);
+        w.u32(n);
+    }
+    // cells: each stack, bottom first; a cell a bounded board does not have is empty
+    std::vector<std::shared_ptr<bElem>> stack;
+    for (const auto &top : ch.cells) {
+        stack.clear();
+        for (auto e = top; e && stack.size() < 255; e = e->getStats()->getSteppingOn())
+            stack.push_back(e);
+        w.u8((uint8_t) stack.size());
+        for (auto it = stack.rbegin(); it != stack.rend(); ++it) {
+            const auto &e = *it;
+            auto id = e->getStats()->getInstanceId();
+            if (!w.seen.count(id) && isCompact(e)) {
+                w.compactIds.insert(id);
+                w.u8(cellCompact);
+                w.i32(e->getType());
+                w.i32(e->getAttrs()->getSubtype());
+                w.u8((uint8_t) e->getStats()->myDirection);
+                w.u8((uint8_t) e->getStats()->facing);
+            } else {
+                w.u8(cellRecord);
+                w.ref(e);
+                // whatever stands on the board is written, also where a keep rule would skip it
+                w.own(e);
+            }
+        }
+    }
+}
+
+std::vector<gameSerializer::cellEntry> gameSerializer::readStack(reader &r)
+{
+    std::vector<cellEntry> stack;
+    for (uint8_t k = r.u8(); k > 0; k--) {
+        cellEntry ce;
+        if (r.u8() == cellCompact) {
+            int type = r.i32();
+            int subtype = r.i32();
+            ce.compact = createByType(type, subtype);
+            ce.compact->getAttrs()->setSubtype(subtype);
+            ce.compact->getStats()->myDirection = (dir::direction) r.u8();
+            ce.compact->getStats()->facing = (dir::direction) r.u8();
+        } else {
+            ce.id = r.u64();
+        }
+        stack.push_back(ce);
+    }
+    return stack;
+}
+
+void gameSerializer::readFog(reader &r, chamber &board, const std::vector<coords> &order)
+{
+    std::size_t pos = 0;
+    for (uint32_t runs = r.u32(); runs > 0; runs--) {
+        int v = r.i32();
+        uint32_t cnt = r.u32();
+        for (uint32_t k = 0; k < cnt && pos < order.size(); k++, pos++)
+            board.chunkAt(chamber::chunkOf(order[pos])).visited[chamber::cellIndex(order[pos])] = v;
+    }
+}
+
+void gameSerializer::readChunk(reader &r, const std::shared_ptr<chamber> &board, coords key, cellStacks &stacks)
+{
+    // the chunk's cells in its own order (chamber::cellIndex)
+    std::vector<coords> order(chamber::chunkCells);
+    const coords first = chamber::chunkOrigin(key);
+    for (int x = 0; x < chamber::chunkSize; x++)
+        for (int y = 0; y < chamber::chunkSize; y++)
+            order[chamber::cellIndex(coords(x, y))] = first + coords(x, y);
+    board->chunkAt(key);
+    readFog(r, *board, order);
+    for (const coords &cell : order) {
+        auto stack = readStack(r);
+        if (!stack.empty())
+            stacks.emplace_back(cell, std::move(stack));
+    }
+}
+
+void gameSerializer::writeRecords(writer &w)
+{
+    while (!w.queue.empty()) {
+        auto e = w.queue.front();
+        w.queue.pop_front();
+        w.u8(1);
+        writeElement(w, e);
+        w.written.push_back(e);
+    }
+    w.u8(0);
+}
+
+void gameSerializer::rebuildStacks(loadContext &ctx, const std::shared_ptr<chamber> &board, cellStacks &stacks)
+{
+    for (auto &[cell, stack] : stacks) {
+        std::shared_ptr<bElem> below;
+        for (auto &ce : stack) {
+            auto e = ce.compact ? ce.compact : ctx.get(ce.id);
+            if (!e)
+                continue;
+            auto &s = *e->getStats();
+            e->attachedBoard = board;
+            s.myPosition = myUtility::Coords(cell);
+            s.steppingOn = below;
+            s.standingOn.reset();
+            s.parent = false;
+            if (below) {
+                below->getStats()->standingOn = e;
+                below->getStats()->parent = true;
+            }
+            below = e;
+        }
+        board->chunkAt(chamber::chunkOf(cell)).cells[chamber::cellIndex(cell)] = below;
+    }
+}
+
+void gameSerializer::restartMusic(const std::vector<std::shared_ptr<bElem>> &elements)
+{
+    // music of the global teleporters is attached to them when they are placed; redo that
+    auto &sound = soundManager::getInstance();
+    for (const auto &e : elements) {
+        auto t = std::dynamic_pointer_cast<teleport>(e);
+        if (!t || t->getAttrs()->getSubtype() != 0 || !t->getBoard())
+            continue;
+        const auto id = t->getStats()->getInstanceId();
+        const bool had = sound.hasSong(id);
+        if (!had) {
+            auto pos = t->getStats()->getMyPosition();
+            sound.setupSong(id, 1, {(float) pos.x, (float) pos.y, 0.0f}, t->getBoard()->getInstanceId(), true);
+        }
+        if (t->getStats()->getMyDirection() == dir::direction::LEFT)
+            sound.pauseSong(id);
+        else if (had)
+            sound.resumeSong(id); // paused when its chunk went to disk
+    }
+}
+
+bool gameSerializer::isPinned(coords key)
+{
+    const auto in = [key](const std::shared_ptr<bElem> &e) {
+        if (!e)
+            return false;
+        const coords at = e->getStats()->getMyPosition();
+        return at != NOCOORDS && chamber::chunkOf(at) == key;
+    };
+    return in(player::activePlayer) || std::ranges::any_of(player::visitedPlayers, in)
+           || std::ranges::any_of(bElem::toDispose, in) || in(viewPoint::get_instance()._owner.lock());
+}
+
+bool gameSerializer::swapOutChunk(const std::shared_ptr<chamber> &world, coords key)
+{
+    std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
+    if (!world || world->isBounded() || !world->hasChunk(key) || isPinned(key))
+        return false;
+    const std::size_t index = world->chunkByKey.at(chamber::keyOf(key));
+    std::filesystem::path file;
+    std::vector<std::shared_ptr<bElem>> written;
+    std::unordered_set<unsigned long> liveIds;
+    try {
+        file = world->swapFolder() / ("chunk_" + std::to_string(key.x) + "_" + std::to_string(key.y) + ".bin");
+        writer w(file.string());
+        if (!w.good())
+            throw std::runtime_error("cannot create the file");
+        const auto inChunk = [key](const std::shared_ptr<bElem> &e) {
+            const auto &s = *e->getStats();
+            return !(s.myPosition == myUtility::NOCOORDS)
+                   && chamber::chunkOf(coords(s.myPosition.getX(), s.myPosition.getY())) == key;
+        };
+        // what stands in the chunk, what those carry, and what is on no board at all (a drone's
+        // brain, say); anything else stays an id
+        w.keep = [&inChunk](const std::shared_ptr<bElem> &e) {
+            auto at = e;
+            for (int depth = 0; at && depth < 16; depth++) {
+                auto carrier = at->getStats()->collector.lock();
+                if (!carrier)
+                    return at->getStats()->myPosition == myUtility::NOCOORDS || inChunk(at);
+                at = carrier;
+            }
+            return false;
+        };
+        w.raw(chunkMagic, sizeof(chunkMagic));
+        w.u32(formatVersion);
+        w.i32(key.x);
+        w.i32(key.y);
+        writeChunk(w, *world, index);
+        // live elements standing here that are not in a cell right now
+        for (const auto &e : world->liveElems)
+            if (e && !e->getStats()->collected && inChunk(e))
+                w.own(e);
+        writeRecords(w);
+        std::unordered_set<unsigned long> writtenIds;
+        for (const auto &e : w.written)
+            writtenIds.insert(e->getStats()->getInstanceId());
+        std::vector<std::shared_ptr<bElem>> live;
+        for (const auto &e : world->liveElems)
+            if (e && writtenIds.contains(e->getStats()->getInstanceId())
+                && liveIds.insert(e->getStats()->getInstanceId()).second)
+                live.push_back(e);
+        w.refs(live);
+        if (!w.good())
+            throw std::runtime_error("writing failed");
+        written = std::move(w.written);
+    } catch (const std::exception &ex) {
+        std::cout << "Cannot swap out chunk " << key.x << "," << key.y << ": " << ex.what() << "\n";
+        std::error_code ec;
+        if (!file.empty())
+            std::filesystem::remove(file, ec);
+        return false;
+    }
+
+    // the chunk is on disk; drop it and everything that belongs to it from memory
+    teleport::park(written);
+    goldenApple::park(written);
+    std::erase_if(world->liveElems, [&liveIds](const std::shared_ptr<bElem> &e) {
+        return e && liveIds.contains(e->getStats()->getInstanceId());
+    });
+    auto &sound = soundManager::getInstance();
+    for (const auto &e : written) {
+        sound.stopSoundsByElementId(e->getStats()->getInstanceId());
+        // whatever still holds on to this copy sees it gone; the chunk brings a new one back
+        e->getStats()->disposed = true;
+    }
+    world->removeChunk(key);
+    world->swapped[chamber::keyOf(key)] = file;
+    return true;
+}
+
+bool gameSerializer::swapInChunk(const std::shared_ptr<chamber> &world, coords key)
+{
+    std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
+    if (!world)
+        return false;
+    auto it = world->swapped.find(chamber::keyOf(key));
+    if (it == world->swapped.end())
+        return false;
+    const std::filesystem::path file = it->second;
+    // creating elements registers teleporters and apples; the parked ones are put back instead
+    std::vector<std::weak_ptr<teleport>> teleportersBefore;
+    {
+        std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
+        teleportersBefore = teleport::allTeleporters;
+    }
+    std::vector<std::shared_ptr<bElem>> applesBefore;
+    {
+        std::lock_guard<std::mutex> lock(goldenApple::applesMutex);
+        applesBefore = goldenApple::apples;
+    }
+    const auto restoreLists = [&]() {
+        {
+            std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
+            teleport::allTeleporters = teleportersBefore;
+        }
+        std::lock_guard<std::mutex> lock(goldenApple::applesMutex);
+        goldenApple::apples = applesBefore;
+        goldenApple::recount();
+    };
+    std::vector<std::shared_ptr<bElem>> loaded, live;
+    try {
+        reader r(file.string());
+        if (!r.good())
+            throw std::runtime_error("cannot open the file");
+        auto magic = r.pod<std::array<char, 8>>();
+        if (std::memcmp(magic.data(), chunkMagic, sizeof(chunkMagic)) != 0)
+            throw std::runtime_error("not a swapped chunk");
+        loadContext ctx;
+        ctx.version = r.u32();
+        if (ctx.version < 5 || ctx.version > formatVersion)
+            throw std::runtime_error("unsupported chunk version");
+        int cx = r.i32();
+        if (coords(cx, r.i32()) != key)
+            throw std::runtime_error("the file holds another chunk");
+        ctx.chambersById[world->instanceid] = world;
+        // elements outside the chunk, found by id the first time one is needed
+        std::unordered_map<uint64_t, std::shared_ptr<bElem>> outside;
+        ctx.external = [&outside, &world](uint64_t id) -> std::shared_ptr<bElem> {
+            if (outside.empty()) {
+                const auto add = [&outside](const std::shared_ptr<bElem> &e) {
+                    if (e && !e->getStats()->isDisposed())
+                        outside.emplace(e->getStats()->getInstanceId(), e);
+                };
+                for (const auto &e : world->liveElems)
+                    add(e);
+                add(player::activePlayer);
+                for (const auto &e : player::visitedPlayers)
+                    add(e);
+                for (const auto &e : bElem::toDispose)
+                    add(e);
+                std::lock_guard<std::recursive_mutex> lock(teleport::registryMutex);
+                for (const auto &t : teleport::allTeleporters)
+                    add(t.lock());
+            }
+            auto found = outside.find(id);
+            return found != outside.end() ? found->second : nullptr;
+        };
+        cellStacks stacks;
+        readChunk(r, world, key, stacks);
+        while (r.u8() == 1)
+            readElement(r, ctx);
+        auto liveIds = r.ids();
+        for (auto &f : ctx.fixups)
+            f();
+        rebuildStacks(ctx, world, stacks);
+        live = ctx.getAll(liveIds);
+        loaded.reserve(ctx.byId.size());
+        for (auto &[id, e] : ctx.byId)
+            loaded.push_back(e);
+    } catch (const std::exception &ex) {
+        world->removeChunk(key);
+        restoreLists();
+        std::cout << "Cannot read swapped chunk " << file << ": " << ex.what() << "\n";
+        return false;
+    }
+    restoreLists();
+    world->liveElems.insert(world->liveElems.end(), live.begin(), live.end());
+    teleport::unpark(loaded);
+    goldenApple::unpark(loaded);
+    restartMusic(loaded);
+    world->swapped.erase(chamber::keyOf(key));
+    std::error_code ec;
+    std::filesystem::remove(file, ec);
     return true;
 }

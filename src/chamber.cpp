@@ -24,6 +24,8 @@
 #include "floorElement.h"
 #include "player.h"
 #include "elementFactory.h"
+#include "randomStreams.h"
+#include <string>
 
 std::atomic<int> chamber::lastid = 0;
 std::vector<std::shared_ptr<chamber>> chamber::allChambers;
@@ -151,7 +153,45 @@ colour chamber::getChColour()
     return this->chamberColour;
 }
 
-chamber::~chamber() {}
+chamber::~chamber()
+{
+    // the swapped chunks belong to this board only
+    if (!this->swapDir.empty()) {
+        std::error_code ec;
+        std::filesystem::remove_all(this->swapDir, ec);
+    }
+}
+
+const std::filesystem::path &chamber::swapFolder()
+{
+    if (this->swapDir.empty()) {
+        // one folder per board and run, so two games never share one
+        this->swapDir = std::filesystem::temp_directory_path()
+                        / ("gardens-of-eris-" + std::to_string(goe::rng::freshSeed()) + "-"
+                           + std::to_string(this->instanceid));
+        std::filesystem::create_directories(this->swapDir);
+    }
+    return this->swapDir;
+}
+
+void chamber::removeChunk(coords chunkKey)
+{
+    auto it = this->chunkByKey.find(keyOf(chunkKey));
+    if (it == this->chunkByKey.end())
+        return;
+    const std::size_t idx = it->second;
+    this->chunkByKey.erase(it);
+    // the last chunk takes the removed one's place
+    const std::size_t last = this->chunks.size() - 1;
+    if (idx != last) {
+        this->chunks[idx] = std::move(this->chunks[last]);
+        this->keys[idx] = this->keys[last];
+        this->chunkByKey[keyOf(this->keys[idx])] = idx;
+    }
+    this->chunks.pop_back();
+    this->keys.pop_back();
+    this->lastIndex = -1;
+}
 
 std::string chamber::getName()
 {

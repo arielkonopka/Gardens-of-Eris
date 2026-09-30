@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#include <algorithm>
 #include "soundManager.h"
 #include "soundSpace.h"
 
@@ -583,6 +584,14 @@ void soundManager::pauseSongLocked(unsigned int bElemInstanceId)
             c.delayed = 555;
         }
     }
+}
+
+bool soundManager::hasSong(unsigned int bElemInstanceId)
+{
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
+    return std::any_of(this->registeredMusic.begin(), this->registeredMusic.end(), [bElemInstanceId](const muNode &m) {
+        return m.bElemInstanceId == bElemInstanceId;
+    });
 }
 
 void soundManager::resumeSong(unsigned int bElemInstanceId)

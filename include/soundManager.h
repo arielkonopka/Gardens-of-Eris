@@ -116,6 +116,8 @@ public:
     int setupSong(unsigned int bElemInstanceId,int songNo,coords3d position,int chamberId,bool vaiableVolume);
     void pauseSong(unsigned int bElemInstanceId);
     void resumeSong(unsigned int bElemInstanceId);
+    /// whether the element has music set up (playing or paused)
+    bool hasSong(unsigned int bElemInstanceId);
     void playSong(int songNo);
     void moveSong(int songNo, coords3d newPosition,int newChamber);
 private:

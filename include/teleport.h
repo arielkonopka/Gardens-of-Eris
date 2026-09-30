@@ -60,7 +60,32 @@ public:
         registrationBatch(const registrationBatch &) = delete;
         registrationBatch &operator=(const registrationBatch &) = delete;
     };
+
+    /**
+     * Teleporters whose chunk goes to disk leave the registry but stay pickable: they are parked
+     * with their id and place, and a teleporter that picks one reads that chunk back first.
+     */
+    /// takes the given elements' teleporters out of the registry and parks them
+    static void park(const std::vector<std::shared_ptr<bElem>> &elements);
+    /// puts the given elements' parked teleporters back into the registry
+    static void unpark(const std::vector<std::shared_ptr<bElem>> &elements);
+    /// how many teleporters are parked
+    static std::size_t parkedCount();
 private:
+    struct parkedTeleporter
+    {
+        unsigned long id;
+        int subtype;
+        coords at;
+    };
+    static std::vector<parkedTeleporter> parked;
+    /// the other end, reading its chunk back from disk if it was swapped out; nullptr when gone
+    std::shared_ptr<teleport> partner();
+    /// makes this and t each other's other end
+    void linkWith(const std::shared_ptr<teleport> &t);
+    /// the other end's id and place, so the link survives the other end's chunk going to disk
+    unsigned long otherEndId = 0;
+    coords otherEndAt = NOCOORDS;
     static std::vector<std::weak_ptr<teleport>> allTeleporters;
     static std::recursive_mutex registryMutex;
     static thread_local bool deferRegistration;
