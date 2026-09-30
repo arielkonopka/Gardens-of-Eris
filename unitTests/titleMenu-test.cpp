@@ -70,12 +70,14 @@ TEST(TitleMenuTests, ConfigShowsSaveLocationAndGoesBack)
     EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::NONE);
     ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
     auto lines = m.getLines();
-    ASSERT_EQ(lines.size(), 5u);
+    ASSERT_EQ(lines.size(), 7u);
     EXPECT_EQ(lines[0], "Save location: .");
     EXPECT_EQ(lines[1], "Music volume: 100%");
     EXPECT_EQ(lines[2], "Sound effects volume: 100%");
-    EXPECT_EQ(lines[3], "Controls");
-    EXPECT_EQ(lines[4], "Back");
+    EXPECT_EQ(lines[3], "Story scroller: On");
+    EXPECT_EQ(lines[4], "Stories file: data/txt/stories.json");
+    EXPECT_EQ(lines[5], "Controls");
+    EXPECT_EQ(lines[6], "Back");
     m.keyDown(ALLEGRO_KEY_ESCAPE);
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::MAIN);
     EXPECT_EQ(m.getSelected(), 1);
@@ -215,12 +217,66 @@ TEST(TitleMenuTests, VolumesStepByFiveAndAreKept)
     EXPECT_EQ(gameSettings::getInstance().getEffectsVolume(), 0);
 }
 
+TEST(TitleMenuTests, StoryScrollerSwitchesAndIsKept)
+{
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    openConfigAt(m, 3);
+    m.keyDown(ALLEGRO_KEY_ENTER); // a switch: Enter flips it, no editor
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
+    EXPECT_FALSE(gameSettings::getInstance().getStoriesShown());
+    EXPECT_EQ(m.getLines()[3], "Story scroller: Off");
+    EXPECT_EQ(m.getMessage(), "Saved");
+    gameSettings::getInstance().resetToDefaults();
+    ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
+    EXPECT_FALSE(gameSettings::getInstance().getStoriesShown());
+    m.keyDown(ALLEGRO_KEY_LEFT); // Left and Right flip it too
+    EXPECT_TRUE(gameSettings::getInstance().getStoriesShown());
+}
+
+TEST(TitleMenuTests, StoriesFileStepsThroughTheLanguagesAndRefusesEmptyFiles)
+{
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    openConfigAt(m, 4);
+    // the files next to stories.json, by name: stories.json, stories.pl.json, stories.ro.json
+    m.keyDown(ALLEGRO_KEY_RIGHT);
+    EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), "data/txt/stories.pl.json");
+    m.keyDown(ALLEGRO_KEY_RIGHT);
+    EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), "data/txt/stories.ro.json");
+    m.keyDown(ALLEGRO_KEY_RIGHT); // wraps around
+    EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), "data/txt/stories.json");
+    m.keyDown(ALLEGRO_KEY_LEFT);
+    EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), "data/txt/stories.ro.json");
+
+    // a typed file with no stories is refused, one with stories is taken
+    const auto empty = (s.dir / "none.json").string();
+    std::ofstream(empty) << "[{\"title\": \"no body\"}]";
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    while (!m.getEditBuffer().empty())
+        m.keyDown(ALLEGRO_KEY_BACKSPACE);
+    type(m, empty);
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::EDITING);
+    EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), "data/txt/stories.ro.json");
+    const auto mine = (s.dir / "mine.json").string();
+    std::ofstream(mine) << "[{\"title\": \"Hail\", \"body\": \"Eris\"}]";
+    while (!m.getEditBuffer().empty())
+        m.keyDown(ALLEGRO_KEY_BACKSPACE);
+    type(m, mine);
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
+    gameSettings::getInstance().resetToDefaults();
+    ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
+    EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), mine);
+}
+
 TEST(TitleMenuTests, ControlsCanBeRebound)
 {
     using goe::controls::action;
     scratch s;
     titleMenu m(gameSettings::getInstance(), s.settingsFile());
-    openConfigAt(m, 3);
+    openConfigAt(m, 5);
     m.keyDown(ALLEGRO_KEY_ENTER);
     ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONTROLS);
     EXPECT_EQ(m.getTitle(), "Controls");
@@ -275,7 +331,7 @@ TEST(TitleMenuTests, ControlsCanBeRebound)
     EXPECT_TRUE(gameSettings::getInstance().getControls() == goe::controls::bindings());
     m.keyDown(ALLEGRO_KEY_ESCAPE);
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
-    EXPECT_EQ(m.getSelected(), 3);
+    EXPECT_EQ(m.getSelected(), 5);
 }
 
 TEST(ControlBindingsTests, DefaultLayoutPlaysAsBefore)
