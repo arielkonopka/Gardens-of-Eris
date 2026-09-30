@@ -66,8 +66,9 @@
 namespace presenter
 {
 
-/// why presentEverything returned
-enum class gameEnd { QUIT, LOST };
+/// why presentEverything returned: the window closed, the last avatar was lost,
+/// or the player asked to save and go to the menu (and saving worked, or failed)
+enum class gameEnd { QUIT, LOST, SAVED, SAVE_FAILED };
 enum class presenterMode { MENU=0, SETTINGS=1,EDITOR=2,DEMO=3,GAME=4} ;
 enum class _cp_gameReasonOut { LOST=0, USERREQ=1, PAUSE=2, TELEPORTREQ=3 };
 

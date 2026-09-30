@@ -130,6 +130,19 @@ goe::controls::bindings readControls(const rapidjson::Value &v, goe::controls::b
             }
         }
     }
+    // a file from before "save and exit" kept Esc for giving up; Esc now leaves without losing
+    // the avatar, and giving up moves to its new default key
+    using goe::controls::action;
+    if (!v.HasMember(bindings::id(action::saveAndExit).c_str())
+        && b.of(action::giveUp).keys == std::vector<int>{ALLEGRO_KEY_ESCAPE}) {
+        const int pad = b.of(action::giveUp).padButton;
+        const bindings fresh;
+        b.clear(action::giveUp);
+        for (int k : fresh.of(action::giveUp).keys)
+            b.bindKey(action::giveUp, k);
+        b.bindPadButton(action::giveUp, pad);
+        b.bindKey(action::saveAndExit, ALLEGRO_KEY_ESCAPE);
+    }
     return b;
 }
 } // namespace

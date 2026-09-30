@@ -51,6 +51,65 @@ TEST(TitleMenuTests, MainMenuOffersStartConfigExit)
     EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::START);
 }
 
+TEST(TitleMenuTests, ContinueShowsOnlyWithAReadableSave)
+{
+    scratch s;
+    bool readable = true;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile(), [&readable] { return readable; });
+    auto lines = m.getLines();
+    ASSERT_EQ(lines.size(), 4u);
+    EXPECT_EQ(lines[0], "Continue");
+    EXPECT_EQ(lines[1], "Start game");
+    EXPECT_EQ(m.getSelected(), 0);
+    EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::CONTINUE);
+    m.keyDown(ALLEGRO_KEY_DOWN);
+    EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::START);
+    m.keyDown(ALLEGRO_KEY_UP);
+    m.keyDown(ALLEGRO_KEY_UP);
+    EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::EXIT);
+
+    // Config, then back, lands on Config again
+    m.keyDown(ALLEGRO_KEY_UP);
+    EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::NONE);
+    ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
+    m.keyDown(ALLEGRO_KEY_ESCAPE);
+    EXPECT_EQ(m.getLines()[m.getSelected()], "Config");
+
+    // the save went away: refresh drops Continue and starts from the top
+    readable = false;
+    m.refresh();
+    lines = m.getLines();
+    ASSERT_EQ(lines.size(), 3u);
+    EXPECT_EQ(lines[0], "Start game");
+    EXPECT_EQ(m.getSelected(), 0);
+    EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::START);
+}
+
+TEST(TitleMenuTests, OldSettingsGiveEscToSaveAndExit)
+{
+    // settings.json from before "save and exit" had Esc for giving up
+    using goe::controls::action;
+    scratch s;
+    {
+        std::ofstream out(s.settingsFile());
+        out << R"({"controls": {"giveUp": {"keys": [)" << ALLEGRO_KEY_ESCAPE << R"(], "pad": 9}}})";
+    }
+    ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
+    const auto b = gameSettings::getInstance().getControls();
+    EXPECT_EQ(b.of(action::giveUp).keys, std::vector<int>{ALLEGRO_KEY_BACKSPACE});
+    EXPECT_EQ(b.of(action::giveUp).padButton, 9);
+    EXPECT_EQ(b.of(action::saveAndExit).keys, (std::vector<int>{ALLEGRO_KEY_ESCAPE, ALLEGRO_KEY_F10}));
+
+    // a player who chose Esc for giving up on purpose keeps it once the file knows both actions
+    auto mine = b;
+    mine.bindKey(action::giveUp, ALLEGRO_KEY_ESCAPE);
+    gameSettings::getInstance().setControls(mine);
+    ASSERT_TRUE(gameSettings::getInstance().save(s.settingsFile()));
+    gameSettings::getInstance().resetToDefaults();
+    ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
+    EXPECT_TRUE(gameSettings::getInstance().getControls() == mine);
+}
+
 TEST(TitleMenuTests, SelectionWrapsAround)
 {
     scratch s;
@@ -358,8 +417,12 @@ TEST(ControlBindingsTests, DefaultLayoutPlaysAsBefore)
     EXPECT_TRUE(is({ALLEGRO_KEY_X}, 3, dir::direction::NODIRECTION));
     EXPECT_TRUE(is({ALLEGRO_KEY_ALT, ALLEGRO_KEY_A}, 4, dir::direction::LEFT));
     EXPECT_TRUE(is({ALLEGRO_KEY_Z}, 5, dir::direction::NODIRECTION));
-    EXPECT_TRUE(is({ALLEGRO_KEY_ESCAPE}, 6, dir::direction::NODIRECTION));
-    EXPECT_TRUE(is({ALLEGRO_KEY_ESCAPE, ALLEGRO_KEY_LSHIFT}, 7, dir::direction::NODIRECTION));
+    EXPECT_TRUE(is({ALLEGRO_KEY_BACKSPACE}, 6, dir::direction::NODIRECTION));
+    EXPECT_TRUE(is({ALLEGRO_KEY_BACKSPACE, ALLEGRO_KEY_LSHIFT}, 7, dir::direction::NODIRECTION));
+    // save and exit wins over everything held with it, so leaving never costs an avatar
+    EXPECT_TRUE(is({ALLEGRO_KEY_ESCAPE}, 10, dir::direction::NODIRECTION));
+    EXPECT_TRUE(is({ALLEGRO_KEY_F10}, 10, dir::direction::NODIRECTION));
+    EXPECT_TRUE(is({ALLEGRO_KEY_ESCAPE, ALLEGRO_KEY_BACKSPACE, ALLEGRO_KEY_W}, 10, dir::direction::UP));
     EXPECT_TRUE(is({ALLEGRO_KEY_SPACE}, 8, dir::direction::NODIRECTION));
     EXPECT_TRUE(is({ALLEGRO_KEY_R}, 9, dir::direction::NODIRECTION));
 
