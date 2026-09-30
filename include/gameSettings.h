@@ -56,6 +56,14 @@ public:
     void setMusicVolume(int percent);
     void setEffectsVolume(int percent);
 
+    /// the story line over the game field (storyScroller.h): on or off, and the file it tells from
+    static constexpr const char *defaultStoriesFile = "data/txt/stories.json";
+    bool getStoriesShown() const { return this->storiesShown; }
+    void setStoriesShown(bool shown) { this->storiesShown = shown; }
+    std::string getStoriesFile() const;
+    /// false, keeping the old file, when the file has no stories
+    bool setStoriesFile(const std::string &file);
+
     /// the key and pad layout; the input thread copies it on every event
     goe::controls::bindings getControls() const;
     void setControls(const goe::controls::bindings &b);
@@ -70,6 +78,8 @@ private:
     std::string saveDirectory = ".";
     std::atomic<int> musicVolume = 100;
     std::atomic<int> effectsVolume = 100;
+    std::atomic<bool> storiesShown = true;
+    std::string storiesFile = defaultStoriesFile;
     goe::controls::bindings controls;
 };
 

@@ -23,6 +23,7 @@
 #define WORLDBUILDER_H
 #include "commons.h"
 #include "chamber.h"
+#include <cstddef>
 #include <memory>
 
 /**
@@ -55,6 +56,9 @@ namespace worldBuilder {
     bool shrinkAround(const std::shared_ptr<chamber> &world, coords cell);
     /// makes sure the cell's chunk is in memory, reading it back from disk if it went there
     void bringIn(const std::shared_ptr<chamber> &world, coords cell);
+    /// how many chunks were made new so far (read back from disk does not count); it only grows,
+    /// so a caller that remembers the last value sees when the maze grew (see storyScroller)
+    std::size_t chunksGenerated();
 }
 
 #endif // WORLDBUILDER_H

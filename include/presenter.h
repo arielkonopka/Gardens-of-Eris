@@ -50,6 +50,7 @@
 #include "gameSerializer.h"
 #include "gameSettings.h"
 #include "fogLayer.h"
+#include "storyScroller.h"
 
 #define _offsetX 64
 #define _offsetY 64
@@ -110,6 +111,14 @@ private:
     std::vector<coords> chaosGameTops;
     coords chaosGamelastPoint;
     goe::fontHandle myfont;
+    /// the story line over the game field, and the font it is drawn in
+    goe::fontHandle storyFont;
+    goe::storyScroller stories;
+    /// worldBuilder::chunksGenerated() when the scroller last looked
+    std::size_t seenChunks = 0;
+    /// starts a story when the maze grew, and moves the one on screen; once per tick
+    void tickStories();
+    void drawStory();
     std::string splashFname;
     fogLayer fog;
     int sWidth;

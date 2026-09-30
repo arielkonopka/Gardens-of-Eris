@@ -24,12 +24,18 @@
 #include "randomLevelGenerator.h"
 #include "gameSerializer.h"
 #include <algorithm>
+#include <atomic>
 #include <cstdlib>
+
+namespace {
+std::atomic<std::size_t> generated = 0;
+}
 
 std::shared_ptr<chamber> worldBuilder::startNew()
 {
     auto world = chamber::makeWorld();
     randomLevelGenerator(world, coords(0, 0)).generateChunk(true);
+    generated++;
     while (worldBuilder::growAround(world, world->origin))
         ;
     return world;
@@ -49,8 +55,10 @@ bool worldBuilder::growAround(const std::shared_ptr<chamber> &world, coords cell
                 const coords chunk = centre + coords(dx, dy);
                 if (world->hasChunk(chunk))
                     continue;
-                if (!world->isSwapped(chunk) || !gameSerializer::swapInChunk(world, chunk))
+                if (!world->isSwapped(chunk) || !gameSerializer::swapInChunk(world, chunk)) {
                     randomLevelGenerator(world, chunk).generateChunk(false);
+                    generated++;
+                }
                 return true;
             }
     return false;
@@ -82,4 +90,9 @@ void worldBuilder::bringIn(const std::shared_ptr<chamber> &world, coords cell)
     const coords chunk = chamber::chunkOf(cell);
     if (world->isSwapped(chunk))
         gameSerializer::swapInChunk(world, chunk);
+}
+
+std::size_t worldBuilder::chunksGenerated()
+{
+    return generated;
 }

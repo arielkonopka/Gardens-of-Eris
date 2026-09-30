@@ -56,7 +56,9 @@ The labyrinth is inhabited by an assortment of creatures and contraptions. You'l
 
 ## Playing the game
 
-The game opens with a title screen: **Continue**, **Start**, **Config** and **Exit**. Continue is there only when the save folder holds a save the game can read, and picks that game up where it was saved. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
+The game opens with a title screen: **Continue**, **Start**, **Config** and **Exit**. Continue is there only when the save folder holds a save the game can read, and picks that game up where it was saved. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), the story scroller, and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
+
+Each time the maze grows by a new chunk, a random Discordian story scrolls along the top of the screen, unless one is still scrolling. Config switches the story scroller on or off and picks the stories file: Left and Right step through the files next to it (`data/txt/stories.json` in English, `stories.pl.json` in Polish, `stories.ro.json` in Romanian), or type the path of your own. A stories file is a JSON list of `{"title": "...", "body": "..."}`.
 
 These are the default keys. Config, Controls lets you choose other keys (two per action) and a pad button for each action: pick the action, then press the new key or pad button. Backspace leaves an action without keys, and Reset to defaults brings this layout back. The pad's stick always walks.
 
@@ -390,6 +392,7 @@ New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, 
 ## ChangeLog
 * Esc saves the game and goes back to the title screen without losing an avatar, and the title screen has Continue while a readable save exists. Giving up an avatar moved to Backspace. Saves keep the world seed now (save format 6; older saves still load).
 * The music changes with the difficulty: each step of D brings the next song of the music list, with a crossfade. It replaces the songs that were placed around the start of the map.
+* A story scroller: a random story from `data/txt/stories.json` scrolls along the top of the screen whenever a new chunk of the maze is made. Config switches it on or off and picks the stories file (English, Polish or Romanian, or your own). Fixed a stray bracket that made `stories.pl.json` unreadable.
 * Doors stand in the holes they close: at the edges of chunks a door used to stand one cell in front of the hole. Global teleporters no longer play music, since there are no separate chambers any more.
 * The build is warning-free with `-Wall -Wextra -Wpedantic -Wshadow`, which are now on by default. Fixed along the way: handing an inventory to a new owner made every item its own collector.
 * Explosions are heard again: landmines, bombs and bazooka missiles went off in silence because the blast never asked for its sound.

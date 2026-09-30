@@ -21,6 +21,7 @@
  */
 
 #include "gameSettings.h"
+#include "storyScroller.h"
 #include <algorithm>
 #include <cstdio>
 #include <filesystem>
@@ -78,6 +79,21 @@ void gameSettings::setMusicVolume(int percent)
 void gameSettings::setEffectsVolume(int percent)
 {
     this->effectsVolume = std::clamp(percent, 0, 100);
+}
+
+std::string gameSettings::getStoriesFile() const
+{
+    std::lock_guard<std::mutex> lock(this->m);
+    return this->storiesFile;
+}
+
+bool gameSettings::setStoriesFile(const std::string &file)
+{
+    if (goe::loadStories(file).empty())
+        return false;
+    std::lock_guard<std::mutex> lock(this->m);
+    this->storiesFile = file;
+    return true;
 }
 
 goe::controls::bindings gameSettings::getControls() const
@@ -150,6 +166,13 @@ bool gameSettings::load(const std::string &file)
         this->setMusicVolume(doc["musicVolume"].GetInt());
     if (doc.HasMember("effectsVolume") && doc["effectsVolume"].IsInt())
         this->setEffectsVolume(doc["effectsVolume"].GetInt());
+    if (doc.HasMember("storyScroller") && doc["storyScroller"].IsBool())
+        this->setStoriesShown(doc["storyScroller"].GetBool());
+    if (doc.HasMember("storiesFile") && doc["storiesFile"].IsString()) {
+        // kept even when it cannot be read now, like the save folder; the game then tells no stories
+        std::lock_guard<std::mutex> lock(this->m);
+        this->storiesFile = doc["storiesFile"].GetString();
+    }
     if (doc.HasMember("controls") && doc["controls"].IsObject())
         this->setControls(readControls(doc["controls"], this->getControls()));
     return true;
@@ -166,6 +189,10 @@ bool gameSettings::save(const std::string &file) const
     w.Int(this->getMusicVolume());
     w.Key("effectsVolume");
     w.Int(this->getEffectsVolume());
+    w.Key("storyScroller");
+    w.Bool(this->getStoriesShown());
+    w.Key("storiesFile");
+    w.String(this->getStoriesFile().c_str());
     w.Key("controls");
     w.StartObject();
     const auto bound = this->getControls();
@@ -197,5 +224,7 @@ void gameSettings::resetToDefaults()
     this->saveDirectory = ".";
     this->musicVolume = 100;
     this->effectsVolume = 100;
+    this->storiesShown = true;
+    this->storiesFile = defaultStoriesFile;
     this->controls = {};
 }

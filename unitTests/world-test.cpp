@@ -75,6 +75,17 @@ TEST(WorldTests, ChunksAreFoundByFloorDivision)
     EXPECT_EQ(floorMod(130, 64), 2);
 }
 
+TEST(WorldTests, TheWorldCountsTheChunksItMakes)
+{
+    // the story scroller tells a story whenever this grows
+    const auto before = worldBuilder::chunksGenerated();
+    auto world = newWorld();
+    EXPECT_EQ(worldBuilder::chunksGenerated() - before, 25u); // 5 x 5 around the start
+    const auto started = worldBuilder::chunksGenerated();
+    ASSERT_TRUE(worldBuilder::growAround(world, chamber::chunkOrigin(coords(3, 0))));
+    EXPECT_EQ(worldBuilder::chunksGenerated(), started + 1);
+}
+
 TEST(WorldTests, CellsExistOnlyInBuiltChunks)
 {
     inputManager::getInstance(true);

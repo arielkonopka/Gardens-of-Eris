@@ -45,7 +45,7 @@ public:
     {
         std::string label;
         std::function<std::string()> value;
-        /// takes a typed value; empty for a line that opens the controls screen instead
+        /// takes a typed value; empty for a switch (Enter calls adjust) or the line that opens the controls screen
         std::function<bool(const std::string &)> apply;
         /// Left and Right step the value (-1 or +1); empty when they do nothing
         std::function<void(int)> adjust;
