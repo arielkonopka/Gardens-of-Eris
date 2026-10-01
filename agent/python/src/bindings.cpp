@@ -4,6 +4,7 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/ndarray.h>
 #include <nanobind/stl/filesystem.h>
+#include <nanobind/stl/map.h>
 #include <nanobind/stl/optional.h>
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
@@ -43,6 +44,14 @@ nb::dict stateDict(const game &g, state s)
     return d;
 }
 
+nb::dict eventDict(const eventCounts &counts)
+{
+    nb::dict d;
+    for (int e = 0; e < eventCount; e++)
+        d[eventName((event) e).c_str()] = counts[(std::size_t) e];
+    return d;
+}
+
 std::vector<std::string> describe(std::span<const feature> table)
 {
     std::vector<std::string> res;
@@ -66,7 +75,11 @@ NB_MODULE(_goe, m)
         actions.push_back(actionName((action) a));
     for (int s = 0; s < sectionCount; s++)
         sections.push_back(sectionName((section) s));
+    std::vector<std::string> events;
+    for (int e = 0; e < eventCount; e++)
+        events.push_back(eventName((event) e));
     m.attr("ACTIONS") = actions;
+    m.attr("EVENTS") = events;
     m.attr("SECTIONS") = sections;
     m.attr("ELEMENT_FEATURES") = namesOf(elementFeatures());
     m.attr("PLAYER_FEATURES") = namesOf(playerFeatures());
@@ -114,7 +127,8 @@ NB_MODULE(_goe, m)
         .def_rw("item_features", &config::itemFeatures)
         .def_rw("ticks_per_step", &config::ticksPerStep)
         .def_rw("episode_ticks", &config::episodeTicks)
-        .def_rw("allow_give_up", &config::allowGiveUp);
+        .def_rw("allow_give_up", &config::allowGiveUp)
+        .def_rw("reward_weights", &config::rewardWeights);
 
     nb::class_<game>(m, "Game")
         .def(nb::init<config>(), nb::arg("config"))
@@ -131,6 +145,8 @@ NB_MODULE(_goe, m)
         .def_prop_ro("avatars_lost", &game::avatarsLost)
         .def_prop_ro("score", &game::score)
         .def_prop_ro("seed", &game::seed)
+        .def_prop_ro("step_events", [](const game &g) { return eventDict(g.stepEvents()); })
+        .def_prop_ro("episode_events", [](const game &g) { return eventDict(g.episodeEvents()); })
         .def_prop_ro("action_count", &game::actions)
         .def_prop_ro("cell_feature_names", &game::cellFeatureNames)
         .def_prop_ro("player_feature_names", &game::playerFeatureNames)

@@ -21,6 +21,7 @@
  */
 #include "player.h"
 #include "elementSound.h"
+#include "gameEvents.h"
 
 std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
 //std::vector<std::shared_ptr<bElem>> player::visitedPlayers;
@@ -191,8 +192,9 @@ bool player::mechanics()
         }
         break;
     case 8:
-        if (this->getAttrs()->getInventory()->getUsable() != nullptr)
-            this->getAttrs()->getInventory()->getUsable()->interact(shared_from_this());
+        if (auto usable = this->getAttrs()->getInventory()->getUsable();
+            usable != nullptr && usable->interact(shared_from_this()))
+            goe::events::report(goe::events::kind::use, *usable, this);
         this->getStats()->setWaiting(1);
         break;
     case 5: {

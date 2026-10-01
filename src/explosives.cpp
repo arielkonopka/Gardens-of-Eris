@@ -21,6 +21,7 @@
  */
 #include "explosives.h"
 #include "elementSound.h"
+#include "gameEvents.h"
 #include <viewPoint.h>
 
 bool explosives::additionalProvisioning(int subtype)
@@ -224,7 +225,11 @@ bool explosives::traverser(
     if (!elem || elem->getStats()->isDestroying()
         || (!elem->getAttrs()->isDestroyable() && !elem->getAttrs()->isSteppable()))
         return false;
-    elem->destroy();
+    {
+        // a blast's shooter: whoever fired the missile, or set off the bomb
+        goe::events::blame by(this->getStats()->getStatsOwner().lock().get());
+        elem->destroy();
+    }
     if (noGo != dir::direction::RIGHT)
         traverser(center,
                   point + myUtility::Coords::dir2coords(dir::direction::RIGHT),

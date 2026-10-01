@@ -21,6 +21,7 @@
  */
 
 #include "bazookaMissile.h"
+#include "gameEvents.h"
 
 bool bazookaMissile::mechanics()
 {
@@ -36,8 +37,10 @@ bool bazookaMissile::mechanics()
 
     int beEnergy = be->getAttrs()->getEnergy();
 
-    if (be)
+    if (be) {
+        goe::events::blame by(this->getStats()->getStatsOwner().lock().get());
         be->hurt(this->getAttrs()->getEnergy());
+    }
     beEnergy = beEnergy - be->getAttrs()->getEnergy();
     if (beEnergy) {
         std::shared_ptr<bElem> sowner = this->getStats()->getStatsOwner().lock();

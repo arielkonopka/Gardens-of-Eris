@@ -8,8 +8,8 @@ parallel in separate processes. See README.md next to this package.
 """
 from ._goe import (ACTIONS, CELL_FEATURES, ELEMENT_FEATURES, ITEM_FEATURES, PLAYER_FEATURES, SECTIONS,
                    describe_features)
-from .game import Game, GameState, default_data_dir
+from .game import EVENT_MEANINGS, EVENTS, SHAPED_REWARD, Game, GameState, default_data_dir
 from .env import GoeEnv
 
-__all__ = ["ACTIONS", "SECTIONS", "ELEMENT_FEATURES", "PLAYER_FEATURES", "CELL_FEATURES", "ITEM_FEATURES",
+__all__ = ["EVENTS", "EVENT_MEANINGS", "SHAPED_REWARD", "ACTIONS", "SECTIONS", "ELEMENT_FEATURES", "PLAYER_FEATURES", "CELL_FEATURES", "ITEM_FEATURES",
            "describe_features", "Game", "GameState", "GoeEnv", "default_data_dir"]

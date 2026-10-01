@@ -3,6 +3,7 @@
 #include "configManager.h"
 #include "elements.h"
 #include "gameClock.h"
+#include "gameEvents.h"
 #include "gameSerializer.h"
 #include "inputManager.h"
 #include "randomStreams.h"
@@ -49,6 +50,9 @@ constexpr std::array<actionInfo, actionCount> actionTable = {{
     {"DROP", {9, dir::direction::NODIRECTION}},
     {"GIVE_UP", {6, dir::direction::NODIRECTION}},
 }};
+
+constexpr std::array<std::string_view, eventCount> eventNames = {
+    "score", "collect", "apple", "use", "open", "teleport", "kill", "mine", "hurt", "death"};
 
 constexpr std::array<std::string_view, sectionCount> sectionNames = {"weapons", "usables", "keys", "mods", "tokens"};
 
@@ -133,6 +137,19 @@ std::string sectionName(section s)
     return std::string(sectionNames.at((std::size_t) s));
 }
 
+std::string eventName(event e)
+{
+    return std::string(eventNames.at((std::size_t) e));
+}
+
+std::optional<event> eventByName(std::string_view name)
+{
+    for (int e = 0; e < eventCount; e++)
+        if (eventNames[(std::size_t) e] == name)
+            return (event) e;
+    return std::nullopt;
+}
+
 game::game(config c) : cfg(std::move(c))
 {
     if (this->cfg.visionRadius < 0)
@@ -141,6 +158,12 @@ game::game(config c) : cfg(std::move(c))
         throw std::invalid_argument("ticksPerStep must be 1 or more");
     if (this->cfg.inventorySlots < 0)
         throw std::invalid_argument("inventorySlots must be 0 or more");
+    for (const auto &[name, w] : this->cfg.rewardWeights) {
+        const auto e = eventByName(name);
+        if (!e)
+            throw std::invalid_argument("no such event in rewardWeights: " + name);
+        this->weights[(std::size_t) *e] = w;
+    }
 
     this->cellNames = this->cfg.cellFeatures.empty() ? joined({elementFeatures(), cellOnly}) : this->cfg.cellFeatures;
     this->playerNames = this->cfg.playerFeatures.empty() ? joined({elementFeatures(), playerFeatures()})
@@ -175,6 +198,9 @@ game::game(config c) : cfg(std::move(c))
         } restore{here};
         configManager::getInstance();
         inputManager::getInstance(true); // no keyboard and no input thread
+        goe::events::observe([this](goe::events::kind k, const bElem &subject, const bElem *actor) {
+            this->noteEvent((int) k, subject, actor);
+        });
     } catch (...) {
         gameAlive = false;
         throw;
@@ -183,6 +209,7 @@ game::game(config c) : cfg(std::move(c))
 
 game::~game()
 {
+    goe::events::observe({});
     gameSerializer::clearWorld();
     inputManager::getInstance(true).setControlItem(nothing);
     gameAlive = false;
@@ -204,6 +231,43 @@ void game::newEpisode(std::optional<std::uint32_t> seed)
     this->playerId = plr ? plr->getStats()->getInstanceId() : 0;
     this->lastScore = this->score();
     this->lostAvatars = 0;
+    this->stepCounts.fill(0.0f);
+    this->episodeCounts.fill(0.0f);
+    this->collected.clear();
+    this->opened.clear();
+}
+
+void game::noteEvent(int k, const bElem &subject, const bElem *actor)
+{
+    // only what the agent's avatars do; the world's other doings (a monster opening a door) are not its
+    if (!actor || actor->getType() != bElemTypes::_player)
+        return;
+    const unsigned long id = subject.getStats()->getInstanceId();
+    const int type = subject.getType();
+    auto add = [this](event e) { this->stepCounts[(std::size_t) e] += 1.0f; };
+    switch ((goe::events::kind) k) {
+    case goe::events::kind::collect:
+        if (this->collected.insert(id).second)
+            add(type == bElemTypes::_goldenAppleType ? event::apple : event::collect);
+        break;
+    case goe::events::kind::use:
+        add(event::use);
+        break;
+    case goe::events::kind::open:
+        if (this->opened.insert(id).second)
+            add(event::open);
+        break;
+    case goe::events::kind::teleport:
+        add(event::teleport);
+        break;
+    case goe::events::kind::kill:
+        if (type == bElemTypes::_simpleBombType || type == bElemTypes::_landmineType)
+            add(event::mine);
+        else if (type == bElemTypes::_monster || type == bElemTypes::_patrollingDrone
+                 || type == bElemTypes::_puppetMasterType)
+            add(event::kill);
+        break;
+    }
 }
 
 bool game::advance(controlItem control)
@@ -229,23 +293,38 @@ float game::makeAction(action a)
     // The control reaches the player once, in the first tick it can act, like a key pressed
     // once. A step is a decision, whatever the step's length and however long a move takes.
     this->taken = false;
+    this->stepCounts.fill(0.0f);
+    const bool aliveBefore = !this->isPlayerDead();
     for (int t = 0; t < this->cfg.ticksPerStep && !this->isEpisodeFinished(); t++) {
         const auto plr = player::getActivePlayer();
         const bool deliver = !this->taken && plr && readyNextTick(*plr);
+        const int energy = plr ? plr->getAttrs()->getEnergy() : 0;
         this->advance(deliver ? controlOf(a) : nothing);
         this->taken = this->taken || deliver;
+        // energy lost by the same avatar; a golden apple's energy gained is not counted
+        const auto after = player::getActivePlayer();
+        if (plr && after == plr && after->getAttrs()->getEnergy() < energy)
+            this->stepCounts[(std::size_t) event::hurt] += (float) (energy - after->getAttrs()->getEnergy());
     }
-    // a spare avatar taking over brings its own score: no reward or penalty for the switch
     const auto plr = player::getActivePlayer();
     if (plr && plr->getStats()->getInstanceId() != this->playerId) {
+        // a spare avatar taking over brings its own score: no score for the switch
         this->playerId = plr->getStats()->getInstanceId();
         this->lastScore = this->score();
         this->lostAvatars++;
-        return 0.0f;
+        this->stepCounts[(std::size_t) event::death] += 1.0f;
+    } else {
+        const int now = this->score();
+        this->stepCounts[(std::size_t) event::score] = (float) (now - this->lastScore);
+        this->lastScore = now;
+        if (aliveBefore && this->isPlayerDead())
+            this->stepCounts[(std::size_t) event::death] += 1.0f;
     }
-    const int now = this->score();
-    const float reward = (float) (now - this->lastScore);
-    this->lastScore = now;
+    float reward = 0.0f;
+    for (std::size_t e = 0; e < (std::size_t) eventCount; e++) {
+        this->episodeCounts[e] += this->stepCounts[e];
+        reward += this->weights[e] * this->stepCounts[e];
+    }
     return reward;
 }
 

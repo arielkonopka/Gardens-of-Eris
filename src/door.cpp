@@ -21,6 +21,7 @@
  */
 #include "door.h"
 #include "elementSound.h"
+#include "gameEvents.h"
 
 bool door::destroy()
 {
@@ -101,6 +102,8 @@ bool door::interact(std::shared_ptr<bElem> who)
         this->getAttrs()->setOpen(!this->getAttrs()->isOpen());
         this->_alignWithOpen();
         goe::sound::play(*this, "Door", (this->getAttrs()->isOpen()) ? "Unlock" : "Lock");
+        if (this->getAttrs()->isOpen())
+            goe::events::report(goe::events::kind::open, *this, who.get());
         return true;
     }
     if (!who->getAttrs()->canCollect()) {
@@ -114,6 +117,7 @@ bool door::interact(std::shared_ptr<bElem> who)
         this->getAttrs()->setOpen(true);
         this->getAttrs()->setLocked(false);
         this->_alignWithOpen();
+        goe::events::report(goe::events::kind::open, *this, who.get());
     } else {
         return false;
     }

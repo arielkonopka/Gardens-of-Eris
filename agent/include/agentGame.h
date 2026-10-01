@@ -3,8 +3,11 @@
 
 #include "agentFeatures.h"
 #include "commons.h"
+#include <array>
 #include <cstdint>
 #include <filesystem>
+#include <map>
+#include <set>
 #include <memory>
 #include <optional>
 #include <string>
@@ -47,6 +50,26 @@ enum class section : int { weapons, usables, keys, mods, tokens, count };
 constexpr int sectionCount = (int) section::count;
 std::string sectionName(section s);
 
+/// what the agent's own avatar did or suffered in a step; the reward weighs these
+enum class event : int {
+    score,    ///< points gained (the game's score: new cells visited, items collected, damage dealt)
+    collect,  ///< items collected, each item once an episode (golden apples count as apple)
+    apple,    ///< golden apples collected, each once an episode
+    use,      ///< the usable in hand used (a broken golden apple eaten for energy)
+    open,     ///< doors opened, each door once an episode
+    teleport, ///< trips through a teleporter
+    kill,     ///< monsters, drones and puppet masters killed by the player's missiles and blasts
+    mine,     ///< mines and bombs set off by the player's missiles and blasts
+    hurt,     ///< energy lost
+    death,    ///< avatars lost (the last one included)
+    count
+};
+constexpr int eventCount = (int) event::count;
+/// "score", "collect", ...
+std::string eventName(event e);
+std::optional<event> eventByName(std::string_view name);
+using eventCounts = std::array<float, eventCount>;
+
 struct config
 {
     /// the folder with data/skins.json (the game's GoEoOL folder)
@@ -79,6 +102,9 @@ struct config
     std::uint64_t episodeTicks = 0;
     /// adds action::giveUp to the actions
     bool allowGiveUp = false;
+    /// the reward of a step: the sum of each event's count (eventName) times its weight; events
+    /// left out weigh 0. The default is the score gained. Penalties take negative weights.
+    std::map<std::string, float> rewardWeights = {{"score", 1.0f}};
 };
 
 /// one observation
@@ -108,7 +134,8 @@ public:
 
     /// a new world; the same seed builds the same world. No seed: a fresh one.
     void newEpisode(std::optional<std::uint32_t> seed = std::nullopt);
-    /// plays the action for config::ticksPerStep ticks and returns the reward: the score gained
+    /// plays the action for config::ticksPerStep ticks and returns the reward: the step's events
+    /// weighed by config::rewardWeights (by default the score gained)
     float makeAction(action a);
     /// runs one game tick with the control given to the player; false when the episode is over
     bool advance(controlItem control);
@@ -127,6 +154,9 @@ public:
     int avatarsLost() const { return this->lostAvatars; }
     int score() const;
     std::uint32_t seed() const { return this->worldSeed; }
+    /// what happened in the last makeAction, and in the episode so far
+    const eventCounts &stepEvents() const { return this->stepCounts; }
+    const eventCounts &episodeEvents() const { return this->episodeCounts; }
 
     const config &getConfig() const { return this->cfg; }
     int actions() const { return this->cfg.allowGiveUp ? actionCount : actionCount - 1; }
@@ -138,6 +168,8 @@ public:
 private:
     void fillVision(state &s, const std::shared_ptr<bElem> &plr, const std::shared_ptr<chamber> &board) const;
     void fillInventory(state &s, const std::shared_ptr<bElem> &plr) const;
+    /// counts a game event the player's avatar took part in (goe::events)
+    void noteEvent(int k, const bElem &subject, const bElem *actor);
 
     config cfg;
     std::vector<std::string> cellNames, playerNames, itemNames;
@@ -153,6 +185,10 @@ private:
     std::uint32_t worldSeed = 0;
     int lastScore = 0;
     bool taken = false;
+    std::array<float, eventCount> weights{};
+    eventCounts stepCounts{}, episodeCounts{};
+    /// what counts once an episode: items collected and doors opened, by instance id
+    std::set<unsigned long> collected, opened;
 };
 
 } // namespace goe::agent

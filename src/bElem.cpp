@@ -21,6 +21,7 @@
  */
 #include "../include/bElem.h"
 #include "elementSound.h"
+#include "gameEvents.h"
 #include "elements.h"
 #include "floorElement.h"
 #include "rubbish.h"
@@ -203,6 +204,9 @@ bool bElem::destroy()
 {
     if (this->getAttrs()->isDestroyable() || this->getAttrs()->isSteppable()
         || this->getAttrs()->isKillable()) {
+        if (this->getAttrs()->isKillable() && !goe::events::isDown(*this))
+            if (const auto by = goe::events::blamed())
+                goe::events::report(goe::events::kind::kill, *this, by);
         if (this->getStats()->isDying()) {
             this->getStats()->setKilled(0);
             this->getStats()->setKillTimeBeg(0);
@@ -344,6 +348,7 @@ bool bElem::collect(std::shared_ptr<bElem> collectible)
     this->getAttrs()->getInventory()->addToInventory(collectible);
     collectible->collectOnAction(true, shared_from_this());
     this->getStats()->setPoints(COLLECTS, this->getStats()->getPoints(COLLECTS) + 1);
+    goe::events::report(goe::events::kind::collect, *collectible, this);
 #ifdef _VerbousMode_
     std::cout << "Collected set? " << (collectible->getStats()->isCollected()) << "\n";
 #endif
@@ -362,6 +367,8 @@ bool bElem::kill()
         bElem::toDispose.push_back(shared_from_this());
     }
     this->getStats()->setKilled(GoEConstants::_defaultKillTime);
+    if (const auto by = goe::events::blamed())
+        goe::events::report(goe::events::kind::kill, *this, by);
     return true;
 }
 bool bElem::additionalProvisioning(int subtype)

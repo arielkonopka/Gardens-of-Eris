@@ -8,6 +8,23 @@ from . import _goe
 
 # everything the agent may do; GIVE_UP only with allow_give_up=True
 ACTIONS = list(_goe.ACTIONS)
+# what the reward can weigh (Game's reward_weights); see EVENT_MEANINGS
+EVENTS = list(_goe.EVENTS)
+EVENT_MEANINGS = {
+    "score": "points gained: the game's score (new cells visited, items collected, damage dealt)",
+    "collect": "items collected, each item once an episode (golden apples count as apple)",
+    "apple": "golden apples collected, each once an episode",
+    "use": "the usable in hand used (a broken golden apple eaten for energy)",
+    "open": "doors opened, each door once an episode",
+    "teleport": "trips through a teleporter",
+    "kill": "monsters, drones and puppet masters killed by the player's missiles and blasts",
+    "mine": "mines and bombs set off by the player's missiles and blasts",
+    "hurt": "energy lost",
+    "death": "avatars lost (the last one included)",
+}
+# a reward from events, as a starting point: things done are rewarded, harm is penalised
+SHAPED_REWARD = {"collect": 5.0, "apple": 20.0, "use": 2.0, "open": 10.0, "teleport": 5.0, "kill": 10.0,
+                 "mine": 5.0, "hurt": -0.2, "death": -50.0}
 
 
 def default_data_dir():
@@ -66,13 +83,18 @@ class Game:
                         first tick it can act (a move takes 8 ticks)
     episode_ticks       the episode is cut after this many ticks; 0: never (the maze never ends)
     allow_give_up       adds the GIVE_UP action (the avatar dies)
+    reward_weights      {event: weight}: a step's reward is the sum of its event counts (EVENTS)
+                        times these weights; None: the score gained ({"score": 1}).
+                        SHAPED_REWARD rewards collecting, using, opening, teleporting, apples,
+                        kills and mines, and penalises hurt and death
 
     describe_features() says what every feature means.
     """
 
     def __init__(self, data_dir=None, vision_radius=8, circle=True, follow_player=True, fixed_centre=(0, 0),
                  cell_features=None, player_features=None, inventory_sections=None, inventory_slots=5,
-                 item_features=None, ticks_per_step=8, episode_ticks=0, allow_give_up=False):
+                 item_features=None, ticks_per_step=8, episode_ticks=0, allow_give_up=False,
+                 reward_weights=None):
         c = _goe.Config()
         c.data_dir = default_data_dir() if data_dir is None else str(data_dir)
         c.vision_radius = vision_radius
@@ -87,6 +109,11 @@ class Game:
         c.ticks_per_step = ticks_per_step
         c.episode_ticks = episode_ticks
         c.allow_give_up = allow_give_up
+        if reward_weights is not None:
+            unknown = set(reward_weights) - set(EVENTS)
+            if unknown:
+                raise ValueError(f"unknown events in reward_weights: {sorted(unknown)}; known: {EVENTS}")
+            c.reward_weights = {k: float(v) for k, v in reward_weights.items()}
         self.vision_radius = vision_radius
         self.inventory_slots = inventory_slots
         self._game = _goe.Game(c)
@@ -133,6 +160,16 @@ class Game:
     def action_taken(self):
         """Whether the last action reached the player (False when it was busy the whole step)."""
         return self._game.action_taken
+
+    @property
+    def step_events(self):
+        """{event: count} of the last step (EVENTS; hurt is energy lost)."""
+        return self._game.step_events
+
+    @property
+    def episode_events(self):
+        """{event: count} of the episode so far."""
+        return self._game.episode_events
 
     @property
     def avatars_lost(self):
