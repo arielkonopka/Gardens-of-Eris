@@ -5,6 +5,7 @@
 #include "testSupport.h"
 #include "elementSound.h"
 #include "configManager.h"
+#include "lineOfSight.h"
 #include <cstdlib>
 #include <filesystem>
 #include <set>
@@ -197,6 +198,101 @@ TEST(ControllerTests, GuardiansStayOnTheLeash)
     EXPECT_LE(furthest, securityCamera::leash);
 }
 
+
+/* ---------------------------------------------------- chasers do not cheat (2026-10-01) */
+
+TEST(ControllerTests, SightIsBlockedByWallsAndClosedDoorsButNotByItems)
+{
+    auto mc = chamber::makeNewChamber(coords(10, 10));
+    EXPECT_TRUE(goe::sight::clear(mc, coords(1, 1), coords(8, 8)));
+    elementFactory::generateAnElement<goldenApple>(mc, 0)->stepOnElement(mc->getElement(4, 4));
+    EXPECT_TRUE(goe::sight::clear(mc, coords(1, 1), coords(8, 8))) << "an apple does not hide anyone";
+    auto w = elementFactory::generateAnElement<wall>(mc, 0);
+    w->stepOnElement(mc->getElement(6, 6));
+    EXPECT_FALSE(goe::sight::clear(mc, coords(1, 1), coords(8, 8)));
+    EXPECT_TRUE(goe::sight::clear(mc, coords(1, 1), coords(6, 6))) << "the end cells never block";
+
+    auto d = elementFactory::generateAnElement<door>(mc, 0);
+    d->stepOnElement(mc->getElement(5, 1));
+    ASSERT_FALSE(d->getAttrs()->isSteppable());
+    EXPECT_FALSE(goe::sight::clear(mc, coords(1, 1), coords(8, 1)));
+
+    // two walls touching at their corners leave no gap to look through
+    elementFactory::generateAnElement<wall>(mc, 0)->stepOnElement(mc->getElement(2, 8));
+    EXPECT_TRUE(goe::sight::clear(mc, coords(1, 8), coords(2, 7)));
+    elementFactory::generateAnElement<wall>(mc, 0)->stepOnElement(mc->getElement(1, 7));
+    EXPECT_FALSE(goe::sight::clear(mc, coords(1, 8), coords(2, 7)));
+    // the dark beyond the board blocks too
+    EXPECT_FALSE(goe::sight::clear(mc, coords(1, 1), coords(1, 12)));
+}
+
+// The hunter, a guardian and the Hound only learn where the player is by seeing them. A wall with
+// a gap at its far end stands between them and the player: a cheater would know the player is there
+// and walk round through the gap; a fair chaser does not know, and patrols the walls instead.
+// Without the wall they spot the player at once.
+TEST(ControllerTests, ChasersDoNotSeeThroughWalls)
+{
+    for (int kind : {(int) puppetMasterFR::hunter, (int) puppetMasterFR::guardian, (int) puppetMasterFR::hound}) {
+        for (bool walled : {true, false}) {
+            auto r = makeRig(kind, 20, 9, 3);
+            if (walled)
+                for (int y = 1; y < 17; y++)
+                    elementFactory::generateAnElement<wall>(r.mc, 0)->stepOnElement(r.mc->getElement(7, y));
+            bool spotted = false, alongWall = false;
+            // from its side of the wall (x > 7) the drone cannot see the player at (3,3)
+            for (int c = 0; c < 1500 && !spotted && r.drone->getStats()->getMyPosition().x > 7; c++) {
+                bElem::runLiveElements();
+                spotted = !(r.brain->getLastSeen() == NOCOORDS);
+                auto p = r.drone->getStats()->getMyPosition();
+                alongWall = alongWall || p.x == 8 || p.x == 18 || p.y == 1 || p.y == 18;
+            }
+            if (walled) {
+                EXPECT_FALSE(spotted) << "kind " << kind << " saw the player through a wall";
+                EXPECT_TRUE(alongWall) << "kind " << kind << " should patrol the walls";
+            } else {
+                EXPECT_TRUE(spotted) << "kind " << kind << " never saw the player in plain view";
+            }
+        }
+    }
+}
+
+// A hunter that loses sight of the player goes to where it saw them last; when they are not there,
+// the trail goes cold and it patrols. It never learns where the player went while out of sight.
+TEST(ControllerTests, HunterChecksWhereThePlayerWasLastSeenThenPatrols)
+{
+    auto r = makeRig(puppetMasterFR::hunter, 30, 12, 3);
+    const coords seenAt(3, 3), hideout(25, 25);
+    for (int c = 0; c < 200 && !(r.brain->getLastSeen() == seenAt); c++)
+        bElem::runLiveElements();
+    ASSERT_TRUE(r.brain->getLastSeen() == seenAt);
+
+    // the player slips away into a closed box of walls
+    r.plr->stepOnElement(r.mc->getElement(hideout));
+    for (int x = hideout.x - 1; x <= hideout.x + 1; x++)
+        for (int y = hideout.y - 1; y <= hideout.y + 1; y++)
+            if (!(coords(x, y) == hideout))
+                elementFactory::generateAnElement<wall>(r.mc, 0)->stepOnElement(r.mc->getElement(x, y));
+
+    bool checked = false;
+    for (int c = 0; c < 600 && !checked; c++) {
+        bElem::runLiveElements();
+        ASSERT_FALSE(r.brain->getLastSeen() == hideout) << "the hunter cannot know where the player hid";
+        auto p = r.drone->getStats()->getMyPosition();
+        checked = std::abs(p.x - seenAt.x) + std::abs(p.y - seenAt.y) <= 1;
+    }
+    ASSERT_TRUE(checked) << "the hunter never went to where it saw the player";
+    for (int c = 0; c < 50; c++)
+        bElem::runLiveElements();
+    EXPECT_TRUE(r.brain->getLastSeen() == NOCOORDS) << "nobody there: the trail goes cold";
+    // and it patrols on
+    auto at = r.drone->getStats()->getMyPosition();
+    bool moved = false;
+    for (int c = 0; c < 300 && !moved; c++) {
+        bElem::runLiveElements();
+        moved = !(r.drone->getStats()->getMyPosition() == at);
+    }
+    EXPECT_TRUE(moved);
+}
 
 // Every controller kind says "controller enabled" in its own language when it takes over a drone.
 TEST(ControllerTests, EveryKindAnnouncesItselfInItsOwnVoice)

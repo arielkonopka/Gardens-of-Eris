@@ -453,8 +453,8 @@ void gameSerializer::writeElement(writer &w, const std::shared_ptr<bElem> &e)
         w.ref(g->gun);
         w.i32(g->home.x);
         w.i32(g->home.y);
-        w.i32(g->target.x);
-        w.i32(g->target.y);
+        w.i32(g->lastSeen.x);
+        w.i32(g->lastSeen.y);
         w.u32(g->handledAlert);
     }
 }
@@ -686,7 +686,7 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
         int x = r.i32();
         g->home = ctx.position(x, r.i32());
         x = r.i32();
-        g->target = ctx.position(x, r.i32());
+        g->lastSeen = ctx.position(x, r.i32());
         g->handledAlert = r.u32();
     }
 

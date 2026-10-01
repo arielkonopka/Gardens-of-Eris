@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Ariel Konopka
+ * Copyright (c) 2026, Ariel Konopka
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,28 @@
  * SOFTWARE.
  */
 
-#include "puppetMasterWallFollower.h"
+#ifndef LINEOFSIGHT_H
+#define LINEOFSIGHT_H
+#include "commons.h"
+#include <memory>
 
-bool puppetMasterWallFollower::drive(std::shared_ptr<bElem> body)
-{
-    return this->followWall(body);
-}
+class bElem;
+class chamber;
+
+/**
+ * What elements can see. Every element that watches for the player (cameras, guardians, hunters,
+ * hounds) looks through these helpers, so none of them sees through walls.
+ */
+namespace goe::sight {
+/// true when e blocks the view: walls, brick clusters, bunkers, teleporters, closed doors, and
+/// cells the board does not have. Floors, items and creatures do not block it.
+bool opaque(const std::shared_ptr<bElem> &e);
+/**
+ * true when nothing opaque lies on the straight line between the two cells (Bresenham's line).
+ * The two end cells themselves never block. A diagonal step does not squeeze between two opaque
+ * cells that touch at their corners.
+ */
+bool clear(const std::shared_ptr<chamber> &board, coords from, coords to);
+} // namespace goe::sight
+
+#endif // LINEOFSIGHT_H

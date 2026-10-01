@@ -68,46 +68,26 @@ bool puppetMasterGuardian::drive(std::shared_ptr<bElem> body)
     const int leash = securityCamera::leash;
     coords me = body->getStats()->getMyPosition();
 
-    // 1. the player is in sight and inside the leash: fight, or chase
-    auto prey = player::getActivePlayer();
-    if (prey && prey->getBoard() == body->getBoard()) {
-        coords p = prey->getStats()->getMyPosition();
-        const int sight = difficulty::cameraSight(difficulty::current());
-        if (distance2(me, p) <= sight * sight && distance2(p, centre) <= leash * leash
-            && securityCamera::lineOfSight(body->getBoard(), me, p)) {
-            this->target = p;
-            if (this->fight(body, prey))
-                return true;
-            auto d = pathTowards(body, p, centre, leash);
-            if (d != dir::direction::NODIRECTION && this->step(body, d))
-                return true;
-        }
-    }
-    // 2. the camera saw the player somewhere: go and check
+    // 1. the guardian sees the player itself, inside the leash: fight
+    auto seen = this->lookout(body, difficulty::cameraSight(difficulty::current()));
+    if (seen && distance2(seen->getStats()->getMyPosition(), centre) <= leash * leash
+        && this->fight(body, seen))
+        return true;
+    // 2. the camera saw the player somewhere: that is where they were last seen
     if (cam && cam->getAlertNumber() != this->handledAlert) {
         this->handledAlert = cam->getAlertNumber();
-        if (distance2(cam->getAlertPosition(), centre) <= leash * leash)
-            this->target = cam->getAlertPosition();
+        if (!seen)
+            this->lastSeen = cam->getAlertPosition();
     }
-    if (!(this->target == NOCOORDS)) {
-        if (std::abs(this->target.x - me.x) + std::abs(this->target.y - me.y) <= 1) {
-            this->target = NOCOORDS; // checked, nobody here
-        } else {
-            auto d = pathTowards(body, this->target, centre, leash);
-            if (d != dir::direction::NODIRECTION && this->step(body, d))
-                return true;
-            if (d == dir::direction::NODIRECTION)
-                this->target = NOCOORDS; // cannot get there
-            else
-                return true; // blocked for now, try again next time
-        }
-    }
-    // 3. strayed to the edge of the leash: head back towards the camera
+    // 3. chase the player, or go and check where they were seen
+    if (this->followTrail(body, seen != nullptr, centre, leash))
+        return true;
+    // 4. strayed to the edge of the leash: head back towards the camera
     if (distance2(me, centre) > (leash - 2) * (leash - 2)) {
         auto d = pathTowards(body, centre, centre, leash);
         if (d != dir::direction::NODIRECTION && this->step(body, d))
             return true;
     }
-    // 4. nothing going on: patrol
-    return this->wander(body);
+    // 5. nothing going on: patrol the walls around the camera
+    return this->followWall(body, centre, leash - 2);
 }

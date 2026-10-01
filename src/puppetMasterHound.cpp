@@ -39,12 +39,13 @@ bool puppetMasterHound::drive(std::shared_ptr<bElem> body)
     // the player got away: the hound gives up
     if (!(difficulty::areaOf(p) == this->home))
         return body->kill();
-    if (this->bite(body, prey, biteDamage))
+    // it only hunts what it sees, then where it saw it; it sniffs along the walls otherwise
+    auto seen = this->lookout(body, searchRadius);
+    if (seen && this->bite(body, seen, biteDamage))
         return true;
-    auto d = pathTowards(body, p, body->getStats()->getMyPosition(), searchRadius);
-    if (d != dir::direction::NODIRECTION && this->step(body, d))
+    if (this->followTrail(body, seen != nullptr, body->getStats()->getMyPosition(), searchRadius))
         return true;
-    return this->wander(body);
+    return this->followWall(body);
 }
 
 void puppetMasterHound::watch()
