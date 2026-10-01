@@ -1,0 +1,28 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "nanobind>=2.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "goe"
+version = "0.1.0"
+description = "Gardens of Eris without a window, for agents: a ViZDoom-like game and a Gymnasium-style environment"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+gym = ["gymnasium>=0.29"]
+test = ["pytest", "gymnasium>=0.29"]
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+build-dir = "build/{wheel_tag}"
+# the game is the repository around this folder: build its root CMakeLists.txt, only the module
+cmake.source-dir = "../.."
+cmake.build-type = "Release"
+cmake.define = { GOE_BUILD_PYTHON = "ON", GOE_BUILD_TESTS = "OFF" }
+build.targets = ["_goe"]
+install.components = ["python"]
+wheel.packages = []
+# installed from a checkout (pip install ./agent/python), not from an sdist
+sdist.exclude = ["build"]

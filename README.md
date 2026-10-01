@@ -128,6 +128,17 @@ Run the game from the `GoEoOL` folder, where the `data` folder is. On Windows, t
 
 The `goe-bench` target times building the world (the start, then one chunk at a time), a game tick, save/load, and a walk that swaps chunks to disk and back: `goe-bench 61 3000 60` from `GoEoOL` builds 61 chunks, about as many cells as one of the old 500x500 levels, then walks 60 chunks east and back, reporting the chunks in memory, the time per chunk written or read, and the memory used.
 
+### Agents and Python
+
+The game can also be played by a program, without a window, sound or keyboard, for example by a learning agent such as [exRelaxer](https://github.com/arielkonopka/exRelaxer)'s. The `goe-agent` library (`agent/`) runs the game headless; the `goe` Python package (`agent/python`) wraps it as a ViZDoom-like `goe.Game` and a Gymnasium `goe.GoeEnv`. The agent sees a circle of cells around the player (or around a fixed cell), the player's numbers and its inventory, and for each it chooses which features to see: types, subtypes, qualities and states. It acts with the game's own controls, and the reward is the score gained.
+
+```
+pip install ./agent/python                    # or: cmake -S . -B build -DGOE_BUILD_PYTHON=ON
+python3 -c "import goe; env = goe.GoeEnv(); print(env.reset(seed=1)[0]['vision'].shape)"
+```
+
+`agent/python/README.md` describes the observation, the actions and the options.
+
 The repository also has the older build.sh shell script (Bash):
 
 ```
@@ -271,7 +282,7 @@ The player's level is **Dex** in the HUD: floor(log5(hits + 1)), where hits coun
 
 # Unit tests
 
-The unit tests use GoogleTest and live in the unitTests directory, one test program per *.cpp file (18 of them now). CMake builds each one, and `ctest` runs them all from the `GoEoOL` folder. regression-test keeps one test for every bug fixed, so it doesn't come back.
+The unit tests use GoogleTest and live in the unitTests directory, one test program per *.cpp file (20 of them now). CMake builds each one, and `ctest` runs them all from the `GoEoOL` folder. The agent library has its own: `agent-test` (GoogleTest) and, with `-DGOE_BUILD_PYTHON=ON`, `python-tests` (pytest). regression-test keeps one test for every bug fixed, so it doesn't come back.
 
 
 # Sound
@@ -385,6 +396,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Agents can play: a headless `goe-agent` library and a `goe` Python package (a ViZDoom-like game and a Gymnasium environment), with a circle of vision around the player, the player's numbers and inventory, each with its features chosen by the agent. The same seed plays the same game.
 * A story scroller: a random story from `data/txt/stories.json` scrolls along the top of the screen whenever a new chunk of the maze is made. Config switches it on or off and picks the stories file (English, Polish or Romanian, or your own). Fixed a stray bracket that made `stories.pl.json` unreadable.
 * Doors stand in the holes they close: at the edges of chunks a door used to stand one cell in front of the hole. Global teleporters no longer play music, since there are no separate chambers any more.
 * The build is warning-free with `-Wall -Wextra -Wpedantic -Wshadow`, which are now on by default. Fixed along the way: handing an inventory to a new owner made every item its own collector.
