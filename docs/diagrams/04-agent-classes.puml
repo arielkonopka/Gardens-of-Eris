@@ -12,7 +12,10 @@ package "goe-agent (C++, agent/)" {
     +isEpisodeFinished()
     +setChunkPattern(chunk, pattern)
     +setDefaultPattern(pattern)
+    +clearChunkPatterns()
     +chunkAt(cell)
+    +generateChunk(chunk, pattern)
+    +stepEvents() / episodeEvents()
   }
   class "goe::agent::config" as config {
     visionRadius, circle, followPlayer
@@ -39,14 +42,30 @@ package "goe-agent (C++, agent/)" {
     score, collect, apple, use, open,
     teleport, kill, mine, hurt, death
   }
-  class "feature tables" as features <<agentFeatures.h>>
+  class "feature tables" as features <<agentFeatures.h>> {
+    elementFeatures()
+    playerFeatures()
+    select(names, tables)
+  }
 }
 package "goe (Python, agent/python)" {
-  class "goe._goe" as native <<nanobind module>>
+  class "goe._goe" as native <<nanobind module>> {
+    Config, Game, ChunkPattern
+    ACTIONS, EVENTS, SECTIONS
+    ELEMENT_TYPES, CHUNK_SIZE
+    describe_features()
+  }
   class Game {
     new_episode / get_state
     make_action / is_episode_finished
-    set_chunk_pattern / chunk_at
+    set_chunk_pattern / set_default_pattern
+    clear_chunk_patterns / chunk_at
+    generate_chunk
+    step_events / episode_events
+  }
+  class GameState <<dataclass>> {
+    vision, player, inventory
+    inventory_counts, centre, tick, score
   }
   class GoeEnv <<gymnasium.Env>> {
     reset / step / render
@@ -67,11 +86,12 @@ game ..> state : getState()
 game ..> action
 game ..> event : counts per step
 game ..> features
-game ..> worldBuilder : startNew, patterns
+game ..> worldBuilder : startNew, patterns,\nbringIn (generateChunk)
 game ..> events : observes collect, kill, open...
 config o-- chunkPattern
 native ..> game : binds
 Game --> native
+Game ..> GameState : get_state()
 GoeEnv --> Game
 ChunkPattern --> native
 Game ..> ChunkPattern

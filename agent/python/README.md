@@ -135,6 +135,7 @@ game = goe.Game(chunk_patterns={(0, 0): rooms})      # the start chunk only
 game = goe.Game(default_pattern="agent/patterns/rooms.json")   # every chunk
 game.set_chunk_pattern((2, -1), rooms)               # chunks not built yet, and next episodes
 game.clear_chunk_patterns()                          # random mazes again
+game.generate_chunk((1, 0), rooms)                   # within an episode, see below
 ```
 
 - A pattern is made from rows of characters and a legend (`from_rows`), from 2-D arrays of
@@ -155,6 +156,17 @@ game.clear_chunk_patterns()                          # random mazes again
   chunks are spare avatars.
 - Patterned chunks are laid out the same whatever the seed; the seed still drives everything
   else (the elements' starting numbers, the random chunks, the game as it plays).
+- `game.generate_chunk(chunk, pattern)` works within an episode. With a pattern, the pattern
+  becomes the chunk's own, as with `set_chunk_pattern`. It returns `True` when the chunk is in
+  memory, `False` when it is not or no episode has started. As it is now, it does not build a
+  chunk that is not there yet (nor read one back from disk), and it does not rebuild one that is:
+  the 5 x 5 chunks around the start are built with the episode, so a pattern given for one of
+  them shows from the next episode on, and a chunk further out takes the pattern when the player
+  comes near it.
+
+Every class of the package and of the C++ library under it is described in
+[docs/classes/python-package.md](../../docs/classes/python-package.md) and
+[docs/classes/agent-interface.md](../../docs/classes/agent-interface.md).
 
 The same seed builds the same world, and the same actions then play the same game. There is one
 game per process: the game keeps its world in static state. Run games in parallel in separate

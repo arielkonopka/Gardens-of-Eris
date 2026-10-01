@@ -19,6 +19,8 @@ class titleMenu {
   screen: MAIN, CONFIG, EDITING, CONTROLS, BINDING
   action: NONE, CONTINUE, START, EXIT, DEMO
   +keyDown(key)
+  +command(menuCommand)
+  +padButton(button)
   +wait(seconds) : action
   +pressed()
   +setDemoAfter(seconds)
@@ -33,6 +35,18 @@ class gameSettings <<singleton>> {
 class "goe::controls::bindings" as bindings {
   +translate(heldState) : controlItem
 }
+class "goe::controls::menuPad" as menuPad {
+  stick deadzone, hold-to-repeat
+  +confirmButton(bindings) / backButton(bindings)
+  +buttonDown(button) : menuCommand
+  +axis(stick, axis, pos) : menuCommand
+  +wait(seconds) : menuCommand
+}
+enum menuCommand {
+  none, up, down, left, right
+  confirm, back
+}
+class "goe::controls::editName" as editName <<function>>
 class presenter {
   +presentEverything(demo, demoSeconds) : gameEnd
   -showGameField()
@@ -79,6 +93,11 @@ main --> presenter
 main ..> hallOfFame
 main ..> crashLog
 titleScreen --> titleMenu
+titleScreen *-- menuPad : pad events
+titleScreen ..> editName : name with a pad
+menuPad ..> menuCommand
+menuPad ..> bindings : Interact = confirm\nDrag / Save and exit = back
+titleMenu ..> menuCommand
 titleMenu --> gameSettings
 gameSettings *-- bindings
 inputManager ..> bindings : translate keys and pad

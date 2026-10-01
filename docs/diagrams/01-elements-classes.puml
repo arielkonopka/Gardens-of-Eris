@@ -31,7 +31,8 @@ class bElemStats {
   timers: moved, waiting, killed,
   destroyed, telInProgress, fading...
   points, instanceId
-  steppingOn / steppedOnBy (stack)
+  steppingOn / standingOn (stack)
+  +busy() : bool
 }
 class inventory {
   weapons

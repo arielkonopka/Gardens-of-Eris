@@ -33,7 +33,9 @@ namespace worldBuilder <<Frame>> {
     +movePlayerTo(world, chunk) : bool
     +setPattern(chunk, pattern)
     +setDefaultPattern(pattern)
+    +clearPatterns()
     +patternFor(chunk)
+    +chunksGenerated()
     buildRadius = 2
     keepRadius = 3
   }
@@ -66,7 +68,10 @@ class gameSerializer {
   +{static} swapOutChunk(world, chunk)
   +{static} swapInChunk(world, chunk)
   +{static} clearWorld()
+  +{static} canLoad(file)
+  +{static} replaceSave(file) / removeSave(file)
   +{static} createByType(type, subtype, board)
+  formatVersion = 7
 }
 class "difficulty" as difficulty <<namespace>> {
   D = Dex + distance level
@@ -85,6 +90,11 @@ class "goe::rng" as rng <<namespace>> {
 class teleport {
   {static} allTeleporters
   {static} registrationBatch
+  {static} park() / unpark()
+}
+class goldenApple {
+  {static} apples
+  {static} park() / unpark()
 }
 
 chamber *-- "*" chunk
@@ -100,4 +110,6 @@ randomLevelGenerator ..> difficulty
 randomLevelGenerator ..> rng : chunk seed
 randomLevelGenerator ..> teleport : registration batch
 gameSerializer ..> chamber : writes / reads chunks
+gameSerializer ..> teleport : parks on swap out
+gameSerializer ..> goldenApple : parks on swap out
 @enduml
