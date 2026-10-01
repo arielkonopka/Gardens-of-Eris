@@ -8,3 +8,7 @@
 # Code::Blocks per-user state
 *.depend
 *.layout
+
+# The Python package built by pip
+/agent/python/build/
+__pycache__/

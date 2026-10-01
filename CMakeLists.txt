@@ -27,6 +27,16 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wshadow -g -O3 -pthread")
 endif()
 
+option(GOE_BUILD_TESTS "Build the unit tests (needs GoogleTest)" ON)
+option(GOE_BUILD_AGENT "Build the headless agent library (agent/), for programs that play the game" ON)
+option(GOE_BUILD_PYTHON "Build the Python package of the agent library (needs nanobind)" OFF)
+if(GOE_BUILD_PYTHON)
+  set(GOE_BUILD_AGENT ON)
+endif()
+
+# Header files, for the game's objects, the tests and the benchmark
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
 # Set the source files for the game elements using wildcard
 file(GLOB SOURCE_FILES ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
@@ -62,39 +72,38 @@ endif()
 
 target_link_libraries(GardenOfEris ${LIBRARIES})
 
-# Set the source files for the unit tests using wildcard
-file(GLOB TEST_SOURCE_FILES ${CMAKE_SOURCE_DIR}/unitTests/*.cpp)
+if(GOE_BUILD_TESTS)
+  # Set the source files for the unit tests using wildcard
+  file(GLOB TEST_SOURCE_FILES ${CMAKE_SOURCE_DIR}/unitTests/*.cpp)
 
-# The unit tests use GoogleTest
-find_package(GTest REQUIRED)
+  # The unit tests use GoogleTest
+  find_package(GTest REQUIRED)
 
-# Include directory for header files in tests
-include_directories(${CMAKE_SOURCE_DIR}/include)
+  # Loop over each test source file and create an executable
+  foreach(TEST_SOURCE_FILE ${TEST_SOURCE_FILES})
+      # Get the name of the test from the source file
+      get_filename_component(TEST_NAME ${TEST_SOURCE_FILE} NAME_WE)
 
-# Loop over each test source file and create an executable
-foreach(TEST_SOURCE_FILE ${TEST_SOURCE_FILES})
-    # Get the name of the test from the source file
-    get_filename_component(TEST_NAME ${TEST_SOURCE_FILE} NAME_WE)
+      # Add the executable target for each test
+      add_executable(${TEST_NAME} ${TEST_SOURCE_FILE} $<TARGET_OBJECTS:GardenOfErisLib>)
 
-    # Add the executable target for each test
-    add_executable(${TEST_NAME} ${TEST_SOURCE_FILE} $<TARGET_OBJECTS:GardenOfErisLib>)
+      # Specify the required libraries
+      target_link_libraries(${TEST_NAME}
+          ${LIBRARIES}
+          GTest::gtest_main
+      )
 
-    # Specify the required libraries
-    target_link_libraries(${TEST_NAME}
-        ${LIBRARIES}
-        GTest::gtest_main
-    )
+      # Add the test
+      # Tests read data/skins.json relative to the game directory
+      add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/GoEoOL)
+  endforeach(TEST_SOURCE_FILE)
 
-    # Add the test
-    # Tests read data/skins.json relative to the game directory
-    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/GoEoOL)
-endforeach(TEST_SOURCE_FILE)
-
-# Custom target to run all tests
-add_custom_target(run_tests
-    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS ${TEST_SOURCE_FILES}
-)
+  # Custom target to run all tests
+  add_custom_target(run_tests
+      COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+      DEPENDS ${TEST_SOURCE_FILES}
+  )
+endif()
 
 # SonarQube Analysis
 option(ENABLE_SONARQUBE "Enable SonarQube analysis" OFF)
@@ -114,3 +123,8 @@ endif()
 # Headless benchmark (not a test): level generation, memory, tick, save and load times
 add_executable(goe-bench ${CMAKE_SOURCE_DIR}/benchmarks/goe-bench.cpp $<TARGET_OBJECTS:GardenOfErisLib>)
 target_link_libraries(goe-bench ${LIBRARIES})
+
+# The game without a window, sound or keyboard, for agents; and its Python package
+if(GOE_BUILD_AGENT)
+  add_subdirectory(agent)
+endif()

@@ -26,8 +26,16 @@ jobs:
             cmake ninja-build libgtest-dev liballegro5-dev liballegro-ttf5-dev liballegro-image5-dev rapidjson-dev \
             libopenal-dev libsndfile1-dev
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the Python package's build and test tools
+        run: python -m pip install nanobind numpy pytest gymnasium
+
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        # with the agent library's Python package, so ctest runs its tests too
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DGOE_BUILD_PYTHON=ON -DPython_EXECUTABLE="$(which python)"
 
       - name: Build
         run: cmake --build build
