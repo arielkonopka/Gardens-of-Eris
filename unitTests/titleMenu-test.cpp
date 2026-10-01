@@ -522,3 +522,67 @@ TEST(TitleMenuTests, TheDemoTimesCanBeSetAndAreKept)
     EXPECT_EQ(gameSettings::getInstance().getDemoLength(), 35);
     EXPECT_EQ(gameSettings::getInstance().getHallOfFameLength(), 20);
 }
+
+TEST(TitleMenuTests, PadWalksTheMenusAndComesBack)
+{
+    using goe::controls::menuCommand;
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    EXPECT_TRUE(m.command(menuCommand::down) == titleMenu::action::NONE);
+    EXPECT_EQ(m.getSelected(), 1); // Config
+    m.command(menuCommand::confirm);
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
+    m.command(menuCommand::back);
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::MAIN);
+    EXPECT_EQ(m.getSelected(), 1);
+    m.command(menuCommand::up);
+    EXPECT_TRUE(m.command(menuCommand::confirm) == titleMenu::action::START);
+    m.command(menuCommand::up); // wraps to Exit
+    EXPECT_TRUE(m.command(menuCommand::confirm) == titleMenu::action::EXIT);
+}
+
+TEST(TitleMenuTests, PadChangesValuesWithoutOpeningTheTextEditor)
+{
+    using goe::controls::menuCommand;
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    m.command(menuCommand::down);
+    m.command(menuCommand::confirm); // Config
+    m.command(menuCommand::down);    // Music volume
+    const int before = gameSettings::getInstance().getMusicVolume();
+    m.command(menuCommand::left);
+    EXPECT_EQ(gameSettings::getInstance().getMusicVolume(), before - gameSettings::volumeStep);
+    m.command(menuCommand::confirm); // a pad cannot type, so no editor
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
+    EXPECT_FALSE(m.getMessage().empty());
+    m.command(menuCommand::down);
+    m.command(menuCommand::down); // Story scroller, a switch
+    const bool shown = gameSettings::getInstance().getStoriesShown();
+    m.command(menuCommand::confirm);
+    EXPECT_NE(gameSettings::getInstance().getStoriesShown(), shown);
+}
+
+TEST(TitleMenuTests, PadBindsButtonsOnTheControlsScreen)
+{
+    using goe::controls::menuCommand;
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    m.command(menuCommand::down);
+    m.command(menuCommand::confirm); // Config
+    m.command(menuCommand::up);      // Back
+    m.command(menuCommand::up);      // Controls
+    m.command(menuCommand::confirm);
+    ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONTROLS);
+    m.command(menuCommand::confirm); // Walk up
+    ASSERT_TRUE(m.getScreen() == titleMenu::screen::BINDING);
+    // while waiting for a button, confirm and back are only buttons to bind
+    m.command(menuCommand::back);
+    m.command(menuCommand::down);
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::BINDING);
+    EXPECT_EQ(m.getSelected(), 0);
+    m.padButton(6);
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONTROLS);
+    EXPECT_EQ(gameSettings::getInstance().getControls().of(goe::controls::action::up).padButton, 6);
+    m.command(menuCommand::back);
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
+}

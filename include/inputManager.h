@@ -66,8 +66,6 @@ public:
     /// demo ends when it changes
     std::uint64_t activity() const { return this->presses; }
 private:
-    float sesitivity=0.4;
-
     std::jthread nt;
     bool joyPresent=false;
     std::atomic<bool> exit=false; ///< set by the game thread, read by the input thread

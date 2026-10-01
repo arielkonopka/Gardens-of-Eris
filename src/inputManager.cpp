@@ -21,6 +21,7 @@
  */
 #include "inputManager.h"
 #include "gameSettings.h"
+#include "menuPad.h"
 #include <cmath>
 std::once_flag inputManager::once;
 
@@ -42,14 +43,14 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT *ev)
     switch (ev->type) {
     case ALLEGRO_EVENT_JOYSTICK_AXIS:
         // the stick walks: axis 0 is left and right, axis 1 is up and down
-        if (std::abs(ev->joystick.pos) > this->sesitivity)
+        if (std::abs(ev->joystick.pos) > goe::controls::stickDeadzone)
             this->presses++;
         if (ev->joystick.axis == 0) {
-            this->held.stick[2] = ev->joystick.pos < -this->sesitivity;
-            this->held.stick[3] = ev->joystick.pos > this->sesitivity;
+            this->held.stick[2] = ev->joystick.pos < -goe::controls::stickDeadzone;
+            this->held.stick[3] = ev->joystick.pos > goe::controls::stickDeadzone;
         } else if (ev->joystick.axis == 1) {
-            this->held.stick[0] = ev->joystick.pos < -this->sesitivity;
-            this->held.stick[1] = ev->joystick.pos > this->sesitivity;
+            this->held.stick[0] = ev->joystick.pos < -goe::controls::stickDeadzone;
+            this->held.stick[1] = ev->joystick.pos > goe::controls::stickDeadzone;
         }
         break;
     case ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN:

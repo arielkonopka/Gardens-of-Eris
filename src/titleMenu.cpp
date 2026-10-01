@@ -23,7 +23,6 @@
 #include "titleMenu.h"
 #include <algorithm>
 #include <allegro5/keycodes.h>
-#include <algorithm>
 #include <exception>
 #include <filesystem>
 #include <string>
@@ -351,6 +350,37 @@ void titleMenu::padButton(int button)
     this->settings.setControls(controls);
     this->current = screen::CONTROLS;
     this->saveSettings();
+}
+
+titleMenu::action titleMenu::command(goe::controls::menuCommand c)
+{
+    using goe::controls::menuCommand;
+    this->pressed();
+    if (this->current == screen::BINDING)
+        return action::NONE;
+    if (c == menuCommand::confirm && this->current == screen::CONFIG && this->selected < (int) this->options.size()) {
+        const auto &opt = this->options[this->selected];
+        if (opt.apply && opt.adjust) {
+            this->message = "Left and Right change it";
+            return action::NONE;
+        }
+    }
+    switch (c) {
+    case menuCommand::up:
+        return this->keyDown(ALLEGRO_KEY_UP);
+    case menuCommand::down:
+        return this->keyDown(ALLEGRO_KEY_DOWN);
+    case menuCommand::left:
+        return this->keyDown(ALLEGRO_KEY_LEFT);
+    case menuCommand::right:
+        return this->keyDown(ALLEGRO_KEY_RIGHT);
+    case menuCommand::confirm:
+        return this->keyDown(ALLEGRO_KEY_ENTER);
+    case menuCommand::back:
+        return this->keyDown(ALLEGRO_KEY_ESCAPE);
+    default:
+        return action::NONE;
+    }
 }
 
 void titleMenu::saveSettings()

@@ -26,6 +26,7 @@
 #include "titleMenu.h"
 #include "hallOfFame.h"
 #include "allegroHandles.h"
+#include "menuPad.h"
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
 #include <string>
@@ -43,25 +44,35 @@ public:
     titleMenu::action run();
     /// clears the menu and shows one line, for example while the first level is being built
     void showBusy(const std::string &text);
-    /// shows a headline and a few lines until the player presses Enter, Space or Esc;
+    /// shows a headline and a few lines until the player presses Enter, Space or Esc (or the pad's
+    /// confirm or back button);
     /// returns false when the window was closed instead
     bool showMessage(const std::string &headline, const std::vector<std::string> &lines);
 
     /// how a timed screen ended
     enum class screenEnd { TIMEOUT, PRESSED, CLOSED };
     /// the hall of fame, the place at highlight marked; for the given seconds or until a press
-    /// (seconds 0: until Enter, Space or Esc)
+    /// (seconds 0: until Enter, Space or Esc, or the pad's confirm or back button)
     screenEnd showHallOfFame(const goe::hallOfFame &fame, double seconds, int highlight = -1);
-    /// a headline, a few lines and a name being typed; Enter keeps it, Esc leaves it blank.
+    /// a headline, a few lines and a name being typed, or entered with the pad (goe::controls::editName);
+    /// Enter or the pad's confirm button keeps it, Esc or the back button leaves it blank.
     /// False when the window was closed instead.
     bool askName(const std::string &headline, const std::vector<std::string> &lines, std::string &name);
 
 private:
     void draw();
+    /// a pad event as a menu command (buttons, the left stick and the d-pad); none for other events
+    goe::controls::menuCommand padCommand(const ALLEGRO_EVENT &ev);
+    /// "pad A" or "pad button 0", for help lines
+    static std::string buttonLabel(int button);
+    /// one or two help lines at the bottom of the screen
+    void drawHelp(const std::vector<std::string> &help);
 
     titleMenu &menu;
     goe::fontHandle bigFont;
     goe::fontHandle font;
+    goe::fontHandle helpFont;
+    goe::controls::menuPad pad;
     goe::bitmapHandle splash;
     goe::timerHandle timer;
     goe::eventQueueHandle queue; // declared last so it is destroyed before the timer it listens to
