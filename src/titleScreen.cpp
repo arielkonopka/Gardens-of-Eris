@@ -63,6 +63,7 @@ titleMenu::action titleScreen::run()
             result = titleMenu::action::EXIT;
             break;
         case ALLEGRO_EVENT_KEY_DOWN:
+            this->menu.pressed();
             // a key being bound is read as it goes down, so Shift, Ctrl and Alt count too;
             // the KEY_CHAR that follows for the same key must not also move the menu
             if (this->menu.getScreen() == titleMenu::screen::BINDING) {
@@ -90,11 +91,16 @@ titleMenu::action titleScreen::run()
         case ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN:
             this->menu.padButton(ev.joystick.button);
             break;
+        case ALLEGRO_EVENT_JOYSTICK_AXIS:
+            if (ev.joystick.pos > 0.4f || ev.joystick.pos < -0.4f)
+                this->menu.pressed();
+            break;
         case ALLEGRO_EVENT_JOYSTICK_CONFIGURATION:
             al_reconfigure_joysticks();
             break;
         case ALLEGRO_EVENT_TIMER:
-            if (al_is_event_queue_empty(this->queue.get()))
+            result = this->menu.wait(al_get_timer_speed(this->timer.get()));
+            if (result == titleMenu::action::NONE && al_is_event_queue_empty(this->queue.get()))
                 this->draw();
             break;
         default:

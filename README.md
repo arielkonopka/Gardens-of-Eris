@@ -55,6 +55,8 @@ The labyrinth is inhabited by an assortment of creatures and contraptions. You'l
 
 The game opens with a title screen: **Start game**, **Config** and **Exit**. When the save folder holds a save the game can read, it shows **Continue** and **New game** instead of Start game: Continue picks that game up where it was saved, and New game builds a new world that takes the old save's place at once, so the old game is gone. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), the story scroller, and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
 
+Leave the main menu alone for a minute or two (60 to 120 seconds, a new wait each time) and the game plays itself: a demo builds a world of its own, and an autopilot walks it, collecting what it passes, trying doors and shooting monsters and drones in its line once it holds a gun. Any key, pad button or stick push brings the menu back and the demo world is thrown away. The demo never writes, replaces or deletes a save.
+
 Each time the maze grows by a new chunk, a random Discordian story scrolls along the top of the screen, unless one is still scrolling. Config switches the story scroller on or off and picks the stories file: Left and Right step through the files next to it (`data/txt/stories.json` in English, `stories.pl.json` in Polish, `stories.ro.json` in Romanian), or type the path of your own. A stories file is a JSON list of `{"title": "...", "body": "..."}`.
 
 These are the default keys. Config, Controls lets you choose other keys (two per action) and a pad button for each action: pick the action, then press the new key or pad button. Backspace leaves an action without keys, and Reset to defaults brings this layout back. The pad's stick always walks.
@@ -283,7 +285,7 @@ The player's level is **Dex** in the HUD: floor(log5(hits + 1)), where hits coun
 
 # Unit tests
 
-The unit tests use GoogleTest and live in the unitTests directory, one test program per *.cpp file (20 of them now). CMake builds each one, and `ctest` runs them all from the `GoEoOL` folder. The agent library has its own: `agent-test` (GoogleTest) and, with `-DGOE_BUILD_PYTHON=ON`, `python-tests` (pytest). regression-test keeps one test for every bug fixed, so it doesn't come back.
+The unit tests use GoogleTest and live in the unitTests directory, one test program per *.cpp file (21 of them now). CMake builds each one, and `ctest` runs them all from the `GoEoOL` folder. The agent library has its own: `agent-test` (GoogleTest) and, with `-DGOE_BUILD_PYTHON=ON`, `python-tests` (pytest). regression-test keeps one test for every bug fixed, so it doesn't come back.
 
 
 # Sound
@@ -399,6 +401,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* A demo on the title screen: after 60 to 120 seconds without a press on the main menu, an autopilot plays a world of its own until any key, pad button or stick push brings the menu back. The demo world is discarded and saves are left alone.
 * Agents can build chunks from a fixed pattern of elements (`goe.ChunkPattern`, from rows and a legend, arrays or a JSON file), for one chunk or for every new chunk. A pattern smaller than a chunk is repeated to fill it, and it is laid out the same whatever the seed.
 * Game over shows the best score among the avatars of the lost game, and deletes that game's save, so Continue cannot bring a lost game back. Saves keep the best score of avatars already lost (save format 7; older saves still load).
 * The title screen offers New game next to Continue when a save exists. A new game overwrites the old save right away, so Continue always brings back the game you played last.

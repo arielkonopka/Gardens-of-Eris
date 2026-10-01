@@ -38,7 +38,8 @@ class titleMenu
 public:
     /// CONTROLS lists the key layout; BINDING waits for the key or pad button of one action
     enum class screen { MAIN, CONFIG, EDITING, CONTROLS, BINDING };
-    enum class action { NONE, CONTINUE, START, EXIT };
+    /// DEMO: nobody pressed anything for a while, so the game plays itself (setDemoAfter)
+    enum class action { NONE, CONTINUE, START, EXIT, DEMO };
 
     /// one line of the config screen: a label, its current value, and how to change it
     struct option
@@ -65,6 +66,13 @@ public:
     void padButton(int button);
     /// a typed character (Unicode code point), used while editing a value
     void typed(int codepoint);
+    /// the demo starts once the main menu has waited this many seconds without a press; 0: never
+    void setDemoAfter(double seconds);
+    /// time passing with nobody pressing anything; DEMO once the main menu has waited long enough.
+    /// Other screens hold work in progress, so they never start the demo.
+    action wait(double seconds);
+    /// a press of any kind (also one the menu does nothing with) starts the wait over
+    void pressed();
 
     screen getScreen() const;
     int getSelected() const;
@@ -102,6 +110,8 @@ private:
     int selected = 0;
     std::string editBuffer;
     std::string message;
+    double demoAfter = 0;
+    double idle = 0;
 };
 
 #endif // TITLEMENU_H

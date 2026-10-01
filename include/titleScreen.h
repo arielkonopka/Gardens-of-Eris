@@ -38,7 +38,7 @@ class titleScreen
 public:
     explicit titleScreen(titleMenu &menu);
     /// shows the main menu and blocks until the player picks Continue, Start or Exit
-    /// (closing the window counts as Exit)
+    /// (closing the window counts as Exit), or nobody pressed anything for the menu's demo wait (Demo)
     titleMenu::action run();
     /// clears the menu and shows one line, for example while the first level is being built
     void showBusy(const std::string &text);

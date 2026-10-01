@@ -139,6 +139,28 @@ void titleMenu::refresh()
     this->current = screen::MAIN;
     this->selected = 0;
     this->message.clear();
+    this->idle = 0;
+}
+
+void titleMenu::setDemoAfter(double seconds)
+{
+    this->demoAfter = seconds;
+    this->idle = 0;
+}
+
+titleMenu::action titleMenu::wait(double seconds)
+{
+    if (this->current != screen::MAIN || this->demoAfter <= 0) {
+        this->idle = 0;
+        return action::NONE;
+    }
+    this->idle += seconds;
+    return this->idle >= this->demoAfter ? action::DEMO : action::NONE;
+}
+
+void titleMenu::pressed()
+{
+    this->idle = 0;
 }
 
 std::vector<titleMenu::mainItem> titleMenu::mainItems() const
@@ -170,6 +192,7 @@ int titleMenu::controlsLine() const
 
 titleMenu::action titleMenu::keyDown(int keycode)
 {
+    this->pressed();
     const bool enter = keycode == ALLEGRO_KEY_ENTER || keycode == ALLEGRO_KEY_PAD_ENTER
                        || keycode == ALLEGRO_KEY_SPACE;
     switch (this->current) {
@@ -291,6 +314,7 @@ void titleMenu::bindingKey(int keycode)
 
 void titleMenu::padButton(int button)
 {
+    this->pressed();
     if (this->current != screen::BINDING)
         return;
     auto controls = this->settings.getControls();
