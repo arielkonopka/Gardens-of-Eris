@@ -100,3 +100,18 @@ def test_patterns_can_be_changed_and_cleared():
         g.clear_chunk_patterns()
         g.new_episode(3)
         assert not (g.get_state().vision == boxed).all()
+
+
+def test_generate_chunk_creates_chunks_with_patterns():
+    """Agents can directly generate chunks with fixed patterns."""
+    room = goe.ChunkPattern.from_rows(ROOM, LEGEND)
+    empty = goe.ChunkPattern(np.full((1, 1), -1))
+    with goe.Game(cell_features=["type"], vision_radius=2, circle=False) as g:
+        g.new_episode(5)
+        # generate_chunk returns True when successful
+        assert g.generate_chunk((0, 0), room) is True
+        assert g.generate_chunk((1, 0), empty) is True
+        assert g.generate_chunk((1, 1)) is True  # no pattern: random or default
+    # generate_chunk returns False when no episode has started
+    with goe.Game() as g:
+        assert g.generate_chunk((2, 2)) is False

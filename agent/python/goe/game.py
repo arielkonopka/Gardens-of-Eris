@@ -186,6 +186,13 @@ class Game:
         from the middle of the start area, as GameState.centre and the player's x and y)."""
         return tuple(self._game.chunk_at(int(x), int(y)))
 
+    def generate_chunk(self, chunk, pattern=None):
+        """Builds the chunk (x, y) with the given pattern (a ChunkPattern or a JSON file's path;
+        None: the default pattern or a random maze). Returns True if the chunk was built, False if
+        the game has no world (no episode has started)."""
+        p = as_pattern(pattern)
+        return self._game.generate_chunk(_chunk(chunk), None if p is None else p._native)
+
     # --- what the last step did ---
     @property
     def action_taken(self):
