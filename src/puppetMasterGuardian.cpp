@@ -24,6 +24,7 @@
 #include "difficulty.h"
 #include "chamber.h"
 #include "elementFactory.h"
+#include "musicCues.h"
 #include "plainGun.h"
 #include "player.h"
 #include "securityCamera.h"
@@ -70,9 +71,18 @@ bool puppetMasterGuardian::drive(std::shared_ptr<bElem> body)
 
     // 1. the guardian sees the player itself, inside the leash: fight
     auto seen = this->lookout(body, difficulty::cameraSight(difficulty::current()));
-    if (seen && distance2(seen->getStats()->getMyPosition(), centre) <= leash * leash
-        && this->fight(body, seen))
+    const bool inReach = seen && distance2(seen->getStats()->getMyPosition(), centre) <= leash * leash;
+    if (inReach) {
+        // the music hears about it: a guardian on the player, and closer still, a direct danger
+        goe::music::cues::chased();
+        const int close = difficulty::musicDangerDistance;
+        if (distance2(seen->getStats()->getMyPosition(), me) <= close * close)
+            goe::music::cues::endangered();
+    }
+    if (inReach && this->fight(body, seen)) {
+        goe::music::cues::endangered();
         return true;
+    }
     // 2. the camera saw the player somewhere: that is where they were last seen
     if (cam && cam->getAlertNumber() != this->handledAlert) {
         this->handledAlert = cam->getAlertNumber();
@@ -80,8 +90,10 @@ bool puppetMasterGuardian::drive(std::shared_ptr<bElem> body)
             this->lastSeen = cam->getAlertPosition();
     }
     // 3. chase the player, or go and check where they were seen
-    if (this->followTrail(body, seen != nullptr, centre, leash))
+    if (this->followTrail(body, seen != nullptr, centre, leash)) {
+        goe::music::cues::chased();
         return true;
+    }
     // 4. strayed to the edge of the leash: head back towards the camera
     if (distance2(me, centre) > (leash - 2) * (leash - 2)) {
         auto d = pathTowards(body, centre, centre, leash);

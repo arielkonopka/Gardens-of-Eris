@@ -53,7 +53,7 @@ The labyrinth is inhabited by an assortment of creatures and contraptions. You'l
 
 ## Playing the game
 
-The game opens with a title screen: **Start game**, **Config** and **Exit**. When the save folder holds a save the game can read, it shows **Continue** and **New game** instead of Start game: Continue picks that game up where it was saved, and New game builds a new world that takes the old save's place at once, so the old game is gone. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), the story scroller, and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
+The game opens with a title screen: **Start game**, **Config** and **Exit**. When the save folder holds a save the game can read, it shows **Continue** and **New game** instead of Start game: Continue picks that game up where it was saved, and New game builds a new world that takes the old save's place at once, so the old game is gone. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), the music (Skin samples, the songs of `skins.json`, or Performer, a musician that composes and plays its own music as you play), the story scroller, and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
 
 The menus also work with a game controller. The left stick or the d-pad moves through them (held, it keeps moving), the Interact button (pad button 0, A on an Xbox pad) selects, and the Drag button (pad button 1, B) or the Save and exit button goes back, so rebinding those in Controls moves them in the menus too. With a pad, Left and Right change values in Config, and the hall of fame name is entered arcade style: Up and Down change the last letter, Right adds a letter and Left takes one away. Only the save folder and the stories file path need a keyboard to type.
 
@@ -173,7 +173,7 @@ examples:
 
 ### Diagrams and class documentation
 
-[docs/diagrams](docs/diagrams/README.md) holds PlantUML diagrams of the code: class diagrams of the elements, the world, the application and the agent library, a component diagram, activity diagrams of the application, a game tick and chunk generation, sequence diagrams of a player step, saving and an agent step, and state diagrams of the title screen, an element's life and a guardian drone. Render them again with `plantuml -tsvg *.puml` in that folder after a change.
+[docs/diagrams](docs/diagrams/README.md) holds PlantUML diagrams of the code: class diagrams of the elements, the world, the application and the agent library, a component diagram, activity diagrams of the application, a game tick and chunk generation, sequence diagrams of a player step, saving and an agent step, state diagrams of the title screen, an element's life and a guardian drone, and the adaptive musician's components and audio round. Render them again with `plantuml -tsvg *.puml` in that folder after a change.
 
 [docs/classes](docs/classes/README.md) describes every class of the game in Markdown, grouped by module, with most care for the agent library and its Python bindings. When you add or change a class, change its page too.
 
@@ -338,6 +338,8 @@ Sounds are placed around the player in board cells (include/soundSpace.h): right
 
 The music follows the difficulty D: song k of the music list in skins.json plays from D = k on, and the last song plays on past the end of the list, so the list is ordered from the calmest to the wildest. A new song fades in over the old one for 5 seconds, and a song plays for at least 23 seconds before D can change it, so walking back and forth over a distance step does not flip the music (include/difficulty.h, include/difficultyMusic.h).
 
+With Music set to Performer in Config, the songs pause and an adaptive musician plays instead: a small performer with a personality of its own (drawn fresh each session), its own synthesizer and a memory of the motifs it played. It composes phrase by phrase while you play. As the difficulty rises its music gets slowly busier, more syncopated, more coloured and a little brighter, never into horror music. When a security camera spots you or a guardian chases you, it moves into a related theme in another key with a driving bass; with a guardian right on you, a semitone higher over a pedal in harmonic minor; when the danger passes the main theme comes back. The design, its parameters and the audio boundary are in [docs/adaptive-musician.md](docs/adaptive-musician.md). `goe-musician out.wav [seconds] [seed] [difficulty] [calm|alert|danger]` renders a performer to a WAV file without the game.
+
 When the element that generated the sound is removed or disposed of, only looping sounds are stopped, while others have the opportunity to cease playing by themselves.
 
 We manage sounds by maintaining a pool of sources (openAL) in a circular buffer, which aids in locating the oldest samples. When we register the sample (play it), we first search for unregistered samples; if unsuccessful, we look for samples played in a loop.
@@ -412,6 +414,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* An adaptive procedural musician, chosen in Config (Music: Skin samples or Performer). It composes and synthesizes its music at runtime with a personality of its own, follows the difficulty gradually, and changes its theme when a camera spots you, a guardian chases you or a guardian is about to hurt you. Documented in docs/adaptive-musician.md; `goe-musician` renders it to a WAV file.
 * Documentation: every class described in `docs/classes`, with the agent library and its Python bindings in detail; the PlantUML diagrams follow the game controller in the menus and `generate_chunk`. Outdated documents (the 2022 description document, the Dia, Visio and Umbrello diagrams, the old element picture, Bugs.txt and the mind map) are gone.
 * Agents can ask for one chunk's pattern from within an episode (`game.generate_chunk(chunk, pattern)`).
 * The title screen, Config, Controls, the hall of fame name and the Game over screens work with a game controller: stick and d-pad to move, Interact to select, Drag or Save and exit to go back.

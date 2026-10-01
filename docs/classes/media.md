@@ -61,6 +61,42 @@ A singleton playing sound through OpenAL on its own thread.
   crossfade (`goe::music::byDifficulty`); `setupSong`, `pauseSong`, `resumeSong`, `moveSong`,
   `hasSong` handle songs placed on the board.
 - Volumes come from `gameSettings`.
+- The Performer: when `gameSettings` chooses it, the skins.json songs pause and `streamPerformer()`
+  feeds a `performerStream` on the sound thread, outside `snd_mutex`, with `followDifficulty` (scaled
+  by `difficulty::musicianLevel`) and `followSituation`. The stream is made the first time it is
+  chosen and lives as long as the manager. The device's rate (`ALC_FREQUENCY`) is the musician's rate.
+
+## `performerStream` (`performerStream.h`)
+
+The integration point between the adaptive musician and OpenAL: one streaming source and four
+buffers of 2048 stereo frames on `soundManager`'s context. `pump(level, situation, gain)` refills
+every played buffer (`composeAhead`, then `renderAudio`), restarts the source after an underrun and
+sets its gain to the music volume. `play(false)` lets the musician fade out, then stops the source.
+Floats go to OpenAL when `AL_EXT_FLOAT32` is there, 16 bit otherwise.
+
+## The adaptive musician (`goe::musician`, `adaptiveMusician.h` and `music*.h`)
+
+Composes and synthesizes music at runtime; the full design is in
+[docs/adaptive-musician.md](../adaptive-musician.md). None of these headers includes a game header.
+
+- `adaptiveMusician`: the Music Director and the only class the game uses. `initialize(format,
+  seed)`, `shutdown()`; from any thread `setDifficulty` (0..256), `setSituation`, `setEnabled`,
+  `setVolume` (its own gain), `pause`, `resume`; on the audio thread `composeAhead()` and
+  `renderAudio(frames)` (real-time safe). Inspectors for tests: `personality`, `tension`,
+  `lastPhrase`, `synth`, `position`, `queued`, `phrasesComposed`.
+- `tensionController` (`musicTension.h`): `targetFor(difficulty)` (0.70 * x^1.222), per-part
+  smoothing (`smoothed()`), the mood walk, `state()` with the mood added.
+- `performerPersonality` (`musicPersonality.h`): `generate(seed)` from five latent traits; fifteen
+  playing traits, key, mode, tempo, three `instrument`s; `busyness()`, `withinLimits()`; `scaleOf(mode)`.
+- `composer` (`musicComposer.h`): `compose(personality, state, situation, rate, phraseBuffer)` writes
+  one phrase of lead, chords and bass; `motif`, `phraseBuffer`, `phraseReport` (what the phrase was
+  like, for tests); per-theme motif memory.
+- `vocabulary` (`musicVocabulary.h`): lead and bass rhythms, progressions, `onsets`, `syncopation`,
+  `theme` and `themeFor(situation, personality)`.
+- `synthesizer` (`musicSynth.h`): the voice pool, `noteOn`, `noteOff`, `releaseAll`, `render`,
+  `setShift(timbreShift)`; `voice`, `oscillator`, `envelope`, `lowPass`, `instrument`, `softClip`.
+- `noteEvent`, `eventQueue` (a fixed heap, `cutAt`), `randomStream`, `situation`, `part` (`musicEvents.h`).
+- `tuning` (`musicianTuning.h`): every tunable number.
 
 ## `soundSpace` (namespace, `soundSpace.h`)
 

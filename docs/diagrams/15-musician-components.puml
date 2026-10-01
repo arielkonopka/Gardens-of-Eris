@@ -1,0 +1,51 @@
+@startuml
+title The adaptive musician: layers and the audio boundary
+skinparam componentStyle rectangle
+
+package "Game (game thread)" {
+  [presenter\nfollowDifficulty(D), followSituation()] as pres
+  [goe::music::cues\nsighted, chased, endangered -> now()] as cues
+  [securityCamera] as cam
+  [puppetMasterGuardian] as guard
+  [titleMenu Config\nMusic: Skin samples / Performer] as menu
+  [gameSettings\nmusic, musicVolume] as settings
+}
+
+package "Adaptive musician (no game headers)" {
+  [adaptiveMusician\nMusic Director: controls (atomics),\ncomposeAhead, renderAudio, lifecycle] as director
+  [tensionController\ncurve, per-part smoothing, mood] as tension
+  [performerPersonality\nlatent traits -> 15 traits, key, mode,\ntempo, 3 instruments] as person
+  [composer + vocabulary\nrhythm, harmony, melody,\nphrases, motif memory, themes] as comp
+  [eventQueue\nnote on/off at exact samples] as queue
+  [synthesizer\nvoice pool, oscillators, envelopes,\nfilter, vibrato, pan, mix, soft clip] as synth
+  [musicianTuning\nevery tunable number] as tuning
+}
+
+package "Game audio engine (sound thread)" {
+  [soundManager\nOpenAL device and context,\nsound effects, skins.json songs] as sm
+  [performerStream\none streaming source, 4 buffers] as stream
+}
+[OpenAL\nmixer and device] as openal
+
+cam --> cues : sighted
+guard --> cues : chased, endangered
+pres --> cues : now()
+pres --> sm : difficulty, situation
+menu --> settings
+sm --> settings : which music, volume
+sm --> stream : pump(level, situation, gain)
+stream --> director : composeAhead, renderAudio
+director --> tension
+director --> comp
+director --> queue
+director --> synth
+comp --> person
+comp --> queue : phrases
+queue --> synth : note events
+synth --> person : instruments
+director ..> tuning
+comp ..> tuning
+synth ..> tuning
+stream --> openal : stereo frames
+sm --> openal
+@enduml

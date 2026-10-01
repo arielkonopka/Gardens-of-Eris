@@ -25,6 +25,7 @@
 #include "chamber.h"
 #include "elementFactory.h"
 #include "lineOfSight.h"
+#include "musicCues.h"
 #include "patrollingDrone.h"
 #include "player.h"
 #include "puppetMasterGuardian.h"
@@ -84,6 +85,7 @@ bool securityCamera::mechanics()
             && goe::sight::clear(this->getBoard(), me, p)) {
             this->alertAt = p;
             this->alertNumber++;
+            goe::music::cues::sighted();
         }
     }
     this->getStats()->setWaiting(GoEConstants::_mov_delay);

@@ -21,6 +21,7 @@
  */
 
 #include "gameSerializer.h"
+#include "musicCues.h"
 #include "elements.h"
 #include "viewPoint.h"
 #include <array>
@@ -707,6 +708,7 @@ void gameSerializer::clearWorld()
         teleport::pendingTeleporters.clear();
         teleport::parked.clear();
     }
+    goe::music::cues::reset(); // the danger of the old world is gone with it
     player::activePlayer = nullptr;
     player::visitedPlayers.clear();
     player::lostBest = 0;

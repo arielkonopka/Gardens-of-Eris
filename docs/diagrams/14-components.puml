@@ -15,7 +15,8 @@ package "GardenOfErisLib" {
   [Serializer\ngameSerializer, saves, chunk swap] as ser
   [Rules\ndifficulty, goe::rng, gameClock,\nlineOfSight, events] as rules
   [Input\ninputManager, bindings, menuPad] as input
-  [Sound\nsoundManager, OpenAL, soundSpace] as sound
+  [Sound\nsoundManager, OpenAL, soundSpace,\nperformerStream] as sound
+  [Adaptive musician\ncomposer, synthesizer, personality,\ntension; no game headers] as musician
   [Settings and config\ngameSettings, configManager, skins.json] as cfg
   [Crash log] as crash
 }
@@ -50,6 +51,8 @@ fame --> saves
 cfg --> data
 cfg --> saves
 sound --> openal
+sound --> musician : renders the Performer
+elems --> rules : music cues
 title --> cfg
 title --> input : menuPad
 crash --> saves

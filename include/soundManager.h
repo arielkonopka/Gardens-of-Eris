@@ -28,6 +28,7 @@
 #include <atomic>
 #include "commons.h"
 #include "difficultyMusic.h"
+#include "musicEvents.h"
 #include <map>
 #include <vector>
 #include <iostream>
@@ -44,6 +45,8 @@
 #include "bElem.h"
 #include <memory>
 #include "commons.h"
+
+class performerStream;
 
 using sndHolder=struct sampleS
 {
@@ -126,6 +129,8 @@ public:
     void setupDifficultyMusic();
     /// the game's current difficulty D, for the difficulty music
     void followDifficulty(int d);
+    /// how much danger the player is in (goe::music::cues), for the performer's themes
+    void followSituation(goe::musician::situation s);
     void moveSong(int songNo, coords3d newPosition,int newChamber);
 private:
     bool isSongConfigured(int songNo,coords3d position,int chamberId);
@@ -135,6 +140,12 @@ private:
     /// the difficulty music's part of checkQueue: picks the song for D and crossfades into it
     void playDifficultyMusic();
     void threadLoop();
+    /// Config may pick the adaptive musician over the skins.json songs
+    static bool performerChosen();
+    /// the musician's part of the sound thread: starts, feeds or stops its stream, outside snd_mutex
+    void streamPerformer();
+    /// stops the skins.json songs while the performer plays (snd_mutex held)
+    void silenceSongsLocked();
     std::mutex snd_mutex;
     ALenum determineFormat(SF_INFO fileInfo,SNDFILE *sndfile);
     void setSoundPosition(std::shared_ptr<stNode> snd,coords3d pos);
@@ -168,6 +179,10 @@ private:
     std::atomic<int> difficultyNow=0;
     goe::music::byDifficulty musicChoice;
     int fadingMusic=-1; ///< the song fading out while currentMusic fades in, -1 when none
+    std::atomic<int> situationNow = 0;
+    int deviceRate = 44100; ///< the output rate OpenAL mixes at; the musician renders at it
+    /// made on the sound thread when the performer is first chosen; lives until the manager goes
+    std::unique_ptr<performerStream> performer;
     std::jthread myThread;
 };
 

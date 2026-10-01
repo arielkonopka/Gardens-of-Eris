@@ -56,6 +56,12 @@ public:
     void setMusicVolume(int percent);
     void setEffectsVolume(int percent);
 
+    /// where the music comes from: the songs listed in skins.json, played by difficulty, or the
+    /// adaptive musician (adaptiveMusician.h), who composes and plays its own; the sound thread reads it
+    enum class musicSource { samples, performer };
+    musicSource getMusicSource() const { return this->music; }
+    void setMusicSource(musicSource s) { this->music = s; }
+
     /// the story line over the game field (storyScroller.h): on or off, and the file it tells from
     static constexpr const char *defaultStoriesFile = "data/txt/stories.json";
     bool getStoriesShown() const { return this->storiesShown; }
@@ -91,6 +97,7 @@ private:
     std::string saveDirectory = ".";
     std::atomic<int> musicVolume = 100;
     std::atomic<int> effectsVolume = 100;
+    std::atomic<musicSource> music = musicSource::samples;
     std::atomic<bool> storiesShown = true;
     std::atomic<int> demoWait = 60;
     std::atomic<int> demoLength = 30;

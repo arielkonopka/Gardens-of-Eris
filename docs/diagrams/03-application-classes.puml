@@ -27,6 +27,7 @@ class titleMenu {
 }
 class gameSettings <<singleton>> {
   saveDirectory, volumes
+  music: samples or performer
   storyScroller, storiesFile
   demoWait, demoLength, hallOfFameLength
   controls
@@ -77,7 +78,17 @@ class "goe::hallOfFame" as hallOfFame {
   +qualifies(score)
   +add(entry)
 }
-class soundManager <<singleton>>
+class soundManager <<singleton>> {
+  +followDifficulty(d) / followSituation(s)
+}
+class performerStream {
+  one OpenAL source, 4 buffers
+  +pump(level, situation, gain)
+}
+class "goe::musician::adaptiveMusician" as musician {
+  +setDifficulty / setSituation
+  +composeAhead() / renderAudio()
+}
 class videoManager <<singleton>>
 class videoDriver
 class configManager <<singleton>> {
@@ -106,6 +117,9 @@ presenter *-- autopilot : demo
 presenter *-- fogLayer
 presenter *-- storyScroller
 presenter ..> soundManager
+soundManager *-- performerStream : when Performer is chosen
+performerStream *-- musician
+soundManager ..> gameSettings : music source, volume
 presenter ..> videoManager
 presenter ..> viewPoint
 presenter ..> gameEnd
