@@ -1,0 +1,59 @@
+@startuml
+title Modules and how they depend on each other
+skinparam componentStyle rectangle
+
+package "Game executable (main.cpp)" {
+  [Title screen\ntitleScreen, titleMenu] as title
+  [Presenter\ngame loop, renderer, fog, HUD, stories] as pres
+  [Autopilot\ndemo player] as pilot
+  [Hall of fame\nhalloffame.json] as fame
+}
+
+package "GardenOfErisLib" {
+  [Elements\nbElem and kinds, inventory,\npuppet masters, motion] as elems
+  [World\nchamber, chunks, worldBuilder,\nrandomLevelGenerator, chunkPattern] as world
+  [Serializer\ngameSerializer, saves, chunk swap] as ser
+  [Rules\ndifficulty, goe::rng, gameClock,\nlineOfSight, events] as rules
+  [Input\ninputManager, bindings] as input
+  [Sound\nsoundManager, OpenAL, soundSpace] as sound
+  [Settings and config\ngameSettings, configManager, skins.json] as cfg
+  [Crash log] as crash
+}
+
+package "Agent" {
+  [goe::agent::game\nheadless, no window] as agent
+  [Python package goe\nnanobind, Game, GoeEnv, ChunkPattern] as python
+}
+
+database "data/\nskins, sounds, music, stories" as data
+database "save folder\nsave, settings, chunks, crash logs" as saves
+[Allegro 5] as allegro
+[OpenAL] as openal
+
+title --> pres
+title --> fame
+pres --> pilot
+pres --> elems
+pres --> world
+pres --> input
+pres --> allegro
+pilot --> elems
+elems --> rules
+elems --> sound
+elems --> input
+world --> elems
+world --> rules
+world --> ser
+ser --> elems
+ser --> saves
+fame --> saves
+cfg --> data
+cfg --> saves
+sound --> openal
+title --> cfg
+crash --> saves
+python --> agent
+agent --> world
+agent --> elems
+agent --> input
+@enduml

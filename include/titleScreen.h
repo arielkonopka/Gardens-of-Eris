@@ -24,6 +24,7 @@
 #define TITLESCREEN_H
 
 #include "titleMenu.h"
+#include "hallOfFame.h"
 #include "allegroHandles.h"
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
@@ -45,6 +46,15 @@ public:
     /// shows a headline and a few lines until the player presses Enter, Space or Esc;
     /// returns false when the window was closed instead
     bool showMessage(const std::string &headline, const std::vector<std::string> &lines);
+
+    /// how a timed screen ended
+    enum class screenEnd { TIMEOUT, PRESSED, CLOSED };
+    /// the hall of fame, the place at highlight marked; for the given seconds or until a press
+    /// (seconds 0: until Enter, Space or Esc)
+    screenEnd showHallOfFame(const goe::hallOfFame &fame, double seconds, int highlight = -1);
+    /// a headline, a few lines and a name being typed; Enter keeps it, Esc leaves it blank.
+    /// False when the window was closed instead.
+    bool askName(const std::string &headline, const std::vector<std::string> &lines, std::string &name);
 
 private:
     void draw();

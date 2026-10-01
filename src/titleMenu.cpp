@@ -130,6 +130,35 @@ titleMenu::titleMenu(gameSettings &edited, std::string file, std::function<bool(
                                  const int i = at == files.end() ? (by > 0 ? -1 : 0) : (int) (at - files.begin());
                                  this->settings.setStoriesFile(files[(std::size_t) ((i + by + n) % n)]);
                              }});
+    // a time in seconds: a typed number, or Left/Right step it by five
+    auto seconds = [](std::string label, std::function<int()> get, std::function<void(int)> set) {
+        return option{std::move(label),
+                      [get] { return std::to_string(get()) + " s"; },
+                      [set](const std::string &v) {
+                          try {
+                              size_t used = 0;
+                              int s = std::stoi(v, &used);
+                              while (used < v.size() && v[used] == ' ')
+                                  used++;
+                              if (s < gameSettings::minSeconds || s > gameSettings::maxSeconds
+                                  || (used < v.size() && v.substr(used) != "s"))
+                                  return false;
+                              set(s);
+                              return true;
+                          } catch (const std::exception &) {
+                              return false;
+                          }
+                      },
+                      [get, set](int by) { set(get() + by * gameSettings::secondsStep); }};
+    };
+    this->options.push_back(seconds(
+        "Demo after", [this] { return this->settings.getDemoWait(); }, [this](int v) { this->settings.setDemoWait(v); }));
+    this->options.push_back(seconds(
+        "Demo length", [this] { return this->settings.getDemoLength(); }, [this](int v) { this->settings.setDemoLength(v); }));
+    this->options.push_back(seconds(
+        "Hall of fame shown",
+        [this] { return this->settings.getHallOfFameLength(); },
+        [this](int v) { this->settings.setHallOfFameLength(v); }));
     this->options.push_back({"Controls", [] { return std::string(); }, {}, {}});
 }
 

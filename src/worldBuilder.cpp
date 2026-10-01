@@ -23,6 +23,7 @@
 #include "chamber.h"
 #include "randomLevelGenerator.h"
 #include "gameSerializer.h"
+#include "player.h"
 #include <algorithm>
 #include <atomic>
 #include <cstdlib>
@@ -109,6 +110,27 @@ void worldBuilder::bringIn(const std::shared_ptr<chamber> &world, coords cell)
     const coords chunk = chamber::chunkOf(cell);
     if (world->isSwapped(chunk))
         gameSerializer::swapInChunk(world, chunk);
+}
+
+bool worldBuilder::movePlayerTo(const std::shared_ptr<chamber> &world, coords chunk)
+{
+    const auto plr = player::getActivePlayer();
+    if (!world || !plr)
+        return false;
+    const coords first = chamber::chunkOrigin(chunk);
+    const coords middle = first + chamber::chunkSize / 2;
+    while (worldBuilder::growAround(world, middle))
+        ;
+    std::shared_ptr<bElem> best;
+    for (int x = first.x; x < first.x + chamber::chunkSize; x++)
+        for (int y = first.y; y < first.y + chamber::chunkSize; y++) {
+            const auto e = world->getElement(coords(x, y));
+            if (!e || e->getType() != bElemTypes::_floorType || !e->getAttrs()->isSteppable())
+                continue;
+            if (!best || coords(x, y).distance(middle) < best->getStats()->getMyPosition().distance(middle))
+                best = e;
+        }
+    return best && plr->stepOnElement(best);
 }
 
 std::size_t worldBuilder::chunksGenerated()

@@ -64,6 +64,19 @@ public:
     /// false, keeping the old file, when the file has no stories
     bool setStoriesFile(const std::string &file);
 
+    /// the title screen's attract mode, in seconds: the demo starts after demoWait plus a random
+    /// part of it without a press, plays for at most demoLength, then the hall of fame shows for
+    /// hallOfFameLength. Each is kept between minSeconds and maxSeconds.
+    static constexpr int minSeconds = 5;
+    static constexpr int maxSeconds = 3600;
+    static constexpr int secondsStep = 5;
+    int getDemoWait() const { return this->demoWait; }
+    int getDemoLength() const { return this->demoLength; }
+    int getHallOfFameLength() const { return this->hallOfFameLength; }
+    void setDemoWait(int seconds);
+    void setDemoLength(int seconds);
+    void setHallOfFameLength(int seconds);
+
     /// the key and pad layout; the input thread copies it on every event
     goe::controls::bindings getControls() const;
     void setControls(const goe::controls::bindings &b);
@@ -79,6 +92,9 @@ private:
     std::atomic<int> musicVolume = 100;
     std::atomic<int> effectsVolume = 100;
     std::atomic<bool> storiesShown = true;
+    std::atomic<int> demoWait = 60;
+    std::atomic<int> demoLength = 30;
+    std::atomic<int> hallOfFameLength = 10;
     std::string storiesFile = defaultStoriesFile;
     goe::controls::bindings controls;
 };

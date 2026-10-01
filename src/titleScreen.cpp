@@ -240,3 +240,156 @@ bool titleScreen::showMessage(const std::string &headline, const std::vector<std
     al_stop_timer(this->timer.get());
     return open;
 }
+
+titleScreen::screenEnd titleScreen::showHallOfFame(const goe::hallOfFame &fame, double seconds, int highlight)
+{
+    auto draw = [&]() {
+        auto *display = al_get_current_display();
+        if (!display || !this->font || !this->bigFont)
+            return;
+        const float w = (float) al_get_display_width(display);
+        const float h = (float) al_get_display_height(display);
+        const float lineH = (float) al_get_font_line_height(this->font.get()) * 1.3f;
+        al_clear_to_color(al_map_rgba(15, 15, 25, 255));
+        float y = h * 0.08f;
+        al_draw_text(this->bigFont.get(), al_map_rgb(255, 205, 0), w / 2, y, ALLEGRO_ALIGN_CENTER, "Hall of Fame");
+        y += (float) al_get_font_line_height(this->bigFont.get()) * 1.5f;
+        if (fame.entries().empty())
+            al_draw_text(this->font.get(), al_map_rgb(170, 170, 190), w / 2, y, ALLEGRO_ALIGN_CENTER,
+                         "Nobody yet. Eris is waiting.");
+        for (std::size_t i = 0; i < fame.entries().size(); i++) {
+            const auto &e = fame.entries()[i];
+            const ALLEGRO_COLOR c = (int) i == highlight ? al_map_rgb(255, 215, 90) : al_map_rgb(170, 170, 190);
+            al_draw_textf(this->font.get(), c, w * 0.22f, y, ALLEGRO_ALIGN_RIGHT, "%zu.", i + 1);
+            al_draw_text(this->font.get(), c, w * 0.25f, y, ALLEGRO_ALIGN_LEFT, e.name.c_str());
+            al_draw_textf(this->font.get(), c, w * 0.66f, y, ALLEGRO_ALIGN_RIGHT, "%d", e.score);
+            al_draw_text(this->font.get(), c, w * 0.70f, y, ALLEGRO_ALIGN_LEFT, e.date.c_str());
+            y += lineH;
+        }
+        const char *help = seconds > 0 ? "Press any key" : "Press Enter to continue";
+        al_draw_text(this->font.get(), al_map_rgb(110, 110, 130), w / 2, h - lineH * 2, ALLEGRO_ALIGN_CENTER, help);
+        al_flip_display();
+    };
+    const double tick = al_get_timer_speed(this->timer.get());
+    double passed = 0;
+    al_flush_event_queue(this->queue.get());
+    al_start_timer(this->timer.get());
+    draw();
+    ALLEGRO_EVENT ev;
+    auto result = screenEnd::TIMEOUT;
+    for (bool done = false; !done;) {
+        al_wait_for_event(this->queue.get(), &ev);
+        switch (ev.type) {
+        case ALLEGRO_EVENT_DISPLAY_CLOSE:
+            result = screenEnd::CLOSED;
+            done = true;
+            break;
+        case ALLEGRO_EVENT_KEY_DOWN:
+            // after a game, keys held while it ended must not skip the list, so keys count after a second
+            if (seconds > 0 || (passed >= 1.0
+                                && (ev.keyboard.keycode == ALLEGRO_KEY_ENTER || ev.keyboard.keycode == ALLEGRO_KEY_SPACE
+                                    || ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE))) {
+                result = screenEnd::PRESSED;
+                done = true;
+            }
+            break;
+        case ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN:
+            if (seconds > 0) {
+                result = screenEnd::PRESSED;
+                done = true;
+            }
+            break;
+        case ALLEGRO_EVENT_JOYSTICK_AXIS:
+            if (seconds > 0 && (ev.joystick.pos > 0.4f || ev.joystick.pos < -0.4f)) {
+                result = screenEnd::PRESSED;
+                done = true;
+            }
+            break;
+        case ALLEGRO_EVENT_TIMER:
+            passed += tick;
+            if (seconds > 0 && passed >= seconds)
+                done = true;
+            else if (al_is_event_queue_empty(this->queue.get()))
+                draw();
+            break;
+        default:
+            break;
+        }
+    }
+    al_stop_timer(this->timer.get());
+    return result;
+}
+
+bool titleScreen::askName(const std::string &headline, const std::vector<std::string> &lines, std::string &name)
+{
+    auto draw = [&]() {
+        auto *display = al_get_current_display();
+        if (!display || !this->font || !this->bigFont)
+            return;
+        const float w = (float) al_get_display_width(display);
+        const float h = (float) al_get_display_height(display);
+        const float lineH = (float) al_get_font_line_height(this->font.get()) * 1.4f;
+        al_clear_to_color(al_map_rgba(15, 15, 25, 255));
+        float y = h * 0.25f;
+        al_draw_text(this->bigFont.get(), al_map_rgb(235, 235, 255), w / 2, y, ALLEGRO_ALIGN_CENTER, headline.c_str());
+        y += (float) al_get_font_line_height(this->bigFont.get()) * 1.5f;
+        for (const auto &line : lines) {
+            al_draw_text(this->font.get(), al_map_rgb(170, 170, 190), w / 2, y, ALLEGRO_ALIGN_CENTER, line.c_str());
+            y += lineH;
+        }
+        y += lineH * 0.5f;
+        al_draw_text(this->font.get(), al_map_rgb(255, 215, 90), w / 2, y, ALLEGRO_ALIGN_CENTER, (name + "_").c_str());
+        al_draw_text(this->font.get(), al_map_rgb(110, 110, 130), w / 2, h - lineH * 2, ALLEGRO_ALIGN_CENTER,
+                     "Type your name, Enter to keep it");
+        al_flip_display();
+    };
+    // keys held while the game ended must not type or end the entry, so keys count after a second
+    int ticksShown = 0;
+    std::size_t chars = (std::size_t) std::count_if(name.begin(), name.end(), [](char c) { return (c & 0xC0) != 0x80; });
+    al_flush_event_queue(this->queue.get());
+    al_start_timer(this->timer.get());
+    draw();
+    ALLEGRO_EVENT ev;
+    bool open = true;
+    for (bool done = false; !done;) {
+        al_wait_for_event(this->queue.get(), &ev);
+        switch (ev.type) {
+        case ALLEGRO_EVENT_DISPLAY_CLOSE:
+            open = false;
+            done = true;
+            break;
+        case ALLEGRO_EVENT_KEY_CHAR:
+            if (ticksShown < 30)
+                break;
+            if (ev.keyboard.keycode == ALLEGRO_KEY_ENTER || ev.keyboard.keycode == ALLEGRO_KEY_PAD_ENTER) {
+                done = true;
+            } else if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+                name.clear();
+                done = true;
+            } else if (ev.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {
+                while (!name.empty() && (name.back() & 0xC0) == 0x80)
+                    name.pop_back();
+                if (!name.empty()) {
+                    name.pop_back();
+                    chars--;
+                }
+            } else if (ev.keyboard.unichar >= 32 && ev.keyboard.unichar != 127 && chars < goe::hallOfFame::nameLength) {
+                char buf[5] = {};
+                al_utf8_encode(buf, ev.keyboard.unichar);
+                name += buf;
+                chars++;
+            }
+            draw();
+            break;
+        case ALLEGRO_EVENT_TIMER:
+            ticksShown++;
+            if (al_is_event_queue_empty(this->queue.get()))
+                draw();
+            break;
+        default:
+            break;
+        }
+    }
+    al_stop_timer(this->timer.get());
+    return open;
+}

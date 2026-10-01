@@ -55,7 +55,9 @@ The labyrinth is inhabited by an assortment of creatures and contraptions. You'l
 
 The game opens with a title screen: **Start game**, **Config** and **Exit**. When the save folder holds a save the game can read, it shows **Continue** and **New game** instead of Start game: Continue picks that game up where it was saved, and New game builds a new world that takes the old save's place at once, so the old game is gone. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), the story scroller, and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
 
-Leave the main menu alone for a minute or two (60 to 120 seconds, a new wait each time) and the game plays itself: a demo builds a world of its own, and an autopilot walks it, collecting what it passes, trying doors and shooting monsters and drones in its line once it holds a gun. Any key, pad button or stick push brings the menu back and the demo world is thrown away. The demo never writes, replaces or deletes a save.
+Leave the main menu alone for a while (Demo after, 60 seconds by default, plus a random part of it again) and the game plays itself: a demo builds a world of its own and drops an autopilot far out in the maze, 23 to 63 chunks from the start, where the maze is at its hardest, so it looks like a game well under way. The autopilot collects what it passes, tries doors and shoots monsters and drones in its line once it holds a gun. After Demo length (30 seconds by default) the hall of fame shows for Hall of fame shown (10 seconds by default), then the menu comes back. Any key, pad button or stick push brings the menu back at once and the demo world is thrown away. The demo never writes, replaces or deletes a save, and never enters the hall of fame. The three times are in Config and in `settings.json` (`demoWait`, `demoLength`, `hallOfFameLength`, 5 to 3600 seconds).
+
+The hall of fame keeps the ten best games, kept in `halloffame.json` in the save folder. When a lost game's best score earns a place, the Game over screen asks for a name (up to 16 characters; none gives "Anonymous") and shows the list with the new entry marked.
 
 Each time the maze grows by a new chunk, a random Discordian story scrolls along the top of the screen, unless one is still scrolling. Config switches the story scroller on or off and picks the stories file: Left and Right step through the files next to it (`data/txt/stories.json` in English, `stories.pl.json` in Polish, `stories.ro.json` in Romanian), or type the path of your own. A stories file is a JSON list of `{"title": "...", "body": "..."}`.
 
@@ -165,6 +167,10 @@ examples:
 # Build bElem, soundManager, presenter, bElem-tests
 ./build.sh -m bElem -m soundManager -m presenter -t -m bElem-test
 ```
+
+### Diagrams
+
+[docs/diagrams](docs/diagrams/README.md) holds PlantUML diagrams of the code: class diagrams of the elements, the world, the application and the agent library, a component diagram, activity diagrams of the application, a game tick and chunk generation, sequence diagrams of a player step, saving and an agent step, and state diagrams of the title screen, an element's life and a guardian drone. Render them again with `plantuml -tsvg *.puml` in that folder after a change.
 
 ## Main assumptions
 
@@ -285,7 +291,7 @@ The player's level is **Dex** in the HUD: floor(log5(hits + 1)), where hits coun
 
 # Unit tests
 
-The unit tests use GoogleTest and live in the unitTests directory, one test program per *.cpp file (21 of them now). CMake builds each one, and `ctest` runs them all from the `GoEoOL` folder. The agent library has its own: `agent-test` (GoogleTest) and, with `-DGOE_BUILD_PYTHON=ON`, `python-tests` (pytest). regression-test keeps one test for every bug fixed, so it doesn't come back.
+The unit tests use GoogleTest and live in the unitTests directory, one test program per *.cpp file (22 of them now). CMake builds each one, and `ctest` runs them all from the `GoEoOL` folder. The agent library has its own: `agent-test` (GoogleTest) and, with `-DGOE_BUILD_PYTHON=ON`, `python-tests` (pytest). regression-test keeps one test for every bug fixed, so it doesn't come back.
 
 
 # Sound
@@ -401,6 +407,9 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* PlantUML diagrams in docs/diagrams: classes, components, activities, sequences and states.
+* A hall of fame: the ten best games with name, score and date, kept in the save folder. A lost game good enough for it asks for a name. The title screen shows it after the demo.
+* The demo starts far out in the maze, where it is hardest, and stops after 30 seconds. The wait before it, its length and how long the hall of fame shows are set in Config.
 * A demo on the title screen: after 60 to 120 seconds without a press on the main menu, an autopilot plays a world of its own until any key, pad button or stick push brings the menu back. The demo world is discarded and saves are left alone.
 * Agents can build chunks from a fixed pattern of elements (`goe.ChunkPattern`, from rows and a legend, arrays or a JSON file), for one chunk or for every new chunk. A pattern smaller than a chunk is repeated to fill it, and it is laid out the same whatever the seed.
 * Game over shows the best score among the avatars of the lost game, and deletes that game's save, so Continue cannot bring a lost game back. Saves keep the best score of avatars already lost (save format 7; older saves still load).

@@ -526,3 +526,22 @@ TEST(WorldTests, TheStartRoomIsLockedWithoutTheNextChunksGaps)
         }
     }
 }
+
+TEST(WorldTests, ThePlayerCanBeMovedToAFarChunk)
+{
+    auto world = newWorld(4242);
+    const coords far(-30, 23);
+    ASSERT_TRUE(worldBuilder::movePlayerTo(world, far));
+    const auto plr = player::getActivePlayer();
+    const coords at = plr->getStats()->getMyPosition();
+    EXPECT_TRUE(chamber::chunkOf(at) == far);
+    // the start stays where it was, so the far chunk is as hard as its distance
+    EXPECT_EQ(chamber::chunkOf(world->origin), coords(0, 0));
+    EXPECT_EQ(difficulty::chunkDepth(far), 4);
+    EXPECT_GE(difficulty::of(plr), 4);
+    // every chunk around it is built, so the maze is there all around
+    for (int dx = -worldBuilder::buildRadius; dx <= worldBuilder::buildRadius; dx++)
+        for (int dy = -worldBuilder::buildRadius; dy <= worldBuilder::buildRadius; dy++)
+            EXPECT_TRUE(world->hasChunk(far + coords(dx, dy)));
+    gameSerializer::clearWorld();
+}

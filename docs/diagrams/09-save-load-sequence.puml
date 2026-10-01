@@ -1,0 +1,41 @@
+@startuml
+title Save, load and chunk swap (gameSerializer)
+actor Player as user
+participant presenter
+participant gameSerializer as ser
+participant "chamber::worldMutex" as lock
+participant "writer / reader" as io
+database "save folder" as disk
+
+== Esc or F5: save between ticks ==
+user -> presenter : Esc / F5
+presenter -> ser : saveGame(saveFile)
+ser -> lock : lock
+ser -> io : open saveFile.tmp
+ser -> io : header, clock, instance counter,\nrng state, world seed
+ser -> io : registries: active player, avatars,\napples, teleporters
+ser -> io : chunks on the board, swapped chunk files,\nevery element with its stats and inventory
+io -> disk : write
+ser -> disk : rename .tmp over the save
+ser --> presenter : saved / failed
+presenter --> user : SAVED (back to title) or message
+
+== F9 or Continue: load ==
+user -> presenter : F9 / Continue
+presenter -> ser : loadGame(saveFile)
+ser -> lock : lock
+ser -> io : read everything first
+alt file is good
+  ser -> ser : replace the running world,\nrestore clock, rng, registries
+else bad or old file
+  ser -> ser : restore teleporter and apple lists,\nleave the world as it was
+end
+
+== Each tick: far chunks ==
+presenter -> ser : swapOutChunk(world, far chunk)
+ser -> io : chunk_x_y.bin in the swap folder
+ser -> ser : remove the chunk's elements
+presenter -> ser : swapInChunk(world, near chunk)
+ser -> io : read chunk_x_y.bin
+ser -> ser : recreate elements, re-link by id
+@enduml

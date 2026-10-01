@@ -1,0 +1,82 @@
+@startuml
+title Agents: the headless game and the goe Python package
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "goe-agent (C++, agent/)" {
+  class "goe::agent::game" as game {
+    +newEpisode(seed)
+    +makeAction(action) : reward
+    +advance(control) : bool
+    +getState() : state
+    +isEpisodeFinished()
+    +setChunkPattern(chunk, pattern)
+    +setDefaultPattern(pattern)
+    +chunkAt(cell)
+  }
+  class "goe::agent::config" as config {
+    visionRadius, circle, followPlayer
+    cellFeatures, playerFeatures, itemFeatures
+    inventorySections, inventorySlots
+    ticksPerStep, episodeTicks, allowGiveUp
+    rewardWeights
+    chunkPatterns, defaultPattern
+  }
+  class "goe::agent::state" as state {
+    vision (channels x rows x columns)
+    player
+    inventory (sections x slots x features)
+    inventoryCounts
+    centre, tick, score
+  }
+  enum action {
+    NOOP, MOVE_*, SHOOT_*,
+    INTERACT_*, DRAG_*,
+    NEXT_ITEM, NEXT_GUN,
+    USE, DROP, GIVE_UP
+  }
+  enum event {
+    score, collect, apple, use, open,
+    teleport, kill, mine, hurt, death
+  }
+  class "feature tables" as features <<agentFeatures.h>>
+}
+package "goe (Python, agent/python)" {
+  class "goe._goe" as native <<nanobind module>>
+  class Game {
+    new_episode / get_state
+    make_action / is_episode_finished
+    set_chunk_pattern / chunk_at
+  }
+  class GoeEnv <<gymnasium.Env>> {
+    reset / step / render
+  }
+  class ChunkPattern {
+    from_rows / from_json / load
+    types / subtypes
+  }
+}
+package "game core" {
+  class worldBuilder <<namespace>>
+  class "goe::events" as events <<namespace>>
+  class "goe::chunkPattern" as chunkPattern
+}
+
+game *-- config
+game ..> state : getState()
+game ..> action
+game ..> event : counts per step
+game ..> features
+game ..> worldBuilder : startNew, patterns
+game ..> events : observes collect, kill, open...
+config o-- chunkPattern
+native ..> game : binds
+Game --> native
+GoeEnv --> Game
+ChunkPattern --> native
+Game ..> ChunkPattern
+note bottom of game
+  One game per process: the world is static state.
+  Same seed + same actions = same game.
+end note
+@enduml

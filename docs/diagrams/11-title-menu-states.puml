@@ -1,0 +1,31 @@
+@startuml
+title Title screen states (titleMenu, titleScreen)
+[*] --> MAIN
+state MAIN : Continue (when a save exists)\nStart, Config, Exit
+state CONFIG : save folder, music, sound,\nstories, demo times, Controls
+state EDITING : typing a value (save folder, stories file)
+state CONTROLS : key and pad bindings
+state BINDING : waiting for a key or pad button
+state Demo : autopilot plays a far chunk
+state HallOfFame : top 10, shown for hallOfFameLength s
+state Game : presentEverything(false)
+state GameOver : name entry when the score qualifies
+
+MAIN --> CONFIG : Config
+CONFIG --> MAIN : Back / Esc
+CONFIG --> EDITING : Enter on a text line
+EDITING --> CONFIG : Enter (stored) / Esc
+CONFIG --> CONTROLS : Controls
+CONTROLS --> BINDING : Enter on an action
+BINDING --> CONTROLS : key or button pressed
+CONTROLS --> CONFIG : Back
+MAIN --> Demo : idle demoWait + rand(demoWait) s
+Demo --> MAIN : any press (DEMO_OVER)
+Demo --> HallOfFame : demoLength s passed (DEMO_DONE)
+HallOfFame --> MAIN : timeout or any press
+MAIN --> Game : Start / Continue
+Game --> MAIN : Esc (saved)
+Game --> GameOver : last avatar lost
+GameOver --> HallOfFame : shown with the new entry
+MAIN --> [*] : Exit or window closed
+@enduml

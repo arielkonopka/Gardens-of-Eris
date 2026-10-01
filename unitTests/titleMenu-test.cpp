@@ -130,14 +130,17 @@ TEST(TitleMenuTests, ConfigShowsSaveLocationAndGoesBack)
     EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::NONE);
     ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
     auto lines = m.getLines();
-    ASSERT_EQ(lines.size(), 7u);
+    ASSERT_EQ(lines.size(), 10u);
     EXPECT_EQ(lines[0], "Save location: .");
     EXPECT_EQ(lines[1], "Music volume: 100%");
     EXPECT_EQ(lines[2], "Sound effects volume: 100%");
     EXPECT_EQ(lines[3], "Story scroller: On");
     EXPECT_EQ(lines[4], "Stories file: data/txt/stories.json");
-    EXPECT_EQ(lines[5], "Controls");
-    EXPECT_EQ(lines[6], "Back");
+    EXPECT_EQ(lines[5], "Demo after: 60 s");
+    EXPECT_EQ(lines[6], "Demo length: 30 s");
+    EXPECT_EQ(lines[7], "Hall of fame shown: 10 s");
+    EXPECT_EQ(lines[8], "Controls");
+    EXPECT_EQ(lines[9], "Back");
     m.keyDown(ALLEGRO_KEY_ESCAPE);
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::MAIN);
     EXPECT_EQ(m.getSelected(), 1);
@@ -336,7 +339,7 @@ TEST(TitleMenuTests, ControlsCanBeRebound)
     using goe::controls::action;
     scratch s;
     titleMenu m(gameSettings::getInstance(), s.settingsFile());
-    openConfigAt(m, 5);
+    openConfigAt(m, 8);
     m.keyDown(ALLEGRO_KEY_ENTER);
     ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONTROLS);
     EXPECT_EQ(m.getTitle(), "Controls");
@@ -391,7 +394,7 @@ TEST(TitleMenuTests, ControlsCanBeRebound)
     EXPECT_TRUE(gameSettings::getInstance().getControls() == goe::controls::bindings());
     m.keyDown(ALLEGRO_KEY_ESCAPE);
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
-    EXPECT_EQ(m.getSelected(), 5);
+    EXPECT_EQ(m.getSelected(), 8);
 }
 
 TEST(ControlBindingsTests, DefaultLayoutPlaysAsBefore)
@@ -484,4 +487,38 @@ TEST(TitleMenuTests, TheDemoWaitsWhileASettingIsOpen)
     // back on the main menu, the whole wait again
     EXPECT_TRUE(m.wait(59.0) == titleMenu::action::NONE);
     EXPECT_TRUE(m.wait(1.0) == titleMenu::action::DEMO);
+}
+
+TEST(TitleMenuTests, TheDemoTimesCanBeSetAndAreKept)
+{
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    m.keyDown(ALLEGRO_KEY_DOWN);
+    m.keyDown(ALLEGRO_KEY_ENTER); // Config
+    for (int i = 0; i < 6; i++)
+        m.keyDown(ALLEGRO_KEY_DOWN); // Demo length
+    EXPECT_EQ(m.getLines()[m.getSelected()], "Demo length: 30 s");
+    m.keyDown(ALLEGRO_KEY_RIGHT);
+    EXPECT_EQ(m.getLines()[6], "Demo length: 35 s");
+    // typed, with or without the unit
+    m.keyDown(ALLEGRO_KEY_DOWN);
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    for (int i = 0; i < 4; i++)
+        m.keyDown(ALLEGRO_KEY_BACKSPACE);
+    type(m, "20 s");
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    EXPECT_EQ(m.getLines()[7], "Hall of fame shown: 20 s");
+    // never under five seconds
+    m.keyDown(ALLEGRO_KEY_UP);
+    m.keyDown(ALLEGRO_KEY_UP);
+    for (int i = 0; i < 20; i++)
+        m.keyDown(ALLEGRO_KEY_LEFT);
+    EXPECT_EQ(m.getLines()[5], "Demo after: 5 s");
+    m.keyDown(ALLEGRO_KEY_ESCAPE);
+    // kept in the settings file
+    gameSettings::getInstance().resetToDefaults();
+    ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
+    EXPECT_EQ(gameSettings::getInstance().getDemoWait(), 5);
+    EXPECT_EQ(gameSettings::getInstance().getDemoLength(), 35);
+    EXPECT_EQ(gameSettings::getInstance().getHallOfFameLength(), 20);
 }

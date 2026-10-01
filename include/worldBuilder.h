@@ -57,6 +57,13 @@ namespace worldBuilder {
     bool shrinkAround(const std::shared_ptr<chamber> &world, coords cell);
     /// makes sure the cell's chunk is in memory, reading it back from disk if it went there
     void bringIn(const std::shared_ptr<chamber> &world, coords cell);
+    /**
+     * Moves the active player into the chunk, as if they had walked there: the chunk and every
+     * chunk within buildRadius of it are built (or read back), and the player stands on the free
+     * floor nearest the chunk's middle. The start of the world stays where it was, so a far chunk
+     * plays with the difficulty of its distance. False when there is no player or no free floor.
+     */
+    bool movePlayerTo(const std::shared_ptr<chamber> &world, coords chunk);
     /// how many chunks were made new so far (read back from disk does not count); it only grows,
     /// so a caller that remembers the last value sees when the maze grew (see storyScroller)
     std::size_t chunksGenerated();

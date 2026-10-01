@@ -1,0 +1,34 @@
+@startuml
+title Headless agent: one step (agent library and Python package)
+actor "Training script" as py
+participant "goe.GoeEnv / goe.Game" as pyg
+participant "goe::agent::game" as game
+participant worldBuilder
+participant inputManager
+participant "bElem::runLiveElements" as run
+participant "features" as feat
+
+py -> pyg : reset(seed)
+pyg -> game : newEpisode(seed)
+game -> worldBuilder : clear, setPattern / setDefaultPattern
+game -> worldBuilder : startNew() (start chunk from a pattern or a maze)
+py -> pyg : step(action)
+pyg -> game : makeAction(action)
+loop ticksPerStep, until the episode ends
+  alt player can act and action not delivered yet
+    game -> inputManager : setControlItem(control of the action)
+  else
+    game -> inputManager : setControlItem(nothing)
+  end
+  game -> worldBuilder : growAround or shrinkAround
+  game -> run : one tick
+  game -> game : count energy lost (hurt)
+end
+game -> game : events: score, death, kills...\nreward = sum(weight x count)
+game --> pyg : reward
+pyg -> game : getState()
+game -> feat : vision cells around the player,\nplayer state, inventory
+feat --> game : state
+game --> pyg : state
+pyg --> py : observation, reward, terminated, truncated, info
+@enduml

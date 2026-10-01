@@ -1,0 +1,19 @@
+@startuml
+title Security camera and guardian drone (puppetMasterGuardian)
+[*] --> Patrolling : camera spawns guardianCount drones\nfirst tick
+state Patrolling : follows the walls\naround the camera
+state Fighting : next to the player: hurts them\nclear row or column: shoots\nelse chases
+state Checking : walks to where the player\nwas last seen (trail)
+state Leashed : too far from the camera\nwalks back
+
+Patrolling --> Fighting : sees the player within cameraSight\n(goe::sight, no seeing through walls)
+Patrolling --> Checking : camera reports a sighting
+Fighting --> Checking : player slips out of sight
+Checking --> Fighting : sees the player
+Checking --> Patrolling : player not there
+Fighting --> Leashed : beyond the leash (55 cells)
+Checking --> Leashed : beyond the leash
+Leashed --> Patrolling : back within reach
+Patrolling --> [*] : drone destroyed
+Fighting --> [*] : drone destroyed
+@enduml

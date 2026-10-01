@@ -1,0 +1,103 @@
+@startuml
+title The endless world: chunks, generation, saving
+skinparam classAttributeIconSize 0
+hide empty members
+
+class chamber {
+  +{static} chunkSize = 64
+  +{static} activeChunks = 2
+  +origin : coords
+  +{static} makeWorld()
+  +getElement(cell)
+  +addChunk(chunk)
+  +hasChunk(chunk) : bool
+  +isSwapped(chunk) : bool
+  +{static} chunkOf(cell)
+  +{static} chunkOrigin(chunk)
+  +{static} place(elem, onto)
+  +{static} lift(elem)
+  liveElems
+}
+class "chamber::chunk" as chunk {
+  cells[64 x 64] : bElem (stack top)
+}
+class "chamber::fence" as fence
+note right of fence : while alive, cells outside\nthe chunk being built\ndo not exist
+
+namespace worldBuilder <<Frame>> {
+  class functions <<namespace>> {
+    +startNew()
+    +growAround(world, cell) : bool
+    +shrinkAround(world, cell) : bool
+    +bringIn(world, cell)
+    +movePlayerTo(world, chunk) : bool
+    +setPattern(chunk, pattern)
+    +setDefaultPattern(pattern)
+    +patternFor(chunk)
+    buildRadius = 2
+    keepRadius = 3
+  }
+}
+class randomLevelGenerator {
+  eng : goe::rng::engine
+  +generateChunk(start, pattern)
+  +{static} wallGaps(chunk, west)
+  -buildMaze(holes)
+  -buildChunkWalls()
+  -placeEverything(...)
+  -fillChunk(pattern, start)
+}
+class chamberArea {
+  upLeft, downRight
+  children
+  +findChambersCloseToSurface()
+}
+class "goe::chunkPattern" as chunkPattern {
+  width, height
+  cells : patternCell[]
+  +fromRows(rows, legend)
+  +fromJson(text)
+  +load(file)
+  +at(x, y)
+}
+class gameSerializer {
+  +{static} saveGame(file)
+  +{static} loadGame(file)
+  +{static} swapOutChunk(world, chunk)
+  +{static} swapInChunk(world, chunk)
+  +{static} clearWorld()
+  +{static} createByType(type, subtype, board)
+}
+class "difficulty" as difficulty <<namespace>> {
+  D = Dex + distance level
+  +of(player)
+  +chunkDepth(chunk)
+  +mazeHoles(depth)
+  tunings by the Law of Fives
+}
+class "goe::rng" as rng <<namespace>> {
+  gameplay() / saved()
+  audio()
+  cosmetic()
+  worldSeed, placeSeed(x, y)
+  generationScope
+}
+class teleport {
+  {static} allTeleporters
+  {static} registrationBatch
+}
+
+chamber *-- "*" chunk
+chamber ..> fence
+functions ..> randomLevelGenerator : builds a missing chunk
+functions ..> gameSerializer : swaps far chunks
+functions --> chunkPattern : patterns by chunk
+randomLevelGenerator --> chamber
+randomLevelGenerator *-- chamberArea : maze tree
+randomLevelGenerator ..> chunkPattern : fills from
+randomLevelGenerator ..> gameSerializer : createByType
+randomLevelGenerator ..> difficulty
+randomLevelGenerator ..> rng : chunk seed
+randomLevelGenerator ..> teleport : registration batch
+gameSerializer ..> chamber : writes / reads chunks
+@enduml
