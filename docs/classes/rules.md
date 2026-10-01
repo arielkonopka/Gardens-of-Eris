@@ -15,7 +15,9 @@ is the player level plus the distance level:
 
 Tunings, built from 5 and 23 (the Law of Fives): `bunkerRange(d)`, `bunkerRest(base, d)`,
 `cameraSight(d)`, `guardianCount(d)`, `beamDamage(d)`, `mazeHoles(depth)`, `landmineCopies(depth)`,
-`houndPatience(d)`, `songFor(d, songs)`, `musicCrossfadeSeconds`, `musicHoldSeconds`. Constants:
+`houndPatience(d)`, `songFor(d, songs)`, `musicCrossfadeSeconds`, `musicHoldSeconds`,
+`musicianLevel(d)` (23 per step, clamped to the performer's 0..256), `musicAlertTicks` (10 s),
+`musicDangerTicks` (5 s), `musicDangerDistance` (3 cells). Constants:
 `distanceUnit` (64, one chunk), `ticksPerSecond` (50), `five`, `twentyThree`.
 
 ## `goe::music::byDifficulty` (`difficultyMusic.h`)
@@ -24,6 +26,15 @@ Which song plays for the current D. `choose(d, songs, now)` picks `difficulty::s
 song plays D may change it only after `musicHoldSeconds`, so walking back and forth over a
 distance step does not flip the music. `mix(now)` is how far the crossfade into the new song has
 come (0 to 1 over `musicCrossfadeSeconds`). The sound thread asks it every round.
+
+## `goe::music::cues` (namespace, `musicCues.h`)
+
+The game's side of the music-control interface. Cameras report `sighted()`, guardians `chased()`
+(seeing, chasing or checking where the player was seen) and `endangered()` (within
+`musicDangerDistance` and seeing the player, or fighting). `now()` gives the strongest situation
+still fresh in game ticks: danger for `musicDangerTicks`, alert for `musicAlertTicks`, else calm.
+`reset()` forgets every report (`gameSerializer::clearWorld` calls it). The presenter hands `now()`
+to `soundManager::followSituation` every tick; the performer changes its theme with it.
 
 ## `goe::rng` (namespace, `randomStreams.h`)
 

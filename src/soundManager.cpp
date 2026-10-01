@@ -23,6 +23,8 @@
 #include "soundManager.h"
 #include "soundSpace.h"
 #include "gameSettings.h"
+#include "randomStreams.h"
+#include "performerStream.h"
 
 namespace {
 /// the Config menu's volumes, as OpenAL gain factors
@@ -51,6 +53,10 @@ soundManager::soundManager()
         alDopplerFactor(0.0f);
         // gain = reference / distance, the same falloff the manual volume used to give
         alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
+        ALCint frequency = 0;
+        alcGetIntegerv(this->sndDevice.get(), ALC_FREQUENCY, 1, &frequency);
+        if (frequency >= 8000 && frequency <= 192000)
+            this->deviceRate = frequency;
         // the listener stays at the origin and every source is relative to it (see soundSpace.h)
         const ALfloat orientation[] = {0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f};
         alListener3f(AL_POSITION, 0.0f, 0.0f, 0.0f);
@@ -82,6 +88,7 @@ soundManager::~soundManager()
     this->active = false;
     if (this->myThread.joinable())
         this->myThread.join(); // the loop checks the flag every 10 ms
+    this->performer.reset(); // its source and buffers go while the context is still there
     if (this->sndContext)
         alcMakeContextCurrent(nullptr);
     // the context and then the device are released by their handles
@@ -124,7 +131,9 @@ void soundManager::checkQueue()
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->cnt = bElem::getCntr();
-    if (!this->difficultySongs.empty()) {
+    if (performerChosen()) {
+        this->silenceSongsLocked();
+    } else if (!this->difficultySongs.empty()) {
         this->playDifficultyMusic();
     } else {
         int nm = this->findNearestMusic();
@@ -626,10 +635,47 @@ void soundManager::moveSong(int songNo, coords3d newPosition, int newChamber)
     this->placeSource(this->registeredMusic[songNo].source, newPosition);
 }
 
+bool soundManager::performerChosen()
+{
+    return gameSettings::getInstance().getMusicSource() == gameSettings::musicSource::performer;
+}
+
+void soundManager::silenceSongsLocked()
+{
+    for (int song : {this->currentMusic, this->fadingMusic})
+        if (song >= 0)
+            alSourcePause(this->registeredMusic[(std::size_t) song].source);
+    // when the songs come back, the difficulty music (or the nearest song) starts again
+    this->currentMusic = this->fadingMusic = -1;
+}
+
+void soundManager::followSituation(goe::musician::situation s)
+{
+    this->situationNow = (int) s;
+}
+
+void soundManager::streamPerformer()
+{
+    const bool chosen = performerChosen();
+    if (!this->sndContext || (!chosen && !this->performer))
+        return;
+    if (!this->performer) {
+        const auto seed = ((std::uint64_t) goe::rng::audio() << 32) | goe::rng::audio();
+        this->performer = std::make_unique<performerStream>(this->deviceRate, seed);
+        std::cout << "Performer seed: " << seed << "\n";
+    }
+    if (chosen != this->performer->playing())
+        this->performer->play(chosen);
+    this->performer->pump(difficulty::musicianLevel(this->difficultyNow),
+                          (goe::musician::situation) this->situationNow.load(),
+                          musicVolume());
+}
+
 void soundManager::threadLoop()
 {
     while (this->active) {
         this->checkQueue();
+        this->streamPerformer();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }

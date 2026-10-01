@@ -1,3 +1,4 @@
+#include "musicCues.h"
 #include "elements.h"
 #include "commons.h"
 #include "chamber.h"
@@ -146,11 +147,13 @@ TEST(ControllerTests, CameraSpawnsItsGuardians)
     std::shared_ptr<bElem> plr;
     std::shared_ptr<securityCamera> cam;
     auto mc = cameraRoom(coords(40, 40), coords(2, 2), coords(30, 30), plr, cam);
+    goe::music::cues::reset();
     for (int c = 0; c < 3; c++)
         bElem::runLiveElements();
     EXPECT_EQ(guardiansOf(mc, cam).size(), (size_t) difficulty::guardianCount(0));
-    // the player is far away: no alarm
+    // the player is far away: no alarm, and the music stays calm
     EXPECT_EQ(cam->getAlertNumber(), 0u);
+    EXPECT_EQ(goe::music::cues::now(), goe::musician::situation::calm);
 }
 
 TEST(ControllerTests, CameraCallsGuardiansAndTheyAttack)
@@ -161,6 +164,7 @@ TEST(ControllerTests, CameraCallsGuardiansAndTheyAttack)
     auto mc = cameraRoom(coords(40, 40), coords(13, 20), coords(20, 20), plr, cam);
     int energy = plr->getAttrs()->getEnergy();
     bool hurt = false;
+    goe::music::cues::reset();
     for (int c = 0; c < 1500 && !hurt; c++) {
         bElem::runLiveElements();
         hurt = plr->getStats()->isDying() || plr->getAttrs()->getEnergy() < energy;
@@ -168,6 +172,8 @@ TEST(ControllerTests, CameraCallsGuardiansAndTheyAttack)
     EXPECT_GT(cam->getAlertNumber(), 0u);
     EXPECT_TRUE(cam->getAlertPosition() == coords(13, 20));
     EXPECT_TRUE(hurt);
+    // the music heard it: a guardian about to hurt the player is a direct danger
+    EXPECT_EQ(goe::music::cues::now(), goe::musician::situation::danger);
 }
 
 TEST(ControllerTests, CameraDoesNotSeeThroughWalls)
@@ -177,9 +183,11 @@ TEST(ControllerTests, CameraDoesNotSeeThroughWalls)
     auto mc = cameraRoom(coords(40, 40), coords(13, 20), coords(20, 20), plr, cam);
     for (int y = 1; y < 39; y++)
         elementFactory::generateAnElement<wall>(mc, 0)->stepOnElement(mc->getElement(16, y));
+    goe::music::cues::reset();
     for (int c = 0; c < 300; c++)
         bElem::runLiveElements();
     EXPECT_EQ(cam->getAlertNumber(), 0u);
+    EXPECT_EQ(goe::music::cues::now(), goe::musician::situation::calm);
 }
 
 TEST(ControllerTests, GuardiansStayOnTheLeash)

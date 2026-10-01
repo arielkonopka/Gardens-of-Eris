@@ -188,6 +188,9 @@ bool gameSettings::load(const std::string &file)
         this->setMusicVolume(doc["musicVolume"].GetInt());
     if (doc.HasMember("effectsVolume") && doc["effectsVolume"].IsInt())
         this->setEffectsVolume(doc["effectsVolume"].GetInt());
+    if (doc.HasMember("music") && doc["music"].IsString())
+        this->setMusicSource(std::string(doc["music"].GetString()) == "performer" ? musicSource::performer
+                                                                                  : musicSource::samples);
     if (doc.HasMember("storyScroller") && doc["storyScroller"].IsBool())
         this->setStoriesShown(doc["storyScroller"].GetBool());
     if (doc.HasMember("storiesFile") && doc["storiesFile"].IsString()) {
@@ -217,6 +220,8 @@ bool gameSettings::save(const std::string &file) const
     w.Int(this->getMusicVolume());
     w.Key("effectsVolume");
     w.Int(this->getEffectsVolume());
+    w.Key("music");
+    w.String(this->getMusicSource() == musicSource::performer ? "performer" : "samples");
     w.Key("storyScroller");
     w.Bool(this->getStoriesShown());
     w.Key("storiesFile");
@@ -258,6 +263,7 @@ void gameSettings::resetToDefaults()
     this->saveDirectory = ".";
     this->musicVolume = 100;
     this->effectsVolume = 100;
+    this->music = musicSource::samples;
     this->storiesShown = true;
     this->storiesFile = defaultStoriesFile;
     this->demoWait = 60;

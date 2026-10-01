@@ -1,0 +1,40 @@
+@startuml
+title One round of the sound thread with the Performer chosen
+participant "game thread\npresenter" as game
+participant "soundManager\n(sound thread)" as sm
+participant performerStream as stream
+participant adaptiveMusician as m
+participant composer
+participant synthesizer as synth
+participant OpenAL as al
+
+game -> sm : followDifficulty(D), followSituation(cues::now())\n(atomics)
+loop every 10 ms
+  sm -> sm : checkQueue(): sound effects;\nskins.json songs paused
+  sm -> stream : pump(musicianLevel(D), situation, music volume)
+  stream -> m : setDifficulty, setSituation (atomics)
+  stream -> al : AL_BUFFERS_PROCESSED?
+  loop for each played buffer
+    stream -> m : composeAhead()
+    alt situation rose
+      m -> m : cut planned notes at the next bar line
+    end
+    opt less than 1 s planned
+      m -> m : tension follows to where the phrase fell due
+      m -> composer : compose(personality, tension, theme)
+      composer --> m : phrase: note events
+      m -> m : queue events at absolute samples
+    end
+    stream -> m : renderAudio(2048 frames)
+    loop until the buffer is full
+      m -> synth : noteOn / noteOff at their sample
+      m -> synth : render up to the next event
+    end
+    m --> stream : stereo float frames (fade, own gain)
+    stream -> al : alBufferData, queue the buffer
+  end
+  opt the source ran dry
+    stream -> al : alSourcePlay
+  end
+end
+@enduml

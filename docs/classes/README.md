@@ -12,10 +12,10 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | [Elements: the kinds](elements.md) | floor, wall, door, key, teleporter, guns, missiles, apples, bombs, landmines, player, monster, drone, camera, bunker, kiki and bouba |
 | [Controllers](puppet-masters.md) | `puppetMasterFR` and its kinds, `goe::sight` |
 | [The world](world.md) | `chamber`, `chamber::fence`, `worldBuilder`, `randomLevelGenerator`, `chamberArea`, `goe::chunkPattern` |
-| [Rules](rules.md) | `difficulty`, `goe::music::byDifficulty`, `goe::rng`, `gameClock`, `goe::events`, `randomWordGen` |
+| [Rules](rules.md) | `difficulty`, `goe::music::byDifficulty`, `goe::music::cues`, `goe::rng`, `gameClock`, `goe::events`, `randomWordGen` |
 | [Saving](saving.md) | `gameSerializer`: saves, loads and chunk swap |
 | [The application](application.md) | `main.cpp`, `presenter`, `titleScreen`, `titleMenu`, `menuPad`, `bindings`, `inputManager`, `gameSettings`, `autopilot`, `hallOfFame`, `storyScroller`, `crashLog` |
-| [Seeing and hearing](media.md) | `viewPoint`, `fogLayer`, `fogMask`, Allegro handles, `videoManager`, `videoDriver`, `configManager`, `soundManager`, `soundSpace` |
+| [Seeing and hearing](media.md) | `viewPoint`, `fogLayer`, `fogMask`, Allegro handles, `videoManager`, `videoDriver`, `configManager`, `soundManager`, `soundSpace`, `performerStream`, the adaptive musician (`goe::musician`) |
 
 ## Where each class lives
 
@@ -54,6 +54,15 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `goe::events` | `include/gameEvents.h` | [rules](rules.md) |
 | `goe::hallOfFame` | `include/hallOfFame.h` | [application](application.md) |
 | `goe::music::byDifficulty` | `include/difficultyMusic.h` | [rules](rules.md) |
+| `goe::music::cues` | `include/musicCues.h` | [rules](rules.md) |
+| `goe::musician::adaptiveMusician` | `include/adaptiveMusician.h` | [media](media.md), [design](../adaptive-musician.md) |
+| `goe::musician::composer`, `motif`, `phraseBuffer`, `phraseReport` | `include/musicComposer.h` | [media](media.md) |
+| `goe::musician::noteEvent`, `eventQueue`, `randomStream` | `include/musicEvents.h` | [media](media.md) |
+| `goe::musician::performerPersonality` | `include/musicPersonality.h` | [media](media.md) |
+| `goe::musician::synthesizer`, `voice`, `oscillator`, `envelope`, `lowPass` | `include/musicSynth.h` | [media](media.md) |
+| `goe::musician::tensionController` | `include/musicTension.h` | [media](media.md) |
+| `goe::musician::tuning` | `include/musicianTuning.h` | [media](media.md) |
+| `goe::musician::vocabulary` | `include/musicVocabulary.h` | [media](media.md) |
 | `goe::rng` | `include/randomStreams.h` | [rules](rules.md) |
 | `goe::sight` | `include/lineOfSight.h` | [puppet-masters](puppet-masters.md) |
 | `goe::sound` | `include/elementSound.h` | [elements-core](elements-core.md) |
@@ -69,6 +78,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `motion` | `include/motion.h` | [elements-core](elements-core.md) |
 | `myUtility::Coords` | `include/Coords.h` | [basics](basics.md) |
 | `patrollingDrone` | `include/patrollingDrone.h` | [elements](elements.md) |
+| `performerStream` | `include/performerStream.h` | [media](media.md) |
 | `plainGun` | `include/plainGun.h` | [elements](elements.md) |
 | `plainMissile` | `include/plainMissile.h` | [elements](elements.md) |
 | `player` | `include/player.h` | [elements](elements.md) |

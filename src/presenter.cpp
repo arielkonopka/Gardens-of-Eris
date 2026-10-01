@@ -23,6 +23,7 @@
 #include "worldBuilder.h"
 #include "elementView.h"
 #include "difficulty.h"
+#include "musicCues.h"
 
 namespace presenter {
 namespace {
@@ -686,6 +687,7 @@ gameEnd presenter::presentEverything(bool demoMode, int demoSeconds)
                 if (!worldBuilder::growAround(currentPlayer->getBoard(), at))
                     worldBuilder::shrinkAround(currentPlayer->getBoard(), at);
                 soundManager::getInstance().followDifficulty(difficulty::of(currentPlayer));
+                soundManager::getInstance().followSituation(goe::music::cues::now());
             }
             bElem::runLiveElements();
             this->tickStories();

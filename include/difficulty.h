@@ -107,6 +107,15 @@ namespace difficulty {
     /// seconds a song keeps playing before D may change it, so walking back and forth over
     /// a distance step does not flip the music
     constexpr int musicHoldSeconds = twentyThree;
+    /// the performer's difficulty (0..256) for D: 23 per step, so D 11 is close to the top.
+    /// D is a small number that grows by logarithms, so its steps are spread over the performer's range.
+    constexpr int musicianLevel(int d) { return std::clamp(d * twentyThree, 0, 256); }
+    /// how long the music stays alert after a camera saw the player or a guardian chased them: 10 s
+    constexpr int musicAlertTicks = 2 * five * ticksPerSecond;
+    /// how long it stays in danger after a guardian was about to hurt the player: 5 s
+    constexpr int musicDangerTicks = five * ticksPerSecond;
+    /// a guardian this close that sees the player is a direct danger
+    constexpr int musicDangerDistance = 3;
 }
 
 #endif // DIFFICULTY_H

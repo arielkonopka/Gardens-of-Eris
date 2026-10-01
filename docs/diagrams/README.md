@@ -17,6 +17,7 @@ Class by class descriptions are in [docs/classes](../classes/README.md).
 | [Application](03-application-classes.svg) ([source](03-application-classes.puml)) | title screen and menu, game controller in the menus (`menuPad`), settings, presenter, input, autopilot, hall of fame, sound, video, fog, stories |
 | [Agent](04-agent-classes.svg) ([source](04-agent-classes.puml)) | the headless `goe::agent::game` and the Python package `goe` (`Game`, `GoeEnv`, `ChunkPattern`, `generate_chunk`) |
 | [Components](14-components.svg) ([source](14-components.puml)) | the modules and how they depend on each other |
+| [Adaptive musician](15-musician-components.svg) ([source](15-musician-components.puml)) | the musician's layers, the game's music cues and the audio boundary ([design](../adaptive-musician.md)) |
 
 ## Behaviour
 
@@ -31,3 +32,4 @@ Class by class descriptions are in [docs/classes](../classes/README.md).
 | [Title screen states](11-title-menu-states.svg) ([source](11-title-menu-states.puml)) | menu screens, demo, hall of fame, game, game over, keys and pad alike |
 | [Element lifecycle](12-element-lifecycle-states.svg) ([source](12-element-lifecycle-states.puml)) | created, on the board, moving, collected, dying, destroyed, swapped out, disposed |
 | [Camera and guardian](13-guardian-states.svg) ([source](13-guardian-states.puml)) | how a guardian drone patrols, checks, fights and stays on its camera's leash |
+| [Musician audio round](16-musician-audio-sequence.svg) ([source](16-musician-audio-sequence.puml)) | one round of the sound thread feeding the Performer to OpenAL |
