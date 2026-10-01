@@ -24,6 +24,7 @@
 #define TITLEMENU_H
 
 #include "gameSettings.h"
+#include "menuPad.h"
 #include <functional>
 #include <string>
 #include <vector>
@@ -31,7 +32,7 @@
 /**
  * @brief What the title screen shows and how it reacts to keys, without any drawing.
  *
- * titleScreen draws it and feeds it Allegro key codes and typed characters.
+ * titleScreen draws it and feeds it Allegro key codes, typed characters and pad commands.
  */
 class titleMenu
 {
@@ -64,6 +65,10 @@ public:
     action keyDown(int keycode);
     /// a pad button, used on the BINDING screen
     void padButton(int button);
+    /// a pad command (goe::controls::menuPad): the stick and d-pad move like the arrow keys, confirm
+    /// is Enter and back is Esc. On BINDING it does nothing, since any button there is being bound.
+    /// A value Left and Right step is not opened for typing, since a pad cannot type.
+    action command(goe::controls::menuCommand c);
     /// a typed character (Unicode code point), used while editing a value
     void typed(int codepoint);
     /// the demo starts once the main menu has waited this many seconds without a press; 0: never

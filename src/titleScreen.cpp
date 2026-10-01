@@ -22,9 +22,11 @@
 
 #include "titleScreen.h"
 #include "configManager.h"
+#include "gameSettings.h"
 #include "videoManager.h"
 #include <algorithm>
 #include <allegro5/allegro_ttf.h>
+#include <cmath>
 
 titleScreen::titleScreen(titleMenu &shown)
     : menu(shown)
@@ -36,12 +38,13 @@ titleScreen::titleScreen(titleMenu &shown)
     auto cfg = configManager::getInstance()->getConfig();
     this->bigFont.reset(al_load_ttf_font(cfg->FontFile.c_str(), 72, 0));
     this->font.reset(al_load_ttf_font(cfg->FontFile.c_str(), 36, 0));
+    this->helpFont.reset(al_load_ttf_font(cfg->FontFile.c_str(), 26, 0));
     this->splash.reset(al_load_bitmap(cfg->splashScr.c_str()));
     this->timer.reset(al_create_timer(1.0 / 30));
     this->queue.reset(al_create_event_queue());
     al_register_event_source(this->queue.get(), al_get_keyboard_event_source());
-    if (auto *pad = al_get_joystick_event_source())
-        al_register_event_source(this->queue.get(), pad);
+    if (auto *padEvents = al_get_joystick_event_source())
+        al_register_event_source(this->queue.get(), padEvents);
     al_register_event_source(this->queue.get(), al_get_timer_event_source(this->timer.get()));
     if (auto *display = videoManager::getInstance().getCurrentDisplay())
         al_register_event_source(this->queue.get(), al_get_display_event_source(display));
@@ -50,6 +53,7 @@ titleScreen::titleScreen(titleMenu &shown)
 titleMenu::action titleScreen::run()
 {
     al_flush_event_queue(this->queue.get()); // keys pressed while a game was running
+    this->pad.release();
     this->menu.refresh();                     // a game may have been saved meanwhile
     al_start_timer(this->timer.get());
     this->draw();
@@ -89,19 +93,33 @@ titleMenu::action titleScreen::run()
         }
             break;
         case ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN:
-            this->menu.padButton(ev.joystick.button);
-            break;
+            // a button being bound is only bound, it does not also confirm or go back
+            if (this->menu.getScreen() == titleMenu::screen::BINDING) {
+                this->menu.padButton(ev.joystick.button);
+                break;
+            }
+            [[fallthrough]];
+        case ALLEGRO_EVENT_JOYSTICK_BUTTON_UP:
         case ALLEGRO_EVENT_JOYSTICK_AXIS:
-            if (ev.joystick.pos > 0.4f || ev.joystick.pos < -0.4f)
+            if (ev.type == ALLEGRO_EVENT_JOYSTICK_AXIS && std::abs(ev.joystick.pos) > goe::controls::stickDeadzone)
                 this->menu.pressed();
+            if (auto c = this->padCommand(ev); c != goe::controls::menuCommand::none)
+                result = this->menu.command(c);
             break;
         case ALLEGRO_EVENT_JOYSTICK_CONFIGURATION:
             al_reconfigure_joysticks();
+            this->pad.release();
             break;
-        case ALLEGRO_EVENT_TIMER:
-            result = this->menu.wait(al_get_timer_speed(this->timer.get()));
+        case ALLEGRO_EVENT_TIMER: {
+            const double tick = al_get_timer_speed(this->timer.get());
+            // a stick or d-pad held down keeps moving
+            if (auto c = this->pad.wait(tick); c != goe::controls::menuCommand::none)
+                result = this->menu.command(c);
+            if (result == titleMenu::action::NONE)
+                result = this->menu.wait(tick);
             if (result == titleMenu::action::NONE && al_is_event_queue_empty(this->queue.get()))
                 this->draw();
+        }
             break;
         default:
             break;
@@ -155,25 +173,81 @@ void titleScreen::draw()
         y += lineH * 0.5f;
         al_draw_text(this->font.get(), note, w / 2, y, ALLEGRO_ALIGN_CENTER, this->menu.getMessage().c_str());
     }
-    const char *help = "Up/Down to choose, Enter to select";
+    const auto bound = gameSettings::getInstance().getControls();
+    const std::string ok = buttonLabel(goe::controls::menuPad::confirmButton(bound));
+    const std::string back = buttonLabel(goe::controls::menuPad::backButton(bound));
+    std::vector<std::string> help;
     switch (this->menu.getScreen()) {
     case titleMenu::screen::CONFIG:
-        help = "Enter to edit, Left/Right to change a volume, Esc to go back";
+        help = {"Enter or " + ok + " to edit, Left/Right to change a value, Esc or " + back + " to go back"};
         break;
     case titleMenu::screen::EDITING:
-        help = "Type the value, Enter to keep it, Esc to cancel";
+        help = {"Type the value, Enter or " + ok + " to keep it, Esc or " + back + " to cancel"};
         break;
     case titleMenu::screen::CONTROLS:
-        help = "Enter to change a control, Esc to go back";
+        help = {"Enter or " + ok + " to change a control, Esc or " + back + " to go back"};
         break;
     case titleMenu::screen::BINDING:
-        help = "Press the new key or pad button; Backspace clears it, Esc cancels";
+        help = {"Press the new key or pad button; Backspace clears it, Esc cancels"};
         break;
     default:
+        help = {"Up/Down or the pad's stick to choose, Enter or " + ok + " to select"};
         break;
     }
-    al_draw_text(this->font.get(), al_map_rgb(110, 110, 130), w / 2, h - lineH * 2, ALLEGRO_ALIGN_CENTER, help);
+    this->drawHelp(help);
     al_flip_display();
+}
+
+void titleScreen::drawHelp(const std::vector<std::string> &help)
+{
+    auto *display = al_get_current_display();
+    auto *f = this->helpFont ? this->helpFont.get() : this->font.get();
+    if (!display || !f)
+        return;
+    const float w = (float) al_get_display_width(display);
+    const float h = (float) al_get_display_height(display);
+    const float lineH = (float) al_get_font_line_height(f) * 1.3f;
+    float y = h - lineH * (float) (help.size() + 1);
+    for (const auto &line : help) {
+        al_draw_text(f, al_map_rgb(110, 110, 130), w / 2, y, ALLEGRO_ALIGN_CENTER, line.c_str());
+        y += lineH;
+    }
+}
+
+std::string titleScreen::buttonLabel(int button)
+{
+    // the first pad's own name for it, when it has one ("A" on an Xbox pad)
+    if (al_is_joystick_installed() && al_get_num_joysticks() > 0)
+        if (auto *joy = al_get_joystick(0); joy && button < al_get_joystick_num_buttons(joy))
+            if (const char *name = al_get_joystick_button_name(joy, button); name && *name)
+                return std::string("pad ") + name;
+    return "pad button " + std::to_string(button);
+}
+
+goe::controls::menuCommand titleScreen::padCommand(const ALLEGRO_EVENT &ev)
+{
+    using goe::controls::menuCommand;
+    using goe::controls::menuPad;
+    auto *joy = ev.joystick.id;
+    switch (ev.type) {
+    case ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN: {
+        const char *name = joy ? al_get_joystick_button_name(joy, ev.joystick.button) : nullptr;
+        return this->pad.buttonDown(ev.joystick.button, gameSettings::getInstance().getControls(),
+                                    menuPad::directionOf(name ? name : ""));
+    }
+    case ALLEGRO_EVENT_JOYSTICK_BUTTON_UP:
+        this->pad.buttonUp(ev.joystick.button);
+        return menuCommand::none;
+    case ALLEGRO_EVENT_JOYSTICK_AXIS: {
+        const char *name = joy ? al_get_joystick_stick_name(joy, ev.joystick.stick) : nullptr;
+        const bool digital = joy && (al_get_joystick_stick_flags(joy, ev.joystick.stick) & ALLEGRO_JOYFLAG_DIGITAL);
+        if (!menuPad::menuStick(ev.joystick.stick, digital, name ? name : ""))
+            return menuCommand::none;
+        return this->pad.axis(ev.joystick.stick, ev.joystick.axis, ev.joystick.pos);
+    }
+    default:
+        return menuCommand::none;
+    }
 }
 
 void titleScreen::showBusy(const std::string &text)
@@ -205,13 +279,15 @@ bool titleScreen::showMessage(const std::string &headline, const std::vector<std
             al_draw_text(this->font.get(), al_map_rgb(170, 170, 190), w / 2, y, ALLEGRO_ALIGN_CENTER, line.c_str());
             y += lineH;
         }
-        al_draw_text(this->font.get(), al_map_rgb(110, 110, 130), w / 2, h - lineH * 2, ALLEGRO_ALIGN_CENTER,
-                     "Press Enter to continue");
+        this->drawHelp({"Press Enter or " + buttonLabel(goe::controls::menuPad::confirmButton(
+                                                gameSettings::getInstance().getControls()))
+                        + " to continue"});
         al_flip_display();
     };
     // keys held while the game ended must not skip the message, so keys count after one second
     int ticksShown = 0;
     al_flush_event_queue(this->queue.get());
+    this->pad.release();
     al_start_timer(this->timer.get());
     draw();
     ALLEGRO_EVENT ev;
@@ -227,6 +303,13 @@ bool titleScreen::showMessage(const std::string &headline, const std::vector<std
             done = ticksShown >= 30
                    && (ev.keyboard.keycode == ALLEGRO_KEY_ENTER || ev.keyboard.keycode == ALLEGRO_KEY_SPACE
                        || ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE);
+            break;
+        case ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN:
+        case ALLEGRO_EVENT_JOYSTICK_BUTTON_UP:
+        case ALLEGRO_EVENT_JOYSTICK_AXIS: {
+            const auto c = this->padCommand(ev);
+            done = ticksShown >= 30 && (c == goe::controls::menuCommand::confirm || c == goe::controls::menuCommand::back);
+        }
             break;
         case ALLEGRO_EVENT_TIMER:
             ticksShown++;
@@ -266,13 +349,17 @@ titleScreen::screenEnd titleScreen::showHallOfFame(const goe::hallOfFame &fame, 
             al_draw_text(this->font.get(), c, w * 0.70f, y, ALLEGRO_ALIGN_LEFT, e.date.c_str());
             y += lineH;
         }
-        const char *help = seconds > 0 ? "Press any key" : "Press Enter to continue";
-        al_draw_text(this->font.get(), al_map_rgb(110, 110, 130), w / 2, h - lineH * 2, ALLEGRO_ALIGN_CENTER, help);
+        this->drawHelp({seconds > 0 ? std::string("Press any key")
+                                    : "Press Enter or "
+                                          + buttonLabel(goe::controls::menuPad::confirmButton(
+                                              gameSettings::getInstance().getControls()))
+                                          + " to continue"});
         al_flip_display();
     };
     const double tick = al_get_timer_speed(this->timer.get());
     double passed = 0;
     al_flush_event_queue(this->queue.get());
+    this->pad.release();
     al_start_timer(this->timer.get());
     draw();
     ALLEGRO_EVENT ev;
@@ -294,16 +381,19 @@ titleScreen::screenEnd titleScreen::showHallOfFame(const goe::hallOfFame &fame, 
             }
             break;
         case ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN:
-            if (seconds > 0) {
+        case ALLEGRO_EVENT_JOYSTICK_BUTTON_UP:
+        case ALLEGRO_EVENT_JOYSTICK_AXIS: {
+            // between demos any push ends it; after a game only confirm or back, after a second
+            const auto c = this->padCommand(ev);
+            const bool pushed = ev.type == ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN
+                                || (ev.type == ALLEGRO_EVENT_JOYSTICK_AXIS
+                                    && std::abs(ev.joystick.pos) > goe::controls::stickDeadzone);
+            if ((seconds > 0 && pushed)
+                || (passed >= 1.0 && (c == goe::controls::menuCommand::confirm || c == goe::controls::menuCommand::back))) {
                 result = screenEnd::PRESSED;
                 done = true;
             }
-            break;
-        case ALLEGRO_EVENT_JOYSTICK_AXIS:
-            if (seconds > 0 && (ev.joystick.pos > 0.4f || ev.joystick.pos < -0.4f)) {
-                result = screenEnd::PRESSED;
-                done = true;
-            }
+        }
             break;
         case ALLEGRO_EVENT_TIMER:
             passed += tick;
@@ -339,19 +429,36 @@ bool titleScreen::askName(const std::string &headline, const std::vector<std::st
         }
         y += lineH * 0.5f;
         al_draw_text(this->font.get(), al_map_rgb(255, 215, 90), w / 2, y, ALLEGRO_ALIGN_CENTER, (name + "_").c_str());
-        al_draw_text(this->font.get(), al_map_rgb(110, 110, 130), w / 2, h - lineH * 2, ALLEGRO_ALIGN_CENTER,
-                     "Type your name, Enter to keep it");
+        this->drawHelp({"Type your name, Enter to keep it",
+                        "Pad: Up/Down change the letter, Right adds one, Left removes one, "
+                            + buttonLabel(goe::controls::menuPad::confirmButton(gameSettings::getInstance().getControls()))
+                            + " keeps it"});
         al_flip_display();
     };
     // keys held while the game ended must not type or end the entry, so keys count after a second
     int ticksShown = 0;
-    std::size_t chars = (std::size_t) std::count_if(name.begin(), name.end(), [](char c) { return (c & 0xC0) != 0x80; });
     al_flush_event_queue(this->queue.get());
+    this->pad.release();
     al_start_timer(this->timer.get());
     draw();
     ALLEGRO_EVENT ev;
     bool open = true;
-    for (bool done = false; !done;) {
+    bool done = false;
+    auto padPress = [&](goe::controls::menuCommand c) {
+        using goe::controls::menuCommand;
+        if (ticksShown < 30 || c == menuCommand::none)
+            return;
+        if (c == menuCommand::confirm) {
+            done = true;
+        } else if (c == menuCommand::back) {
+            name.clear();
+            done = true;
+        } else if (!goe::controls::editName(name, c, goe::hallOfFame::nameLength)) {
+            return;
+        }
+        draw();
+    };
+    while (!done) {
         al_wait_for_event(this->queue.get(), &ev);
         switch (ev.type) {
         case ALLEGRO_EVENT_DISPLAY_CLOSE:
@@ -369,20 +476,24 @@ bool titleScreen::askName(const std::string &headline, const std::vector<std::st
             } else if (ev.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {
                 while (!name.empty() && (name.back() & 0xC0) == 0x80)
                     name.pop_back();
-                if (!name.empty()) {
+                if (!name.empty())
                     name.pop_back();
-                    chars--;
-                }
-            } else if (ev.keyboard.unichar >= 32 && ev.keyboard.unichar != 127 && chars < goe::hallOfFame::nameLength) {
+            } else if (ev.keyboard.unichar >= 32 && ev.keyboard.unichar != 127
+                       && goe::controls::letterCount(name) < goe::hallOfFame::nameLength) {
                 char buf[5] = {};
                 al_utf8_encode(buf, ev.keyboard.unichar);
                 name += buf;
-                chars++;
             }
             draw();
             break;
+        case ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN:
+        case ALLEGRO_EVENT_JOYSTICK_BUTTON_UP:
+        case ALLEGRO_EVENT_JOYSTICK_AXIS:
+            padPress(this->padCommand(ev));
+            break;
         case ALLEGRO_EVENT_TIMER:
             ticksShown++;
+            padPress(this->pad.wait(al_get_timer_speed(this->timer.get())));
             if (al_is_event_queue_empty(this->queue.get()))
                 draw();
             break;
