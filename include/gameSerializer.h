@@ -84,6 +84,9 @@ public:
     static bool swapOutChunk(const std::shared_ptr<chamber> &world, coords chunk);
     /// reads a chunk written by swapOutChunk back; false when it is not on disk or cannot be read
     static bool swapInChunk(const std::shared_ptr<chamber> &world, coords chunk);
+    /// a new element of the type (bElemTypes) and subtype, on the board (none: placed later, as a
+    /// load does); throws for a type the game does not know
+    static std::shared_ptr<bElem> createByType(int type, int subtype, std::shared_ptr<chamber> board = nullptr);
 
 private:
     class writer;
@@ -114,7 +117,6 @@ private:
     static void writeElement(writer &w, const std::shared_ptr<bElem> &e);
     static std::shared_ptr<bElem> readElement(reader &r, loadContext &ctx);
     static bool isCompact(const std::shared_ptr<bElem> &e);
-    static std::shared_ptr<bElem> createByType(int type, int subtype);
 };
 
 #endif // GAMESERIALIZER_H

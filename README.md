@@ -137,7 +137,9 @@ pip install ./agent/python                    # or: cmake -S . -B build -DGOE_BU
 python3 -c "import goe; env = goe.GoeEnv(); print(env.reset(seed=1)[0]['vision'].shape)"
 ```
 
-`agent/python/README.md` describes the observation, the actions and the options.
+Chunks can also be built from a fixed pattern of elements instead of a random maze, chunk by chunk or all of them, so an agent trains on a world chosen for it (`goe.ChunkPattern`; an example is `agent/patterns/rooms.json`).
+
+`agent/python/README.md` describes the observation, the actions, the options and the patterns.
 
 The repository also has the older build.sh shell script (Bash):
 
@@ -397,6 +399,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Agents can build chunks from a fixed pattern of elements (`goe.ChunkPattern`, from rows and a legend, arrays or a JSON file), for one chunk or for every new chunk. A pattern smaller than a chunk is repeated to fill it, and it is laid out the same whatever the seed.
 * Game over shows the best score among the avatars of the lost game, and deletes that game's save, so Continue cannot bring a lost game back. Saves keep the best score of avatars already lost (save format 7; older saves still load).
 * The title screen offers New game next to Continue when a save exists. A new game overwrites the old save right away, so Continue always brings back the game you played last.
 * Agents can play: a headless `goe-agent` library and a `goe` Python package (a ViZDoom-like game and a Gymnasium environment), with a circle of vision around the player, the player's numbers and inventory, each with its features chosen by the agent. The same seed plays the same game.

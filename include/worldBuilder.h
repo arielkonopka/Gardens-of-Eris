@@ -23,6 +23,7 @@
 #define WORLDBUILDER_H
 #include "commons.h"
 #include "chamber.h"
+#include "chunkPattern.h"
 #include <cstddef>
 #include <memory>
 
@@ -59,6 +60,21 @@ namespace worldBuilder {
     /// how many chunks were made new so far (read back from disk does not count); it only grows,
     /// so a caller that remembers the last value sees when the maze grew (see storyScroller)
     std::size_t chunksGenerated();
+
+    /**
+     * Chunks built from a fixed pattern instead of a random maze (see goe::chunkPattern), for
+     * agents that train on a world they choose. A chunk made new from now on takes its own
+     * pattern, else the default one, else a random maze; chunks already built, or on disk, stay
+     * as they are. The patterns stay until changed or cleared, across new games.
+     */
+    /// the chunk's own pattern; nullptr removes it
+    void setPattern(coords chunk, std::shared_ptr<const goe::chunkPattern> pattern);
+    /// the pattern of every chunk without its own; nullptr: a random maze
+    void setDefaultPattern(std::shared_ptr<const goe::chunkPattern> pattern);
+    /// every chunk a random maze again
+    void clearPatterns();
+    /// what the chunk is built from: nullptr for a random maze
+    std::shared_ptr<const goe::chunkPattern> patternFor(coords chunk);
 }
 
 #endif // WORLDBUILDER_H

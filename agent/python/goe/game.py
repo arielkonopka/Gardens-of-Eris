@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from . import _goe
+from .pattern import as_pattern
 
 # everything the agent may do; GIVE_UP only with allow_give_up=True
 ACTIONS = list(_goe.ACTIONS)
@@ -87,6 +88,11 @@ class Game:
                         times these weights; None: the score gained ({"score": 1}).
                         SHAPED_REWARD rewards collecting, using, opening, teleporting, apples,
                         kills and mines, and penalises hurt and death
+    chunk_patterns      {(chunk x, chunk y): ChunkPattern or path of a JSON pattern}: those chunks
+                        are built from the pattern instead of a random maze. (0, 0) is the start
+                        chunk, (1, 0) the one east of it, (0, -1) the one north; chunk_at says
+                        which chunk a cell is in. A chunk is CHUNK_SIZE (64) cells on each side
+    default_pattern     the pattern of every other chunk; None: a random maze
 
     describe_features() says what every feature means.
     """
@@ -94,7 +100,7 @@ class Game:
     def __init__(self, data_dir=None, vision_radius=8, circle=True, follow_player=True, fixed_centre=(0, 0),
                  cell_features=None, player_features=None, inventory_sections=None, inventory_slots=5,
                  item_features=None, ticks_per_step=8, episode_ticks=0, allow_give_up=False,
-                 reward_weights=None):
+                 reward_weights=None, chunk_patterns=None, default_pattern=None):
         c = _goe.Config()
         c.data_dir = default_data_dir() if data_dir is None else str(data_dir)
         c.vision_radius = vision_radius
@@ -114,6 +120,9 @@ class Game:
             if unknown:
                 raise ValueError(f"unknown events in reward_weights: {sorted(unknown)}; known: {EVENTS}")
             c.reward_weights = {k: float(v) for k, v in reward_weights.items()}
+        c.chunk_patterns = {_chunk(k): as_pattern(p)._native for k, p in (chunk_patterns or {}).items()}
+        if default_pattern is not None:
+            c.default_pattern = as_pattern(default_pattern)._native
         self.vision_radius = vision_radius
         self.inventory_slots = inventory_slots
         self._game = _goe.Game(c)
@@ -154,6 +163,28 @@ class Game:
 
     def __exit__(self, *exc):
         self.close()
+
+    # --- fixed patterns ---
+    def set_chunk_pattern(self, chunk, pattern):
+        """Builds the chunk (x, y) from the pattern (a ChunkPattern or a JSON file's path; None: a
+        random maze again). It applies to chunks made from now on: those this episode has not
+        built yet, and every chunk of the next episodes."""
+        p = as_pattern(pattern)
+        self._game.set_chunk_pattern(_chunk(chunk), None if p is None else p._native)
+
+    def set_default_pattern(self, pattern):
+        """The pattern of every chunk without its own (None: a random maze), as set_chunk_pattern."""
+        p = as_pattern(pattern)
+        self._game.set_default_pattern(None if p is None else p._native)
+
+    def clear_chunk_patterns(self):
+        """Every chunk a random maze again, as set_chunk_pattern."""
+        self._game.clear_chunk_patterns()
+
+    def chunk_at(self, x, y):
+        """The (x, y) of the chunk holding the cell, the cell given as the agent sees it (counted
+        from the middle of the start area, as GameState.centre and the player's x and y)."""
+        return tuple(self._game.chunk_at(int(x), int(y)))
 
     # --- what the last step did ---
     @property
@@ -218,3 +249,8 @@ class Game:
         if buttons.shape != (self._game.action_count,):
             raise ValueError(f"expected {self._game.action_count} buttons, got shape {buttons.shape}")
         return int(np.argmax(buttons))
+
+
+def _chunk(c):
+    x, y = c
+    return (int(x), int(y))

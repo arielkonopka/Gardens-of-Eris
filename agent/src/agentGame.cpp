@@ -211,6 +211,7 @@ game::~game()
 {
     goe::events::observe({});
     gameSerializer::clearWorld();
+    worldBuilder::clearPatterns();
     inputManager::getInstance(true).setControlItem(nothing);
     gameAlive = false;
 }
@@ -224,6 +225,7 @@ void game::newEpisode(std::optional<std::uint32_t> seed)
     goe::rng::saved().seed(this->worldSeed);
     gameClock::ticks = 5;
     inputManager::getInstance(true).setControlItem(nothing);
+    this->installPatterns();
     worldBuilder::startNew();
     this->ticks = 0;
     this->taken = false;
@@ -235,6 +237,44 @@ void game::newEpisode(std::optional<std::uint32_t> seed)
     this->episodeCounts.fill(0.0f);
     this->collected.clear();
     this->opened.clear();
+}
+
+void game::installPatterns() const
+{
+    worldBuilder::clearPatterns();
+    for (const auto &[chunk, pattern] : this->cfg.chunkPatterns)
+        worldBuilder::setPattern(coords(chunk.first, chunk.second), pattern);
+    worldBuilder::setDefaultPattern(this->cfg.defaultPattern);
+}
+
+void game::setChunkPattern(std::pair<int, int> chunk, std::shared_ptr<const chunkPattern> pattern)
+{
+    if (pattern)
+        this->cfg.chunkPatterns[chunk] = std::move(pattern);
+    else
+        this->cfg.chunkPatterns.erase(chunk);
+    this->installPatterns();
+}
+
+void game::setDefaultPattern(std::shared_ptr<const chunkPattern> pattern)
+{
+    this->cfg.defaultPattern = std::move(pattern);
+    this->installPatterns();
+}
+
+void game::clearChunkPatterns()
+{
+    this->cfg.chunkPatterns.clear();
+    this->cfg.defaultPattern = nullptr;
+    this->installPatterns();
+}
+
+std::pair<int, int> game::chunkAt(coords cell) const
+{
+    const auto board = worldBoard(player::getActivePlayer());
+    const coords origin = board && board->origin != NOCOORDS ? board->origin : coords(0, 0);
+    const coords chunk = chamber::chunkOf(origin + cell);
+    return {chunk.x, chunk.y};
 }
 
 void game::noteEvent(int k, const bElem &subject, const bElem *actor)

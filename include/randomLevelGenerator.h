@@ -35,6 +35,7 @@
 #include <math.h>
 #include "teleport.h"
 #include "chamberArea.h"
+#include "chunkPattern.h"
 #include <vector>
 
 #define _debugRandomGenerator true
@@ -101,9 +102,10 @@ public:
 
     /// fills the bounded level: walls all around, the player's start and everything else
     bool generateLevel(int holes);
-    /// fills the chunk: its west and north walls with their gaps, and everything else.
-    /// The start chunk also gets the player and the world's origin.
-    bool generateChunk(bool start);
+    /// fills the chunk: its west and north walls with their gaps, and everything else; or, given
+    /// a pattern, the pattern's elements only. The start chunk also gets the player and the
+    /// world's origin.
+    bool generateChunk(bool start, std::shared_ptr<const goe::chunkPattern> pattern = nullptr);
     /// where the west (or north) wall of a chunk is open: offsets from the chunk's first cell
     static std::vector<int> wallGaps(coords chunk, bool west);
 
@@ -122,6 +124,8 @@ private:
     void buildMaze(int holes);
     /// the chunk's west and north walls with their gaps, and the cells next to every gap cleared
     void buildChunkWalls();
+    /// the pattern's elements on the chunk, and in the start chunk the player and the origin
+    bool fillChunk(const goe::chunkPattern &pattern, bool start);
     /// everything placed in the maze: the player's start (if asked), a global teleporter room, and the rest
     bool placeEverything(int holes, int depth, bool start, bool globalTeleporter);
     /// the subtype of this area's local teleporters, which pair only with each other

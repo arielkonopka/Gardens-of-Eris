@@ -118,6 +118,44 @@ fired the missile or set off the blast, also through a mine or bomb the shot set
 doors count once an episode, so dropping and picking up an item, or closing and opening a
 door, earns nothing more.
 
+## Chunks from a fixed pattern
+
+The world is made of chunks of 64 x 64 cells (`goe.CHUNK_SIZE`), normally each a random maze.
+A chunk can instead be built from a fixed pattern of elements, so an agent trains on a world
+chosen for it, the same in every episode:
+
+```python
+rooms = goe.ChunkPattern.from_rows(
+    ["########",
+     "#..k...#",
+     "#......#",
+     "########"],
+    {"#": "wall", ".": None, "k": ("key", 1)})
+game = goe.Game(chunk_patterns={(0, 0): rooms})      # the start chunk only
+game = goe.Game(default_pattern="agent/patterns/rooms.json")   # every chunk
+game.set_chunk_pattern((2, -1), rooms)               # chunks not built yet, and next episodes
+game.clear_chunk_patterns()                          # random mazes again
+```
+
+- A pattern is made from rows of characters and a legend (`from_rows`), from 2-D arrays of
+  types and subtypes (`ChunkPattern(types, subtypes)`), or from a JSON file (`load`,
+  `from_json`): `{"legend": {"#": "wall", "k": ["key", 1], ".": null}, "rows": ["#k.#", ...]}`.
+- A legend entry is `None` (nothing: the floor as the game made it), a type, or
+  `(type, subtype)`; a type is a number or a name from `goe.ELEMENT_TYPES` (`wall`, `player`,
+  `key`, `door`, `golden_apple`, `monster`, `camera`, `teleporter`, ...). The type `floor` with
+  a subtype sets the floor's own look.
+- A pattern is at most 64 cells on each side; a smaller one is repeated to fill the chunk from
+  its top left cell. A patterned chunk has no maze and no walls of its own: walls are where the
+  pattern puts them. Its neighbours stay random mazes unless they have a pattern too.
+- Chunks are counted from the start chunk `(0, 0)`: `(1, 0)` is east of it, `(0, -1)` north.
+  `game.chunk_at(x, y)` says which chunk holds a cell, given as the agent sees it (from the
+  middle of the start area).
+- In the start chunk, the pattern's first player (row by row) is the one the game starts with;
+  without one, the player goes on the free floor nearest the chunk's middle. Players in other
+  chunks are spare avatars.
+- Patterned chunks are laid out the same whatever the seed; the seed still drives everything
+  else (the elements' starting numbers, the random chunks, the game as it plays).
+
 The same seed builds the same world, and the same actions then play the same game. There is one
 game per process: the game keeps its world in static state. Run games in parallel in separate
 processes, as exRelaxer's searches do with workers.

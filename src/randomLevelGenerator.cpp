@@ -22,6 +22,7 @@
 
 #include "randomLevelGenerator.h"
 #include "difficulty.h"
+#include "gameSerializer.h"
 #include "player.h"
 
 namespace {
@@ -360,7 +361,7 @@ bool randomLevelGenerator::generateLevel(int holes)
     return this->placeEverything(holes, std::max(0, difficulty::five - holes), true, true);
 }
 
-bool randomLevelGenerator::generateChunk(bool start)
+bool randomLevelGenerator::generateChunk(bool start, std::shared_ptr<const goe::chunkPattern> pattern)
 {
     goe::rng::generationScope scope(this->eng);
     std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
@@ -371,11 +372,59 @@ bool randomLevelGenerator::generateChunk(bool start)
         spareAvatars.emplace();
     // nothing built here may reach into the chunks next to this one
     chamber::fence onlyThisChunk(*this->mychamber, this->lo, this->hi);
+    if (pattern)
+        return this->fillChunk(*pattern, start);
     const int depth = difficulty::chunkDepth(this->chunk);
     const int holes = difficulty::mazeHoles(depth);
     this->buildMaze(holes);
     const bool globalTeleporter = start || goe::rng::below(this->eng, globalTeleporterOdds) == 0;
     return this->placeEverything(holes, depth, start, globalTeleporter);
+}
+
+bool randomLevelGenerator::fillChunk(const goe::chunkPattern &pattern, bool start)
+{
+    auto place = [this](int type, int subtype, int x, int y) {
+        auto e = gameSerializer::createByType(type, subtype, this->mychamber);
+        e->stepOnElement(this->at(x, y));
+        e->selfAlign();
+    };
+    std::optional<coords> firstPlayer;
+    // row by row, so the first player of the pattern is the one the game starts with
+    for (int y = this->lo.y; y <= this->hi.y; y++)
+        for (int x = this->lo.x; x <= this->hi.x; x++) {
+            const goe::patternCell &cell = pattern.at(x - this->lo.x, y - this->lo.y);
+            if (cell.type == bElemTypes::_belemType)
+                continue;
+            if (cell.type == bElemTypes::_floorType) {
+                this->at(x, y)->getAttrs()->setSubtype(cell.subtype);
+                continue;
+            }
+            place(cell.type, cell.subtype, x, y);
+            if (cell.type == bElemTypes::_player && !firstPlayer)
+                firstPlayer = coords(x, y);
+        }
+    if (!start)
+        return true;
+    if (!firstPlayer) {
+        // no player in the pattern: on the free floor nearest the chunk's middle
+        const coords middle = this->lo + chamber::chunkSize / 2;
+        std::optional<coords> best;
+        for (int y = this->lo.y; y <= this->hi.y; y++)
+            for (int x = this->lo.x; x <= this->hi.x; x++) {
+                const auto e = this->at(x, y);
+                if (e->getType() != bElemTypes::_floorType || !e->getAttrs()->isSteppable())
+                    continue;
+                if (!best || coords(x, y).distance(middle) < best->distance(middle))
+                    best = coords(x, y);
+            }
+        if (!best)
+            throw std::runtime_error("the start chunk's pattern leaves no free floor for the player");
+        place(bElemTypes::_player, 0, best->x, best->y);
+        firstPlayer = best;
+    }
+    // the distance part of the difficulty is measured from where the player starts
+    this->mychamber->origin = *firstPlayer;
+    return true;
 }
 
 bool randomLevelGenerator::placeEverything(int holes, int depth, bool start, bool globalTeleporter)

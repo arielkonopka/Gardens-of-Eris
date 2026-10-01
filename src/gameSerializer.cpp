@@ -216,58 +216,57 @@ struct gameSerializer::loadContext
     }
 };
 
-std::shared_ptr<bElem> gameSerializer::createByType(int type, int subtype)
+std::shared_ptr<bElem> gameSerializer::createByType(int type, int subtype, std::shared_ptr<chamber> board)
 {
-    std::shared_ptr<chamber> none = nullptr;
     switch (type) {
     case bElemTypes::_floorType:
-        return elementFactory::generateAnElement<floorElement>(none, subtype);
+        return elementFactory::generateAnElement<floorElement>(board, subtype);
     case bElemTypes::_wallType:
-        return elementFactory::generateAnElement<wall>(none, subtype);
+        return elementFactory::generateAnElement<wall>(board, subtype);
     case bElemTypes::_rubishType:
-        return elementFactory::generateAnElement<rubbish>(none, subtype);
+        return elementFactory::generateAnElement<rubbish>(board, subtype);
     case bElemTypes::_monster:
-        return elementFactory::generateAnElement<monster>(none, subtype);
+        return elementFactory::generateAnElement<monster>(board, subtype);
     case bElemTypes::_patrollingDrone:
-        return elementFactory::generateAnElement<patrollingDrone>(none, subtype);
+        return elementFactory::generateAnElement<patrollingDrone>(board, subtype);
     case bElemTypes::_securityCamera:
-        return elementFactory::generateAnElement<securityCamera>(none, subtype);
+        return elementFactory::generateAnElement<securityCamera>(board, subtype);
     case bElemTypes::_puppetMasterType:
-        return puppetMasterFR::create(none, subtype);
+        return puppetMasterFR::create(board, subtype);
     case bElemTypes::_brickClusterType:
-        return elementFactory::generateAnElement<brickCluster>(none, subtype);
+        return elementFactory::generateAnElement<brickCluster>(board, subtype);
     case bElemTypes::_player:
-        return elementFactory::generateAnElement<player>(none, subtype);
+        return elementFactory::generateAnElement<player>(board, subtype);
     case bElemTypes::_key:
-        return elementFactory::generateAnElement<key>(none, subtype);
+        return elementFactory::generateAnElement<key>(board, subtype);
     case bElemTypes::_door:
-        return elementFactory::generateAnElement<door>(none, subtype);
+        return elementFactory::generateAnElement<door>(board, subtype);
     case bElemTypes::_plainMissile:
-        return elementFactory::generateAnElement<plainMissile>(none, subtype);
+        return elementFactory::generateAnElement<plainMissile>(board, subtype);
     case bElemTypes::_plainGun:
-        return elementFactory::generateAnElement<plainGun>(none, subtype);
+        return elementFactory::generateAnElement<plainGun>(board, subtype);
     case bElemTypes::_bazookaMissileType:
-        return elementFactory::generateAnElement<bazookaMissile>(none, subtype);
+        return elementFactory::generateAnElement<bazookaMissile>(board, subtype);
     case bElemTypes::_bazookaType:
-        return elementFactory::generateAnElement<bazooka>(none, subtype);
+        return elementFactory::generateAnElement<bazooka>(board, subtype);
     case bElemTypes::_bunker:
-        return elementFactory::generateAnElement<bunker>(none, subtype);
+        return elementFactory::generateAnElement<bunker>(board, subtype);
     case bElemTypes::_teleporter:
-        return elementFactory::generateAnElement<teleport>(none, subtype);
+        return elementFactory::generateAnElement<teleport>(board, subtype);
     case bElemTypes::_goldenAppleType:
-        return elementFactory::generateAnElement<goldenApple>(none, subtype);
+        return elementFactory::generateAnElement<goldenApple>(board, subtype);
     case bElemTypes::_simpleBombType:
-        return elementFactory::generateAnElement<simpleBomb>(none, subtype);
+        return elementFactory::generateAnElement<simpleBomb>(board, subtype);
     case bElemTypes::_landmineType:
-        return elementFactory::generateAnElement<landmine>(none, subtype);
+        return elementFactory::generateAnElement<landmine>(board, subtype);
     case bElemTypes::_boubaType:
-        return elementFactory::generateAnElement<bouba>(none, subtype);
+        return elementFactory::generateAnElement<bouba>(board, subtype);
     case bElemTypes::_kikiType:
-        return elementFactory::generateAnElement<kiki>(none, subtype);
+        return elementFactory::generateAnElement<kiki>(board, subtype);
     case bElemTypes::_belemType:
-        return elementFactory::generateAnElement<bElem>(none, subtype);
+        return elementFactory::generateAnElement<bElem>(board, subtype);
     }
-    throw std::runtime_error("save file contains an unknown element type " + std::to_string(type));
+    throw std::runtime_error("unknown element type " + std::to_string(type));
 }
 
 /*
