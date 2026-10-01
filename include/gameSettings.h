@@ -25,8 +25,13 @@
 
 #include "controlBindings.h"
 #include <atomic>
+#include <cstdint>
 #include <mutex>
 #include <string>
+
+namespace goe::musician {
+enum class chipStyle : std::uint8_t; // musicChips.h
+}
 
 /**
  * @brief Player-editable options, kept in a small JSON file next to the game.
@@ -61,6 +66,17 @@ public:
     enum class musicSource { samples, performer };
     musicSource getMusicSource() const { return this->music; }
     void setMusicSource(musicSource s) { this->music = s; }
+    /// the chip the performer's band sounds like (AdLib, SID, POKEY, Game Boy)
+    goe::musician::chipStyle getPerformerSound() const { return this->performerSound; }
+    void setPerformerSound(goe::musician::chipStyle s);
+    /// how much the performer's music changes, in percent: 0 long songs near home .. 100 short
+    /// songs far from it; and its tempo in percent of the composed one. Clamped to their ranges.
+    static constexpr int minMusicTempo = 50;
+    static constexpr int maxMusicTempo = 150;
+    int getMusicVariety() const { return this->musicVariety; }
+    int getMusicTempo() const { return this->musicTempo; }
+    void setMusicVariety(int percent);
+    void setMusicTempo(int percent);
 
     /// the story line over the game field (storyScroller.h): on or off, and the file it tells from
     static constexpr const char *defaultStoriesFile = "data/txt/stories.json";
@@ -98,6 +114,9 @@ private:
     std::atomic<int> musicVolume = 100;
     std::atomic<int> effectsVolume = 100;
     std::atomic<musicSource> music = musicSource::samples;
+    std::atomic<goe::musician::chipStyle> performerSound{};
+    std::atomic<int> musicVariety = 60;
+    std::atomic<int> musicTempo = 100;
     std::atomic<bool> storiesShown = true;
     std::atomic<int> demoWait = 60;
     std::atomic<int> demoLength = 30;

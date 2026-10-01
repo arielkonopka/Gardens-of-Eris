@@ -666,6 +666,12 @@ void soundManager::streamPerformer()
     }
     if (chosen != this->performer->playing())
         this->performer->play(chosen);
+    // the Config choices, every pump: they only store atomics, and a change is heard at once
+    const auto &settings = gameSettings::getInstance();
+    auto &musician = this->performer->musician();
+    musician.setStyle(settings.getPerformerSound());
+    musician.setVariety((float) settings.getMusicVariety() / 100.0f);
+    musician.setTempoScale((float) settings.getMusicTempo() / 100.0f);
     this->performer->pump(difficulty::musicianLevel(this->difficultyNow),
                           (goe::musician::situation) this->situationNow.load(),
                           musicVolume());

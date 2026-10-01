@@ -28,7 +28,9 @@ int main(int argc, char *argv[])
 {
     using namespace goe::musician;
     if (argc < 2) {
-        std::cerr << "usage: goe-musician out.wav [seconds] [seed] [difficulty|from:to] [calm|alert|danger] [rate]\n";
+        std::cerr << "usage: goe-musician out.wav [seconds] [seed] [difficulty|from:to] [calm|alert|danger] [rate]\n"
+                     "environment: GOE_STYLE=adlib|sid|pokey|gameboy, GOE_VARIETY=0..1, GOE_TEMPO=0.5..1.5,\n"
+                     "             GOE_PHRASES=1 prints a line per phrase\n";
         return 1;
     }
     const double seconds = argc > 2 ? std::atof(argv[2]) : 60.0;
@@ -54,6 +56,12 @@ int main(int argc, char *argv[])
     }
     m.setDifficulty(from);
     m.setSituation(s);
+    if (const char *style = std::getenv("GOE_STYLE"))
+        m.setStyle(styleNamed(style));
+    if (const char *v = std::getenv("GOE_VARIETY"))
+        m.setVariety((float) std::atof(v));
+    if (const char *t = std::getenv("GOE_TEMPO"))
+        m.setTempoScale((float) std::atof(t));
     const auto total = (std::uint32_t) (seconds * rate);
     const std::uint32_t block = 1024;
     std::vector<float> buf(block * 2);
@@ -68,10 +76,12 @@ int main(int argc, char *argv[])
         if (std::getenv("GOE_PHRASES") && m.phrasesComposed() != before) {
             const auto &r = m.lastPhrase();
             static const char *made[] = {"new", "repeat", "variation"};
-            std::printf("%6.1fs %-9s motif %3u/%3u bars %d notes/beat %.2f sync %2d antic %d chrom %d colour %d/%d leap %2d poly %d tempo %.1f%s\n",
-                        (double) done / rate, made[(int) r.made], r.motifId, r.family, r.bars, r.notesPerBeat(),
-                        r.syncopated, r.anticipated, r.chromatic, r.colouredChords, r.chords, r.maxLeap,
-                        r.maxSimultaneous, r.tempo, r.silent ? " (lead rests)" : "");
+            static const char *parts[] = {"intro", "verse", "chorus", "break", "outro"};
+            std::printf("%6.1fs song %2u %-6s drums %d%s %-9s motif %3u/%3u bars %d notes/beat %.2f sync %2d chrom %d colour %d/%d leap %2d poly %d tempo %.1f%s\n",
+                        (double) done / rate, r.song, parts[(int) r.part], r.drums, r.fill ? "+fill" : "     ",
+                        made[(int) r.made], r.motifId, r.family, r.bars, r.notesPerBeat(), r.syncopated, r.chromatic,
+                        r.colouredChords, r.chords, r.maxLeap, r.maxSimultaneous, r.tempo,
+                        r.silent ? " (lead rests)" : "");
         }
         m.renderAudio(buf.data(), n);
         for (std::uint32_t i = 0; i < n * 2; i++)
@@ -96,9 +106,10 @@ int main(int argc, char *argv[])
     o.write(reinterpret_cast<const char *>(pcm.data()), bytes);
 
     const auto &p = m.personality();
-    std::cout << "seed " << seed << ": tempo " << p.baseTempo << ", energy " << p.energy << ", complexity "
+    std::cout << nameOf(m.style()) << ", seed " << seed << ": tempo " << p.baseTempo << ", energy " << p.energy << ", complexity "
               << p.rhythmicComplexity << ", dissonance " << p.dissonance << "\n"
-              << m.phrasesComposed() << " phrases, peak " << m.synth().report().peak << ", rendered " << seconds
+              << m.phrasesComposed() << " phrases in " << m.songs().songsStarted() << " songs ("
+              << m.songs().songsReturned() << " came back), peak " << m.synth().report().peak << ", rendered " << seconds
               << " s in " << took << " s (" << seconds / took << "x real time)\n";
     return 0;
 }

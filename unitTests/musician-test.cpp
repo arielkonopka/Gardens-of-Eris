@@ -1,8 +1,10 @@
 // The adaptive musician, tested offline: no sound card, the audio is rendered into buffers.
 #include "adaptiveMusician.h"
+#include "musicChips.h"
 #include "musicComposer.h"
 #include "musicCues.h"
 #include "musicPersonality.h"
+#include "musicSongs.h"
 #include "musicSynth.h"
 #include "musicTension.h"
 #include "gameClock.h"
@@ -13,6 +15,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <new>
+#include <map>
 #include <numeric>
 #include <set>
 #include <vector>
@@ -62,6 +65,9 @@ std::vector<float> render(adaptiveMusician &m, double seconds, std::uint32_t blo
     return out;
 }
 
+/// a verse as a songbook would plan it: every part plays, light drums
+const phrasePlan plain{};
+
 /// what a performer plays at one tension, over many phrases
 struct playing
 {
@@ -80,7 +86,7 @@ playing compose(std::uint64_t seed, int difficulty, int phrases, situation s = s
     double notes = 0, beats = 0, chords = 0;
     for (int k = 0; k < phrases; k++) {
         t.advance(10.0f);
-        c.compose(who, t.state(), s, (float) rate, buf);
+        c.compose(who, t.state(), s, (float) rate, plain, buf);
         const auto &r = c.report();
         beats += r.bars * 4;
         notes += r.leadNotes;
@@ -348,7 +354,7 @@ TEST(Composer, SafetyLimitsHoldAtMaximumDifficultyForEveryPerformer)
         for (int k = 0; k < 20; k++) {
             t.advance(10.0f);
             for (auto s : {situation::calm, situation::alert, situation::danger}) {
-                c.compose(who, t.state(), s, (float) rate, buf);
+                c.compose(who, t.state(), s, (float) rate, plain, buf);
                 const auto &r = c.report();
                 ASSERT_LE(r.notesPerBeat(), tuning::maxNoteDensity) << seed;
                 ASSERT_LE(r.maxSimultaneous, tuning::maxSimultaneousNotes) << seed;
@@ -361,7 +367,10 @@ TEST(Composer, SafetyLimitsHoldAtMaximumDifficultyForEveryPerformer)
                 for (int e = 0; e < buf.count; e++) {
                     const auto &ev = buf.events[(std::size_t) e];
                     ASSERT_GE(ev.at, 0);
-                    if (ev.what == noteEvent::kind::on) {
+                    if (ev.what == noteEvent::kind::on && ev.who == part::drums) {
+                        ASSERT_GE(ev.pitch, 0.0f); // a drum note names the drum
+                        ASSERT_LT(ev.pitch, (float) drumCount);
+                    } else if (ev.what == noteEvent::kind::on) {
                         ASSERT_GE(ev.pitch, 24.0f);
                         ASSERT_LE(ev.pitch, 96.0f);
                         ASSERT_GT(ev.velocity, 0.0f);
@@ -381,7 +390,7 @@ TEST(Composer, EveryNoteThatStartsAlsoStops)
     composer c(5);
     phraseBuffer buf;
     for (int k = 0; k < 50; k++) {
-        c.compose(who, t.state(), (situation) (k % 3), (float) rate, buf);
+        c.compose(who, t.state(), (situation) (k % 3), (float) rate, plain, buf);
         std::set<std::uint32_t> open;
         for (int e = 0; e < buf.count; e++) {
             const auto &ev = buf.events[(std::size_t) e];
@@ -413,7 +422,7 @@ TEST(Composer, LongRunAtConstantDifficultyStaysCoherent)
         const int phrases = 600; // well over an hour of music
         for (int k = 0; k < phrases; k++) {
             t.advance(10.0f);
-            c.compose(who, t.state(), situation::calm, (float) rate, buf);
+            c.compose(who, t.state(), situation::calm, (float) rate, plain, buf);
             const auto &r = c.report();
             (k < phrases / 2 ? firstHalf : secondHalf) += r.notesPerBeat();
             if (r.silent) {
@@ -446,11 +455,11 @@ TEST(Composer, SituationChangesTheThemeNotTheTension)
     t.settle(100);
     composer c(21);
     phraseBuffer buf;
-    c.compose(who, t.state(), situation::calm, (float) rate, buf);
+    c.compose(who, t.state(), situation::calm, (float) rate, plain, buf);
     const auto calm = c.report();
-    c.compose(who, t.state(), situation::alert, (float) rate, buf);
+    c.compose(who, t.state(), situation::alert, (float) rate, plain, buf);
     const auto alert = c.report();
-    c.compose(who, t.state(), situation::danger, (float) rate, buf);
+    c.compose(who, t.state(), situation::danger, (float) rate, plain, buf);
     const auto danger = c.report();
     EXPECT_EQ(calm.transpose, 0);
     EXPECT_NE(alert.transpose, 0);
@@ -464,7 +473,7 @@ TEST(Composer, SituationChangesTheThemeNotTheTension)
     EXPECT_EQ(c.remembered(situation::alert), 1);
     // back to calm: the main theme returns
     for (int k = 0; k < 6; k++)
-        c.compose(who, t.state(), situation::calm, (float) rate, buf);
+        c.compose(who, t.state(), situation::calm, (float) rate, plain, buf);
     EXPECT_LE(c.remembered(situation::calm), 7);
     EXPECT_NEAR(t.target(), tensionController::targetFor(100), 1e-6f);
 }
@@ -595,6 +604,7 @@ TEST(Musician, NoClippingAndBoundedVoicesForManyPerformers)
 {
     for (std::uint64_t seed = 1; seed <= 12; seed++) {
         adaptiveMusician m;
+        m.setStyle((chipStyle) (seed % chipStyleCount));
         ASSERT_TRUE(m.initialize({rate, 2}, seed));
         m.setDifficulty(256);
         m.setSituation(situation::danger);
@@ -620,8 +630,9 @@ TEST(Musician, RenderingNeverAllocates)
     m.renderAudio(buf.data(), 4096);
     allocations = 0;
     countAllocations = true;
-    for (int k = 0; k < 600; k++) { // about a minute, with composing and situation changes
+    for (int k = 0; k < 600; k++) { // about a minute, with composing, situation and chip changes
         m.setSituation((situation) ((k / 100) % 3));
+        m.setStyle((chipStyle) ((k / 150) % chipStyleCount));
         m.setDifficulty(k % 257);
         m.composeAhead();
         m.renderAudio(buf.data(), 4096);
@@ -767,4 +778,364 @@ TEST(MusicCues, DifficultyMapsIntoThePerformersRange)
     EXPECT_EQ(difficulty::musicianLevel(11), 253);
     EXPECT_EQ(difficulty::musicianLevel(40), 256);
     EXPECT_EQ(difficulty::musicianLevel(-3), 0);
+}
+
+// ---- chip sounds ----
+
+namespace {
+/// the frequency of a plain tone, from its rising zero crossings
+double frequencyOf(const std::vector<float> &v, std::size_t from, std::size_t to)
+{
+    double first = -1, last = -1;
+    int crossings = 0;
+    for (std::size_t i = from + 1; i < to && i < v.size(); i++) {
+        if (v[i - 1] < 0.0f && v[i] >= 0.0f) {
+            const double at = (double) (i - 1) + v[i - 1] / (v[i - 1] - v[i]);
+            if (first < 0)
+                first = at;
+            last = at;
+            crossings++;
+        }
+    }
+    return crossings < 2 ? 0.0 : (crossings - 1) * (double) rate / (last - first);
+}
+
+/// a plain square on a chip: no envelope movement, no vibrato
+instrument steadySquare()
+{
+    instrument i = plainSine();
+    i.wave = waveform::pulse;
+    i.pulseWidth = 0.5f;
+    i.sustain = 1.0f;
+    return i;
+}
+} // namespace
+
+TEST(Chips, EveryStyleSoundsCleanForManyPerformers)
+{
+    for (int st = 0; st < chipStyleCount; st++) {
+        for (std::uint64_t seed = 1; seed <= 8; seed++) {
+            adaptiveMusician m;
+            m.setStyle((chipStyle) st);
+            ASSERT_TRUE(m.initialize({rate, 2}, seed));
+            EXPECT_TRUE(m.style() == (chipStyle) st);
+            m.setDifficulty(200);
+            m.setSituation(situation::alert);
+            const auto out = render(m, 20);
+            double energy = 0, sum = 0;
+            for (float v : out) {
+                ASSERT_TRUE(std::isfinite(v));
+                ASSERT_LE(std::fabs(v), 1.0f);
+                energy += (double) v * v;
+                sum += v;
+            }
+            const double rms = std::sqrt(energy / (double) out.size());
+            EXPECT_GT(rms, 0.03) << nameOf((chipStyle) st) << " is heard, seed " << seed;
+            EXPECT_LT(rms, 0.3) << nameOf((chipStyle) st) << " with headroom, seed " << seed;
+            EXPECT_LT(std::fabs(sum / (double) out.size()), 0.01) << "no offset, " << nameOf((chipStyle) st);
+            const int channels = m.synth().chip().voices();
+            if (channels > 0) {
+                EXPECT_LE(m.synth().report().activeVoices, channels) << nameOf((chipStyle) st);
+            }
+        }
+    }
+}
+
+TEST(Chips, EachPartKeepsItsOwnChannels)
+{
+    const auto who = performerPersonality::generate(3);
+    synthesizer s((float) rate, 8);
+    dress(s, soundFor(chipStyle::gameboy, who));
+    for (int p = 0; p < partCount; p++) {
+        const auto [first, last] = s.channelsOf((part) p);
+        EXPECT_EQ(last - first, 1) << "the Game Boy has one channel per part";
+    }
+    s.noteOn({0, 0, noteEvent::kind::on, part::bass, 100, 36.0f, 0.8f});
+    for (std::uint32_t n = 1; n <= 5; n++)
+        s.noteOn({0, 0, noteEvent::kind::on, part::lead, n, 60.0f + (float) n, 0.8f});
+    renderSynth(s, 512);
+    // five lead notes took the lead channel over and over; the bass still sounds
+    EXPECT_EQ(s.report().stolen, 4);
+    EXPECT_EQ(s.activeVoices(), 2);
+    // the AdLib shares its voices between the band and keeps four for the drums
+    synthesizer a((float) rate, 16);
+    dress(a, soundFor(chipStyle::adlib, who));
+    EXPECT_EQ(a.channelsOf(part::lead), a.channelsOf(part::bass));
+    EXPECT_EQ(a.channelsOf(part::drums).second - a.channelsOf(part::drums).first, 4);
+    EXPECT_EQ(a.channelsOf(part::lead).second, 12);
+}
+
+TEST(Chips, PokeyRoundsHighNotesToItsDividers)
+{
+    auto played = [](const chipModel &chip) {
+        synthesizer s((float) rate, 2);
+        s.setChip(chip);
+        s.setSound(part::lead, steadySquare());
+        s.noteOn({0, 0, noteEvent::kind::on, part::lead, 1, 96.0f, 1.0f}); // C7, 2093 Hz
+        const auto l = renderSynth(s, rate / 2);
+        return frequencyOf(l, (std::size_t) rate / 10, l.size());
+    };
+    chipModel pokey;
+    pokey.grid = pitchGrid::pokey;
+    pokey.bandLimited = false;
+    pokey.filtered = false;
+    EXPECT_NEAR(played(chipModel{}), 2093.0, 3.0);
+    // 63921 Hz / (2 * (14 + 1)): about a third of a semitone sharp, as on the chip
+    EXPECT_NEAR(played(pokey), 63921.0 / 30.0, 3.0);
+    chipModel gameboy = pokey;
+    gameboy.grid = pitchGrid::gameboy;
+    EXPECT_NEAR(played(gameboy), 131072.0 / (2048.0 - std::round(2048.0 - 131072.0 / 2093.0)), 3.0);
+}
+
+TEST(Chips, ArpeggiosRunThroughTheChordOnOneVoice)
+{
+    synthesizer s((float) rate, 4);
+    chipModel chip;
+    chip.frameRate = 50.0f;
+    chip.bandLimited = false;
+    s.setChip(chip);
+    s.setSound(part::pad, steadySquare());
+    noteEvent e{0, 0, noteEvent::kind::on, part::pad, 1, 57.0f, 1.0f}; // A3 with C#4 and E4
+    e.arp = {4, 7, 0};
+    e.arpCount = 2;
+    s.noteOn(e);
+    const auto l = renderSynth(s, rate);
+    EXPECT_EQ(s.activeVoices(), 1);
+    // each 20 ms frame plays the next tone of the chord
+    const double expected[] = {220.0, 220.0 * std::exp2(4.0 / 12.0), 220.0 * std::exp2(7.0 / 12.0)};
+    const std::size_t frame = rate / 50;
+    for (int f = 3; f < 12; f++) {
+        // the middle of the frame, away from the change of pitch
+        const double hz = frequencyOf(l, f * frame + frame / 5, (f + 1) * frame - frame / 5);
+        EXPECT_NEAR(hz, expected[f % 3], expected[f % 3] * 0.03) << "frame " << f;
+    }
+}
+
+TEST(Chips, SteppedVolumeMovesOncePerFrame)
+{
+    synthesizer s((float) rate, 2);
+    chipModel chip;
+    chip.frameRate = 60.0f;
+    chip.volumeSteps = 16;
+    chip.bandLimited = false;
+    chip.filtered = false;
+    s.setChip(chip);
+    instrument fading = steadySquare();
+    fading.sustain = 0.0f;
+    fading.decay = 1.0f;
+    s.setSound(part::lead, fading);
+    s.noteOn({0, 0, noteEvent::kind::on, part::lead, 1, 60.0f, 1.0f});
+    const auto l = renderSynth(s, rate);
+    // the loudness of each frame is one of the chip's 16 levels, and it does not move inside a frame
+    const std::size_t frame = rate / 60;
+    std::set<int> levels;
+    for (std::size_t f = 1; f + 1 < l.size() / frame; f++) {
+        float a = 0, b = 0;
+        for (std::size_t i = f * frame + frame / 4; i < f * frame + frame / 2; i++)
+            a = std::max(a, std::fabs(l[i]));
+        for (std::size_t i = f * frame + frame / 2; i < f * frame + frame * 3 / 4; i++)
+            b = std::max(b, std::fabs(l[i]));
+        EXPECT_NEAR(a, b, 1e-3f) << "frame " << f;
+        levels.insert((int) std::lround(a * 1000));
+    }
+    EXPECT_LE(levels.size(), 16u);
+    EXPECT_GE(levels.size(), 5u) << "it does fade";
+}
+
+// ---- drums ----
+
+namespace {
+struct drumHits
+{
+    int kicks = 0, snares = 0, hats = 0, toms = 0, total = 0;
+    bool stacked = false; ///< two drums started at one sample
+};
+
+drumHits drumsOf(const phraseBuffer &buf)
+{
+    drumHits h;
+    std::int64_t lastOn = -1;
+    for (int c = 0; c < buf.count; c++) {
+        const auto &e = buf.events[(std::size_t) c];
+        if (e.who != part::drums || e.what != noteEvent::kind::on)
+            continue;
+        h.total++;
+        h.stacked = h.stacked || e.at == lastOn;
+        lastOn = e.at;
+        switch ((drum) (int) e.pitch) {
+        case drum::kick: h.kicks++; break;
+        case drum::snare: h.snares++; break;
+        case drum::tom: h.toms++; break;
+        default: h.hats++; break;
+        }
+    }
+    return h;
+}
+} // namespace
+
+TEST(Drums, TheIntensityDecidesHowHardTheyPlay)
+{
+    const auto who = performerPersonality::generate(11);
+    tensionController t(11);
+    t.settle(128);
+    std::array<int, 4> hits{};
+    for (int level = 0; level <= 3; level++) {
+        composer c(11);
+        phraseBuffer buf;
+        phrasePlan plan;
+        plan.drums = level;
+        plan.groove = 0; // rock
+        for (int k = 0; k < 10; k++) {
+            c.compose(who, t.state(), situation::calm, (float) rate, plan, buf);
+            const auto h = drumsOf(buf);
+            hits[(std::size_t) level] += h.total;
+            if (level > 0 && c.report().bars == 4) {
+                EXPECT_GE(h.kicks, 4) << "a kick on every bar";
+                EXPECT_GE(h.snares, 4) << "and a backbeat";
+            }
+        }
+    }
+    EXPECT_EQ(hits[0], 0) << "no drums at level 0";
+    EXPECT_GT(hits[2], hits[1]);
+    EXPECT_GT(hits[3], hits[2]);
+}
+
+TEST(Drums, FillsLeadIntoTheNextSectionAndOneChannelNeverStacks)
+{
+    const auto who = performerPersonality::generate(4);
+    tensionController t(4);
+    t.settle(160);
+    composer c(4);
+    phraseBuffer buf;
+    phrasePlan plan;
+    plan.drums = 3;
+    plan.fill = true;
+    plan.drumChannels = 1;
+    for (int g = 0; g < (int) goe::musician::vocabulary::grooves.size(); g++) {
+        plan.groove = g;
+        c.compose(who, t.state(), situation::calm, (float) rate, plan, buf);
+        const auto h = drumsOf(buf);
+        EXPECT_FALSE(h.stacked) << "the one drum channel plays one drum at a time, groove " << g;
+        EXPECT_GT(h.snares + h.toms, 3) << "a fill, groove " << g;
+    }
+}
+
+// ---- songs ----
+
+TEST(Songs, VarietyDecidesHowOftenAndHowFarTheMusicChanges)
+{
+    const auto who = performerPersonality::generate(6);
+    musicalState calm;
+    auto play = [&](float variety) {
+        songbook book(6);
+        std::set<int> keys;
+        std::set<int> tempos;
+        std::set<int> grooves;
+        for (int k = 0; k < 400; k++) {
+            const auto plan = book.next(who, calm, situation::calm, variety);
+            const auto p = book.dressed(who);
+            keys.insert(p.keyRoot);
+            tempos.insert((int) std::lround(p.baseTempo));
+            grooves.insert(plan.groove);
+            EXPECT_GE(p.baseTempo, tuning::minTempo);
+            EXPECT_LE(p.baseTempo, tuning::maxTempo);
+            EXPECT_LE(p.busyness(), tuning::busynessBudget + 1e-4f);
+        }
+        return std::array<int, 5>{book.songsStarted(), book.songsReturned(), (int) keys.size(), (int) tempos.size(),
+                                  (int) grooves.size()};
+    };
+    const auto low = play(0.0f), high = play(1.0f);
+    EXPECT_GT(high[0], 3 * low[0]) << "more, shorter songs";
+    EXPECT_GT(low[0], 10) << "but even the least variety moves on";
+    EXPECT_GT(low[1], 0) << "earlier songs come back";
+    EXPECT_GT(high[1], 0);
+    EXPECT_EQ(low[2], 1) << "no variety stays in the performer's key";
+    EXPECT_GT(high[2], 3) << "variety wanders to other keys";
+    EXPECT_GT(high[3], 10) << "and other tempos";
+    EXPECT_GT(high[4], 3) << "and other grooves";
+}
+
+TEST(Songs, ArrangementAndDangerShapeEachPhrase)
+{
+    const auto who = performerPersonality::generate(8);
+    musicalState calm;
+    songbook book(8);
+    bool sawIntro = false, sawChorus = false, sawBreak = false, sawOutro = false;
+    for (int k = 0; k < 200; k++) {
+        const auto plan = book.next(who, calm, situation::calm, 0.5f);
+        sawIntro = sawIntro || plan.part == section::intro;
+        sawChorus = sawChorus || plan.part == section::chorus;
+        sawBreak = sawBreak || plan.part == section::breakdown;
+        sawOutro = sawOutro || plan.part == section::outro;
+        if (plan.songStart) {
+            EXPECT_EQ(plan.phraseInSong, 0);
+        }
+        EXPECT_GE(plan.drums, 0);
+        EXPECT_LE(plan.drums, 3);
+    }
+    EXPECT_TRUE(sawIntro && sawChorus && sawBreak && sawOutro);
+    // under danger the drums never leave, whatever the section
+    for (int k = 0; k < 200; k++)
+        EXPECT_GE(book.next(who, calm, situation::danger, 0.5f).drums, 2);
+}
+
+TEST(Songs, AnEarlierSongComesBackWithItsOwnMotifs)
+{
+    const auto who = performerPersonality::generate(12);
+    tensionController t(12);
+    t.settle(100);
+    songbook book(12);
+    composer c(12);
+    phraseBuffer buf;
+    std::map<std::uint32_t, std::set<std::uint32_t>> families; // per song
+    int checked = 0;
+    for (int k = 0; k < 600 && checked < 3; k++) {
+        const auto plan = book.next(who, t.state(), situation::calm, 0.8f);
+        const bool known = families.count(plan.songId) > 0;
+        c.compose(book.dressed(who), t.state(), situation::calm, (float) rate, plan, buf);
+        const auto &r = c.report();
+        EXPECT_EQ(r.song, plan.songId);
+        if (plan.songStart && known) {
+            EXPECT_FALSE(plan.freshSlot) << "its motifs are still remembered";
+            EXPECT_EQ(plan.part, section::chorus) << "a returning song comes straight in";
+            if (!r.silent && r.made != phraseReport::relation::fresh) {
+                EXPECT_TRUE(families[plan.songId].count(r.family)) << "the same ideas come back";
+                checked++;
+            }
+        }
+        if (!r.silent)
+            families[plan.songId].insert(r.family);
+    }
+    EXPECT_GT(checked, 0);
+}
+
+TEST(Musician, TempoSettingAndStyleChangesAreHeard)
+{
+    auto tempoAt = [](float scale) {
+        adaptiveMusician m;
+        m.setTempoScale(scale);
+        m.setVariety(0.0f);
+        EXPECT_TRUE(m.initialize({rate, 2}, 14));
+        render(m, 2);
+        return m.lastPhrase().tempo;
+    };
+    const float slow = tempoAt(0.5f), normal = tempoAt(1.0f), fast = tempoAt(1.5f);
+    EXPECT_LT(slow, normal * 0.8f);
+    EXPECT_GT(fast, normal * 1.2f);
+    EXPECT_GE(slow, tuning::minTempo);
+    EXPECT_LE(fast, tuning::maxTempo);
+
+    // a new chip takes over at once, and the music goes on without a gap
+    adaptiveMusician m;
+    ASSERT_TRUE(m.initialize({rate, 2}, 14));
+    render(m, 3);
+    const int before = m.phrasesComposed();
+    m.setStyle(chipStyle::sid);
+    const auto after = render(m, 3);
+    EXPECT_TRUE(m.style() == chipStyle::sid);
+    EXPECT_GT(m.phrasesComposed(), before);
+    double energy = 0;
+    for (std::size_t i = 0; i < (std::size_t) rate; i++) // the first second after the change
+        energy += (double) after[i] * after[i];
+    EXPECT_GT(std::sqrt(energy / rate), 0.01);
 }

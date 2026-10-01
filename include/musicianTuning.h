@@ -37,9 +37,9 @@ inline constexpr int voiceCapacity = 32;
 /// the polyphony used when initialize() is given none
 inline constexpr int defaultVoices = 16;
 /// notes waiting to start or stop; a phrase is composed only while it fits
-inline constexpr int eventCapacity = 1024;
+inline constexpr int eventCapacity = 2048;
 /// note events one phrase may hold (every note is an on and an off)
-inline constexpr int phraseEventCapacity = 384;
+inline constexpr int phraseEventCapacity = 768;
 /// motifs remembered per theme
 inline constexpr int phraseMemory = 8;
 /// longest motif, in notes
@@ -74,9 +74,30 @@ inline constexpr float moodRestlessness = 0.012f;
 // ---- tempo ----
 
 inline constexpr float minTempo = 60.0f;
-inline constexpr float maxTempo = 132.0f;
+inline constexpr float maxTempo = 160.0f;
 /// at tension 1 the tempo is this much faster than the performer's own
 inline constexpr float tempoTensionLift = 0.12f;
+
+// ---- songs: the music is a long mixed set of songs, each with its own key, tempo and groove ----
+
+/// songs remembered; an earlier one may come back between new ones
+inline constexpr int songMemory = 5;
+/// phrases a song lasts at the lowest and the highest variety
+inline constexpr int longestSong = 23;
+inline constexpr int shortestSong = 5;
+/// how far a song's tempo may move from the performer's own at the highest variety (a share)
+inline constexpr float songTempoSpread = 0.30f;
+/// the chance that the next song is an earlier one coming back, at the lowest and highest variety
+inline constexpr float returnAtLowVariety = 0.6f;
+inline constexpr float returnAtHighVariety = 0.25f;
+/// the most a song swings its off-beat sixteenths (a share of a sixteenth)
+inline constexpr float maxSwing = 0.33f;
+/// the player's tempo setting is kept inside this range (a share of the composed tempo)
+inline constexpr float minTempoScale = 0.5f;
+inline constexpr float maxTempoScale = 1.5f;
+/// how much an alert or danger raises the intensity of the arrangement (drums, density)
+inline constexpr float alertIntensity = 0.25f;
+inline constexpr float dangerIntensity = 0.5f;
 
 // ---- musical safety limits: tension moves towards them, nothing moves past them ----
 

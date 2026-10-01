@@ -28,6 +28,7 @@ class titleMenu {
 class gameSettings <<singleton>> {
   saveDirectory, volumes
   music: samples or performer
+  performerSound, musicVariety, musicTempo
   storyScroller, storiesFile
   demoWait, demoLength, hallOfFameLength
   controls
@@ -87,6 +88,7 @@ class performerStream {
 }
 class "goe::musician::adaptiveMusician" as musician {
   +setDifficulty / setSituation
+  +setStyle / setVariety / setTempoScale
   +composeAhead() / renderAudio()
 }
 class videoManager <<singleton>>
@@ -119,7 +121,7 @@ presenter *-- storyScroller
 presenter ..> soundManager
 soundManager *-- performerStream : when Performer is chosen
 performerStream *-- musician
-soundManager ..> gameSettings : music source, volume
+soundManager ..> gameSettings : music source, volume,\nperformer sound, variety, tempo
 presenter ..> videoManager
 presenter ..> viewPoint
 presenter ..> gameEnd

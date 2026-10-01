@@ -16,7 +16,7 @@ package "GardenOfErisLib" {
   [Rules\ndifficulty, goe::rng, gameClock,\nlineOfSight, events] as rules
   [Input\ninputManager, bindings, menuPad] as input
   [Sound\nsoundManager, OpenAL, soundSpace,\nperformerStream] as sound
-  [Adaptive musician\ncomposer, synthesizer, personality,\ntension; no game headers] as musician
+  [Adaptive musician\nsongbook, composer, synthesizer, chip sounds,\npersonality, tension; no game headers] as musician
   [Settings and config\ngameSettings, configManager, skins.json] as cfg
   [Crash log] as crash
 }

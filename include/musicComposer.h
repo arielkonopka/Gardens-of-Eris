@@ -24,6 +24,7 @@
 
 #include "musicEvents.h"
 #include "musicPersonality.h"
+#include "musicSongs.h"
 #include "musicTension.h"
 #include "musicVocabulary.h"
 #include <array>
@@ -32,9 +33,10 @@
 /**
  * @brief Decides WHAT the performer plays, one phrase at a time.
  *
- * A phrase is two or four bars of lead melody, chords and bass, written as note events with
- * times counted from the phrase's start. The composer remembers recent motifs per theme and
- * builds each phrase as a repeat, a variation or new material, within the limits of
+ * A phrase is two or four bars of lead melody, chords, bass and drums, written as note events
+ * with times counted from the phrase's start. The songbook's plan says which parts play, how
+ * hard the drums go and which groove; the composer remembers recent motifs per song and theme
+ * and builds each phrase as a repeat, a variation or new material, within the limits of
  * musicianTuning.h. It runs ahead of the audio (adaptiveMusician::composeAhead), never per sample.
  */
 namespace goe::musician {
@@ -80,7 +82,12 @@ struct phraseReport
     int chords = 0;
     int colouredChords = 0; ///< sevenths, suspensions, added ninths, borrowed chords, pedal points
     int maxLeap = 0;        ///< semitones
-    int maxSimultaneous = 0;
+    int maxSimultaneous = 0; ///< lead, chord and bass notes at once (the drums have their own channels)
+    std::uint32_t song = 0;
+    section part = section::verse;
+    int drums = 0;          ///< the drum level played, 0..3
+    int drumHits = 0;
+    bool fill = false;
     float tempo = 0.0f;
     float maxJitterMs = 0.0f;
     float notesPerBeat() const { return bars <= 0 ? 0.0f : (float) leadNotes / (float) (bars * 4); }
@@ -90,12 +97,12 @@ class composer
 {
 public:
     explicit composer(std::uint64_t seed = 0);
-    /// writes the next phrase into out (cleared first)
+    /// writes the next phrase into out (cleared first), as the plan asks
     void compose(const performerPersonality &who, const musicalState &tension, situation now, float sampleRate,
-                 phraseBuffer &out);
+                 const phrasePlan &plan, phraseBuffer &out);
     const phraseReport &report() const { return this->last; }
-    /// motifs remembered for a theme
-    int remembered(situation s) const { return this->banks[(int) s].count; }
+    /// motifs remembered for a theme of the song playing now
+    int remembered(situation s) const { return this->banks[(std::size_t) this->slot][(int) s].count; }
 
 private:
     struct memoryBank
@@ -123,7 +130,10 @@ private:
     void remember(situation s, const motif &m);
 
     int writeChords(const performerPersonality &who, const musicalState &tension, const vocabulary::theme &th,
-                    const std::array<int, 4> &roots, double step, phraseBuffer &out);
+                    const std::array<int, 4> &roots, bool arpeggio, double step, phraseBuffer &out);
+    void writeDrums(const performerPersonality &who, const phrasePlan &plan, double step, float rate, phraseBuffer &out);
+    /// the sample a sixteenth of the phrase starts at, with the song's swing
+    std::int64_t timeOf(int sixteenth, double step) const;
     void writeBass(const performerPersonality &who, const musicalState &tension, const vocabulary::theme &th,
                    const std::array<int, 4> &roots, bool pedal, double step, float rate, phraseBuffer &out);
     void writeLead(const performerPersonality &who, const musicalState &tension, const vocabulary::theme &th,
@@ -133,7 +143,10 @@ private:
     bool inScale(int pitch, const performerPersonality &who, const vocabulary::theme &th) const;
     std::uint32_t note() { return ++this->nextNote; }
 
-    std::array<memoryBank, situationCount> banks{};
+    using themeBanks = std::array<memoryBank, situationCount>;
+    std::array<themeBanks, tuning::songMemory> banks{}; ///< per song slot, per theme
+    int slot = 0;             ///< the song slot playing now
+    double swing = 0.0;       ///< the song's swing, a share of a sixteenth
     randomStream phraseChoices;
     randomStream eventChoices;
     int repeats = 0;          ///< unchanged repeats in a row

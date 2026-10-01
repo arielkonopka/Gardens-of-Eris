@@ -26,18 +26,26 @@
 #include "musicianTuning.h"
 #include <array>
 #include <cstdint>
+#include <utility>
 
 /**
- * @brief The musician's own instrument: a small subtractive synthesizer.
+ * @brief The musician's own instrument: a small subtractive synthesizer that can also
+ * behave like an old sound chip.
  *
  * Decides HOW the music sounds. Each voice has two oscillators, an ADSR envelope, a
- * low-pass filter, vibrato, tremolo and a place in the stereo field; the synthesizer owns a
- * fixed pool of voices and mixes them with fixed headroom. Nothing here allocates or locks
- * after construction. See docs/adaptive-musician.md, "The synthesizer".
+ * low-pass filter, vibrato, tremolo, pulse width modulation, a pitch drop for drums and a
+ * place in the stereo field; the synthesizer owns a fixed pool of voices and mixes them with
+ * fixed headroom. A chipModel makes it step its volume and arpeggios at a frame rate, round
+ * pitches to a chip's dividers and keep a fixed number of channels per part (musicChips.h has
+ * the four sounds). Nothing here allocates or locks after construction. See
+ * docs/adaptive-musician.md, "The synthesizer" and "Chip sounds".
  */
 namespace goe::musician {
 
-enum class waveform : std::uint8_t { sine, triangle, saw, pulse };
+/// noise: a long random sequence clocked at the note's frequency; metal: the short, pitched
+/// one (the Game Boy's 7 bit noise); poly: a square that flips every fourth cycle (POKEY's
+/// buzzy distortion); wave4: a 32 step, 16 level triangle (the Game Boy's wave channel)
+enum class waveform : std::uint8_t { sine, triangle, saw, pulse, noise, metal, poly, wave4 };
 
 /// how one part of the band sounds; the performer's personality sets it
 struct instrument
@@ -58,6 +66,32 @@ struct instrument
     float pan = 0.0f;   ///< -1 left .. 1 right
     float width = 0.2f; ///< how far the slow stereo motion takes it from pan
     float gain = 1.0f;
+    float pwmRate = 0.0f, pwmDepth = 0.0f; ///< the pulse width sweeps by pwmDepth this many times a second
+    float pitchDrop = 0.0f;  ///< semitones the note starts above its pitch and falls from (drums)
+    float dropTime = 0.05f;  ///< seconds the pitch drop takes to fall to a third
+    float noiseBurst = 0.0f; ///< seconds of noise before the first oscillator's own wave (chip drums)
+    float basePitch = 60.0f; ///< the pitch a drum plays at (drum notes name the drum, not a pitch)
+};
+
+/// how a chip rounds its pitches: freely, to POKEY's 8 bit dividers, or to the Game Boy's 11 bit ones
+enum class pitchGrid : std::uint8_t { free, pokey, gameboy };
+
+/// what makes the synthesizer sound like a particular chip; the default is the free synthesizer
+struct chipModel
+{
+    /// how many times a second chords are arpeggiated, and stepped envelopes move
+    float frameRate = 50.0f;
+    /// 0: smooth volume; otherwise each voice's loudness has this many levels and moves once a frame
+    int volumeSteps = 0;
+    pitchGrid grid = pitchGrid::free;
+    /// false: raw waveforms, with the aliasing of a digital chip
+    bool bandLimited = true;
+    /// false: the voices skip the low-pass filter, as on chips without one
+    bool filtered = true;
+    /// voices kept for each part, like a chip's channels; 0 shares what the others leave
+    std::array<int, partCount> channels{};
+    /// the polyphony this model needs: the sum of its channels, or 0 when a part shares
+    int voices() const;
 };
 
 /// slow changes the tension makes to every instrument; 1 everywhere means none
@@ -75,11 +109,13 @@ class oscillator
 {
 public:
     void reset(float at = 0.0f) { this->phase = at; }
-    /// increment = frequency / sampleRate
-    float next(waveform w, float increment, float pulseWidth);
+    /// increment = frequency / sampleRate; raw: no anti-aliasing
+    float next(waveform w, float increment, float pulseWidth, bool raw = false);
 
 private:
     float phase = 0.0f;
+    std::uint16_t lfsr = 0x7fff; ///< the noise register
+    std::uint8_t cycle = 0;      ///< which cycle of poly's four is playing
 };
 
 /// attack, decay, sustain and release; the level is continuous, so restarting a sounding voice never clicks
@@ -118,11 +154,11 @@ private:
 class voice
 {
 public:
-    void start(std::uint32_t note, part who, float pitch, float velocity, const instrument &sound,
-               float sampleRate, std::uint64_t serial);
+    void start(const noteEvent &e, float pitch, const instrument &sound, float sampleRate, std::uint64_t serial);
     void release(float sampleRate, const timbreShift &shift);
     /// adds this voice's next n samples to left and right
-    void render(float *left, float *right, int n, float sampleRate, const timbreShift &shift, float motion);
+    void render(float *left, float *right, int n, float sampleRate, const timbreShift &shift, float motion,
+                const chipModel &chip);
     bool active() const { return this->env.now() != envelope::stage::idle; }
     bool releasing() const { return this->env.now() == envelope::stage::release; }
     float level() const { return this->env.level(); }
@@ -132,7 +168,7 @@ public:
     void silence();
 
 private:
-    void updateControls(float sampleRate, const timbreShift &shift, float motion);
+    void updateControls(float sampleRate, const timbreShift &shift, float motion, const chipModel &chip);
     instrument sound;
     part who = part::lead;
     std::uint32_t noteId = 0;
@@ -145,6 +181,12 @@ private:
     float gainLeft = 0.0f, gainRight = 0.0f;
     float incrementA = 0.0f, incrementB = 0.0f;
     float tremolo = 1.0f;
+    float pulseWidth = 0.5f;   ///< after the pulse width modulation
+    std::array<std::int8_t, 3> arp{};
+    int arpCount = 0;
+    float frameClock = 0.0f;   ///< chip frames since the note started
+    float stepped = 0.0f;      ///< a stepped envelope's level now (chip models with volumeSteps)
+    float steppedTarget = 0.0f;
     int untilControl = 0;
     oscillator a, b;
     envelope env;
@@ -172,6 +214,13 @@ public:
     explicit synthesizer(float sampleRate = 44100.0f, int voices = tuning::defaultVoices);
     void setSound(part who, const instrument &sound) { this->sounds[(int) who] = sound; }
     const instrument &soundOf(part who) const { return this->sounds[(int) who]; }
+    void setDrum(drum d, const instrument &sound) { this->kit[(std::size_t) d] = sound; }
+    const instrument &drumSound(drum d) const { return this->kit[(std::size_t) d]; }
+    /// the chip to sound like; its channels split the voices between the parts
+    void setChip(const chipModel &model);
+    const chipModel &chip() const { return this->model; }
+    /// the voices a part may use: [first, last)
+    std::pair<int, int> channelsOf(part who) const { return this->ranges[(std::size_t) who]; }
     void setShift(const timbreShift &target) { this->shiftTarget = target; }
     void noteOn(const noteEvent &e);
     void noteOff(const noteEvent &e);
@@ -189,11 +238,14 @@ public:
     static constexpr int blockFrames = 256;
 
 private:
-    int steal() const;
+    int steal(part who) const;
     float rate;
     int voices;
     std::array<voice, tuning::voiceCapacity> pool{};
     std::array<instrument, partCount> sounds{};
+    std::array<instrument, drumCount> kit{};
+    chipModel model;
+    std::array<std::pair<int, int>, partCount> ranges{};
     timbreShift shiftTarget, shiftNow;
     float motionPhase = 0.0f;
     std::uint64_t serial = 0;

@@ -85,9 +85,46 @@ float flushDenormal(float x)
 {
     return std::fabs(x) < 1e-20f ? 0.0f : x;
 }
+
+/// the nearest frequency the chip can make
+float onGrid(float hz, pitchGrid grid)
+{
+    switch (grid) {
+    case pitchGrid::pokey: {
+        // an 8 bit divider of the 64 kHz clock, or of the 15 kHz clock for low notes: high notes go out of tune
+        const float clock = hz >= 250.0f ? 63921.0f : 15699.0f;
+        const float n = std::clamp(std::round(clock / (2.0f * hz) - 1.0f), 0.0f, 255.0f);
+        return clock / (2.0f * (n + 1.0f));
+    }
+    case pitchGrid::gameboy: {
+        const float x = std::clamp(std::round(2048.0f - 131072.0f / hz), 0.0f, 2047.0f);
+        return 131072.0f / (2048.0f - x);
+    }
+    default:
+        return hz;
+    }
+}
+
+/// -1..1 and back once per cycle
+float triangleLfo(float phase)
+{
+    const float t = phase - std::floor(phase);
+    return 4.0f * std::fabs(t - 0.5f) - 1.0f;
+}
 } // namespace
 
-float oscillator::next(waveform w, float increment, float pulseWidth)
+int chipModel::voices() const
+{
+    int n = 0;
+    for (int c : this->channels) {
+        if (c <= 0)
+            return 0;
+        n += c;
+    }
+    return n;
+}
+
+float oscillator::next(waveform w, float increment, float pulseWidth, bool raw)
 {
     const float t = this->phase;
     float out;
@@ -100,21 +137,52 @@ float oscillator::next(waveform w, float increment, float pulseWidth)
         out = 4.0f * std::fabs(t - 0.5f) - 1.0f;
         break;
     case waveform::saw:
-        out = 2.0f * t - 1.0f - polyBlep(t, increment);
+        out = 2.0f * t - 1.0f - (raw ? 0.0f : polyBlep(t, increment));
         break;
+    case waveform::noise:
+    case waveform::metal:
+        out = (this->lfsr & 1u) != 0 ? 0.6f : -0.6f;
+        break;
+    case waveform::poly: {
+        // a square whose every fourth cycle is flipped: the buzz of POKEY's distortion, still in tune
+        // (the pattern repeats every four cycles, so what it adds lies two octaves under the note)
+        static constexpr bool pattern[] = {true, true, true, false};
+        out = ((t < 0.5f) == pattern[this->cycle] ? 0.6f : -0.6f);
+        break;
+    }
+    case waveform::wave4: {
+        // 32 steps of 16 levels, like the Game Boy's wave channel
+        const int at = std::min((int) (t * 32.0f), 31);
+        const int level = at < 16 ? at : 31 - at;
+        out = (float) level / 7.5f - 1.0f;
+        break;
+    }
     default: {
-        const float pw = std::clamp(pulseWidth, 0.1f, 0.9f);
+        const float pw = std::clamp(pulseWidth, 0.05f, 0.95f);
+        // a narrow pulse sits mostly below zero: its average is taken off, so notes start and stop without a thump
+        const float centre = 0.7f * (2.0f * pw - 1.0f);
+        if (raw) {
+            out = (t < pw ? 0.7f : -0.7f) - centre;
+            break;
+        }
         float shifted = t + 1.0f - pw;
         if (shifted >= 1.0f)
             shifted -= 1.0f;
         out = (t < pw ? 1.0f : -1.0f) + polyBlep(t, increment) - polyBlep(shifted, increment);
-        out *= 0.7f; // as loud as the other waveforms sound
+        out = out * 0.7f - centre; // as loud as the other waveforms sound
         break;
     }
     }
     this->phase += increment;
-    if (this->phase >= 1.0f)
+    if (this->phase >= 1.0f) {
         this->phase -= 1.0f;
+        this->cycle = (std::uint8_t) ((this->cycle + 1) % 4);
+        // the noise register moves on once a cycle; metal feeds back after 7 bits, so it repeats soon and rings
+        const auto bit = (std::uint16_t) ((this->lfsr ^ (this->lfsr >> 1)) & 1u);
+        this->lfsr = (std::uint16_t) ((this->lfsr >> 1) | (bit << 14));
+        if (w == waveform::metal)
+            this->lfsr = (std::uint16_t) ((this->lfsr & ~(1u << 6)) | (bit << 6));
+    }
     return out;
 }
 
@@ -189,18 +257,21 @@ float lowPass::process(float x)
     return v2;
 }
 
-void voice::start(std::uint32_t note, part player, float pitch, float vel, const instrument &snd,
-                  float sampleRate, std::uint64_t serialNo)
+void voice::start(const noteEvent &e, float pitch, const instrument &snd, float sampleRate, std::uint64_t serialNo)
 {
     const bool wasSounding = this->active();
     this->sound = snd;
-    this->who = player;
-    this->noteId = note;
+    this->who = e.who;
+    this->noteId = e.note;
     this->startSerial = serialNo;
     const float limit = sampleRate * tuning::maxFrequencyRatio;
     this->frequency = std::clamp(midiToHz(std::isfinite(pitch) ? pitch : 60.0f), tuning::minFrequency, limit);
-    this->velocity = std::clamp(std::isfinite(vel) ? vel : 0.0f, 0.0f, 1.0f);
+    this->velocity = std::clamp(std::isfinite(e.velocity) ? e.velocity : 0.0f, 0.0f, 1.0f);
     this->age = 0.0f;
+    this->frameClock = 0.0f;
+    this->arpCount = std::min<int>(e.arpCount, (int) e.arp.size());
+    for (int c = 0; c < (int) this->arp.size(); c++)
+        this->arp[(std::size_t) c] = (std::int8_t) std::clamp<int>(e.arp[(std::size_t) c], -24, 24);
     if (!wasSounding) {
         // a fresh voice starts from silence; a taken-over one keeps its phase and filter, so it glides
         this->glided = this->frequency;
@@ -223,10 +294,18 @@ void voice::silence()
     *this = voice();
 }
 
-void voice::updateControls(float sampleRate, const timbreShift &shift, float motion)
+void voice::updateControls(float sampleRate, const timbreShift &shift, float motion, const chipModel &chip)
 {
     const float step = (float) tuning::controlInterval / sampleRate;
     this->age += step;
+    const float frameRate = chip.frameRate > 0.0f ? chip.frameRate : 50.0f;
+    const int frameBefore = (int) this->frameClock;
+    this->frameClock += step * frameRate;
+    if (chip.volumeSteps > 0 && ((int) this->frameClock != frameBefore || this->age <= step)) {
+        // a chip's software envelope: the loudness moves to the nearest of its levels once a frame
+        const float steps = (float) chip.volumeSteps - 1.0f;
+        this->steppedTarget = std::round(this->env.level() * this->velocity * steps) / steps;
+    }
     // about 3 ms to glide to a new pitch when a sounding voice is taken over
     this->glided += (this->frequency - this->glided) * std::min(1.0f, step / 0.003f);
 
@@ -235,8 +314,18 @@ void voice::updateControls(float sampleRate, const timbreShift &shift, float mot
     const float onset = std::clamp((this->age - this->sound.vibratoOnset) / 0.3f, 0.0f, 1.0f);
     const float vibCents = std::min(this->sound.vibratoCents * shift.vibrato, tuning::maxVibratoCents) * onset
                            * std::sin(twoPi * this->vibratoPhase);
+    float semitones = vibCents / 100.0f;
+    if (this->arpCount > 0) {
+        // the chord's tones in turn, one per frame
+        const int k = (int) this->frameClock % (this->arpCount + 1);
+        if (k > 0)
+            semitones += (float) this->arp[(std::size_t) k - 1];
+    }
+    if (this->sound.pitchDrop != 0.0f)
+        semitones += this->sound.pitchDrop * std::exp(-this->age / std::max(this->sound.dropTime, 0.005f));
     const float limit = sampleRate * tuning::maxFrequencyRatio;
-    const float fa = std::clamp(this->glided * centsRatio(vibCents), tuning::minFrequency, limit);
+    const float fa = std::clamp(onGrid(this->glided * std::exp2(semitones / 12.0f), chip.grid), tuning::minFrequency, limit);
+    this->pulseWidth = this->sound.pulseWidth + this->sound.pwmDepth * triangleLfo(this->age * this->sound.pwmRate);
     const float detune = std::min(this->sound.detuneCents * shift.detune, tuning::maxDetuneCents);
     const float fb = std::clamp(fa * centsRatio(this->sound.secondInterval * 100.0f + detune), tuning::minFrequency, limit);
     this->incrementA = fa / sampleRate;
@@ -250,29 +339,44 @@ void voice::updateControls(float sampleRate, const timbreShift &shift, float mot
     const float opened = std::exp2(this->sound.filterEnvelope * this->env.level());
     this->filter.set(this->sound.cutoff * shift.brightness * keyFollow * opened, this->sound.resonance, sampleRate);
 
-    const float lean = this->who == part::pad ? -1.0f : (this->who == part::bass ? 0.3f : 1.0f);
+    const float lean = this->who == part::pad ? -1.0f
+                       : this->who == part::bass ? 0.3f
+                       : this->who == part::drums ? 0.0f
+                                                  : 1.0f;
     const float pan = std::clamp(this->sound.pan + this->sound.width * shift.motion * motion * lean, -1.0f, 1.0f);
     const float angle = (pan + 1.0f) * std::numbers::pi_v<float> * 0.25f;
     this->gainLeft = std::cos(angle);
     this->gainRight = std::sin(angle);
 }
 
-void voice::render(float *left, float *right, int n, float sampleRate, const timbreShift &shift, float motion)
+void voice::render(float *left, float *right, int n, float sampleRate, const timbreShift &shift, float motion,
+                   const chipModel &chip)
 {
     const float level = this->velocity * this->sound.gain;
     const float mixB = std::clamp(this->sound.secondMix, 0.0f, 1.0f);
     const float mixA = 1.0f - 0.5f * mixB;
+    const bool raw = !chip.bandLimited;
+    // a stepped level still moves over a millisecond: the steps are heard, the clicks are not
+    const float smooth = 1.0f - std::exp(-1.0f / (0.001f * sampleRate));
     for (int i = 0; i < n; i++) {
         if (this->untilControl <= 0) {
-            this->updateControls(sampleRate, shift, motion);
+            this->updateControls(sampleRate, shift, motion, chip);
             this->untilControl = tuning::controlInterval;
         }
         this->untilControl--;
         const float e = this->env.next();
-        float s = mixA * this->a.next(this->sound.wave, this->incrementA, this->sound.pulseWidth);
+        const waveform first = this->age < this->sound.noiseBurst ? waveform::noise : this->sound.wave;
+        float s = mixA * this->a.next(first, this->incrementA, this->pulseWidth, raw);
         if (mixB > 0.0f)
-            s += mixB * this->b.next(this->sound.secondWave, this->incrementB, this->sound.pulseWidth);
-        s = this->filter.process(s) * e * level * this->tremolo;
+            s += mixB * this->b.next(this->sound.secondWave, this->incrementB, this->pulseWidth, raw);
+        if (chip.filtered)
+            s = this->filter.process(s);
+        if (chip.volumeSteps > 0) {
+            this->stepped += (this->steppedTarget - this->stepped) * smooth;
+            s *= this->stepped * this->sound.gain * this->tremolo;
+        } else {
+            s *= e * level * this->tremolo;
+        }
         left[i] += s * this->gainLeft;
         right[i] += s * this->gainRight;
         if (this->env.now() == envelope::stage::idle)
@@ -285,16 +389,47 @@ synthesizer::synthesizer(float sampleRate, int voiceCount)
     , voices(std::clamp(voiceCount, 1, tuning::voiceCapacity))
 {
     sineTable(); // built here, never on the first note
+    this->setChip(chipModel{});
 }
 
-int synthesizer::steal() const
+void synthesizer::setChip(const chipModel &chosen)
 {
-    // 1. a free voice; 2. the quietest one already fading out; 3. the oldest note
-    for (int c = 0; c < this->voices; c++)
+    // sounding voices go on fading where they are; the steal rule finds them in their new part's channels
+    this->model = chosen;
+    int dedicated = 0;
+    bool shared = false;
+    for (int c : chosen.channels) {
+        dedicated += std::max(c, 0);
+        shared = shared || c <= 0;
+    }
+    if (dedicated > this->voices - (shared ? 1 : 0)) {
+        // more channels than voices: every part shares them all
+        this->ranges.fill({0, this->voices});
+        return;
+    }
+    // the dedicated channels from the top of the pool down, the drums' last; the shared ones below
+    int end = this->voices;
+    for (int p = partCount - 1; p >= 0; p--) {
+        const int c = chosen.channels[(std::size_t) p];
+        if (c > 0) {
+            this->ranges[(std::size_t) p] = {end - c, end};
+            end -= c;
+        }
+    }
+    for (int p = 0; p < partCount; p++)
+        if (chosen.channels[(std::size_t) p] <= 0)
+            this->ranges[(std::size_t) p] = {0, end};
+}
+
+int synthesizer::steal(part who) const
+{
+    // within the part's channels: 1. a free voice; 2. the quietest one already fading out; 3. the oldest note
+    const auto [first, last] = this->ranges[(std::size_t) who];
+    for (int c = first; c < last; c++)
         if (!this->pool[(std::size_t) c].active())
             return c;
     int best = -1;
-    for (int c = 0; c < this->voices; c++) {
+    for (int c = first; c < last; c++) {
         const auto &v = this->pool[(std::size_t) c];
         if (!v.releasing())
             continue;
@@ -304,8 +439,8 @@ int synthesizer::steal() const
     }
     if (best >= 0)
         return best;
-    best = 0;
-    for (int c = 1; c < this->voices; c++)
+    best = first;
+    for (int c = first + 1; c < last; c++)
         if (this->pool[(std::size_t) c].serial() < this->pool[(std::size_t) best].serial())
             best = c;
     return best;
@@ -313,13 +448,24 @@ int synthesizer::steal() const
 
 void synthesizer::noteOn(const noteEvent &e)
 {
-    const int at = this->steal();
+    if ((int) e.who >= partCount)
+        return;
+    const int at = this->steal(e.who);
     auto &v = this->pool[(std::size_t) at];
     if (v.active())
         this->lastMix.stolen++;
-    instrument sound = this->sounds[(int) e.who];
-    sound.attack *= this->shiftNow.attack;
-    v.start(e.note, e.who, e.pitch, e.velocity, sound, this->rate, ++this->serial);
+    instrument sound;
+    float pitch = e.pitch;
+    if (e.who == part::drums) {
+        // a drum note names the drum; the drum knows its own pitch
+        const int d = std::isfinite(e.pitch) ? std::clamp((int) e.pitch, 0, drumCount - 1) : 0;
+        sound = this->kit[(std::size_t) d];
+        pitch = sound.basePitch;
+    } else {
+        sound = this->sounds[(int) e.who];
+        sound.attack *= this->shiftNow.attack;
+    }
+    v.start(e, pitch, sound, this->rate, ++this->serial);
 }
 
 void synthesizer::noteOff(const noteEvent &e)
@@ -377,7 +523,7 @@ void synthesizer::render(float *left, float *right, int n)
         if (!v.active())
             continue;
         active++;
-        v.render(left, right, n, this->rate, this->shiftNow, motion);
+        v.render(left, right, n, this->rate, this->shiftNow, motion, this->model);
     }
     this->lastMix.activeVoices = std::max(this->lastMix.activeVoices, active);
     for (int i = 0; i < n; i++) {
