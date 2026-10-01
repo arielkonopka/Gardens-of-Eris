@@ -43,8 +43,23 @@ jobs:
           mkdir -p CoverageReports
           gcovr -r . --object-directory build -e unitTests --sonarqube -o CoverageReports/coverageReport.XML
 
-      - name: SonarCloud scan
+      # An expired or revoked token is refused before any analysis runs. That is a settings
+      # problem, not a code problem, so it shows as a warning instead of failing the check.
+      - name: Check SonarCloud token
+        id: token
         if: env.SONAR_TOKEN != ''
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $SONAR_TOKEN" \
+            "https://api.sonarcloud.io/analysis/jres?os=linux&arch=x86_64")
+          if [ "$code" = "401" ] || [ "$code" = "403" ]; then
+            echo "::warning::SonarCloud refused SONAR_TOKEN (HTTP $code), so the scan was skipped. Replace the SONAR_TOKEN secret with a new token from sonarcloud.io."
+            echo "valid=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "valid=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: SonarCloud scan
+        if: env.SONAR_TOKEN != '' && steps.token.outputs.valid == 'true'
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_HOST_URL: https://sonarcloud.io
