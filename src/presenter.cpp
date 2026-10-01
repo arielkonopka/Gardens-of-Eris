@@ -623,7 +623,7 @@ void presenter::handleSaveKeys()
         std::cout << (ok ? "Game loaded from " : "Loading failed: ") << saveFile << "\n";
 }
 
-gameEnd presenter::presentEverything(bool demoMode)
+gameEnd presenter::presentEverything(bool demoMode, int demoSeconds)
 {
     std::shared_ptr<bElem> currentPlayer = nullptr;
     ALLEGRO_EVENT event;
@@ -635,6 +635,8 @@ gameEnd presenter::presentEverything(bool demoMode)
     this->demo = demoMode;
     this->pilot.reset();
     const auto pressesBefore = inputManager::getInstance().activity();
+    // the demo's time is wall time: a slow machine runs fewer ticks, not a longer demo
+    const double demoEnds = al_get_time() + demoSeconds;
     inputManager::getInstance().takeExitRequest(); // a press from the title screen does not count
     al_flush_event_queue(this->evQueue.get()); // ticks queued while the title screen was up
     // read again each game, so a file picked in Config is used; seenChunks is kept, so the chunks
@@ -655,6 +657,11 @@ gameEnd presenter::presentEverything(bool demoMode)
                 inputManager::getInstance().takeExitRequest();
                 if (inputManager::getInstance().activity() != pressesBefore) {
                     result = gameEnd::DEMO_OVER;
+                    this->fin = true;
+                    break;
+                }
+                if (demoSeconds > 0 && al_get_time() >= demoEnds) {
+                    result = gameEnd::DEMO_DONE;
                     this->fin = true;
                     break;
                 }

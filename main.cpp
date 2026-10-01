@@ -37,9 +37,18 @@
 #include <cstdlib>
 #include <string>
 #include "randomStreams.h"
+#include "difficulty.h"
+#include "hallOfFame.h"
+#include <filesystem>
 
 namespace {
-/// what the player reads when a game ends; the lost game's save goes, so it cannot be continued
+std::filesystem::path hallOfFameFile()
+{
+    return std::filesystem::path(gameSettings::getInstance().getSaveDirectory()) / goe::hallOfFame::fileName;
+}
+
+/// what the player reads when a game ends; the lost game's save goes, so it cannot be continued.
+/// A score good enough for the hall of fame asks for a name and shows the list.
 void showEnd(titleScreen &title, int bestScore, bool &windowOpen)
 {
     // the maze never ends, so a game only ends when the last avatar is lost
@@ -47,24 +56,51 @@ void showEnd(titleScreen &title, int bestScore, bool &windowOpen)
     if (!gameSerializer::removeSave(saveFile))
         std::cout << "The save of the lost game " << saveFile << " could not be deleted\n";
     const std::vector<std::string> lines = {"Best score: " + std::to_string(bestScore)};
-    windowOpen = title.showMessage("Game over", lines);
+    auto fame = goe::hallOfFame::load(hallOfFameFile());
+    if (!fame.qualifies(bestScore)) {
+        windowOpen = title.showMessage("Game over", lines);
+        return;
+    }
+    std::string name;
+    auto asked = lines;
+    asked.push_back("You made it into the hall of fame. Your name?");
+    windowOpen = title.askName("Game over", asked, name);
+    const auto place = fame.add({name, bestScore, goe::today()});
+    if (!fame.save(hallOfFameFile()))
+        std::cout << "The hall of fame could not be written to " << hallOfFameFile().string() << "\n";
+    if (windowOpen)
+        windowOpen = title.showHallOfFame(fame, 0, place ? (int) *place : -1) != titleScreen::screenEnd::CLOSED;
+}
+
+/// a chunk far from the start in a random direction, where the maze is at its hardest (chunk
+/// depth 4 from 15 chunks on) and D is high
+coords farChunk()
+{
+    constexpr int nearest = difficulty::twentyThree, furthest = 63;
+    auto &rng = goe::rng::cosmetic();
+    const int along = nearest + (int) goe::rng::below(rng, furthest - nearest + 1);
+    const int across = (int) goe::rng::below(rng, 2 * along + 1) - along;
+    const int sign = goe::rng::below(rng, 2) == 0 ? -1 : 1;
+    return goe::rng::below(rng, 2) == 0 ? coords(sign * along, across) : coords(across, sign * along);
 }
 
 /// the title screen's demo: the autopilot plays a world of its own, which goes when it ends.
-/// No save is written, replaced or deleted. False when the window was closed.
-bool playDemo(presenter::presenter &shown, titleScreen &title)
+/// It starts far out in the maze, so it looks like a game well under way. No save is written,
+/// replaced or deleted. DEMO_OVER when a press ended it, QUIT when the window closed.
+presenter::gameEnd playDemo(presenter::presenter &shown, titleScreen &title)
 {
     const auto seed = goe::rng::worldSeed();
     title.showBusy("Building the maze...");
     gameSerializer::clearWorld();
     goe::rng::setWorldSeed(goe::rng::freshSeed());
-    worldBuilder::startNew();
+    const auto world = worldBuilder::startNew();
+    worldBuilder::movePlayerTo(world, farChunk());
     soundManager::getInstance().enableSound();
-    const auto end = shown.presentEverything(true);
+    const auto end = shown.presentEverything(true, gameSettings::getInstance().getDemoLength());
     gameSerializer::clearWorld();
     // the next game is built as it would have been without the demo ("--seed" included)
     goe::rng::setWorldSeed(seed);
-    return end != presenter::gameEnd::QUIT;
+    return end;
 }
 } // namespace
 
@@ -109,13 +145,22 @@ int main( int argc, char * argv[] )
                 std::cout << "Loaded " << saveToLoad << "\n";
                 goe::crashLog::setDetail("Loaded save", saveToLoad);
             } else {
-                // nobody pressing anything for a minute or two on the main menu starts the demo
-                menu.setDemoAfter(60.0 + (double) goe::rng::below(goe::rng::cosmetic(), 61));
+                // nobody pressing anything on the main menu for the demo wait (and a random part of
+                // it again) starts the demo
+                const int wait = gameSettings::getInstance().getDemoWait();
+                menu.setDemoAfter((double) (wait + (int) goe::rng::below(goe::rng::cosmetic(), (std::size_t) wait + 1)));
                 const auto choice = title.run();
                 if (choice == titleMenu::action::EXIT)
                     break;
                 if (choice == titleMenu::action::DEMO) {
-                    windowOpen = playDemo(*myPresenter, title);
+                    // the demo, then the hall of fame, unless a press brings the menu back first
+                    const auto end = playDemo(*myPresenter, title);
+                    if (end == presenter::gameEnd::QUIT)
+                        windowOpen = false;
+                    else if (end != presenter::gameEnd::DEMO_OVER)
+                        windowOpen = title.showHallOfFame(goe::hallOfFame::load(hallOfFameFile()),
+                                                          gameSettings::getInstance().getHallOfFameLength())
+                                     != titleScreen::screenEnd::CLOSED;
                     continue;
                 }
                 // the save folder may have changed on the config screen

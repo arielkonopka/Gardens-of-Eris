@@ -96,6 +96,28 @@ bool gameSettings::setStoriesFile(const std::string &file)
     return true;
 }
 
+namespace {
+int secondsIn(int s)
+{
+    return std::clamp(s, gameSettings::minSeconds, gameSettings::maxSeconds);
+}
+} // namespace
+
+void gameSettings::setDemoWait(int seconds)
+{
+    this->demoWait = secondsIn(seconds);
+}
+
+void gameSettings::setDemoLength(int seconds)
+{
+    this->demoLength = secondsIn(seconds);
+}
+
+void gameSettings::setHallOfFameLength(int seconds)
+{
+    this->hallOfFameLength = secondsIn(seconds);
+}
+
 goe::controls::bindings gameSettings::getControls() const
 {
     std::lock_guard<std::mutex> lock(this->m);
@@ -175,6 +197,12 @@ bool gameSettings::load(const std::string &file)
     }
     if (doc.HasMember("controls") && doc["controls"].IsObject())
         this->setControls(readControls(doc["controls"], this->getControls()));
+    if (doc.HasMember("demoWait") && doc["demoWait"].IsInt())
+        this->setDemoWait(doc["demoWait"].GetInt());
+    if (doc.HasMember("demoLength") && doc["demoLength"].IsInt())
+        this->setDemoLength(doc["demoLength"].GetInt());
+    if (doc.HasMember("hallOfFameLength") && doc["hallOfFameLength"].IsInt())
+        this->setHallOfFameLength(doc["hallOfFameLength"].GetInt());
     return true;
 }
 
@@ -193,6 +221,12 @@ bool gameSettings::save(const std::string &file) const
     w.Bool(this->getStoriesShown());
     w.Key("storiesFile");
     w.String(this->getStoriesFile().c_str());
+    w.Key("demoWait");
+    w.Int(this->getDemoWait());
+    w.Key("demoLength");
+    w.Int(this->getDemoLength());
+    w.Key("hallOfFameLength");
+    w.Int(this->getHallOfFameLength());
     w.Key("controls");
     w.StartObject();
     const auto bound = this->getControls();
@@ -226,5 +260,8 @@ void gameSettings::resetToDefaults()
     this->effectsVolume = 100;
     this->storiesShown = true;
     this->storiesFile = defaultStoriesFile;
+    this->demoWait = 60;
+    this->demoLength = 30;
+    this->hallOfFameLength = 10;
     this->controls = {};
 }
