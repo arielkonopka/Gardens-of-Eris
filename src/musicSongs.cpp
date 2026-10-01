@@ -31,40 +31,61 @@ songbook::songbook(std::uint64_t seed)
 {
 }
 
-song songbook::make(const performerPersonality &who, float variety, int slot)
+song songbook::make(const performerPersonality &who, float variety, int slot, genre style)
 {
     auto &r = this->choices;
     song s;
     s.id = ++this->nextId;
     s.slot = slot;
+    if (style == genre::mixed)
+        style = (genre) (1 + r.below(genreCount - 1)); // a mixed set: each song a style of its own
+    s.style = style;
+    const genreRules &rules = rulesOf(style);
     // the further the variety, the further from home: a related key, another mode, another tempo
     static constexpr int keys[] = {5, -5, 7, -2, 3, -3, 2};
     s.keyShift = this->started > 0 && r.chance(0.9f * variety) ? keys[r.below(7)] : 0;
     static constexpr mode modes[] = {mode::aeolian, mode::ionian, mode::dorian, mode::mixolydian};
     s.scale = this->started > 0 && r.chance(0.6f * variety) ? modes[r.below(4)] : who.homeMode;
+    if (rules.modeCount > 0) // the style's modes, its first the likeliest when the variety is low
+        s.scale = rules.modes[(std::size_t) (r.chance(0.4f + 0.6f * variety) ? r.below(rules.modeCount) : 0)];
     // a new tempo that is heard as one: away from the song before, unless the variety is low
     const float before = this->count > 0 ? this->current().tempo : who.baseTempo;
     for (int tries = 0; tries < 5; tries++) {
-        s.tempo = who.baseTempo * (1.0f + tuning::songTempoSpread * variety * r.between(-1.0f, 1.0f));
+        if (rules.maxTempo > 0.0f) {
+            // the style's range: near its middle at low variety, anywhere in it at high
+            const float middle = 0.5f * (rules.minTempo + rules.maxTempo), half = 0.5f * (rules.maxTempo - rules.minTempo);
+            s.tempo = middle + half * (0.3f + 0.7f * variety) * r.between(-1.0f, 1.0f);
+        } else {
+            s.tempo = who.baseTempo * (1.0f + tuning::songTempoSpread * variety * r.between(-1.0f, 1.0f));
+        }
         if (std::fabs(s.tempo - before) >= 0.1f * variety * before)
             break;
     }
-    // calm performers lean to the plain grooves, energetic ones to the busy ones
-    const int grooves = (int) vocabulary::grooves.size();
+    // calm performers lean to the plain grooves, energetic ones to the busy ones; a style has its own
+    const int grooves = vocabulary::freeGrooves;
     const float lean = std::clamp(0.6f * who.traits.energy + 0.4f * r.unit(), 0.0f, 0.999f);
     s.groove = r.chance(0.5f + 0.5f * variety) ? r.below(grooves) : std::min((int) (lean * (float) grooves), grooves - 1);
+    const int styleGrooves = (int) std::count_if(rules.grooves.begin(), rules.grooves.end(), [](int g) { return g >= 0; });
+    if (styleGrooves > 0)
+        s.groove = rules.grooves[(std::size_t) r.below(styleGrooves)];
     const auto &g = vocabulary::grooves[(std::size_t) s.groove];
     s.swing = g.swing > 0.0f ? g.swing : (r.chance(0.3f * variety) ? r.between(0.1f, 0.2f) : 0.0f);
     s.swing = std::min(s.swing, tuning::maxSwing);
-    if (g.name == "half time")
+    if (g.name == "half time" && rules.maxTempo <= 0.0f)
         s.tempo *= 1.15f; // half time feels slow, so it is counted a little faster
     s.tempo = std::clamp(s.tempo, tuning::minTempo, tuning::maxTempo);
     const float phrases = (float) tuning::longestSong + ((float) tuning::shortestSong - (float) tuning::longestSong) * variety;
-    s.length = std::max(3, (int) std::lround(phrases) + r.below(3) - 1);
+    s.length = std::max(3, (int) std::lround(phrases * rules.lengthScale) + r.below(3) - 1);
     s.energyLean = 0.25f * variety * r.between(-1.0f, 1.0f);
     s.articulationLean = 0.3f * variety * r.between(-1.0f, 1.0f);
+    if (rules.progressions[0] >= 0) {
+        // three of the style's progressions (they may repeat: a style may have few)
+        for (auto &p : s.progressions)
+            p = (std::uint8_t) rules.progressions[(std::size_t) r.below((int) rules.progressions.size())];
+        return s;
+    }
     // three favourite progressions, all different
-    const int n = (int) vocabulary::progressions.size();
+    const int n = vocabulary::freeProgressions;
     s.progressions[0] = (std::uint8_t) r.below(n);
     s.progressions[1] = (std::uint8_t) ((s.progressions[0] + 1 + r.below(n - 1)) % n);
     do
@@ -85,27 +106,34 @@ section songbook::sectionOf(int k, const song &s) const
     return cycle[(k - 1) % 4];
 }
 
-phrasePlan songbook::next(const performerPersonality &who, const musicalState &tension, situation now, float variety)
+phrasePlan songbook::next(const performerPersonality &who, const musicalState &tension, situation now, float variety,
+                          genre style)
 {
     auto &r = this->choices;
     variety = std::clamp(std::isfinite(variety) ? variety : 0.5f, 0.0f, 1.0f);
+    if ((int) style >= genreCount)
+        style = genre::mixed;
     phrasePlan plan;
-    if (this->count == 0 || this->phrase >= this->current().length) {
+    // a song of another style than the one chosen ends here: the chosen style starts at once
+    const bool wrongStyle = this->count > 0 && style != genre::mixed && this->current().style != style;
+    if (this->count == 0 || this->phrase >= this->current().length || wrongStyle) {
+        // an earlier song may come back: any but the one just played, of the chosen style
+        std::array<int, tuning::songMemory> candidates{};
+        int found = 0;
+        for (int c = 0; c < this->count; c++)
+            if (c != this->playing && (style == genre::mixed || this->songs[(std::size_t) c].style == style))
+                candidates[(std::size_t) found++] = c;
         const float back = tuning::returnAtLowVariety + (tuning::returnAtHighVariety - tuning::returnAtLowVariety) * variety;
-        this->cameBack = this->count > 1 && r.chance(back);
+        this->cameBack = found > 0 && r.chance(back);
         if (this->cameBack) {
-            // an earlier song, never the one just played
-            int pick = r.below(this->count - 1);
-            if (pick >= this->playing)
-                pick++;
-            this->playing = pick;
+            this->playing = candidates[(std::size_t) r.below(found)];
             this->returned++;
             this->freshNext = false;
         } else {
             // a new song, in the slot of the oldest one when the memory is full
             const int slot = this->oldest;
             this->oldest = (this->oldest + 1) % tuning::songMemory;
-            this->songs[(std::size_t) slot] = this->make(who, variety, slot);
+            this->songs[(std::size_t) slot] = this->make(who, variety, slot, style);
             this->count = std::min(this->count + 1, tuning::songMemory);
             this->playing = slot;
             this->freshNext = true;
@@ -124,6 +152,8 @@ phrasePlan songbook::next(const performerPersonality &who, const musicalState &t
     plan.groove = s.groove;
     plan.swing = s.swing;
     plan.progressions = s.progressions;
+    plan.style = s.style;
+    const genreRules &rules = rulesOf(s.style);
 
     // the intensity: the tension, then the section, then how much danger the player is in
     static constexpr float sectionLift[] = {-0.1f, 0.0f, 0.15f, -0.2f, 0.0f};
@@ -140,6 +170,9 @@ phrasePlan songbook::next(const performerPersonality &who, const musicalState &t
     case section::intro:
         plan.lead = r.chance(0.5f); // often the band plays the groove first and the melody joins later
         break;
+    case section::verse:
+        plan.lead = r.chance(rules.leadChance); // some styles leave whole verses to the groove
+        break;
     case section::breakdown:
         // the drums drop out under the melody, or the melody drops out over the drums and bass
         if (r.chance(0.5f)) {
@@ -153,6 +186,8 @@ phrasePlan songbook::next(const performerPersonality &who, const musicalState &t
     default:
         break;
     }
+    if (plan.drums > 0 || plan.part != section::breakdown) // the style's drums, breakdowns aside
+        plan.drums = std::clamp(plan.drums, rules.drumFloor, rules.drumCeiling);
     if (now == situation::danger)
         plan.drums = std::max(plan.drums, 2); // under danger the drums never leave
     plan.drums = std::clamp(plan.drums, 0, 3);

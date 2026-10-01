@@ -45,7 +45,7 @@ struct latentTraits
 };
 
 /// a scale, as semitones above its root
-enum class mode : std::uint8_t { ionian, dorian, aeolian, mixolydian, harmonicMinor };
+enum class mode : std::uint8_t { ionian, dorian, aeolian, mixolydian, harmonicMinor, phrygian };
 
 struct performerPersonality
 {

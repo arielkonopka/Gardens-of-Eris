@@ -42,7 +42,7 @@
  *
  * Threads:
  * - the control functions (setDifficulty, setSituation, setEnabled, setVolume, setStyle,
- *   setVariety, setTempoScale, pause, resume) may be called from any thread at any time; they
+ *   setGenre, setVariety, setTempoScale, pause, resume) may be called from any thread at any time; they
  *   only store atomics;
  * - composeAhead() and renderAudio() belong to the one thread that feeds the audio engine
  *   (the sound thread); renderAudio() never allocates, locks, logs or touches files;
@@ -81,6 +81,9 @@ public:
     void setVolume(float volume);
     /// which chip the band sounds like; a change is heard at once, with a new phrase
     void setStyle(chipStyle style);
+    /// the music style (rave, techno, metal ...; Mixed gives each song its own): how the band
+    /// plays, not how it sounds. A change is heard from the next bar, with a new song
+    void setGenre(genre g);
     /// 0..1: how much the music changes; 0 long songs near home, 1 short songs that wander far
     void setVariety(float variety);
     /// the player's tempo, a share of the composed one (tuning::minTempoScale..maxTempoScale);
@@ -103,6 +106,7 @@ public:
     const synthesizer &synth() const { return this->band; }
     const songbook &songs() const { return this->setlist; }
     chipStyle style() const { return this->styleNow; }
+    genre musicStyle() const { return this->genreNow; }
     /// samples played since initialize
     std::int64_t position() const { return this->now; }
     int queued() const { return this->queue.size(); }
@@ -115,7 +119,8 @@ private:
     {
         std::int64_t start = 0, barLength = 0, end = 0;
     };
-    void escalate();
+    /// drops what is planned after the next bar line, so a new theme or style is heard soon
+    void cutAtNextBar();
     /// puts the band on another chip: what is planned is dropped and a new phrase starts now
     void restyle(chipStyle style);
     /// moves the tension on in audio time up to the sample `until`
@@ -129,6 +134,7 @@ private:
     std::atomic<bool> pausedWanted{false};
     std::atomic<float> volumeWanted{1.0f};
     std::atomic<int> styleWanted{0};
+    std::atomic<int> genreWanted{(int) genre::mixed};
     std::atomic<float> varietyWanted{0.6f};
     std::atomic<float> tempoWanted{1.0f};
 
@@ -141,6 +147,7 @@ private:
     songbook setlist;
     synthesizer band;
     chipStyle styleNow = chipStyle::adlib;
+    genre genreNow = genre::mixed;
     bandSound sound;
     eventQueue queue;
     phraseBuffer scratch;

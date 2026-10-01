@@ -26,12 +26,13 @@
 namespace goe::musician {
 
 namespace {
-constexpr std::array<std::array<int, 7>, 5> scales{{
+constexpr std::array<std::array<int, 7>, 6> scales{{
     {0, 2, 4, 5, 7, 9, 11},  // ionian
     {0, 2, 3, 5, 7, 9, 10},  // dorian
     {0, 2, 3, 5, 7, 8, 10},  // aeolian
     {0, 2, 4, 5, 7, 9, 10},  // mixolydian
     {0, 2, 3, 5, 7, 8, 11},  // harmonic minor
+    {0, 1, 3, 5, 7, 8, 10},  // phrygian
 }};
 
 bool unitRange(float v)

@@ -29,7 +29,8 @@ int main(int argc, char *argv[])
     using namespace goe::musician;
     if (argc < 2) {
         std::cerr << "usage: goe-musician out.wav [seconds] [seed] [difficulty|from:to] [calm|alert|danger] [rate]\n"
-                     "environment: GOE_STYLE=adlib|sid|pokey|gameboy, GOE_VARIETY=0..1, GOE_TEMPO=0.5..1.5,\n"
+                     "environment: GOE_STYLE=adlib|sid|pokey|gameboy, GOE_GENRE=mixed|free|rave|techno|metal|disco|\n"
+                     "             psytrance|jazz|rock, GOE_VARIETY=0..1, GOE_TEMPO=0.5..1.5,\n"
                      "             GOE_PHRASES=1 prints a line per phrase\n";
         return 1;
     }
@@ -58,6 +59,8 @@ int main(int argc, char *argv[])
     m.setSituation(s);
     if (const char *style = std::getenv("GOE_STYLE"))
         m.setStyle(styleNamed(style));
+    if (const char *g = std::getenv("GOE_GENRE"))
+        m.setGenre(genreNamed(g));
     if (const char *v = std::getenv("GOE_VARIETY"))
         m.setVariety((float) std::atof(v));
     if (const char *t = std::getenv("GOE_TEMPO"))
@@ -77,8 +80,8 @@ int main(int argc, char *argv[])
             const auto &r = m.lastPhrase();
             static const char *made[] = {"new", "repeat", "variation"};
             static const char *parts[] = {"intro", "verse", "chorus", "break", "outro"};
-            std::printf("%6.1fs song %2u %-6s drums %d%s %-9s motif %3u/%3u bars %d notes/beat %.2f sync %2d chrom %d colour %d/%d leap %2d poly %d tempo %.1f%s\n",
-                        (double) done / rate, r.song, parts[(int) r.part], r.drums, r.fill ? "+fill" : "     ",
+            std::printf("%6.1fs %-9s song %2u %-6s drums %d%s %-9s motif %3u/%3u bars %d notes/beat %.2f sync %2d chrom %d colour %d/%d leap %2d poly %d tempo %.1f%s\n",
+                        (double) done / rate, std::string(nameOf(r.style)).c_str(), r.song, parts[(int) r.part], r.drums, r.fill ? "+fill" : "     ",
                         made[(int) r.made], r.motifId, r.family, r.bars, r.notesPerBeat(), r.syncopated, r.chromatic,
                         r.colouredChords, r.chords, r.maxLeap, r.maxSimultaneous, r.tempo,
                         r.silent ? " (lead rests)" : "");
@@ -106,7 +109,7 @@ int main(int argc, char *argv[])
     o.write(reinterpret_cast<const char *>(pcm.data()), bytes);
 
     const auto &p = m.personality();
-    std::cout << nameOf(m.style()) << ", seed " << seed << ": tempo " << p.baseTempo << ", energy " << p.energy << ", complexity "
+    std::cout << nameOf(m.style()) << ", " << nameOf(m.musicStyle()) << ", seed " << seed << ": tempo " << p.baseTempo << ", energy " << p.energy << ", complexity "
               << p.rhythmicComplexity << ", dissonance " << p.dissonance << "\n"
               << m.phrasesComposed() << " phrases in " << m.songs().songsStarted() << " songs ("
               << m.songs().songsReturned() << " came back), peak " << m.synth().report().peak << ", rendered " << seconds

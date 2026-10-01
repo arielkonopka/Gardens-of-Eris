@@ -670,6 +670,7 @@ void soundManager::streamPerformer()
     const auto &settings = gameSettings::getInstance();
     auto &musician = this->performer->musician();
     musician.setStyle(settings.getPerformerSound());
+    musician.setGenre(settings.getMusicStyle());
     musician.setVariety((float) settings.getMusicVariety() / 100.0f);
     musician.setTempoScale((float) settings.getMusicTempo() / 100.0f);
     this->performer->pump(difficulty::musicianLevel(this->difficultyNow),

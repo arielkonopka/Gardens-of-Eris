@@ -1,6 +1,7 @@
 #include "gameSettings.h"
 #include "titleMenu.h"
 #include "musicChips.h"
+#include "musicGenres.h"
 #include <allegro5/keycodes.h>
 #include <gtest/gtest.h>
 #include "testSupport.h"
@@ -131,21 +132,22 @@ TEST(TitleMenuTests, ConfigShowsSaveLocationAndGoesBack)
     EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::NONE);
     ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
     auto lines = m.getLines();
-    ASSERT_EQ(lines.size(), 14u);
+    ASSERT_EQ(lines.size(), 15u);
     EXPECT_EQ(lines[0], "Save location: .");
     EXPECT_EQ(lines[1], "Music volume: 100%");
     EXPECT_EQ(lines[2], "Sound effects volume: 100%");
     EXPECT_EQ(lines[3], "Music: Skin samples");
     EXPECT_EQ(lines[4], "Performer sound: AdLib");
-    EXPECT_EQ(lines[5], "Music variety: 60%");
-    EXPECT_EQ(lines[6], "Music tempo: 100%");
-    EXPECT_EQ(lines[7], "Story scroller: On");
-    EXPECT_EQ(lines[8], "Stories file: data/txt/stories.json");
-    EXPECT_EQ(lines[9], "Demo after: 60 s");
-    EXPECT_EQ(lines[10], "Demo length: 30 s");
-    EXPECT_EQ(lines[11], "Hall of fame shown: 10 s");
-    EXPECT_EQ(lines[12], "Controls");
-    EXPECT_EQ(lines[13], "Back");
+    EXPECT_EQ(lines[5], "Music style: Mixed");
+    EXPECT_EQ(lines[6], "Music variety: 60%");
+    EXPECT_EQ(lines[7], "Music tempo: 100%");
+    EXPECT_EQ(lines[8], "Story scroller: On");
+    EXPECT_EQ(lines[9], "Stories file: data/txt/stories.json");
+    EXPECT_EQ(lines[10], "Demo after: 60 s");
+    EXPECT_EQ(lines[11], "Demo length: 30 s");
+    EXPECT_EQ(lines[12], "Hall of fame shown: 10 s");
+    EXPECT_EQ(lines[13], "Controls");
+    EXPECT_EQ(lines[14], "Back");
     m.keyDown(ALLEGRO_KEY_ESCAPE);
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::MAIN);
     EXPECT_EQ(m.getSelected(), 1);
@@ -289,11 +291,11 @@ TEST(TitleMenuTests, StoryScrollerSwitchesAndIsKept)
 {
     scratch s;
     titleMenu m(gameSettings::getInstance(), s.settingsFile());
-    openConfigAt(m, 7);
+    openConfigAt(m, 8);
     m.keyDown(ALLEGRO_KEY_ENTER); // a switch: Enter flips it, no editor
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
     EXPECT_FALSE(gameSettings::getInstance().getStoriesShown());
-    EXPECT_EQ(m.getLines()[7], "Story scroller: Off");
+    EXPECT_EQ(m.getLines()[8], "Story scroller: Off");
     EXPECT_EQ(m.getMessage(), "Saved");
     gameSettings::getInstance().resetToDefaults();
     ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
@@ -336,17 +338,18 @@ TEST(TitleMenuTests, PerformerSoundVarietyAndTempoAreChosenAndKept)
     m.keyDown(ALLEGRO_KEY_LEFT);
     EXPECT_EQ(m.getLines()[4], "Performer sound: Game Boy");
     // variety in steps of five, never past 100
+    m.keyDown(ALLEGRO_KEY_DOWN); // past the music style
     m.keyDown(ALLEGRO_KEY_DOWN);
     for (int c = 0; c < 10; c++)
         m.keyDown(ALLEGRO_KEY_RIGHT);
-    EXPECT_EQ(m.getLines()[5], "Music variety: 100%");
+    EXPECT_EQ(m.getLines()[6], "Music variety: 100%");
     m.keyDown(ALLEGRO_KEY_LEFT);
-    EXPECT_EQ(m.getLines()[5], "Music variety: 95%");
+    EXPECT_EQ(m.getLines()[6], "Music variety: 95%");
     // tempo from 50% to 150%, typed or stepped
     m.keyDown(ALLEGRO_KEY_DOWN);
     for (int c = 0; c < 20; c++)
         m.keyDown(ALLEGRO_KEY_LEFT);
-    EXPECT_EQ(m.getLines()[6], "Music tempo: 50%");
+    EXPECT_EQ(m.getLines()[7], "Music tempo: 50%");
     m.keyDown(ALLEGRO_KEY_ENTER);
     for (int c = 0; c < 4; c++)
         m.keyDown(ALLEGRO_KEY_BACKSPACE);
@@ -358,7 +361,7 @@ TEST(TitleMenuTests, PerformerSoundVarietyAndTempoAreChosenAndKept)
         m.keyDown(ALLEGRO_KEY_BACKSPACE);
     type(m, "120%");
     m.keyDown(ALLEGRO_KEY_ENTER);
-    EXPECT_EQ(m.getLines()[6], "Music tempo: 120%");
+    EXPECT_EQ(m.getLines()[7], "Music tempo: 120%");
     // kept in the settings file
     gameSettings::getInstance().resetToDefaults();
     ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
@@ -367,11 +370,38 @@ TEST(TitleMenuTests, PerformerSoundVarietyAndTempoAreChosenAndKept)
     EXPECT_EQ(gameSettings::getInstance().getMusicTempo(), 120);
 }
 
+TEST(TitleMenuTests, MusicStyleCyclesAndIsKept)
+{
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    openConfigAt(m, 5);
+    m.keyDown(ALLEGRO_KEY_RIGHT);
+    EXPECT_EQ(m.getLines()[5], "Music style: Free");
+    m.keyDown(ALLEGRO_KEY_ENTER); // Enter steps forward
+    EXPECT_EQ(m.getLines()[5], "Music style: Rave");
+    m.keyDown(ALLEGRO_KEY_LEFT);
+    m.keyDown(ALLEGRO_KEY_LEFT);
+    EXPECT_EQ(m.getLines()[5], "Music style: Mixed");
+    m.keyDown(ALLEGRO_KEY_LEFT); // wraps around
+    EXPECT_EQ(m.getLines()[5], "Music style: Rock");
+    m.keyDown(ALLEGRO_KEY_LEFT);
+    EXPECT_EQ(m.getLines()[5], "Music style: Jazz");
+    // the performer's sound is left alone
+    EXPECT_TRUE(gameSettings::getInstance().getPerformerSound() == goe::musician::chipStyle::adlib);
+    gameSettings::getInstance().resetToDefaults();
+    EXPECT_TRUE(gameSettings::getInstance().getMusicStyle() == goe::musician::genre::mixed);
+    ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
+    EXPECT_TRUE(gameSettings::getInstance().getMusicStyle() == goe::musician::genre::jazz);
+    std::ifstream in(s.settingsFile());
+    const std::string text((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    EXPECT_NE(text.find("\"musicStyle\""), std::string::npos);
+}
+
 TEST(TitleMenuTests, StoriesFileStepsThroughTheLanguagesAndRefusesEmptyFiles)
 {
     scratch s;
     titleMenu m(gameSettings::getInstance(), s.settingsFile());
-    openConfigAt(m, 8);
+    openConfigAt(m, 9);
     // the files next to stories.json, by name: stories.json, stories.pl.json, stories.ro.json
     m.keyDown(ALLEGRO_KEY_RIGHT);
     EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), "data/txt/stories.pl.json");
@@ -409,7 +439,7 @@ TEST(TitleMenuTests, ControlsCanBeRebound)
     using goe::controls::action;
     scratch s;
     titleMenu m(gameSettings::getInstance(), s.settingsFile());
-    openConfigAt(m, 12);
+    openConfigAt(m, 13);
     m.keyDown(ALLEGRO_KEY_ENTER);
     ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONTROLS);
     EXPECT_EQ(m.getTitle(), "Controls");
@@ -464,7 +494,7 @@ TEST(TitleMenuTests, ControlsCanBeRebound)
     EXPECT_TRUE(gameSettings::getInstance().getControls() == goe::controls::bindings());
     m.keyDown(ALLEGRO_KEY_ESCAPE);
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
-    EXPECT_EQ(m.getSelected(), 12);
+    EXPECT_EQ(m.getSelected(), 13);
 }
 
 TEST(ControlBindingsTests, DefaultLayoutPlaysAsBefore)
@@ -565,11 +595,11 @@ TEST(TitleMenuTests, TheDemoTimesCanBeSetAndAreKept)
     titleMenu m(gameSettings::getInstance(), s.settingsFile());
     m.keyDown(ALLEGRO_KEY_DOWN);
     m.keyDown(ALLEGRO_KEY_ENTER); // Config
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 11; i++)
         m.keyDown(ALLEGRO_KEY_DOWN); // Demo length
     EXPECT_EQ(m.getLines()[m.getSelected()], "Demo length: 30 s");
     m.keyDown(ALLEGRO_KEY_RIGHT);
-    EXPECT_EQ(m.getLines()[10], "Demo length: 35 s");
+    EXPECT_EQ(m.getLines()[11], "Demo length: 35 s");
     // typed, with or without the unit
     m.keyDown(ALLEGRO_KEY_DOWN);
     m.keyDown(ALLEGRO_KEY_ENTER);
@@ -577,13 +607,13 @@ TEST(TitleMenuTests, TheDemoTimesCanBeSetAndAreKept)
         m.keyDown(ALLEGRO_KEY_BACKSPACE);
     type(m, "20 s");
     m.keyDown(ALLEGRO_KEY_ENTER);
-    EXPECT_EQ(m.getLines()[11], "Hall of fame shown: 20 s");
+    EXPECT_EQ(m.getLines()[12], "Hall of fame shown: 20 s");
     // never under five seconds
     m.keyDown(ALLEGRO_KEY_UP);
     m.keyDown(ALLEGRO_KEY_UP);
     for (int i = 0; i < 20; i++)
         m.keyDown(ALLEGRO_KEY_LEFT);
-    EXPECT_EQ(m.getLines()[9], "Demo after: 5 s");
+    EXPECT_EQ(m.getLines()[10], "Demo after: 5 s");
     m.keyDown(ALLEGRO_KEY_ESCAPE);
     // kept in the settings file
     gameSettings::getInstance().resetToDefaults();
@@ -625,7 +655,7 @@ TEST(TitleMenuTests, PadChangesValuesWithoutOpeningTheTextEditor)
     m.command(menuCommand::confirm); // a pad cannot type, so no editor
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
     EXPECT_FALSE(m.getMessage().empty());
-    for (int c = 0; c < 6; c++)
+    for (int c = 0; c < 7; c++)
         m.command(menuCommand::down); // Story scroller, a switch
     const bool shown = gameSettings::getInstance().getStoriesShown();
     m.command(menuCommand::confirm);

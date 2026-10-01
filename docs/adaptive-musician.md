@@ -6,12 +6,13 @@ to the game. It does not pick tracks: every note is decided at runtime and every
 synthesized at runtime.
 
 Config, **Music**, chooses between **Skin samples** (the songs listed in `skins.json`, played by
-difficulty, as before) and **Performer** (this musician). Three more lines shape the performer:
+difficulty, as before) and **Performer** (this musician). Four more lines shape the performer:
 
 | Config line | Values | `settings.json` | What it does |
 |---|---|---|---|
 | Music | Skin samples, Performer | `"music": "samples"` or `"performer"` | who plays |
 | Performer sound | AdLib, SID, POKEY, Game Boy | `"performerSound": "SID"` | the chip the band sounds like (section 26) |
+| Music style | Mixed, Free, Rave, Techno, Metal, Disco, Psytrance, Jazz, Rock | `"musicStyle": "Jazz"` | the kind of music it plays, on the same instruments (section 29) |
 | Music variety | 0..100%, default 60% | `"musicVariety": 60` | how often and how far the music changes (section 28) |
 | Music tempo | 50..150%, default 100% | `"musicTempo": 100` | the speed, as a share of the composed tempo (section 28) |
 
@@ -51,6 +52,7 @@ Contents:
 26. [Chip sounds](#26-chip-sounds)
 27. [Drums](#27-drums)
 28. [Songs, the set, variety and tempo](#28-songs-the-set-variety-and-tempo)
+29. [Music styles](#29-music-styles)
 
 ## 1. Architecture
 
@@ -497,7 +499,8 @@ card:
 | chips | every chip sounds clean, heard and without offset for 8 performers; each part keeps its own channels (Game Boy one each, AdLib four for drums); POKEY and Game Boy round a C7 to their dividers; an arpeggio plays each chord tone for one 20 ms frame on one voice; a stepped volume holds still inside a frame and takes at most 16 levels |
 | drums | no drums at level 0, more hits at each level, a kick and a backbeat in every bar; fills lead into the next section; on one drum channel two drums never start together |
 | songs | variety 0 keeps one key and few songs, variety 1 makes over three times as many with other keys, tempos and grooves; earlier songs come back at both ends; all sections appear; under danger the drums never drop below full; a returning song comes in at a chorus with its own remembered motifs; the tempo setting slows and speeds the music; a chip change is heard at once without a gap |
-| game side | `controller-test`: a camera that sees nothing leaves the music calm, a guardian about to hurt the player makes it danger; cues fade after their hold; D maps into 0..256. `titleMenu-test`: the performer sound steps through the four chips both ways, variety and tempo stay in range, and all three are kept in `settings.json` |
+| styles | every style keeps its tempo range, grooves and drum floor and ceiling, Free keeps all grooves; Mixed plays at least six styles; choosing a style ends a song of another at once and no other style comes back; each style plays its own bass line (notes per bar); a style never changes the chip, and every style name round-trips |
+| game side | `controller-test`: a camera that sees nothing leaves the music calm, a guardian about to hurt the player makes it danger; cues fade after their hold; D maps into 0..256. `titleMenu-test`: the performer sound steps through the four chips both ways, variety and tempo stay in range, the music style cycles both ways, and all four are kept in `settings.json` |
 
 The OpenAL path was checked by running the game headless with OpenAL Soft's wave writer
 (`ALSOFT_CONF` with `drivers=wave`) and the Performer chosen: the music streams at the device's
@@ -698,3 +701,32 @@ The songbook remembers five songs; a new one takes the oldest one's place.
 **Music tempo** (50..150%) scales the composed tempo, which is still kept in 60..160 BPM. The
 tempo also moves on its own: each song has its own, the tension lifts it by up to 12%, and an alert
 or a danger by 6% or 12%.
+
+## 29. Music styles
+
+Config's **Music style** decides what kind of music the band plays. It changes only the music:
+tempo, grooves, the bass line, how chords are shaped and played, progressions, modes, how much the
+melody plays, and how coloured the harmony is. It never changes the instruments, which stay the chip
+chosen in **Performer sound**. The rules live in `include/musicGenres.h` (`genreRules`, one per
+style, in `src/musicGenres.cpp`).
+
+| Style | Tempo | Grooves | Bass | Chords | Other |
+|---|---|---|---|---|---|
+| Mixed (default) | | each new song gets one of the styles below at random | | | a mixed set of styles |
+| Free | the performer's | any of the six free grooves | the performer's own, busier with energy and tension | held or arpeggiated triads | as in section 28 |
+| Rave | 135..150 | rave, breakbeat, four on the floor | eighths | stabs | busy melody, drums at least full |
+| Techno | 124..134 | techno | off-beat eighths | three sparse stabs a bar | phrygian or aeolian, sparse melody, long songs |
+| Metal | 100..160 | metal (16th kicks when driving), half time, rock | muted 16th chug | power chords (no third) | phrygian, aeolian, harmonic minor |
+| Disco | 112..124 | disco (open hats on the offbeats), four on the floor | octave jumps | sevenths on the offbeats | richer colour |
+| Psytrance | 140..148 | psytrance | rolling: three sixteenths after every kick | one stab a bar | busy melody, long songs |
+| Jazz | 84..150 | jazz swing | walking quarters with a chromatic approach | sevenths, comped | the most colour, drums never driving |
+| Rock | 100..140 | rock, half time, shuffle | eighths with the fifth | held triads | |
+
+The tempo of a song falls in its style's range: near the middle at low variety, anywhere in it at
+high variety. **Music tempo** still scales it, within 60..160 BPM. The songbook keeps the style
+per song, so a returning song comes back in its own style. Choosing a style during play ends a song
+of another style at the next bar, and only songs of the chosen style come back. The safety limits
+(section 20) hold for every style: the style's colour and density are added before the limits are
+applied.
+
+`goe-musician` takes `GOE_GENRE=jazz` (any style name) and prints the style of each phrase.

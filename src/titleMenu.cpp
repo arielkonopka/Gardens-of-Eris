@@ -22,6 +22,7 @@
 
 #include "titleMenu.h"
 #include "musicChips.h"
+#include "musicGenres.h"
 #include <algorithm>
 #include <allegro5/keycodes.h>
 #include <exception>
@@ -133,6 +134,15 @@ titleMenu::titleMenu(gameSettings &edited, std::string file, std::function<bool(
                                  const int n = goe::musician::chipStyleCount;
                                  const int now = (int) this->settings.getPerformerSound();
                                  this->settings.setPerformerSound((goe::musician::chipStyle) (((now + by) % n + n) % n));
+                             }});
+    // the music style, stepped like the sound
+    this->options.push_back({"Music style",
+                             [this] { return std::string(goe::musician::nameOf(this->settings.getMusicStyle())); },
+                             {},
+                             [this](int by) {
+                                 const int n = goe::musician::genreCount;
+                                 const int now = (int) this->settings.getMusicStyle();
+                                 this->settings.setMusicStyle((goe::musician::genre) (((now + by) % n + n) % n));
                              }});
     this->options.push_back(percent(
         "Music variety",

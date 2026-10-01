@@ -67,8 +67,10 @@ inline constexpr std::array<std::string_view, 6> bassRhythms{
     "x.x.x.x.x.x.x.x.",
 };
 
-/// chord progressions as scale degrees (0 is the tonic), one chord per bar
-inline constexpr std::array<std::array<int, 4>, 8> progressions{{
+/// chord progressions as scale degrees (0 is the tonic), one chord per bar; the first eight are
+/// the free ones, the rest belong to music styles (musicGenres.h)
+inline constexpr int freeProgressions = 8;
+inline constexpr std::array<std::array<int, 4>, 14> progressions{{
     {0, 0, 3, 4},
     {0, 5, 3, 4},
     {0, 3, 0, 4},
@@ -77,6 +79,12 @@ inline constexpr std::array<std::array<int, 4>, 8> progressions{{
     {0, 5, 1, 4},
     {0, 3, 5, 4},
     {5, 3, 0, 4},
+    {0, 0, 0, 0}, // one chord, a drone
+    {0, 0, 6, 6}, // i i bVII bVII
+    {0, 5, 6, 0}, // i bVI bVII i
+    {1, 4, 0, 0}, // ii V I I
+    {0, 6, 3, 0}, // I bVII IV I
+    {0, 1, 0, 6}, // i bII i bVII, in phrygian
 }};
 
 /// a drummer's groove: one bar of kick, snare and hats; busy hats replace the hats at high intensity
@@ -84,17 +92,36 @@ struct groove
 {
     std::string_view name;
     std::string_view kick, snare, hats, busyHats;
-    float swing = 0.0f; ///< share of a sixteenth the off-beat sixteenths are played late
+    float swing = 0.0f;         ///< share of a sixteenth the off-beat sixteenths are played late
+    std::string_view busyKick;  ///< the kick at the driving level (empty: the same kick)
+    std::string_view openHats;  ///< open hats from the full level on (empty: one at the end of every second bar)
 };
 
-inline constexpr std::array<groove, 6> grooves{{
-    {"rock", "x.......x.x.....", "....x.......x...", "x.x.x.x.x.x.x.x.", "xxxxxxxxxxxxxxxx", 0.0f},
-    {"four on the floor", "x...x...x...x...", "....x.......x...", "..x...x...x...x.", "x.xxx.xxx.xxx.xx", 0.0f},
-    {"half time", "x.........x.....", "........x.......", "x.x.x.x.x.x.x.x.", "x.xxx.xxx.xxx.xx", 0.0f},
-    {"breakbeat", "x.........x..x..", "....x..x.x..x...", "x.x.x.x.x.x.x.x.", "xxxxxxxxxxxxxxxx", 0.0f},
-    {"electro", "x..x..x...x..x..", "....x.......x..x", "xxx.xxx.xxx.xxx.", "xxxxxxxxxxxxxxxx", 0.0f},
-    {"shuffle", "x.....x.x.......", "....x.......x...", "x.x.x.x.x.x.x.x.", "x.xxx.xxx.xxx.xx", 0.3f},
+/// the first six are the free grooves any song may take; the rest belong to music styles (musicGenres.h)
+inline constexpr int freeGrooves = 6;
+inline constexpr std::array<groove, 12> grooves{{
+    {"rock", "x.......x.x.....", "....x.......x...", "x.x.x.x.x.x.x.x.", "xxxxxxxxxxxxxxxx", 0.0f, {}, {}},
+    {"four on the floor", "x...x...x...x...", "....x.......x...", "..x...x...x...x.", "x.xxx.xxx.xxx.xx", 0.0f, {}, {}},
+    {"half time", "x.........x.....", "........x.......", "x.x.x.x.x.x.x.x.", "x.xxx.xxx.xxx.xx", 0.0f, {}, {}},
+    {"breakbeat", "x.........x..x..", "....x..x.x..x...", "x.x.x.x.x.x.x.x.", "xxxxxxxxxxxxxxxx", 0.0f, {}, {}},
+    {"electro", "x..x..x...x..x..", "....x.......x..x", "xxx.xxx.xxx.xxx.", "xxxxxxxxxxxxxxxx", 0.0f, {}, {}},
+    {"shuffle", "x.....x.x.......", "....x.......x...", "x.x.x.x.x.x.x.x.", "x.xxx.xxx.xxx.xx", 0.3f, {}, {}},
+    {"techno", "x...x...x...x...", "....x.......x...", "..x...x...x...x.", "xxxxxxxxxxxxxxxx", 0.0f, {}, "..x...x...x...x."},
+    {"psytrance", "x...x...x...x...", "............x...", "..x...x...x...x.", "x.xxx.xxx.xxx.xx", 0.0f, {}, "..x...x...x...x."},
+    {"metal", "x.x...x.x.x...x.", "....x.......x...", "x.x.x.x.x.x.x.x.", "x.x.x.x.x.x.x.x.", 0.0f, "xxxxxxxxxxxxxxxx", {}},
+    {"disco", "x...x...x...x...", "....x.......x...", "x.x.x.x.x.x.x.x.", "xxxxxxxxxxxxxxxx", 0.0f, {}, "..x...x...x...x."},
+    {"jazz swing", "x.........x.....", ".......x.....x..", "x...x..xx...x..x", "x...x.xxx...x.xx", 0.33f, {}, {}},
+    {"rave", "x.........x.x...", "....x..x.x..x..x", "x.x.x.x.x.x.x.x.", "xxxxxxxxxxxxxxxx", 0.0f, "x...x...x...x...", {}},
 }};
+
+/// a groove's index by its name, at compile time
+constexpr int grooveNamed(std::string_view name)
+{
+    for (int c = 0; c < (int) grooves.size(); c++)
+        if (grooves[(std::size_t) c].name == name)
+            return c;
+    return 0;
+}
 
 /// the second half of a bar that leads into a new section: s snare, t tom, '.' rest
 inline constexpr std::array<std::string_view, 4> fills{

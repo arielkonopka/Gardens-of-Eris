@@ -60,6 +60,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `goe::musician::composer`, `motif`, `phraseBuffer`, `phraseReport` | `include/musicComposer.h` | [media](media.md) |
 | `goe::musician::noteEvent`, `eventQueue`, `randomStream` | `include/musicEvents.h` | [media](media.md) |
 | `goe::musician::performerPersonality` | `include/musicPersonality.h` | [media](media.md) |
+| `goe::musician::genre`, `genreRules` | `include/musicGenres.h` | [media](media.md), [design](../adaptive-musician.md#29-music-styles) |
 | `goe::musician::songbook`, `song`, `phrasePlan` | `include/musicSongs.h` | [media](media.md), [design](../adaptive-musician.md#28-songs-the-set-variety-and-tempo) |
 | `goe::musician::synthesizer`, `voice`, `oscillator`, `envelope`, `lowPass`, `chipModel` | `include/musicSynth.h` | [media](media.md) |
 | `goe::musician::tensionController` | `include/musicTension.h` | [media](media.md) |

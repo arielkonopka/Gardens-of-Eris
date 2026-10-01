@@ -31,6 +31,7 @@
 
 namespace goe::musician {
 enum class chipStyle : std::uint8_t; // musicChips.h
+enum class genre : std::uint8_t;     // musicGenres.h
 }
 
 /**
@@ -69,6 +70,9 @@ public:
     /// the chip the performer's band sounds like (AdLib, SID, POKEY, Game Boy)
     goe::musician::chipStyle getPerformerSound() const { return this->performerSound; }
     void setPerformerSound(goe::musician::chipStyle s);
+    /// the performer's music style (Mixed, Free, Rave, Techno, Metal, Disco, Psytrance, Jazz, Rock)
+    goe::musician::genre getMusicStyle() const { return this->musicStyle; }
+    void setMusicStyle(goe::musician::genre g);
     /// how much the performer's music changes, in percent: 0 long songs near home .. 100 short
     /// songs far from it; and its tempo in percent of the composed one. Clamped to their ranges.
     static constexpr int minMusicTempo = 50;
@@ -115,6 +119,7 @@ private:
     std::atomic<int> effectsVolume = 100;
     std::atomic<musicSource> music = musicSource::samples;
     std::atomic<goe::musician::chipStyle> performerSound{};
+    std::atomic<goe::musician::genre> musicStyle{}; ///< Mixed
     std::atomic<int> musicVariety = 60;
     std::atomic<int> musicTempo = 100;
     std::atomic<bool> storiesShown = true;

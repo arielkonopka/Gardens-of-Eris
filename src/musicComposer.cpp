@@ -277,110 +277,139 @@ motif composer::chooseMotif(const performerPersonality &who, const musicalState 
 }
 
 int composer::writeChords(const performerPersonality &who, const musicalState &tension, const vocabulary::theme &th,
-                          const std::array<int, 4> &roots, bool arpeggio, double step, phraseBuffer &out)
+                          const std::array<int, 4> &roots, const phrasePlan &plan, double step, phraseBuffer &out)
 {
     auto &r = this->phraseChoices;
-    const float colourChance = std::min(tuning::maxDissonance,
-                                        tension.harmony * tuning::maxDissonance * (0.4f + who.dissonance) * th.colour
-                                            + 0.05f * who.harmonicAdventurousness);
+    const genreRules &rules = rulesOf(plan.style);
+    const float colourChance = rules.shape == chordShape::power
+                                   ? 0.0f // a power chord has no third to colour
+                                   : std::min(tuning::maxDissonance,
+                                              tension.harmony * tuning::maxDissonance * (0.4f + who.dissonance) * th.colour
+                                                  + 0.05f * who.harmonicAdventurousness);
     const float velocity = 0.45f + 0.2f * who.energy;
     int low = who.keyRoot + th.transpose + 10; // chords sit in one octave from here: smooth voice leading
     while (low >= 62)
         low -= 12;
     while (low < 50)
         low += 12;
+    auto place = [low](int pitch) {
+        while (pitch < low)
+            pitch += 12;
+        while (pitch >= low + 12)
+            pitch -= 12;
+        return pitch;
+    };
     int coloured = 0;
     for (int bar = 0; bar < this->last.bars; bar++) {
         const int root = roots[(std::size_t) bar];
-        std::array<int, 4> tones{root, root + 2, root + 4, root + 4};
-        int count = 3;
+        std::array<int, 4> tones{root, root + 2, root + 4, root + 6};
+        int count = rules.shape == chordShape::seventh ? 4 : 3;
+        if (rules.shape == chordShape::power)
+            tones = {root, root + 4, root + 7, root + 7};
         int suspended = -1; // the tone a suspension resolves to, mid-bar
         bool borrowed = false;
         if (r.chance(colourChance)) {
             coloured++;
             switch (r.below(tension.harmony > 0.4f ? 4 : 3)) {
-            case 0: tones[3] = root + 6; count = 4; break;            // seventh
+            case 0: tones[3] = root + 6; count = 4; break;            // seventh (on a seventh chord: the same)
             case 1: suspended = tones[1]; tones[1] = root + 3; break;  // suspended fourth, resolving
             case 2: tones[3] = root + 8; count = 4; break;            // added ninth
             default: borrowed = true; break;                          // the flat sixth's major chord
             }
         }
-        auto place = [low](int pitch) {
-            while (pitch < low)
-                pitch += 12;
-            while (pitch >= low + 12)
-                pitch -= 12;
-            return pitch;
-        };
-        const std::int64_t start = (std::int64_t) std::llround(bar * stepsPerBar * step);
-        const std::int64_t end = (std::int64_t) std::llround((bar + 1) * stepsPerBar * step) - 1;
-        const std::int64_t middle = (std::int64_t) std::llround((bar * stepsPerBar + 8) * step);
         auto pitchAt = [&](int t) {
             static constexpr int major[] = {8, 12, 15, 15};
-            return borrowed ? place(who.keyRoot + th.transpose + major[t])
-                            : place(this->pitchOf(tones[(std::size_t) t], who, th, 0));
+            if (borrowed)
+                return place(who.keyRoot + th.transpose + major[t]);
+            if (rules.shape == chordShape::power && t == 2)
+                return place(this->pitchOf(root, who, th, 0)) + 12; // the octave above the root
+            return place(this->pitchOf(tones[(std::size_t) t], who, th, 0));
         };
-        if (arpeggio) {
-            // the chip way: one voice runs through the chord's tones, lowest first
-            auto arpeggiate = [&](std::int64_t from, std::int64_t to, float vel) {
-                std::array<int, 4> pitches{};
-                for (int t = 0; t < count; t++)
-                    pitches[(std::size_t) t] = pitchAt(t);
-                for (int i = 1; i < count; i++) // at most four tones: put them in order by hand
-                    for (int j = i; j > 0 && pitches[(std::size_t) j] < pitches[(std::size_t) j - 1]; j--)
-                        std::swap(pitches[(std::size_t) j], pitches[(std::size_t) j - 1]);
-                noteEvent e{from, 0, noteEvent::kind::on, part::pad, this->note(), (float) pitches[0], vel};
-                for (int t = 1; t < count; t++)
-                    e.arp[(std::size_t) t - 1] = (std::int8_t) (pitches[(std::size_t) t] - pitches[0]);
-                e.arpCount = (std::uint8_t) (count - 1);
-                out.add(e);
-                out.add({to, 0, noteEvent::kind::off, part::pad, e.note, 0, 0});
-            };
-            if (suspended >= 0) {
-                arpeggiate(start, middle - 1, velocity);
-                tones[1] = suspended; // the fourth resolves to the third half way through the bar
-                arpeggiate(middle, end, velocity * 0.9f);
-            } else {
-                arpeggiate(start, end, velocity);
+        // one chord from `from` to `to`: on a chip one voice runs through its tones, lowest first
+        auto play = [&](std::int64_t from, std::int64_t to, float vel) {
+            std::array<int, 4> pitches{};
+            for (int t = 0; t < count; t++)
+                pitches[(std::size_t) t] = pitchAt(t);
+            if (!plan.arpeggioChords) {
+                for (int t = 0; t < count; t++) {
+                    const std::uint32_t id = this->note();
+                    out.add({from, 0, noteEvent::kind::on, part::pad, id, (float) pitches[(std::size_t) t], vel});
+                    out.add({to, 0, noteEvent::kind::off, part::pad, id, 0, 0});
+                }
+                return;
+            }
+            for (int i = 1; i < count; i++) // at most four tones: put them in order by hand
+                for (int j = i; j > 0 && pitches[(std::size_t) j] < pitches[(std::size_t) j - 1]; j--)
+                    std::swap(pitches[(std::size_t) j], pitches[(std::size_t) j - 1]);
+            noteEvent e{from, 0, noteEvent::kind::on, part::pad, this->note(), (float) pitches[0], vel};
+            for (int t = 1; t < count; t++)
+                e.arp[(std::size_t) t - 1] = (std::int8_t) (pitches[(std::size_t) t] - pitches[0]);
+            e.arpCount = (std::uint8_t) (count - 1);
+            out.add(e);
+            out.add({to, 0, noteEvent::kind::off, part::pad, e.note, 0, 0});
+        };
+        if (!rules.chordRhythm.empty()) {
+            // the style's stabs: short chords on its sixteenths
+            for (int s = 0; s < stepsPerBar; s++) {
+                if (!plays(rules.chordRhythm, s))
+                    continue;
+                const std::int64_t from = this->timeOf(bar * stepsPerBar + s, step);
+                play(from, from + std::llround(1.5 * step), velocity * (s % 4 == 0 ? 1.0f : 0.9f));
             }
             continue;
         }
-        for (int t = 0; t < count; t++) {
-            const int pitch = pitchAt(t);
-            const std::uint32_t id = this->note();
-            out.add({start, 0, noteEvent::kind::on, part::pad, id, (float) pitch, velocity});
-            if (t == 1 && suspended >= 0) {
-                // the fourth resolves down to the third half way through the bar
-                out.add({middle, 0, noteEvent::kind::off, part::pad, id, 0, 0});
-                const std::uint32_t res = this->note();
-                const int third = place(this->pitchOf(suspended, who, th, 0));
-                out.add({middle, 0, noteEvent::kind::on, part::pad, res, (float) third, velocity * 0.9f});
-                out.add({end, 0, noteEvent::kind::off, part::pad, res, 0, 0});
-            } else {
-                out.add({end, 0, noteEvent::kind::off, part::pad, id, 0, 0});
-            }
+        const std::int64_t start = (std::int64_t) std::llround(bar * stepsPerBar * step);
+        const std::int64_t end = (std::int64_t) std::llround((bar + 1) * stepsPerBar * step) - 1;
+        const std::int64_t middle = (std::int64_t) std::llround((bar * stepsPerBar + 8) * step);
+        if (suspended >= 0) {
+            play(start, middle - 1, velocity);
+            tones[1] = suspended; // the fourth resolves to the third half way through the bar
+            play(middle, end, velocity * 0.9f);
+        } else {
+            play(start, end, velocity);
         }
     }
     return coloured;
 }
 
 void composer::writeBass(const performerPersonality &who, const musicalState &tension, const vocabulary::theme &th,
-                         const std::array<int, 4> &roots, bool pedal, double step, float rate, phraseBuffer &out)
+                         const std::array<int, 4> &roots, bool pedal, const phrasePlan &plan, double step, float rate,
+                         phraseBuffer &out)
 {
     auto &e = this->eventChoices;
+    const bassLine line = rulesOf(plan.style).bass;
     int pattern = std::clamp((int) std::lround((who.energy * 0.6f + tension.density * 0.5f) * 4.0f), 0, 4);
     if (th.drive > 0.0f)
         pattern = std::max(pattern, (int) std::lround(th.drive * 5.0f));
     if (this->last.silent)
         pattern = std::min(pattern, 1); // the band leaves the space open with the lead
-    const auto rhythm = vocabulary::bassRhythms[(std::size_t) pattern];
+    // a style plays its own line; the performer's own follows the energy and the tension
+    std::string_view rhythm = vocabulary::bassRhythms[(std::size_t) pattern];
+    float hold = 0.85f; // of the gap to the next note
+    switch (line) {
+    case bassLine::offbeat: rhythm = "..x...x...x...x."; break;
+    case bassLine::rolling: rhythm = ".xxx.xxx.xxx.xxx"; hold = 0.6f; break;
+    case bassLine::octave: rhythm = "x.x.x.x.x.x.x.x."; hold = 0.7f; break;
+    case bassLine::chug: rhythm = "x.xxx.x.x.xxx.xx"; hold = 0.55f; break;
+    case bassLine::walking: rhythm = "x...x...x...x..."; hold = 0.9f; break;
+    case bassLine::eighths: rhythm = "x.x.x.x.x.x.x.x."; hold = 0.75f; break;
+    default: break;
+    }
     int low = who.keyRoot + th.transpose - 14; // the bass's octave starts between G1 and F#2
     while (low >= 43)
         low -= 12;
     while (low < 31)
         low += 12;
+    auto inRange = [low](int pitch) {
+        while (pitch < low)
+            pitch += 12;
+        while (pitch >= low + 12)
+            pitch -= 12;
+        return pitch;
+    };
     for (int bar = 0; bar < this->last.bars; bar++) {
         const int root = pedal ? 0 : roots[(std::size_t) bar];
+        const int nextRoot = pedal ? 0 : roots[(std::size_t) (bar + 1 < this->last.bars ? bar + 1 : 0)];
         for (int s = 0; s < stepsPerBar; s++) {
             if (!plays(rhythm, s))
                 continue;
@@ -388,19 +417,25 @@ void composer::writeBass(const performerPersonality &who, const musicalState &te
             while (s + gap < stepsPerBar && !plays(rhythm, s + gap))
                 gap++;
             int degree = root;
-            if (!pedal && pattern >= 3 && s % 8 != 0 && e.chance(0.3f))
+            if (line == bassLine::walking) {
+                // the root, a step or the third, the fifth, then a half step into the next chord
+                static constexpr int walk[] = {0, 2, 4};
+                degree = s < 12 ? root + (s == 4 && e.chance(0.4f) ? 1 : walk[s / 4]) : nextRoot;
+            } else if ((line == bassLine::follow ? pattern >= 3 : line == bassLine::eighths) && !pedal && s % 8 != 0
+                       && e.chance(0.3f)) {
                 degree = root + 4; // the fifth on a weak beat
-            int pitch = this->pitchOf(degree, who, th, -1);
-            while (pitch < low)
+            }
+            int pitch = inRange(this->pitchOf(degree, who, th, -1));
+            if (line == bassLine::walking && s == 12)
+                pitch += e.chance(0.5f) ? -1 : 1; // the approach note, outside the scale on purpose
+            if (line == bassLine::octave && s % 4 == 2)
                 pitch += 12;
-            while (pitch >= low + 12)
-                pitch -= 12;
             const float vel = std::clamp(0.55f + 0.25f * who.energy + (s == 0 ? 0.1f : 0.0f)
                                              + 0.05f * who.dynamics * e.between(-1.0f, 1.0f),
                                          0.1f, 1.0f);
             const double jitter = this->drift * 0.3 * rate / 1000.0;
             const std::int64_t on = std::max<std::int64_t>(0, this->timeOf(bar * stepsPerBar + s, step) + std::llround(jitter));
-            const std::int64_t off = on + std::max<std::int64_t>((std::int64_t) (0.06f * rate), std::llround(gap * step * 0.85));
+            const std::int64_t off = on + std::max<std::int64_t>((std::int64_t) (0.06f * rate), std::llround(gap * step * hold));
             const std::uint32_t id = this->note();
             out.add({on, 0, noteEvent::kind::on, part::bass, id, (float) pitch, vel});
             out.add({off, 0, noteEvent::kind::off, part::bass, id, 0, 0});
@@ -564,7 +599,7 @@ void composer::writeDrums(const performerPersonality &who, const phrasePlan &pla
                     hit(at, drum::tom, rise);
                 continue;
             }
-            bool kick = plays(g.kick, s);
+            bool kick = plays(plan.drums >= 3 && !g.busyKick.empty() ? g.busyKick : g.kick, s);
             bool snare = plays(g.snare, s);
             bool hat = plays(plan.drums >= 3 ? g.busyHats : g.hats, s);
             if (plan.drums == 1) {
@@ -575,7 +610,9 @@ void composer::writeDrums(const performerPersonality &who, const phrasePlan &pla
             const bool crash = plan.drums >= 3 && bar == 0 && s == 0 && plan.phraseInSong > 0;
             const bool ghost = !snare && plan.drums >= 3 && s % 4 == 3
                                && e.chance(0.15f + 0.2f * who.rhythmicComplexity);
-            const bool open = plan.drums >= 2 && bar % 2 == 1 && s == 14;
+            // open hats where the groove has them, or one at the end of every second bar
+            const bool open = plan.drums >= 2 && (g.openHats.empty() ? bar % 2 == 1 && s == 14 : plays(g.openHats, s));
+            hat = hat || open;
             // on one channel only the first of these sounds: kick, snare, crash, ghost, hat
             int played = 0;
             auto play = [&](bool wanted, drum d, float velocity) {
@@ -610,8 +647,10 @@ void composer::compose(const performerPersonality &who, const musicalState &tens
         this->lastSilent = false;
     }
     this->swing = std::clamp((double) plan.swing, 0.0, (double) tuning::maxSwing);
+    const genreRules &rules = rulesOf(plan.style);
     vocabulary::theme th = vocabulary::themeFor(now, who);
-    th.density += plan.densityLift;
+    th.density += plan.densityLift + rules.leadDensity;
+    th.colour *= rules.colour;
     if (plan.part == section::chorus)
         th.drive = std::max(th.drive, 0.4f);
     phraseReport &rep = this->last;
@@ -619,6 +658,7 @@ void composer::compose(const performerPersonality &who, const musicalState &tens
     rep.theme = now;
     rep.transpose = th.transpose;
     rep.song = plan.songId;
+    rep.style = plan.style;
     rep.part = plan.part;
     rep.drums = plan.drums;
     rep.fill = plan.fill;
@@ -659,11 +699,11 @@ void composer::compose(const performerPersonality &who, const musicalState &tens
     }
     if (plan.chords) {
         rep.chords = rep.bars;
-        rep.colouredChords = this->writeChords(who, tension, th, roots, plan.arpeggioChords, step, out)
+        rep.colouredChords = this->writeChords(who, tension, th, roots, plan, step, out)
                              + (pedalPoint && !th.pedal ? 1 : 0);
     }
     if (plan.bass)
-        this->writeBass(who, tension, th, roots, pedalPoint, step, sampleRate, out);
+        this->writeBass(who, tension, th, roots, pedalPoint, plan, step, sampleRate, out);
     if (plan.drums > 0)
         this->writeDrums(who, plan, step, sampleRate, out);
 

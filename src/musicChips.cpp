@@ -20,9 +20,8 @@
  * SOFTWARE.
  */
 #include "musicChips.h"
+#include "musicGenres.h"
 #include <algorithm>
-#include <cctype>
-#include <string>
 
 namespace goe::musician {
 
@@ -252,15 +251,8 @@ std::string_view nameOf(chipStyle s)
 
 chipStyle styleNamed(std::string_view name)
 {
-    auto plain = [](std::string_view text) {
-        std::string out;
-        for (char ch : text)
-            if (ch != ' ')
-                out += (char) std::tolower((unsigned char) ch);
-        return out;
-    };
     for (int c = 0; c < chipStyleCount; c++)
-        if (plain(nameOf((chipStyle) c)) == plain(name))
+        if (sameName(nameOf((chipStyle) c), name))
             return (chipStyle) c;
     return chipStyle::adlib;
 }

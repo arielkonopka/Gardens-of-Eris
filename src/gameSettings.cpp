@@ -22,6 +22,7 @@
 
 #include "gameSettings.h"
 #include "musicChips.h"
+#include "musicGenres.h"
 #include "storyScroller.h"
 #include <algorithm>
 #include <cstdio>
@@ -80,6 +81,11 @@ void gameSettings::setMusicVolume(int percent)
 void gameSettings::setPerformerSound(goe::musician::chipStyle s)
 {
     this->performerSound = (goe::musician::chipStyle) std::clamp((int) s, 0, goe::musician::chipStyleCount - 1);
+}
+
+void gameSettings::setMusicStyle(goe::musician::genre g)
+{
+    this->musicStyle = (goe::musician::genre) std::clamp((int) g, 0, goe::musician::genreCount - 1);
 }
 
 void gameSettings::setMusicVariety(int percent)
@@ -209,6 +215,8 @@ bool gameSettings::load(const std::string &file)
                                                                                   : musicSource::samples);
     if (doc.HasMember("performerSound") && doc["performerSound"].IsString())
         this->setPerformerSound(goe::musician::styleNamed(doc["performerSound"].GetString()));
+    if (doc.HasMember("musicStyle") && doc["musicStyle"].IsString())
+        this->setMusicStyle(goe::musician::genreNamed(doc["musicStyle"].GetString()));
     if (doc.HasMember("musicVariety") && doc["musicVariety"].IsInt())
         this->setMusicVariety(doc["musicVariety"].GetInt());
     if (doc.HasMember("musicTempo") && doc["musicTempo"].IsInt())
@@ -246,6 +254,8 @@ bool gameSettings::save(const std::string &file) const
     w.String(this->getMusicSource() == musicSource::performer ? "performer" : "samples");
     w.Key("performerSound");
     w.String(std::string(goe::musician::nameOf(this->getPerformerSound())).c_str());
+    w.Key("musicStyle");
+    w.String(std::string(goe::musician::nameOf(this->getMusicStyle())).c_str());
     w.Key("musicVariety");
     w.Int(this->getMusicVariety());
     w.Key("musicTempo");
@@ -293,6 +303,7 @@ void gameSettings::resetToDefaults()
     this->effectsVolume = 100;
     this->music = musicSource::samples;
     this->performerSound = goe::musician::chipStyle::adlib;
+    this->musicStyle = goe::musician::genre::mixed;
     this->musicVariety = 60;
     this->musicTempo = 100;
     this->storiesShown = true;
