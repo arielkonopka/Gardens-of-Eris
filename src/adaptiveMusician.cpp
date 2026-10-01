@@ -35,10 +35,11 @@ bool adaptiveMusician::initialize(const audioFormat &f, std::uint64_t seed, int 
     this->who = performerPersonality::generate(seed);
     this->feeling = tensionController(seed);
     this->writer = composer(seed);
+    this->setlist = songbook(seed);
     this->band = synthesizer(this->rate, voices);
-    this->band.setSound(part::lead, this->who.lead);
-    this->band.setSound(part::pad, this->who.pad);
-    this->band.setSound(part::bass, this->who.bass);
+    this->styleNow = (chipStyle) this->styleWanted.load();
+    this->sound = soundFor(this->styleNow, this->who);
+    dress(this->band, this->sound);
     this->queue.clear();
     this->marks = {};
     this->nextMark = 0;
@@ -78,6 +79,37 @@ void adaptiveMusician::setVolume(float volume)
 {
     if (std::isfinite(volume))
         this->volumeWanted = std::clamp(volume, 0.0f, 1.0f);
+}
+
+void adaptiveMusician::setStyle(chipStyle style)
+{
+    this->styleWanted = std::clamp((int) style, 0, chipStyleCount - 1);
+}
+
+void adaptiveMusician::setVariety(float variety)
+{
+    if (std::isfinite(variety))
+        this->varietyWanted = std::clamp(variety, 0.0f, 1.0f);
+}
+
+void adaptiveMusician::setTempoScale(float scale)
+{
+    if (std::isfinite(scale))
+        this->tempoWanted = std::clamp(scale, tuning::minTempoScale, tuning::maxTempoScale);
+}
+
+void adaptiveMusician::restyle(chipStyle style)
+{
+    this->styleNow = style;
+    this->sound = soundFor(style, this->who);
+    // the old chip's notes fade with their release; the new one starts a phrase right away
+    this->queue.cutAt(this->now);
+    this->band.releaseAll();
+    dress(this->band, this->sound);
+    if (this->composing) {
+        this->composedUntil = this->now;
+        this->marks = {};
+    }
 }
 
 void adaptiveMusician::pause()
@@ -151,9 +183,13 @@ void adaptiveMusician::composeAhead()
         this->composedUntil = this->now;
         this->marks = {};
     }
+    if (const auto style = (chipStyle) this->styleWanted.load(); style != this->styleNow)
+        this->restyle(style);
     const auto wanted = (situation) this->situationWanted.load();
     if ((int) wanted > (int) this->playing)
         this->escalate();
+    const float variety = this->varietyWanted;
+    const float tempoScale = this->tempoWanted;
     const auto lookahead = (std::int64_t) (tuning::lookaheadSeconds * this->rate);
     while (this->composedUntil < this->now + lookahead) {
         this->composedUntil = std::max(this->composedUntil, this->now);
@@ -161,7 +197,14 @@ void adaptiveMusician::composeAhead()
         this->follow(this->composedUntil - lookahead);
         const musicalState state = this->feeling.state();
         this->band.setShift(this->shiftFor(state));
-        this->writer.compose(this->who, state, wanted, this->rate, this->scratch);
+        phrasePlan plan = this->setlist.next(this->who, state, wanted, variety);
+        plan.arpeggioChords = this->sound.arpeggioChords;
+        const auto [first, last] = this->band.channelsOf(part::drums);
+        plan.drumChannels = last - first;
+        // the song decides the key, mode and tempo; the player's setting scales the tempo
+        performerPersonality player = this->setlist.dressed(this->who);
+        player.baseTempo *= tempoScale;
+        this->writer.compose(player, state, wanted, this->rate, plan, this->scratch);
         if (this->scratch.length <= 0 || this->queue.room() < this->scratch.count)
             break; // the queue is full: try again next time, the music has a second planned
         for (int c = 0; c < this->scratch.count; c++) {

@@ -63,8 +63,9 @@ A singleton playing sound through OpenAL on its own thread.
 - Volumes come from `gameSettings`.
 - The Performer: when `gameSettings` chooses it, the skins.json songs pause and `streamPerformer()`
   feeds a `performerStream` on the sound thread, outside `snd_mutex`, with `followDifficulty` (scaled
-  by `difficulty::musicianLevel`) and `followSituation`. The stream is made the first time it is
-  chosen and lives as long as the manager. The device's rate (`ALC_FREQUENCY`) is the musician's rate.
+  by `difficulty::musicianLevel`) and `followSituation`, and passes Config's performer sound,
+  music variety and music tempo to the musician on every pump. The stream is made the first time it
+  is chosen and lives as long as the manager. The device's rate (`ALC_FREQUENCY`) is the musician's rate.
 
 ## `performerStream` (`performerStream.h`)
 
@@ -81,21 +82,30 @@ Composes and synthesizes music at runtime; the full design is in
 
 - `adaptiveMusician`: the Music Director and the only class the game uses. `initialize(format,
   seed)`, `shutdown()`; from any thread `setDifficulty` (0..256), `setSituation`, `setEnabled`,
-  `setVolume` (its own gain), `pause`, `resume`; on the audio thread `composeAhead()` and
-  `renderAudio(frames)` (real-time safe). Inspectors for tests: `personality`, `tension`,
-  `lastPhrase`, `synth`, `position`, `queued`, `phrasesComposed`.
+  `setVolume` (its own gain), `setStyle` (the chip), `setVariety` (0..1), `setTempoScale`
+  (0.5..1.5), `pause`, `resume`; on the audio thread `composeAhead()` and `renderAudio(frames)`
+  (real-time safe). Inspectors for tests: `personality`, `tension`, `lastPhrase`, `synth`, `songs`,
+  `style`, `position`, `queued`, `phrasesComposed`.
 - `tensionController` (`musicTension.h`): `targetFor(difficulty)` (0.70 * x^1.222), per-part
   smoothing (`smoothed()`), the mood walk, `state()` with the mood added.
 - `performerPersonality` (`musicPersonality.h`): `generate(seed)` from five latent traits; fifteen
   playing traits, key, mode, tempo, three `instrument`s; `busyness()`, `withinLimits()`; `scaleOf(mode)`.
-- `composer` (`musicComposer.h`): `compose(personality, state, situation, rate, phraseBuffer)` writes
-  one phrase of lead, chords and bass; `motif`, `phraseBuffer`, `phraseReport` (what the phrase was
-  like, for tests); per-theme motif memory.
-- `vocabulary` (`musicVocabulary.h`): lead and bass rhythms, progressions, `onsets`, `syncopation`,
-  `theme` and `themeFor(situation, personality)`.
+- `songbook` (`musicSongs.h`): `next(personality, state, situation, variety)` plans the next phrase
+  (`phrasePlan`: the song, its `section`, intensity, drum level, fill, which parts play, groove,
+  swing, progressions); starts a new `song` or brings an earlier one back when a song ends;
+  `dressed(personality)` is the performer in the song's key, mode, tempo and energy.
+- `composer` (`musicComposer.h`): `compose(personality, state, situation, rate, plan, phraseBuffer)`
+  writes one phrase of lead, chords (held or arpeggiated), bass and drums; `motif`, `phraseBuffer`,
+  `phraseReport` (what the phrase was like, for tests); motif memory per song and theme.
+- `vocabulary` (`musicVocabulary.h`): lead and bass rhythms, progressions, drum `grooves` and
+  `fills`, `onsets`, `syncopation`, `theme` and `themeFor(situation, personality)`.
 - `synthesizer` (`musicSynth.h`): the voice pool, `noteOn`, `noteOff`, `releaseAll`, `render`,
-  `setShift(timbreShift)`; `voice`, `oscillator`, `envelope`, `lowPass`, `instrument`, `softClip`.
-- `noteEvent`, `eventQueue` (a fixed heap, `cutAt`), `randomStream`, `situation`, `part` (`musicEvents.h`).
+  `setShift(timbreShift)`, `setDrum`, `setChip(chipModel)` and `channelsOf(part)`; `voice`,
+  `oscillator`, `envelope`, `lowPass`, `instrument`, `chipModel`, `pitchGrid`, `softClip`.
+- `chipStyle`, `bandSound`, `soundFor(style, personality)`, `dress(synthesizer, bandSound)`,
+  `nameOf`, `styleNamed` (`musicChips.h`): the AdLib, SID, POKEY and Game Boy sounds.
+- `noteEvent` (with `arp` for arpeggiated chords), `eventQueue` (a fixed heap, `cutAt`),
+  `randomStream`, `situation`, `part`, `drum` (`musicEvents.h`).
 - `tuning` (`musicianTuning.h`): every tunable number.
 
 ## `soundSpace` (namespace, `soundSpace.h`)

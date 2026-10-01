@@ -21,6 +21,7 @@
  */
 
 #include "gameSettings.h"
+#include "musicChips.h"
 #include "storyScroller.h"
 #include <algorithm>
 #include <cstdio>
@@ -74,6 +75,21 @@ std::string gameSettings::getSaveFile() const
 void gameSettings::setMusicVolume(int percent)
 {
     this->musicVolume = std::clamp(percent, 0, 100);
+}
+
+void gameSettings::setPerformerSound(goe::musician::chipStyle s)
+{
+    this->performerSound = (goe::musician::chipStyle) std::clamp((int) s, 0, goe::musician::chipStyleCount - 1);
+}
+
+void gameSettings::setMusicVariety(int percent)
+{
+    this->musicVariety = std::clamp(percent, 0, 100);
+}
+
+void gameSettings::setMusicTempo(int percent)
+{
+    this->musicTempo = std::clamp(percent, minMusicTempo, maxMusicTempo);
 }
 
 void gameSettings::setEffectsVolume(int percent)
@@ -191,6 +207,12 @@ bool gameSettings::load(const std::string &file)
     if (doc.HasMember("music") && doc["music"].IsString())
         this->setMusicSource(std::string(doc["music"].GetString()) == "performer" ? musicSource::performer
                                                                                   : musicSource::samples);
+    if (doc.HasMember("performerSound") && doc["performerSound"].IsString())
+        this->setPerformerSound(goe::musician::styleNamed(doc["performerSound"].GetString()));
+    if (doc.HasMember("musicVariety") && doc["musicVariety"].IsInt())
+        this->setMusicVariety(doc["musicVariety"].GetInt());
+    if (doc.HasMember("musicTempo") && doc["musicTempo"].IsInt())
+        this->setMusicTempo(doc["musicTempo"].GetInt());
     if (doc.HasMember("storyScroller") && doc["storyScroller"].IsBool())
         this->setStoriesShown(doc["storyScroller"].GetBool());
     if (doc.HasMember("storiesFile") && doc["storiesFile"].IsString()) {
@@ -222,6 +244,12 @@ bool gameSettings::save(const std::string &file) const
     w.Int(this->getEffectsVolume());
     w.Key("music");
     w.String(this->getMusicSource() == musicSource::performer ? "performer" : "samples");
+    w.Key("performerSound");
+    w.String(std::string(goe::musician::nameOf(this->getPerformerSound())).c_str());
+    w.Key("musicVariety");
+    w.Int(this->getMusicVariety());
+    w.Key("musicTempo");
+    w.Int(this->getMusicTempo());
     w.Key("storyScroller");
     w.Bool(this->getStoriesShown());
     w.Key("storiesFile");
@@ -264,6 +292,9 @@ void gameSettings::resetToDefaults()
     this->musicVolume = 100;
     this->effectsVolume = 100;
     this->music = musicSource::samples;
+    this->performerSound = goe::musician::chipStyle::adlib;
+    this->musicVariety = 60;
+    this->musicTempo = 100;
     this->storiesShown = true;
     this->storiesFile = defaultStoriesFile;
     this->demoWait = 60;

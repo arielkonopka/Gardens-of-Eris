@@ -79,6 +79,31 @@ inline constexpr std::array<std::array<int, 4>, 8> progressions{{
     {5, 3, 0, 4},
 }};
 
+/// a drummer's groove: one bar of kick, snare and hats; busy hats replace the hats at high intensity
+struct groove
+{
+    std::string_view name;
+    std::string_view kick, snare, hats, busyHats;
+    float swing = 0.0f; ///< share of a sixteenth the off-beat sixteenths are played late
+};
+
+inline constexpr std::array<groove, 6> grooves{{
+    {"rock", "x.......x.x.....", "....x.......x...", "x.x.x.x.x.x.x.x.", "xxxxxxxxxxxxxxxx", 0.0f},
+    {"four on the floor", "x...x...x...x...", "....x.......x...", "..x...x...x...x.", "x.xxx.xxx.xxx.xx", 0.0f},
+    {"half time", "x.........x.....", "........x.......", "x.x.x.x.x.x.x.x.", "x.xxx.xxx.xxx.xx", 0.0f},
+    {"breakbeat", "x.........x..x..", "....x..x.x..x...", "x.x.x.x.x.x.x.x.", "xxxxxxxxxxxxxxxx", 0.0f},
+    {"electro", "x..x..x...x..x..", "....x.......x..x", "xxx.xxx.xxx.xxx.", "xxxxxxxxxxxxxxxx", 0.0f},
+    {"shuffle", "x.....x.x.......", "....x.......x...", "x.x.x.x.x.x.x.x.", "x.xxx.xxx.xxx.xx", 0.3f},
+}};
+
+/// the second half of a bar that leads into a new section: s snare, t tom, '.' rest
+inline constexpr std::array<std::string_view, 4> fills{
+    "s.s.t.t.",
+    "s.sst.tt",
+    "t.t.s.ss",
+    "ssssssss",
+};
+
 /// how many notes a pattern plays
 constexpr int onsets(std::string_view p)
 {

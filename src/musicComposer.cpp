@@ -197,9 +197,15 @@ motif composer::vary(const motif &m, int changes, const performerPersonality &wh
     return v;
 }
 
+std::int64_t composer::timeOf(int sixteenth, double step) const
+{
+    const bool offBeat = (sixteenth % 2 + 2) % 2 == 1;
+    return std::llround(((double) sixteenth + (offBeat ? this->swing : 0.0)) * step);
+}
+
 void composer::remember(situation s, const motif &m)
 {
-    auto &bank = this->banks[(int) s];
+    auto &bank = this->banks[(std::size_t) this->slot][(int) s];
     for (int c = 0; c < bank.count; c++)
         if (bank.motifs[(std::size_t) c].id == m.id)
             return;
@@ -216,11 +222,12 @@ motif composer::chooseMotif(const performerPersonality &who, const musicalState 
                             phraseReport::relation &made)
 {
     auto &r = this->phraseChoices;
-    auto &bank = this->banks[(int) th.when];
+    const auto &song = this->banks[(std::size_t) this->slot];
+    auto &bank = song[(int) th.when];
     if (bank.count == 0) {
         // a theme's first idea grows from the theme before it, so the band still sounds like itself
-        const auto &calm = this->banks[(int) situation::calm];
-        const auto &alert = this->banks[(int) situation::alert];
+        const auto &calm = song[(int) situation::calm];
+        const auto &alert = song[(int) situation::alert];
         this->repeats = this->unrelated = 0;
         if (th.when == situation::alert && calm.hasHome) {
             motif m = calm.home; // the main theme upside down
@@ -270,7 +277,7 @@ motif composer::chooseMotif(const performerPersonality &who, const musicalState 
 }
 
 int composer::writeChords(const performerPersonality &who, const musicalState &tension, const vocabulary::theme &th,
-                          const std::array<int, 4> &roots, double step, phraseBuffer &out)
+                          const std::array<int, 4> &roots, bool arpeggio, double step, phraseBuffer &out)
 {
     auto &r = this->phraseChoices;
     const float colourChance = std::min(tuning::maxDissonance,
@@ -308,14 +315,38 @@ int composer::writeChords(const performerPersonality &who, const musicalState &t
         const std::int64_t start = (std::int64_t) std::llround(bar * stepsPerBar * step);
         const std::int64_t end = (std::int64_t) std::llround((bar + 1) * stepsPerBar * step) - 1;
         const std::int64_t middle = (std::int64_t) std::llround((bar * stepsPerBar + 8) * step);
-        for (int t = 0; t < count; t++) {
-            int pitch;
-            if (borrowed) {
-                static constexpr int major[] = {8, 12, 15, 15};
-                pitch = place(who.keyRoot + th.transpose + major[t]);
+        auto pitchAt = [&](int t) {
+            static constexpr int major[] = {8, 12, 15, 15};
+            return borrowed ? place(who.keyRoot + th.transpose + major[t])
+                            : place(this->pitchOf(tones[(std::size_t) t], who, th, 0));
+        };
+        if (arpeggio) {
+            // the chip way: one voice runs through the chord's tones, lowest first
+            auto arpeggiate = [&](std::int64_t from, std::int64_t to, float vel) {
+                std::array<int, 4> pitches{};
+                for (int t = 0; t < count; t++)
+                    pitches[(std::size_t) t] = pitchAt(t);
+                for (int i = 1; i < count; i++) // at most four tones: put them in order by hand
+                    for (int j = i; j > 0 && pitches[(std::size_t) j] < pitches[(std::size_t) j - 1]; j--)
+                        std::swap(pitches[(std::size_t) j], pitches[(std::size_t) j - 1]);
+                noteEvent e{from, 0, noteEvent::kind::on, part::pad, this->note(), (float) pitches[0], vel};
+                for (int t = 1; t < count; t++)
+                    e.arp[(std::size_t) t - 1] = (std::int8_t) (pitches[(std::size_t) t] - pitches[0]);
+                e.arpCount = (std::uint8_t) (count - 1);
+                out.add(e);
+                out.add({to, 0, noteEvent::kind::off, part::pad, e.note, 0, 0});
+            };
+            if (suspended >= 0) {
+                arpeggiate(start, middle - 1, velocity);
+                tones[1] = suspended; // the fourth resolves to the third half way through the bar
+                arpeggiate(middle, end, velocity * 0.9f);
             } else {
-                pitch = place(this->pitchOf(tones[(std::size_t) t], who, th, 0));
+                arpeggiate(start, end, velocity);
             }
+            continue;
+        }
+        for (int t = 0; t < count; t++) {
+            const int pitch = pitchAt(t);
             const std::uint32_t id = this->note();
             out.add({start, 0, noteEvent::kind::on, part::pad, id, (float) pitch, velocity});
             if (t == 1 && suspended >= 0) {
@@ -368,7 +399,7 @@ void composer::writeBass(const performerPersonality &who, const musicalState &te
                                              + 0.05f * who.dynamics * e.between(-1.0f, 1.0f),
                                          0.1f, 1.0f);
             const double jitter = this->drift * 0.3 * rate / 1000.0;
-            const std::int64_t on = std::max<std::int64_t>(0, std::llround((bar * stepsPerBar + s) * step + jitter));
+            const std::int64_t on = std::max<std::int64_t>(0, this->timeOf(bar * stepsPerBar + s, step) + std::llround(jitter));
             const std::int64_t off = on + std::max<std::int64_t>((std::int64_t) (0.06f * rate), std::llround(gap * step * 0.85));
             const std::uint32_t id = this->note();
             out.add({on, 0, noteEvent::kind::on, part::bass, id, (float) pitch, vel});
@@ -485,7 +516,7 @@ void composer::writeLead(const performerPersonality &who, const musicalState &te
         this->drift = std::clamp(this->drift, -maxDrift, maxDrift);
         const float offset = ln.step <= 0 ? this->drift * 0.25f : this->drift;
         rep.maxJitterMs = std::max(rep.maxJitterMs, std::fabs(offset));
-        const std::int64_t on = std::max<std::int64_t>(0, std::llround(ln.step * step + offset * rate / 1000.0f));
+        const std::int64_t on = std::max<std::int64_t>(0, this->timeOf(ln.step, step) + std::llround(offset * rate / 1000.0f));
         const std::int64_t off = on + std::llround(ln.seconds * rate);
         const std::uint32_t id = this->note();
         out.add({on, 0, noteEvent::kind::on, part::lead, id, (float) ln.pitch, ln.velocity});
@@ -500,16 +531,97 @@ void composer::writeLead(const performerPersonality &who, const musicalState &te
         this->lastLead = this->leadNotes[(std::size_t) n - 1].pitch;
 }
 
+void composer::writeDrums(const performerPersonality &who, const phrasePlan &plan, double step, float rate,
+                          phraseBuffer &out)
+{
+    auto &e = this->eventChoices;
+    auto &rep = this->last;
+    const auto &g = vocabulary::grooves[(std::size_t) std::clamp(plan.groove, 0, (int) vocabulary::grooves.size() - 1)];
+    const auto fill = vocabulary::fills[(std::size_t) e.below((int) vocabulary::fills.size())];
+    const float loud = 0.75f + 0.25f * plan.intensity;
+    // one drum channel (a SID voice, the Game Boy's noise) cannot play a hat over a kick or a snare
+    const bool crowded = plan.drumChannels <= 1;
+    auto hit = [&](int sixteenth, drum d, float velocity) {
+        const float vel = std::clamp(velocity * loud + 0.05f * who.dynamics * e.between(-1.0f, 1.0f), 0.1f, 1.0f);
+        const std::int64_t on = std::max<std::int64_t>(0, this->timeOf(sixteenth, step));
+        const float ring = d == drum::openHat || d == drum::tom ? 0.3f : 0.15f;
+        const std::uint32_t id = this->note();
+        out.add({on, 0, noteEvent::kind::on, part::drums, id, (float) d, vel});
+        out.add({on + std::llround(ring * rate), 0, noteEvent::kind::off, part::drums, id, 0, 0});
+        rep.drumHits++;
+    };
+    for (int bar = 0; bar < rep.bars; bar++) {
+        const bool filling = plan.fill && bar == rep.bars - 1;
+        for (int s = 0; s < stepsPerBar; s++) {
+            const int at = bar * stepsPerBar + s;
+            if (filling && s >= 8) {
+                // the fill: snares and toms getting louder into the next section
+                const char f = fill[(std::size_t) (s - 8)];
+                const float rise = 0.6f + 0.05f * (float) (s - 8);
+                if (f == 's')
+                    hit(at, drum::snare, rise);
+                else if (f == 't')
+                    hit(at, drum::tom, rise);
+                continue;
+            }
+            bool kick = plays(g.kick, s);
+            bool snare = plays(g.snare, s);
+            bool hat = plays(plan.drums >= 3 ? g.busyHats : g.hats, s);
+            if (plan.drums == 1) {
+                // light: the kick on the strong beats, the backbeat, the hats on the beat
+                kick = kick && s % 8 == 0;
+                hat = hat && s % 4 == 0;
+            }
+            const bool crash = plan.drums >= 3 && bar == 0 && s == 0 && plan.phraseInSong > 0;
+            const bool ghost = !snare && plan.drums >= 3 && s % 4 == 3
+                               && e.chance(0.15f + 0.2f * who.rhythmicComplexity);
+            const bool open = plan.drums >= 2 && bar % 2 == 1 && s == 14;
+            // on one channel only the first of these sounds: kick, snare, crash, ghost, hat
+            int played = 0;
+            auto play = [&](bool wanted, drum d, float velocity) {
+                if (wanted && !(crowded && played > 0)) {
+                    hit(at, d, velocity);
+                    played++;
+                }
+            };
+            play(kick, drum::kick, s % 8 == 0 ? 0.95f : 0.8f);
+            play(snare, drum::snare, 0.85f);
+            play(crash, drum::openHat, 0.8f); // a crash at the top of a driving phrase
+            play(ghost, drum::snare, 0.3f);
+            play(hat && !crash, open ? drum::openHat : drum::hat, s % 4 == 0 ? 0.55f : 0.4f);
+        }
+    }
+}
+
 void composer::compose(const performerPersonality &who, const musicalState &tension, situation now, float sampleRate,
-                       phraseBuffer &out)
+                       const phrasePlan &plan, phraseBuffer &out)
 {
     auto &r = this->phraseChoices;
     out.clear();
-    const vocabulary::theme th = vocabulary::themeFor(now, who);
+    if (plan.slot >= 0 && plan.slot < tuning::songMemory) {
+        this->slot = plan.slot;
+        if (plan.freshSlot)
+            this->banks[(std::size_t) this->slot] = {};
+    }
+    if (plan.songStart) {
+        // a new song is a new start: no old count of repeats, no cadence carried over
+        this->repeats = this->unrelated = 0;
+        this->deceptive = false;
+        this->lastSilent = false;
+    }
+    this->swing = std::clamp((double) plan.swing, 0.0, (double) tuning::maxSwing);
+    vocabulary::theme th = vocabulary::themeFor(now, who);
+    th.density += plan.densityLift;
+    if (plan.part == section::chorus)
+        th.drive = std::max(th.drive, 0.4f);
     phraseReport &rep = this->last;
     rep = {};
     rep.theme = now;
     rep.transpose = th.transpose;
+    rep.song = plan.songId;
+    rep.part = plan.part;
+    rep.drums = plan.drums;
+    rep.fill = plan.fill;
 
     const float tempo = std::clamp(who.baseTempo * (1.0f + tuning::tempoTensionLift * tension.tempo) * th.tempoLift,
                                    tuning::minTempo, tuning::maxTempo);
@@ -520,8 +632,9 @@ void composer::compose(const performerPersonality &who, const musicalState &tens
     out.barLength = (std::int64_t) std::llround(stepsPerBar * step);
     out.length = (std::int64_t) std::llround(rep.bars * stepsPerBar * step);
 
-    // harmony: a progression from the vocabulary; a two bar phrase keeps its first and last chord
-    const auto &prog = vocabulary::progressions[(std::size_t) r.below((int) vocabulary::progressions.size())];
+    // harmony: one of the song's progressions; a two bar phrase keeps its first and last chord
+    const int chosen = plan.progressions[(std::size_t) r.below((int) plan.progressions.size())];
+    const auto &prog = vocabulary::progressions[(std::size_t) std::clamp(chosen, 0, (int) vocabulary::progressions.size() - 1)];
     std::array<int, 4> roots = prog;
     if (rep.bars == 2)
         roots = {prog[0], prog[3], prog[3], prog[3]};
@@ -532,8 +645,8 @@ void composer::compose(const performerPersonality &who, const musicalState &tens
     this->deceptive = roots[(std::size_t) rep.bars - 1] == 4 && r.chance(colour * 0.5f);
 
     // the lead: rest for a whole phrase now and then, never twice running
-    rep.silent = !this->lastSilent && this->banks[(int) now].count > 0
-                 && r.chance(who.silence * (0.10f + 0.20f * tension.phrase));
+    rep.silent = !plan.lead
+                 || (!this->lastSilent && this->remembered(now) > 0 && r.chance(who.silence * (0.10f + 0.20f * tension.phrase)));
     this->lastSilent = rep.silent;
     if (!rep.silent) {
         phraseReport::relation made;
@@ -544,15 +657,23 @@ void composer::compose(const performerPersonality &who, const musicalState &tens
         this->remember(now, m);
         this->writeLead(who, tension, th, m, roots, step, sampleRate, out);
     }
-    rep.chords = rep.bars;
-    rep.colouredChords = this->writeChords(who, tension, th, roots, step, out) + (pedalPoint && !th.pedal ? 1 : 0);
-    this->writeBass(who, tension, th, roots, pedalPoint, step, sampleRate, out);
+    if (plan.chords) {
+        rep.chords = rep.bars;
+        rep.colouredChords = this->writeChords(who, tension, th, roots, plan.arpeggioChords, step, out)
+                             + (pedalPoint && !th.pedal ? 1 : 0);
+    }
+    if (plan.bass)
+        this->writeBass(who, tension, th, roots, pedalPoint, step, sampleRate, out);
+    if (plan.drums > 0)
+        this->writeDrums(who, plan, step, sampleRate, out);
 
     std::sort(out.events.begin(), out.events.begin() + out.count, [](const noteEvent &a, const noteEvent &b) {
         return a.at != b.at ? a.at < b.at : a.order < b.order;
     });
     int sounding = 0;
     for (int c = 0; c < out.count; c++) {
+        if (out.events[(std::size_t) c].who == part::drums)
+            continue;
         sounding += out.events[(std::size_t) c].what == noteEvent::kind::on ? 1 : -1;
         rep.maxSimultaneous = std::max(rep.maxSimultaneous, sounding);
     }

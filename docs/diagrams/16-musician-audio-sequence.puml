@@ -4,6 +4,7 @@ participant "game thread\npresenter" as game
 participant "soundManager\n(sound thread)" as sm
 participant performerStream as stream
 participant adaptiveMusician as m
+participant songbook
 participant composer
 participant synthesizer as synth
 participant OpenAL as al
@@ -13,15 +14,21 @@ loop every 10 ms
   sm -> sm : checkQueue(): sound effects;\nskins.json songs paused
   sm -> stream : pump(musicianLevel(D), situation, music volume)
   stream -> m : setDifficulty, setSituation (atomics)
+  sm -> m : setStyle, setVariety, setTempoScale\n(from Config, atomics)
   stream -> al : AL_BUFFERS_PROCESSED?
   loop for each played buffer
     stream -> m : composeAhead()
+    opt the chip changed
+      m -> m : drop planned notes, release voices,\ndress the synthesizer for the new chip
+    end
     alt situation rose
       m -> m : cut planned notes at the next bar line
     end
     opt less than 1 s planned
       m -> m : tension follows to where the phrase fell due
-      m -> composer : compose(personality, tension, theme)
+      m -> songbook : next(tension, situation, variety)
+      songbook --> m : plan: song, section, drum level, fill
+      m -> composer : compose(personality dressed for the song,\ntension, theme, plan)
       composer --> m : phrase: note events
       m -> m : queue events at absolute samples
     end

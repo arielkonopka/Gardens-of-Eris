@@ -7,17 +7,19 @@ package "Game (game thread)" {
   [goe::music::cues\nsighted, chased, endangered -> now()] as cues
   [securityCamera] as cam
   [puppetMasterGuardian] as guard
-  [titleMenu Config\nMusic: Skin samples / Performer] as menu
-  [gameSettings\nmusic, musicVolume] as settings
+  [titleMenu Config\nMusic: Skin samples / Performer,\nPerformer sound, Music variety, Music tempo] as menu
+  [gameSettings\nmusic, musicVolume, performerSound,\nmusicVariety, musicTempo] as settings
 }
 
 package "Adaptive musician (no game headers)" {
   [adaptiveMusician\nMusic Director: controls (atomics),\ncomposeAhead, renderAudio, lifecycle] as director
   [tensionController\ncurve, per-part smoothing, mood] as tension
   [performerPersonality\nlatent traits -> 15 traits, key, mode,\ntempo, 3 instruments] as person
-  [composer + vocabulary\nrhythm, harmony, melody,\nphrases, motif memory, themes] as comp
+  [songbook\nsongs: key, mode, tempo, groove;\nsections, intensity, drum level,\nsongs coming back] as songs
+  [composer + vocabulary\nrhythm, harmony, melody, drums,\nphrases, motif memory per song, themes] as comp
+  [musicChips\nAdLib, SID, POKEY, Game Boy:\ninstruments, drum kit, chip model] as chips
   [eventQueue\nnote on/off at exact samples] as queue
-  [synthesizer\nvoice pool, oscillators, envelopes,\nfilter, vibrato, pan, mix, soft clip] as synth
+  [synthesizer\nvoice pool in channels per part, oscillators,\nenvelopes, filter, vibrato, arpeggios,\nstepped volume, pitch grid, pan, mix, soft clip] as synth
   [musicianTuning\nevery tunable number] as tuning
 }
 
@@ -32,11 +34,16 @@ guard --> cues : chased, endangered
 pres --> cues : now()
 pres --> sm : difficulty, situation
 menu --> settings
-sm --> settings : which music, volume
+sm --> settings : which music, volume,\nsound, variety, tempo
 sm --> stream : pump(level, situation, gain)
+sm --> director : setStyle, setVariety,\nsetTempoScale (atomics)
 stream --> director : composeAhead, renderAudio
 director --> tension
+director --> songs : next phrase plan
 director --> comp
+director --> chips : soundFor(style)
+chips --> synth : dress
+songs --> person : dressed for the song
 director --> queue
 director --> synth
 comp --> person
@@ -45,6 +52,7 @@ queue --> synth : note events
 synth --> person : instruments
 director ..> tuning
 comp ..> tuning
+songs ..> tuning
 synth ..> tuning
 stream --> openal : stereo frames
 sm --> openal

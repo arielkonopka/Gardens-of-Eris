@@ -41,9 +41,13 @@ namespace goe::musician {
 enum class situation : std::uint8_t { calm = 0, alert = 1, danger = 2 };
 inline constexpr int situationCount = 3;
 
-/// the three players of the band
-enum class part : std::uint8_t { lead = 0, pad = 1, bass = 2 };
-inline constexpr int partCount = 3;
+/// the players of the band; the drummer's notes name a drum (see drum), not a pitch
+enum class part : std::uint8_t { lead = 0, pad = 1, bass = 2, drums = 3 };
+inline constexpr int partCount = 4;
+
+/// the drum kit; a drum note's pitch is one of these
+enum class drum : std::uint8_t { kick = 0, snare = 1, hat = 2, openHat = 3, tom = 4 };
+inline constexpr int drumCount = 5;
 
 struct noteEvent
 {
@@ -53,8 +57,12 @@ struct noteEvent
     kind what = kind::on;
     part who = part::lead;
     std::uint32_t note = 0; ///< pairs a note's off with its on
-    float pitch = 60.0f;    ///< MIDI note number
+    float pitch = 60.0f;    ///< MIDI note number (for drums: the drum's number)
     float velocity = 0.0f;  ///< 0..1
+    /// a chord played as a fast arpeggio on one voice, the way chip music plays chords:
+    /// semitones above pitch for the second, third and fourth tone (arpCount of them)
+    std::array<std::int8_t, 3> arp{};
+    std::uint8_t arpCount = 0;
 };
 
 /**

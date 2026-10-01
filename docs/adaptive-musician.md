@@ -6,8 +6,16 @@ to the game. It does not pick tracks: every note is decided at runtime and every
 synthesized at runtime.
 
 Config, **Music**, chooses between **Skin samples** (the songs listed in `skins.json`, played by
-difficulty, as before) and **Performer** (this musician). The choice is kept in `settings.json` as
-`"music": "samples"` or `"music": "performer"` and takes effect at once, also during a game.
+difficulty, as before) and **Performer** (this musician). Three more lines shape the performer:
+
+| Config line | Values | `settings.json` | What it does |
+|---|---|---|---|
+| Music | Skin samples, Performer | `"music": "samples"` or `"performer"` | who plays |
+| Performer sound | AdLib, SID, POKEY, Game Boy | `"performerSound": "SID"` | the chip the band sounds like (section 26) |
+| Music variety | 0..100%, default 60% | `"musicVariety": 60` | how often and how far the music changes (section 28) |
+| Music tempo | 50..150%, default 100% | `"musicTempo": 100` | the speed, as a share of the composed tempo (section 28) |
+
+Every choice takes effect at once, also during a game.
 
 The fundamental rule of the integration:
 
@@ -40,6 +48,9 @@ Contents:
 23. [Audio integration boundary](#23-audio-integration-boundary)
 24. [The game's danger: cameras and guardians](#24-the-games-danger-cameras-and-guardians)
 25. [Listening without the game](#25-listening-without-the-game)
+26. [Chip sounds](#26-chip-sounds)
+27. [Drums](#27-drums)
+28. [Songs, the set, variety and tempo](#28-songs-the-set-variety-and-tempo)
 
 ## 1. Architecture
 
@@ -58,7 +69,9 @@ Contents:
      |  tensionController   difficulty -> tension, smoothing, mood
      |          |                              |
      |          v                              |
-     |  performer state = personality + tension + theme
+     |  songbook: which song, which section, how hard the drums play
+     |          |                              |
+     |  performer state = personality dressed by the song + tension + theme
      |          |                              |
      |    +-----+---------------+              |
      |    |                     |              |
@@ -66,8 +79,9 @@ Contents:
      |  composer             synthesizer       |
      |  (WHAT is played:     (HOW it sounds:   |
      |   rhythm, harmony,     oscillators,     |
-     |   melody, phrases,     envelopes,       |
-     |   memory)              filter, voices)  |
+     |   melody, drums,       envelopes,       |
+     |   phrases, memory)     filter, voices,  |
+     |                        a chip model)    |
      |    |                     ^              |
      |    | note events         |              |
      |    +-----> eventQueue ---+              |
@@ -83,8 +97,10 @@ Contents:
 | Music Director | `goe::musician::adaptiveMusician` | `include/adaptiveMusician.h` | when to compose, what the game wants, the lifecycle, the musician's own mix |
 | Tension controller | `goe::musician::tensionController` | `include/musicTension.h` | how tense the music is, part by part |
 | Performer | `goe::musician::performerPersonality` | `include/musicPersonality.h` | who is playing |
+| Song planner | `goe::musician::songbook`, `song`, `phrasePlan` | `include/musicSongs.h` | which song plays, its section, the drums' intensity |
 | Music generator | `goe::musician::composer`, `vocabulary` | `include/musicComposer.h`, `include/musicVocabulary.h` | WHAT is played |
-| Synthesizer | `goe::musician::synthesizer`, `voice`, `oscillator`, `envelope`, `lowPass` | `include/musicSynth.h` | HOW it sounds |
+| Synthesizer | `goe::musician::synthesizer`, `voice`, `oscillator`, `envelope`, `lowPass`, `chipModel` | `include/musicSynth.h` | HOW it sounds |
+| Chip sounds | `goe::musician::chipStyle`, `bandSound`, `soundFor`, `dress` | `include/musicChips.h` | which chip the band sounds like |
 | Events | `noteEvent`, `eventQueue`, `randomStream` | `include/musicEvents.h` | the language between the generator and the synthesizer |
 | Tuning | `goe::musician::tuning` | `include/musicianTuning.h` | every number the musician is balanced with |
 | Integration | `performerStream` | `include/performerStream.h` | feeding the game's OpenAL |
@@ -310,7 +326,9 @@ note event -> voice allocation -> oscillator A + oscillator B -> low-pass filter
            -> amplitude envelope -> tremolo -> equal-power pan -> mix -> headroom -> soft clip
 ```
 
-Three instruments per performer (`instrument` in `musicSynth.h`):
+Three instruments per performer (`instrument` in `musicSynth.h`), as the AdLib sound plays them;
+the other chips replace them with their own channels (section 26), and every chip adds a drum kit
+(section 27):
 
 | | Lead | Chords | Bass |
 |---|---|---|---|
@@ -353,7 +371,11 @@ Filter state is flushed to zero below 1e-20 so it never runs into denormal numbe
 ## 17. Voice management
 
 A fixed pool of `voiceCapacity` (32) voices; the polyphony used is set at `initialize` (16 by
-default). A note that finds no free voice takes one by a fixed rule:
+default). The chip model (section 26) splits the pool into channels per part, like a sound chip:
+a part with channels of its own only ever uses those, the others share what is left. The AdLib
+keeps four voices for the drums and shares twelve between lead, chords and bass; the SID has
+2 + 2 + 1 + 1, the POKEYs 2 + 2 + 2 + 2, the Game Boy 1 + 1 + 1 + 1. A note that finds no free
+voice in its part's channels takes one of them by a fixed rule:
 
 1. a free voice, lowest index first;
 2. otherwise the quietest voice already releasing (ties: the oldest);
@@ -380,6 +402,7 @@ that drawing from one never shifts another:
 | 1 | phrase choices: rhythms, progressions, motifs, variations, form |
 | 2 | event variation: velocities, lengths, timing drift, notes left out, anticipations |
 | 3 | the mood |
+| 4 | the songbook: keys, modes, tempos, grooves, lengths, which song comes back |
 
 `randomStream` uses `std::mt19937_64` with `std::seed_seq` and its own conversions to floats and
 ranges, so the numbers are the same on Linux and Windows (standard library distributions differ).
@@ -393,8 +416,8 @@ In the game the seed comes from `goe::rng::audio()`, a fresh one each session, p
 - never allocates (tested by counting `operator new` while rendering a minute of music with
   composing, difficulty and situation changes), never locks, never logs, never touches files;
 - reads the controls from atomics;
-- works on preallocated state: the voice pool, the event queue (a fixed binary heap of 1024 events),
-  the phrase buffer (384 events), two 256 frame mix buffers;
+- works on preallocated state: the voice pool, the event queue (a fixed binary heap of 2048 events),
+  the phrase buffer (768 events, room for four bars of busy drums), two 256 frame mix buffers;
 - does bounded work per sample: at most 16 voices of two oscillators and a filter.
 
 `composeAhead` composes on the same thread but also never allocates: a phrase is at most a few
@@ -410,7 +433,7 @@ These hold at every difficulty and for every performer; tension only moves the m
 | Limit | Value | Where it is enforced |
 |---|---|---|
 | `maxNoteDensity` | 3 lead notes per beat | rhythm choice |
-| `maxSimultaneousNotes` | 8 | the composer's parts (1 + 4 + 1 by construction) |
+| `maxSimultaneousNotes` | 8 | the composer's parts (1 + 4 + 1 by construction; the drums have their own channels) |
 | `maxTimingJitterMs` | 18 ms | timing drift clamp |
 | `maxRegisterJump` | 9 semitones | melody octave correction |
 | `maxDissonance` | 40% of chords coloured at most | chord colour chance |
@@ -430,13 +453,20 @@ balancing; players only see Config's Music choice and volume.
 | Group | Parameter | Default | Valid range |
 |---|---|---|---|
 | capacity | `voiceCapacity` / `defaultVoices` | 32 / 16 | 1..32 voices |
-| | `eventCapacity`, `phraseEventCapacity` | 1024, 384 | must hold one phrase plus a lookahead |
+| | `eventCapacity`, `phraseEventCapacity` | 2048, 768 | must hold one phrase plus a lookahead |
 | | `phraseMemory`, `motifNotes` | 8, 32 | 1.., at least the busiest two bar rhythm |
 | tension | `curveScale` | 0.70 | 0..1; keep under 1 for restraint |
 | | `curvePower` | 1.222 | > 0; 1 is linear |
 | response | `tempoResponse` .. `timbreResponse` | 4, 8, 10, 20, 25, 20 s | > 0 |
 | mood | `moodRange`, `moodMemory`, `moodRestlessness` | 0.08, 40 s, 0.012 | small; the mood should be felt, not heard |
-| tempo | `minTempo`, `maxTempo`, `tempoTensionLift` | 60, 132 BPM, 12% | |
+| tempo | `minTempo`, `maxTempo`, `tempoTensionLift` | 60, 160 BPM, 12% | |
+| songs | `songMemory` | 5 songs | 2.. |
+| | `longestSong`, `shortestSong` | 23, 5 phrases | at the lowest and highest variety |
+| | `songTempoSpread` | 30% | how far a song's tempo moves at the highest variety |
+| | `returnAtLowVariety`, `returnAtHighVariety` | 60%, 25% | the chance the next song is an earlier one |
+| | `maxSwing` | 0.33 of a sixteenth | |
+| | `minTempoScale`, `maxTempoScale` | 0.5, 1.5 | the player's tempo setting |
+| | `alertIntensity`, `dangerIntensity` | 0.25, 0.5 | added to the arrangement's intensity |
 | safety | see section 20 | | |
 | synth | `minFrequency`, `maxFrequencyRatio` | 20 Hz, 0.45 | |
 | | `minAttack`, `minRelease` | 4 ms, 20 ms | > 2 ms to stay click free |
@@ -447,7 +477,9 @@ balancing; players only see Config's Music choice and volume.
 | | `fadeSeconds` | 50 ms | |
 | scheduling | `lookaheadSeconds` | 1 s | at least one audio buffer |
 
-The theme differences (key change, tempo lift, bass drive) are in `vocabulary::themeFor`; the game's
+The chips' instruments and drum kits are in `src/musicChips.cpp`, the grooves and fills in
+`vocabulary::grooves` and `vocabulary::fills`. The theme differences (key change, tempo lift, bass
+drive) are in `vocabulary::themeFor`; the game's
 side (how long alerts last, the danger distance, the D scaling) in `include/difficulty.h`.
 
 ## 22. Testing
@@ -462,7 +494,10 @@ card:
 | composing | the sweep 0, 32 .. 256 raises tempo, density, syncopation, chromaticism and colour progressively, and stays restrained at the top; every safety limit for 200 performers at 256 in all themes; every note that starts stops; 600 phrases at 128 keep repetition and novelty in balance with no drift; situations change the theme, not the tension |
 | synthesizer | no clicks at note starts and ends for every waveform; bounded polyphony and quiet, deterministic stealing; pitch right at four sample rates; bad input stays finite and in range; the clipper never passes 1 |
 | musician | continuous and deterministic; the same music with 64, 1000 and 4096 frame buffers (events are sample accurate); no clipping and bounded voices for 12 performers at 256 under danger; rendering never allocates; pause holds and fades; disable and enable; the musician's gain; rising danger heard within a bar; invalid formats give silence; a minute renders fast |
-| game side | `controller-test`: a camera that sees nothing leaves the music calm, a guardian about to hurt the player makes it danger; cues fade after their hold; D maps into 0..256 |
+| chips | every chip sounds clean, heard and without offset for 8 performers; each part keeps its own channels (Game Boy one each, AdLib four for drums); POKEY and Game Boy round a C7 to their dividers; an arpeggio plays each chord tone for one 20 ms frame on one voice; a stepped volume holds still inside a frame and takes at most 16 levels |
+| drums | no drums at level 0, more hits at each level, a kick and a backbeat in every bar; fills lead into the next section; on one drum channel two drums never start together |
+| songs | variety 0 keeps one key and few songs, variety 1 makes over three times as many with other keys, tempos and grooves; earlier songs come back at both ends; all sections appear; under danger the drums never drop below full; a returning song comes in at a chorus with its own remembered motifs; the tempo setting slows and speeds the music; a chip change is heard at once without a gap |
+| game side | `controller-test`: a camera that sees nothing leaves the music calm, a guardian about to hurt the player makes it danger; cues fade after their hold; D maps into 0..256. `titleMenu-test`: the performer sound steps through the four chips both ways, variety and tempo stay in range, and all three are kept in `settings.json` |
 
 The OpenAL path was checked by running the game headless with OpenAL Soft's wave writer
 (`ALSOFT_CONF` with `drivers=wave`) and the Performer chosen: the music streams at the device's
@@ -556,4 +591,110 @@ Each theme keeps its own memory, so when the danger passes the main theme return
 ```sh
 goe-musician out.wav [seconds=60] [seed=1] [difficulty=128 or from:to] [calm|alert|danger] [rate=44100]
 GOE_PHRASES=1 goe-musician sweep.wav 300 7 0:256     # prints every phrase's report
+GOE_STYLE=gameboy GOE_VARIETY=0.9 GOE_TEMPO=1.2 goe-musician gb.wav 120 7 30:220
 ```
+
+`GOE_STYLE` is `adlib`, `sid`, `pokey` or `gameboy`; `GOE_VARIETY` 0..1 and `GOE_TEMPO` 0.5..1.5
+are the Config lines as shares. A phrase report line shows the song, its section, the drum level
+and whether the phrase ends in a fill.
+
+## 26. Chip sounds
+
+Config's **Performer sound** puts the same performer on another instrument. Each is a `bandSound`
+(`include/musicChips.h`): three instruments, a drum kit, and a `chipModel` that tells the
+synthesizer how the chip behaves. None is bit exact; each gives the feeling of the chip.
+
+| | AdLib | SID (C64, stereo) | POKEY (Atari 65XE, stereo) | Game Boy |
+|---|---|---|---|---|
+| channels (lead + chords + bass + drums) | shared 12 + 4 drums | 2 + 2 + 1 + 1, two SIDs | 2 + 2 + 2 + 2, two POKEYs | 1 + 1 + 1 + 1 |
+| lead | the performer's own two oscillator voice | a pulse whose width sweeps (PWM), or a saw for bright performers, through a resonant filter | a pure square | a 12.5% or 25% pulse |
+| chords | held, up to four voices | fast arpeggios on one voice | fast arpeggios | fast arpeggios on a 50% or 12.5% pulse |
+| bass | the performer's own | a squelchy filtered pulse or saw | a buzzy square that flips every fourth cycle (POKEY's distortion), or a plain square | the 32 step, 16 level wave channel |
+| drums | sine kick with a pitch drop, noisy snare with a body, hissing hats | a click of noise, then a falling pulse | a square kick and noise, in volume steps | everything on the noise channel, metallic 7 bit noise for the hats |
+| pitch | free | free | 8 bit dividers of the 64 kHz clock (15 kHz for low notes): high notes go a little out of tune | 11 bit dividers |
+| volume | smooth | smooth (the SID's ADSR) | 16 levels, moving 50 times a second | 16 levels, 60 times a second |
+| waveforms | band-limited | band-limited | raw, with the aliasing of a digital chip | raw |
+| filter | yes | yes, resonant | none | none |
+| stereo | gentle motion | lead left, chords right | lead left, chords right | channels placed left, centre or right |
+
+How the synthesizer does it (`chipModel` in `musicSynth.h`):
+
+- **Arpeggios.** The composer writes a chord as one note with up to three intervals
+  (`noteEvent::arp`); the voice plays the next tone of the chord each frame, so one channel
+  sounds like a chord, as on every chip without polyphony.
+- **Stepped volume.** With `volumeSteps`, a voice's loudness is rounded to one of 16 levels once a
+  frame. The level still moves over a millisecond, so the steps are heard and the clicks are not.
+- **Pitch grids.** `pitchGrid::pokey` and `pitchGrid::gameboy` round every frequency to what the
+  chip's divider can make (tested: a C7 at 2093 Hz plays at 2131 Hz on the POKEY).
+- **New waveforms.** `noise` (a 15 bit shift register clocked at the note's frequency), `metal`
+  (the same fed back after 7 bits: short and ringing), `poly` (POKEY's buzz, still in tune because
+  its pattern repeats every four cycles, two octaves under the note) and `wave4` (the Game Boy's
+  wave channel).
+- **Pulse width modulation** (`pwmRate`, `pwmDepth`), **pitch drops** for drums (`pitchDrop`,
+  `dropTime`) and a **noise burst** at the start of a note (`noiseBurst`), for the C64's drums.
+- A pulse's average is taken off, so narrow pulses do not push the mix off centre and notes do not
+  thump when they start.
+
+Changing the sound during play drops what was planned, lets the old chip's notes fade with their
+release and starts a new phrase on the new chip at once (`adaptiveMusician::restyle`).
+
+## 27. Drums
+
+Every chip has a kit of five drums (`drum` in `musicEvents.h`): kick, snare, closed hat, open hat
+(also the crash) and tom. A drum note names its drum; the kit decides its pitch and sound. The
+drummer plays one of six grooves (`vocabulary::grooves`): rock, four on the floor, half time,
+breakbeat, electro and shuffle (swung). The phrase plan gives a level:
+
+| Level | What plays |
+|---|---|
+| 0 | no drums |
+| 1, light | the kick on the strong beats, the backbeat, the hats on the beats |
+| 2, full | the whole groove, an open hat at the end of every second bar |
+| 3, driving | busy sixteenth hats, ghost snares, a crash at the top of the phrase |
+
+The last bar before a new section, or a new song, ends in a fill of snares and toms getting
+louder (`vocabulary::fills`). On a chip with one drum channel (the SID, the Game Boy) only one drum
+starts at a time, in the order kick, snare, crash, ghost, hat. The drums have their own channels,
+so they never take a voice from the melody or the chords.
+
+## 28. Songs, the set, variety and tempo
+
+The music is a long mixed set of songs, planned by the `songbook` (`include/musicSongs.h`). A song
+has its own key (up to a fifth from the performer's), mode, tempo, groove, swing, three favourite
+chord progressions and a little more or less energy and legato. It lasts a number of phrases
+arranged as:
+
+```text
+intro  verse verse chorus chorus  verse verse chorus chorus  breakdown  chorus ...  outro
+```
+
+| Section | Drums | Parts |
+|---|---|---|
+| intro | light | half of the time the melody waits and the band plays the groove first |
+| verse | light | everyone |
+| chorus | full, the melody a little denser, the bass running | everyone |
+| breakdown | none under the melody, or the drums and bass alone | |
+| outro | light, ending in a fill | everyone |
+
+The **intensity** sets the drum level on top of the section: the tension (difficulty), plus 0.25
+when a camera or guardian is onto the player, plus 0.5 under danger. Above 0.35 the drums play one
+level harder, above 0.6 two. Under danger they never drop below full, whatever the section. None of
+it touches the tension: the situation changes how hard the band plays and which theme it plays,
+never the difficulty.
+
+When a song ends the next one is new or an earlier one coming back (it then starts at a chorus,
+in its own key and tempo, with the motifs it played before: the composer remembers motifs per song).
+The songbook remembers five songs; a new one takes the oldest one's place.
+
+**Music variety** (0..100%) decides how much of this happens:
+
+| | Variety 0% | Variety 100% |
+|---|---|---|
+| song length | about 23 phrases (four minutes) | about 5 phrases (under a minute) |
+| key | always the performer's | changes in 90% of new songs |
+| mode, tempo, groove | the performer's own mode and tempo, a groove that suits its energy | other modes, tempos up to 30% away (and audibly different from the last song), any groove, sometimes swing |
+| earlier songs coming back | 60% of song changes | 25% |
+
+**Music tempo** (50..150%) scales the composed tempo, which is still kept in 60..160 BPM. The
+tempo also moves on its own: each song has its own, the tension lifts it by up to 12%, and an alert
+or a danger by 6% or 12%.

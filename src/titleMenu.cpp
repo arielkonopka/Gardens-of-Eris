@@ -21,6 +21,7 @@
  */
 
 #include "titleMenu.h"
+#include "musicChips.h"
 #include <algorithm>
 #include <allegro5/keycodes.h>
 #include <exception>
@@ -84,17 +85,18 @@ titleMenu::titleMenu(gameSettings &edited, std::string file, std::function<bool(
                                  return this->settings.setSaveDirectory(v);
                              },
                              {}});
-    // a volume line: shows "80%", takes a typed number, and Left/Right step it by five
-    auto volume = [](std::string label, std::function<int()> get, std::function<void(int)> set) {
+    // a percent line: shows "80%", takes a typed number from lowest to highest, and Left/Right step it by five
+    auto percent = [](std::string label, std::function<int()> get, std::function<void(int)> set, int lowest = 0,
+                      int highest = 100) {
         return option{std::move(label),
                       [get] { return std::to_string(get()) + "%"; },
-                      [set](const std::string &v) {
+                      [set, lowest, highest](const std::string &v) {
                           try {
                               size_t used = 0;
-                              int percent = std::stoi(v, &used);
-                              if (percent < 0 || percent > 100 || (used < v.size() && v.substr(used) != "%"))
+                              int value = std::stoi(v, &used);
+                              if (value < lowest || value > highest || (used < v.size() && v.substr(used) != "%"))
                                   return false;
-                              set(percent);
+                              set(value);
                               return true;
                           } catch (const std::exception &) {
                               return false;
@@ -102,11 +104,11 @@ titleMenu::titleMenu(gameSettings &edited, std::string file, std::function<bool(
                       },
                       [get, set](int by) { set(get() + by * gameSettings::volumeStep); }};
     };
-    this->options.push_back(volume(
+    this->options.push_back(percent(
         "Music volume",
         [this] { return this->settings.getMusicVolume(); },
         [this](int v) { this->settings.setMusicVolume(v); }));
-    this->options.push_back(volume(
+    this->options.push_back(percent(
         "Sound effects volume",
         [this] { return this->settings.getEffectsVolume(); },
         [this](int v) { this->settings.setEffectsVolume(v); }));
@@ -123,6 +125,25 @@ titleMenu::titleMenu(gameSettings &edited, std::string file, std::function<bool(
                                  this->settings.setMusicSource(performer ? gameSettings::musicSource::samples
                                                                          : gameSettings::musicSource::performer);
                              }});
+    // the performer's chip: Enter and Right step forward, Left back
+    this->options.push_back({"Performer sound",
+                             [this] { return std::string(goe::musician::nameOf(this->settings.getPerformerSound())); },
+                             {},
+                             [this](int by) {
+                                 const int n = goe::musician::chipStyleCount;
+                                 const int now = (int) this->settings.getPerformerSound();
+                                 this->settings.setPerformerSound((goe::musician::chipStyle) (((now + by) % n + n) % n));
+                             }});
+    this->options.push_back(percent(
+        "Music variety",
+        [this] { return this->settings.getMusicVariety(); },
+        [this](int v) { this->settings.setMusicVariety(v); }));
+    this->options.push_back(percent(
+        "Music tempo",
+        [this] { return this->settings.getMusicTempo(); },
+        [this](int v) { this->settings.setMusicTempo(v); },
+        gameSettings::minMusicTempo,
+        gameSettings::maxMusicTempo));
     this->options.push_back({"Story scroller",
                              [this] { return std::string(this->settings.getStoriesShown() ? "On" : "Off"); },
                              {},

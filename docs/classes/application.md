@@ -97,7 +97,9 @@ A singleton with its own input thread reading the keyboard and the pad.
 
 Player-editable options in `settings.json`: save folder (`getSaveFile()` is `savegame.goe` in it),
 music and effects volume, the music source (`getMusicSource`: `samples`, the skins.json songs, or
-`performer`, the [adaptive musician](../adaptive-musician.md); `"music"` in the file), story scroller on or off and its file, the demo times (`demoWait`,
+`performer`, the [adaptive musician](../adaptive-musician.md); `"music"` in the file), the
+performer's sound (`getPerformerSound`, a `goe::musician::chipStyle`; `"performerSound"`), music
+variety (0..100%, `"musicVariety"`) and music tempo (50..150%, `"musicTempo"`), story scroller on or off and its file, the demo times (`demoWait`,
 `demoLength`, `hallOfFameLength`, 5 to 3600 s) and the control bindings. `load`, `save`,
 `resetToDefaults`. A new option gets a field here, a line in `load` and `save`, and a line in
 `titleMenu`'s Config screen.

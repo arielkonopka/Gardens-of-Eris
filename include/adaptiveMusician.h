@@ -22,9 +22,11 @@
 #ifndef ADAPTIVEMUSICIAN_H
 #define ADAPTIVEMUSICIAN_H
 
+#include "musicChips.h"
 #include "musicComposer.h"
 #include "musicEvents.h"
 #include "musicPersonality.h"
+#include "musicSongs.h"
 #include "musicSynth.h"
 #include "musicTension.h"
 #include <array>
@@ -39,8 +41,9 @@
  * full design.
  *
  * Threads:
- * - the control functions (setDifficulty, setSituation, setEnabled, setVolume, pause, resume)
- *   may be called from any thread at any time; they only store atomics;
+ * - the control functions (setDifficulty, setSituation, setEnabled, setVolume, setStyle,
+ *   setVariety, setTempoScale, pause, resume) may be called from any thread at any time; they
+ *   only store atomics;
  * - composeAhead() and renderAudio() belong to the one thread that feeds the audio engine
  *   (the sound thread); renderAudio() never allocates, locks, logs or touches files;
  * - initialize() and shutdown() are called while nothing renders.
@@ -76,6 +79,13 @@ public:
     void setEnabled(bool enabled);
     /// the musician's own gain, 0..1; the game's music volume is applied after it, by the game
     void setVolume(float volume);
+    /// which chip the band sounds like; a change is heard at once, with a new phrase
+    void setStyle(chipStyle style);
+    /// 0..1: how much the music changes; 0 long songs near home, 1 short songs that wander far
+    void setVariety(float variety);
+    /// the player's tempo, a share of the composed one (tuning::minTempoScale..maxTempoScale);
+    /// heard from the next phrase
+    void setTempoScale(float scale);
     /// fades out and holds the music where it is; resume fades back in and goes on from there
     void pause();
     void resume();
@@ -91,6 +101,8 @@ public:
     const tensionController &tension() const { return this->feeling; }
     const phraseReport &lastPhrase() const { return this->writer.report(); }
     const synthesizer &synth() const { return this->band; }
+    const songbook &songs() const { return this->setlist; }
+    chipStyle style() const { return this->styleNow; }
     /// samples played since initialize
     std::int64_t position() const { return this->now; }
     int queued() const { return this->queue.size(); }
@@ -104,6 +116,8 @@ private:
         std::int64_t start = 0, barLength = 0, end = 0;
     };
     void escalate();
+    /// puts the band on another chip: what is planned is dropped and a new phrase starts now
+    void restyle(chipStyle style);
     /// moves the tension on in audio time up to the sample `until`
     void follow(std::int64_t until);
     void dispatch(const noteEvent &e);
@@ -114,6 +128,9 @@ private:
     std::atomic<bool> enabledWanted{true};
     std::atomic<bool> pausedWanted{false};
     std::atomic<float> volumeWanted{1.0f};
+    std::atomic<int> styleWanted{0};
+    std::atomic<float> varietyWanted{0.6f};
+    std::atomic<float> tempoWanted{1.0f};
 
     audioFormat format;
     bool initialized = false;
@@ -121,7 +138,10 @@ private:
     performerPersonality who;
     tensionController feeling;
     composer writer;
+    songbook setlist;
     synthesizer band;
+    chipStyle styleNow = chipStyle::adlib;
+    bandSound sound;
     eventQueue queue;
     phraseBuffer scratch;
     std::array<phraseMark, 4> marks{};
