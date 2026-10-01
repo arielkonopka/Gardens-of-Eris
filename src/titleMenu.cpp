@@ -148,13 +148,14 @@ std::vector<titleMenu::mainItem> titleMenu::mainItems() const
     return {mainItem::START, mainItem::CONFIG, mainItem::EXIT};
 }
 
-std::string titleMenu::labelOf(mainItem item)
+std::string titleMenu::labelOf(mainItem item) const
 {
     switch (item) {
     case mainItem::CONTINUE:
         return "Continue";
     case mainItem::START:
-        return "Start game";
+        // next to Continue it starts over, and the new game takes the old save's place
+        return this->canContinue ? "New game" : "Start game";
     case mainItem::CONFIG:
         return "Config";
     default:

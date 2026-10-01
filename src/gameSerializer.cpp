@@ -839,6 +839,15 @@ bool gameSerializer::saveGame(const std::string &fileName)
     return true;
 }
 
+bool gameSerializer::replaceSave(const std::string &fileName)
+{
+    if (saveGame(fileName))
+        return true;
+    std::error_code ec;
+    std::filesystem::remove(fileName, ec);
+    return !ec && !std::filesystem::exists(fileName, ec);
+}
+
 bool gameSerializer::canLoad(const std::string &fileName)
 {
     reader r(fileName);

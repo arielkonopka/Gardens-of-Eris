@@ -59,7 +59,8 @@ TEST(TitleMenuTests, ContinueShowsOnlyWithAReadableSave)
     auto lines = m.getLines();
     ASSERT_EQ(lines.size(), 4u);
     EXPECT_EQ(lines[0], "Continue");
-    EXPECT_EQ(lines[1], "Start game");
+    // with a save, starting over reads "New game"
+    EXPECT_EQ(lines[1], "New game");
     EXPECT_EQ(m.getSelected(), 0);
     EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::CONTINUE);
     m.keyDown(ALLEGRO_KEY_DOWN);

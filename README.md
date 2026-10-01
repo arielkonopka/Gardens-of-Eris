@@ -56,7 +56,7 @@ The labyrinth is inhabited by an assortment of creatures and contraptions. You'l
 
 ## Playing the game
 
-The game opens with a title screen: **Continue**, **Start**, **Config** and **Exit**. Continue is there only when the save folder holds a save the game can read, and picks that game up where it was saved. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), the story scroller, and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
+The game opens with a title screen: **Start game**, **Config** and **Exit**. When the save folder holds a save the game can read, it shows **Continue** and **New game** instead of Start game: Continue picks that game up where it was saved, and New game builds a new world that takes the old save's place at once, so the old game is gone. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), the story scroller, and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
 
 Each time the maze grows by a new chunk, a random Discordian story scrolls along the top of the screen, unless one is still scrolling. Config switches the story scroller on or off and picks the stories file: Left and Right step through the files next to it (`data/txt/stories.json` in English, `stories.pl.json` in Polish, `stories.ro.json` in Romanian), or type the path of your own. A stories file is a JSON list of `{"title": "...", "body": "..."}`.
 
@@ -85,7 +85,7 @@ The HUD shows your score (**P**), your level (**Dex**, see Stats) and the curren
 
 Settings saved by an older version kept Esc for giving up; the game moves it to Backspace and gives Esc to save and exit, unless you chose your keys after this change.
 
-When the last avatar is gone, a Game over screen shows your score; Enter takes you back to the title screen, where Start begins a new world.
+When the last avatar is gone, a Game over screen shows your score; Enter takes you back to the title screen, where Start game (or New game) begins a new world.
 
 ### If the game crashes
 The game writes a crash report, `crash-<date>-<time>.log`, into the save folder (the game's folder unless Config says otherwise); on Windows a message box says where it went. It holds what went wrong, the world seed, a stack trace and the last lines the game printed. Please attach it to the bug report, with what you were doing.
@@ -401,6 +401,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* The title screen offers New game next to Continue when a save exists. A new game overwrites the old save right away, so Continue always brings back the game you played last.
 * Agents can play: a headless `goe-agent` library and a `goe` Python package (a ViZDoom-like game and a Gymnasium environment), with a circle of vision around the player, the player's numbers and inventory, each with its features chosen by the agent. The same seed plays the same game.
 * Chasers play fair: the hunter, guardians, cameras and the Hound only know where you are by seeing you, and walls, brick clusters, bunkers, teleporters and closed doors block their view. When you slip out of sight they go to where they saw you last; when you are not there, or they never saw you, they patrol along the walls of the maze.
 * Esc saves the game and goes back to the title screen without losing an avatar, and the title screen has Continue while a readable save exists. Giving up an avatar moved to Backspace. Saves keep the world seed now (save format 6; older saves still load).

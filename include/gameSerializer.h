@@ -62,6 +62,12 @@ public:
     static bool loadGame(const std::string &fileName);
     /// whether the file looks like a save this build can load (its magic and version), without loading it
     static bool canLoad(const std::string &fileName);
+    /**
+     * A new game takes the saved one's place: writes the world just built to fileName, so Continue
+     * picks up the new game and never the old one. When that cannot be written, the old save is
+     * removed instead. False when the old save is still there afterwards.
+     */
+    static bool replaceSave(const std::string &fileName);
     /// empties the world (chambers, players, apples, teleporters...), for a load or a new game
     static void clearWorld();
 
