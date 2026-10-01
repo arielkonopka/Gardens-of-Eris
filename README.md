@@ -12,7 +12,7 @@ So, here we have a work in progress. It tends to function well enough, but consi
 Main branch build status:
 
 [![CI](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/ci.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/ci.yml)
-[![SonarQube](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonar.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonar.yml)
+[![SonarCloud](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonar.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonar.yml)
 
 Every push builds the game and runs the unit tests on Linux and on Windows (MSYS2), and packs each build as a download on the run's page. Pushing a version tag also publishes both builds as a GitHub release:
 
@@ -21,7 +21,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-The SonarQube analysis with test coverage runs as its own workflow, so its badge is separate from the build badge. It needs the server address in the `SONAR_HOST_URL` repository variable (or secret) and a token from that server in the `SONAR_TOKEN` secret; the project key is in `sonar-project.properties`. Without them, or with a token the server refuses, the scan is skipped with a warning.
+The SonarCloud analysis (https://sonarcloud.io) with test coverage runs as its own workflow, so its badge is separate from the build badge. It needs a SonarCloud token in the `SONAR_TOKEN` repository secret; the organization and project key are in `sonar-project.properties`. To scan against another Sonar server, set its address in the `SONAR_HOST_URL` repository variable. Without a token, or with a token the server refuses, the scan is skipped with a warning.
 
 ## Why the idea
 
