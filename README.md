@@ -168,6 +168,10 @@ examples:
 ./build.sh -m bElem -m soundManager -m presenter -t -m bElem-test
 ```
 
+### Diagrams
+
+[docs/diagrams](docs/diagrams/README.md) holds PlantUML diagrams of the code: class diagrams of the elements, the world, the application and the agent library, a component diagram, activity diagrams of the application, a game tick and chunk generation, sequence diagrams of a player step, saving and an agent step, and state diagrams of the title screen, an element's life and a guardian drone. Render them again with `plantuml -tsvg *.puml` in that folder after a change.
+
 ## Main assumptions
 
 1. The game features only a randomly generated maze, so it does.
@@ -403,6 +407,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* PlantUML diagrams in docs/diagrams: classes, components, activities, sequences and states.
 * A hall of fame: the ten best games with name, score and date, kept in the save folder. A lost game good enough for it asks for a name. The title screen shows it after the demo.
 * The demo starts far out in the maze, where it is hardest, and stops after 30 seconds. The wait before it, its length and how long the hall of fame shows are set in Config.
 * A demo on the title screen: after 60 to 120 seconds without a press on the main menu, an autopilot plays a world of its own until any key, pad button or stick push brings the menu back. The demo world is discarded and saves are left alone.

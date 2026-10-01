@@ -1,0 +1,43 @@
+@startuml
+title Endless world: building, swapping and generating chunks
+|worldBuilder|
+start
+:growAround(world, player cell);
+:Walk rings 0..buildRadius (2) around the player's chunk,\nnearest first;
+if (a missing chunk found?) then (no)
+  :shrinkAround: chunks farther than keepRadius (3),\nfurthest first;
+  |gameSerializer|
+  :swapOutChunk: write elements of the chunk\nand what they carry to chunk_x_y.bin;
+  :Remove them from the board;
+  stop
+else (yes)
+endif
+|worldBuilder|
+if (chunk was swapped out before?) then (yes)
+  |gameSerializer|
+  if (swapInChunk reads chunk_x_y.bin?) then (yes)
+    :Recreate the elements,\nre-link teleporters and apples;
+    stop
+  else (no)
+  endif
+endif
+|randomLevelGenerator|
+:generateChunk(start, patternFor(chunk));
+:Seed from the world seed and the chunk;
+:Lock the world mutex, batch teleporter registration;
+:Fence: nothing may reach outside this chunk;
+if (a pattern for this chunk?) then (yes)
+  :fillChunk: place the pattern's elements,\ntiled from the top left cell;
+  if (start chunk?) then (yes)
+    :First pattern player is active,\nelse one on the floor nearest the middle;
+  endif
+else (no)
+  :depth = difficulty::chunkDepth(chunk);
+  :holes = difficulty::mazeHoles(depth);
+  :buildMaze: spanning-tree maze of chamberAreas;
+  :buildChunkWalls: west and north walls with gaps,\nopen the cell next to every gap;
+  :placeEverything: monsters, bunkers, cameras,\nkeys, guns, apples, landmines, teleporters, doors\n(more danger with fewer holes);
+endif
+:Publish the batch of teleporters;
+stop
+@enduml

@@ -1,0 +1,59 @@
+@startuml
+title One game tick (presenter::presentEverything, 50 ticks per second)
+start
+:Flush queued events, load stories, start the timer;
+while (not finished?)
+  :Wait for the next Allegro event;
+  if (window closed?) then (yes)
+    :QUIT;
+    break
+  endif
+  if (timer tick?) then (yes)
+    if (demo?) then (yes)
+      if (any key, pad button or stick since the start?) then (yes)
+        :DEMO_OVER;
+        break
+      elseif (demo time used up?) then (yes)
+        :DEMO_DONE;
+        break
+      else
+        :autopilot.decide(player)\nbecomes the control item;
+      endif
+    else (no)
+      :F5 save / F9 load;
+      if (Esc pressed?) then (yes)
+        :gameSerializer::saveGame();
+        :SAVED or SAVE_FAILED;
+        break
+      endif
+    endif
+    if (an active player?) then (yes)
+      :Remember the score;
+      if (worldBuilder::growAround built or swapped in a chunk?) then (no)
+        :worldBuilder::shrinkAround swaps one far chunk out;
+      endif
+      :Music follows the difficulty D;
+    endif
+    :bElem::runLiveElements();
+    note right
+      tick the game clock
+      dispose finished elements
+      drop deregistered ones
+      mechanics() of every live element
+      near the player, then the player
+      the Hound watches for campers
+    end note
+    :Story scroller tick;
+    if (active player left?) then (yes)
+      :Draw the game field, fog, HUD;
+    else (no)
+      :LOST with the best score;
+      break
+    endif
+  else (input event)
+    :inputManager refreshes the control item;
+  endif
+endwhile
+:Return the game end;
+stop
+@enduml

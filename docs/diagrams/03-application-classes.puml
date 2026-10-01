@@ -1,0 +1,97 @@
+@startuml
+title The program around the world: screens, input, sound, video
+skinparam classAttributeIconSize 0
+hide empty members
+
+class main <<function>> {
+  title loop
+  playDemo()
+  showEnd()
+}
+class titleScreen {
+  +run() : titleMenu::action
+  +showBusy(text)
+  +showMessage(headline, lines)
+  +showHallOfFame(fame, seconds, highlight)
+  +askName(headline, lines, name)
+}
+class titleMenu {
+  screen: MAIN, CONFIG, EDITING, CONTROLS, BINDING
+  action: NONE, CONTINUE, START, EXIT, DEMO
+  +keyDown(key)
+  +wait(seconds) : action
+  +pressed()
+  +setDemoAfter(seconds)
+}
+class gameSettings <<singleton>> {
+  saveDirectory, volumes
+  storyScroller, storiesFile
+  demoWait, demoLength, hallOfFameLength
+  controls
+  +load() / save()
+}
+class "goe::controls::bindings" as bindings {
+  +translate(heldState) : controlItem
+}
+class presenter {
+  +presentEverything(demo, demoSeconds) : gameEnd
+  -showGameField()
+  -handleSaveKeys()
+  -tickStories()
+}
+enum gameEnd {
+  QUIT
+  LOST
+  SAVED
+  SAVE_FAILED
+  DEMO_OVER
+  DEMO_DONE
+}
+class inputManager <<singleton>> {
+  input thread
+  +getCtrlItem()
+  +setControlItem(item)
+  +takeExitRequest()
+  +activity() : presses
+}
+class "goe::autopilot" as autopilot {
+  +decide(player) : controlItem
+}
+class "goe::hallOfFame" as hallOfFame {
+  top 10: name, score, date
+  +load(file) / save(file)
+  +qualifies(score)
+  +add(entry)
+}
+class soundManager <<singleton>>
+class videoManager <<singleton>>
+class videoDriver
+class configManager <<singleton>> {
+  skins.json
+}
+class fogLayer
+class "goe::storyScroller" as storyScroller
+class viewPoint <<singleton>>
+class "goe::crashLog" as crashLog <<namespace>>
+
+main --> titleScreen
+main --> presenter
+main ..> hallOfFame
+main ..> crashLog
+titleScreen --> titleMenu
+titleMenu --> gameSettings
+gameSettings *-- bindings
+inputManager ..> bindings : translate keys and pad
+presenter --> inputManager
+presenter *-- autopilot : demo
+presenter *-- fogLayer
+presenter *-- storyScroller
+presenter ..> soundManager
+presenter ..> videoManager
+presenter ..> viewPoint
+presenter ..> gameEnd
+videoManager --> videoDriver
+videoDriver ..> configManager
+presenter ..> "worldBuilder" : grow / shrink around player
+presenter ..> "bElem" : runLiveElements()
+@enduml

@@ -1,0 +1,137 @@
+@startuml
+title Elements: bElem and its kinds
+skinparam classAttributeIconSize 0
+hide empty members
+
+class bElem {
+  +{static} runLiveElements()
+  +mechanics() : bool
+  +stepOnElement(cell) : bool
+  +moveInDirection(d) : bool
+  +dragInDirection(d) : bool
+  +collect(item) : bool
+  +interact(who) : bool
+  +use(item) : bool
+  +hurt(points) : bool
+  +kill() : bool
+  +destroy() : bool
+  +disposeElement()
+  +getElementInDirection(d)
+  +additionalProvisioning(subtype)
+  #getType() : int
+}
+class bElemAttr {
+  subtype, energy, ammo
+  steppable, collectible, killable,
+  movable, interactive, locked, open...
+  +getInventory()
+}
+class bElemStats {
+  position, facing, direction
+  timers: moved, waiting, killed,
+  destroyed, telInProgress, fading...
+  points, instanceId
+  steppingOn / steppedOnBy (stack)
+}
+class inventory {
+  weapons
+  usables
+  keys
+  mods
+  tokens
+  +addToInventory(item)
+  +getActiveWeapon()
+  +getUsable()
+}
+class chamber
+
+bElem *-- "1" bElemAttr
+bElem *-- "1" bElemStats
+bElemAttr o-- "0..1" inventory
+inventory o-- "*" bElem : items
+bElem --> chamber : board
+
+package "Board" {
+  class floorElement
+  class wall
+  class rubbish
+  class brickCluster
+  class door
+  class teleport
+  class bunker
+}
+package "Collectibles" {
+  class key
+  class plainGun
+  class bazooka
+  class goldenApple
+}
+package "Creatures" {
+  class player
+  class monster
+  class patrollingDrone
+  class securityCamera
+  class kiki
+}
+package "Explosives" {
+  abstract class explosives
+  class simpleBomb
+  class landmine
+  class bouba
+  class plainMissile
+  class bazookaMissile
+}
+package "Controllers (puppet masters)" {
+  class puppetMasterFR {
+    +{static} create(board, subtype)
+    #lookout(body, range)
+    #followTrail()
+    #followWall()
+  }
+  class puppetMasterCollector
+  class puppetMasterHunter
+  class puppetMasterWallFollower
+  class puppetMasterGuardian
+  class puppetMasterHound
+}
+
+bElem <|-- floorElement
+bElem <|-- wall
+bElem <|-- rubbish
+bElem <|-- brickCluster
+bElem <|-- door
+bElem <|-- teleport
+bElem <|-- bunker
+bElem <|-- key
+bElem <|-- plainGun
+plainGun <|-- bazooka
+bElem <|-- player
+bElem <|-- monster
+bElem <|-- patrollingDrone
+bElem <|-- securityCamera
+bElem <|-- kiki
+bElem <|-- plainMissile
+bElem <|-- "virtual" explosives
+explosives <|-- simpleBomb
+simpleBomb <|-- landmine
+explosives <|-- bouba
+explosives <|-- goldenApple
+explosives <|-- bazookaMissile
+bElem <|-- puppetMasterFR
+puppetMasterFR <|-- puppetMasterCollector
+puppetMasterFR <|-- puppetMasterHunter
+puppetMasterFR <|-- puppetMasterWallFollower
+puppetMasterFR <|-- puppetMasterGuardian
+puppetMasterFR <|-- puppetMasterHound
+
+patrollingDrone o-- "0..1" puppetMasterFR : controller
+securityCamera ..> puppetMasterGuardian : spawns guardian drones
+puppetMasterGuardian --> securityCamera : guards
+kiki ..> bouba : beam
+
+note bottom of puppetMasterFR
+  Chasers see only through goe::sight
+  (lineOfSight.h); never read the
+  player position directly.
+end note
+@enduml

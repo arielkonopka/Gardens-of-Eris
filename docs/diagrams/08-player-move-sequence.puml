@@ -1,0 +1,45 @@
+@startuml
+title Player step: move, collect, push (motion.h)
+actor Player as user
+participant inputManager
+participant presenter
+participant "bElem::runLiveElements" as run
+participant "player" as plr
+participant "motion" as motion
+participant "target : bElem" as target
+participant "inventory" as inv
+participant "chamber" as board
+
+user -> inputManager : key / pad (input thread)
+inputManager -> inputManager : control item {type 0, dir}
+presenter -> run : timer tick
+run -> plr : mechanics()
+plr -> inputManager : getCtrlItem()
+alt busy (moving, dying, teleporting)
+  plr --> run : animate only
+else type 0: move
+  plr -> motion : step(player, dir)
+  motion -> plr : getElementInDirection(dir)
+  plr -> board : topAt(cell)
+  board --> motion : target
+  alt target is collectible and player canCollect
+    motion -> plr : collect(target)
+    plr -> inv : addToInventory(target)
+    plr -> board : lift(target)
+    motion -> plr : moveOnto(the floor left behind)
+  else target steppable
+    motion -> board : lift(player), place(player, cell)
+    motion -> plr : start move timer
+  else target movable
+    motion -> motion : step(target, dir), then take its cell
+  else interactive
+    motion -> target : interact(player)
+  end
+  plr -> plr : face the move direction
+else type 1: shoot
+  plr -> inv : active weapon
+  plr -> plr : shootGun() fires a missile
+else type 2: use / open door
+  plr -> target : interact(player) or collect
+end
+@enduml

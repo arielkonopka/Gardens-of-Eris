@@ -1,0 +1,66 @@
+@startuml
+title Application: from start to exit (main.cpp)
+start
+:Read ~--load and ~--seed from the command line;
+:gameSettings::load() reads settings.json;
+:Install crash log (crash-<date>.log in the save folder);
+:Create presenter, load skins, sounds, fonts;
+while (window open?) is (yes)
+  if (saving failed last time?) then (yes)
+    :Back to the same game;
+    :play = true;
+  elseif (first loop, ~--load given and the save loads?) then (yes)
+    :play = true;
+  else (title screen)
+    :titleMenu waits for a choice\n(demo after demoWait + rand(demoWait) s);
+    if (choice?) then (DEMO: nobody pressed anything)
+      :Fresh world with a random seed;
+      :worldBuilder::movePlayerTo(a chunk 23-63 chunks out);
+      :presentEverything(demo, demoLength)\nautopilot plays, nothing is saved;
+      :Clear the world, restore the seed;
+      if (how did the demo end?) then (time is up: DEMO_DONE)
+        :Show the hall of fame for hallOfFameLength s;
+      elseif (a key, button or stick: DEMO_OVER) then (yes)
+      else (window closed)
+        stop
+      endif
+      :play = false (back to the title);
+    elseif (choice?) then (CONTINUE)
+      if (the save loads?) then (yes)
+        :play = true;
+      else (no)
+        :Show "Cannot continue";
+        :play = false (back to the title);
+      endif
+    elseif (choice?) then (START)
+      if (a game was played before?) then (yes)
+        :Clear the old world, new seed\n(the ~--seed one again if given);
+      endif
+      :worldBuilder::startNew();
+      :Move the old save aside (replaceSave);
+      :play = true;
+    else (EXIT)
+      stop
+    endif
+  endif
+  if (play?) then (yes)
+    :presentEverything(false);
+    if (game end?) then (LOST)
+      :Delete the lost game's save;
+      if (score in the top 10?) then (yes)
+        :Ask the player's name;
+        :hallOfFame.add, save halloffame.json;
+      endif
+      :Show the hall of fame, new entry highlighted;
+    elseif (game end?) then (SAVED)
+      :Back to the title, Continue resumes;
+    elseif (game end?) then (SAVE_FAILED)
+      :Show "The game could not be saved";
+      :Next loop goes back to the game;
+    else (QUIT)
+      stop
+    endif
+  endif
+endwhile (no)
+stop
+@enduml

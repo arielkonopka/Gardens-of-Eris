@@ -1,0 +1,30 @@
+@startuml
+title Element lifecycle (bElem, bElemStats timers)
+[*] --> Created : elementFactory / createByType
+Created --> OnBoard : stepOnElement(cell)\nregisterLiveElement when it acts
+state OnBoard {
+  [*] --> Idle
+  Idle --> Moving : moveInDirection\n(move timer)
+  Moving --> Idle : timer done
+  Idle --> Waiting : setWaiting / interacting
+  Waiting --> Idle : timer done
+  Idle --> Teleporting : steps into a teleporter
+  Teleporting --> Idle : appears at the paired teleporter
+}
+OnBoard --> Collected : collect(): lifted into an inventory
+Collected --> OnBoard : dropped (owner dies, dropsInventoryOnDeath)
+Collected --> Disposed : used up (ammo, key in a door)
+OnBoard --> Dying : hurt() to energy 0 / kill()\nqueued in toDispose
+OnBoard --> Destroying : destroy() (explosion, missile)\nqueued in toDispose
+Dying --> Destroying : destroyed while dying
+Dying --> Disposed : kill timer done
+Destroying --> Disposed : destroy timer done
+OnBoard --> SwappedOut : its chunk goes to disk
+SwappedOut --> OnBoard : the player comes back near
+Disposed --> [*] : removed from board and live list
+note right of OnBoard
+  Elements far from the player
+  (chamber::isActiveNear false) wait
+  and run no mechanics().
+end note
+@enduml
