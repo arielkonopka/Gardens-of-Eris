@@ -105,21 +105,6 @@ if(GOE_BUILD_TESTS)
   )
 endif()
 
-# SonarQube Analysis
-option(ENABLE_SONARQUBE "Enable SonarQube analysis" OFF)
-if(ENABLE_SONARQUBE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-abs-path")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgcov --coverage")
-
-    add_custom_target(coverage
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/CoverageReports
-        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-        COMMAND gcovr -r ${CMAKE_SOURCE_DIR} --object-directory ${CMAKE_BINARY_DIR} -e "CMakeFiles" --sonarqube -o ${CMAKE_BINARY_DIR}/CoverageReports/coverageReport.xml
-        DEPENDS run_tests
-    )
-endif()
-
-
 # Headless benchmark (not a test): level generation, memory, tick, save and load times
 add_executable(goe-bench ${CMAKE_SOURCE_DIR}/benchmarks/goe-bench.cpp $<TARGET_OBJECTS:GardenOfErisLib>)
 target_link_libraries(goe-bench ${LIBRARIES})
