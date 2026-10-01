@@ -51,6 +51,7 @@
 #include "gameSettings.h"
 #include "fogLayer.h"
 #include "storyScroller.h"
+#include "autopilot.h"
 
 #define _offsetX 64
 #define _offsetY 64
@@ -67,8 +68,9 @@ namespace presenter
 {
 
 /// why presentEverything returned: the window closed, the last avatar was lost,
-/// or the player asked to save and go to the menu (and saving worked, or failed)
-enum class gameEnd { QUIT, LOST, SAVED, SAVE_FAILED };
+/// the player asked to save and go to the menu (and saving worked, or failed),
+/// or the player pressed something during the demo
+enum class gameEnd { QUIT, LOST, SAVED, SAVE_FAILED, DEMO_OVER };
 enum class presenterMode { MENU=0, SETTINGS=1,EDITOR=2,DEMO=3,GAME=4} ;
 enum class _cp_gameReasonOut { LOST=0, USERREQ=1, PAUSE=2, TELEPORTREQ=3 };
 
@@ -80,8 +82,9 @@ public:
     presenter();
     ~presenter() = default;
     bool initializeDisplay();
-    /// runs the game until the player quits or the last avatar is gone
-    gameEnd presentEverything();
+    /// runs the game until the player quits or the last avatar is gone. In a demo the autopilot
+    /// plays, nothing is saved, and any key, pad button or stick push ends it (DEMO_OVER).
+    gameEnd presentEverything(bool demo = false);
     /// the active player's score, as last shown; still there after the last avatar died
     /// after a lost game: the best score of its avatars; otherwise the active avatar's last score
     int getLastScore() const;
@@ -120,6 +123,10 @@ private:
     /// starts a story when the maze grew, and moves the one on screen; once per tick
     void tickStories();
     void drawStory();
+    /// playing the demo: the autopilot has the player
+    bool demo = false;
+    goe::autopilot pilot;
+    void drawDemoNote();
     std::string splashFname;
     fogLayer fog;
     int sWidth;

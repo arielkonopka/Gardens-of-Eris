@@ -49,6 +49,23 @@ void showEnd(titleScreen &title, int bestScore, bool &windowOpen)
     const std::vector<std::string> lines = {"Best score: " + std::to_string(bestScore)};
     windowOpen = title.showMessage("Game over", lines);
 }
+
+/// the title screen's demo: the autopilot plays a world of its own, which goes when it ends.
+/// No save is written, replaced or deleted. False when the window was closed.
+bool playDemo(presenter::presenter &shown, titleScreen &title)
+{
+    const auto seed = goe::rng::worldSeed();
+    title.showBusy("Building the maze...");
+    gameSerializer::clearWorld();
+    goe::rng::setWorldSeed(goe::rng::freshSeed());
+    worldBuilder::startNew();
+    soundManager::getInstance().enableSound();
+    const auto end = shown.presentEverything(true);
+    gameSerializer::clearWorld();
+    // the next game is built as it would have been without the demo ("--seed" included)
+    goe::rng::setWorldSeed(seed);
+    return end != presenter::gameEnd::QUIT;
+}
 } // namespace
 
 int main( int argc, char * argv[] )
@@ -92,9 +109,15 @@ int main( int argc, char * argv[] )
                 std::cout << "Loaded " << saveToLoad << "\n";
                 goe::crashLog::setDetail("Loaded save", saveToLoad);
             } else {
+                // nobody pressing anything for a minute or two on the main menu starts the demo
+                menu.setDemoAfter(60.0 + (double) goe::rng::below(goe::rng::cosmetic(), 61));
                 const auto choice = title.run();
                 if (choice == titleMenu::action::EXIT)
                     break;
+                if (choice == titleMenu::action::DEMO) {
+                    windowOpen = playDemo(*myPresenter, title);
+                    continue;
+                }
                 // the save folder may have changed on the config screen
                 goe::crashLog::setFolder(gameSettings::getInstance().getSaveDirectory());
                 if (choice == titleMenu::action::CONTINUE) {

@@ -454,7 +454,22 @@ void presenter::showGameField()
                    _offsetX,
                    _offsetY / 2);
     this->drawStory();
+    this->drawDemoNote();
     al_flip_display();
+}
+
+void presenter::drawDemoNote()
+{
+    if (!this->demo || !this->storyFont)
+        return;
+    // at the top of the game field, on a dark band so the maze does not swallow it
+    const char *text = "Demo - press any key";
+    const float x = (float) (_offsetX + this->bsWidth / 2);
+    const float y = (float) (_offsetY / 2) + 8.0f;
+    const float halfW = (float) al_get_text_width(this->storyFont.get(), text) / 2 + 12.0f;
+    const float h = (float) al_get_font_line_height(this->storyFont.get());
+    al_draw_filled_rectangle(x - halfW, y - 4.0f, x + halfW, y + h + 4.0f, al_map_rgba(0, 0, 0, 170));
+    al_draw_text(this->storyFont.get(), al_map_rgb(255, 205, 0), x, y, ALLEGRO_ALIGN_CENTER, text);
 }
 
 void presenter::tickStories()
@@ -608,7 +623,7 @@ void presenter::handleSaveKeys()
         std::cout << (ok ? "Game loaded from " : "Loading failed: ") << saveFile << "\n";
 }
 
-gameEnd presenter::presentEverything()
+gameEnd presenter::presentEverything(bool demoMode)
 {
     std::shared_ptr<bElem> currentPlayer = nullptr;
     ALLEGRO_EVENT event;
@@ -617,6 +632,9 @@ gameEnd presenter::presentEverything()
 
     this->fin = false;
     this->lastScore = 0;
+    this->demo = demoMode;
+    this->pilot.reset();
+    const auto pressesBefore = inputManager::getInstance().activity();
     inputManager::getInstance().takeExitRequest(); // a press from the title screen does not count
     al_flush_event_queue(this->evQueue.get()); // ticks queued while the title screen was up
     // read again each game, so a file picked in Config is used; seenChunks is kept, so the chunks
@@ -632,8 +650,18 @@ gameEnd presenter::presentEverything()
         }
         if (event.type == ALLEGRO_EVENT_TIMER) {
             std::lock_guard<std::mutex> guard(this->presenter_mutex);
-            this->handleSaveKeys();
-            if (inputManager::getInstance().takeExitRequest() && player::getActivePlayer()) {
+            if (this->demo) {
+                // any press ends the demo; nothing is saved or loaded while it runs
+                inputManager::getInstance().takeExitRequest();
+                if (inputManager::getInstance().activity() != pressesBefore) {
+                    result = gameEnd::DEMO_OVER;
+                    this->fin = true;
+                    break;
+                }
+                inputManager::getInstance().setControlItem(this->pilot.decide(player::getActivePlayer()));
+            } else
+                this->handleSaveKeys();
+            if (!this->demo && inputManager::getInstance().takeExitRequest() && player::getActivePlayer()) {
                 // between ticks, so the save holds one consistent moment of the world
                 const std::string saveFile = gameSettings::getInstance().getSaveFile();
                 const bool saved = gameSerializer::saveGame(saveFile);
@@ -675,13 +703,16 @@ gameEnd presenter::presentEverything()
             // the idea is to serve the keyboard state constantly, we avoid actions that are too fast
             // by having timers on everything, like: once you shoot, you will be able to shoot in some defined time
             // same with movement, object cycling, gun cycling, using things, interacting with things.
-            if (cItem.type == 7) {
+            if (cItem.type == 7 && !this->demo) {
                 this->fin = true;
                 break;
             }
         }
     }
     al_stop_timer(this->alTimer.get());
+    if (this->demo)
+        inputManager::getInstance().setControlItem(controlItem(-1, dir::direction::NODIRECTION));
+    this->demo = false;
     if (result == gameEnd::QUIT)
         inputManager::getInstance().stop();
     return result;

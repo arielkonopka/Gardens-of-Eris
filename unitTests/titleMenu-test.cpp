@@ -453,3 +453,35 @@ TEST(ControlBindingsTests, ReboundKeysDriveTheNewAction)
     EXPECT_EQ(goe::controls::bindings::fromId("nextGun"), action::nextGun);
     EXPECT_FALSE(goe::controls::bindings::fromId("fly").has_value());
 }
+
+TEST(TitleMenuTests, TheDemoStartsAfterTheMainMenuWaited)
+{
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    // without a wait set, never
+    EXPECT_TRUE(m.wait(1000.0) == titleMenu::action::NONE);
+    m.setDemoAfter(60.0);
+    EXPECT_TRUE(m.wait(59.0) == titleMenu::action::NONE);
+    // any press starts the wait over, also one the menu does nothing with
+    m.pressed();
+    EXPECT_TRUE(m.wait(59.0) == titleMenu::action::NONE);
+    m.keyDown(ALLEGRO_KEY_DOWN);
+    EXPECT_TRUE(m.wait(59.0) == titleMenu::action::NONE);
+    EXPECT_TRUE(m.wait(1.0) == titleMenu::action::DEMO);
+}
+
+TEST(TitleMenuTests, TheDemoWaitsWhileASettingIsOpen)
+{
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    m.setDemoAfter(60.0);
+    m.keyDown(ALLEGRO_KEY_DOWN);
+    m.keyDown(ALLEGRO_KEY_ENTER); // Config
+    ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
+    EXPECT_TRUE(m.wait(1000.0) == titleMenu::action::NONE);
+    m.keyDown(ALLEGRO_KEY_ESCAPE);
+    ASSERT_TRUE(m.getScreen() == titleMenu::screen::MAIN);
+    // back on the main menu, the whole wait again
+    EXPECT_TRUE(m.wait(59.0) == titleMenu::action::NONE);
+    EXPECT_TRUE(m.wait(1.0) == titleMenu::action::DEMO);
+}
