@@ -2,12 +2,15 @@
  * The agent interface: the game played without a window, as exRelaxer's agents play Doom.
  */
 #include "agentGame.h"
+#include "chamber.h"
 #include "elementFactory.h"
 #include "elements.h"
+#include "worldBuilder.h"
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <map>
 #include <optional>
 
 using namespace goe::agent;
@@ -493,4 +496,170 @@ TEST(AgentTests, HurtAndDeathArePenalised)
     for (int s = 0; s < 100 && !g.isEpisodeFinished() && g.avatarsLost() == 0; s++)
         g.makeAction(action::noop);
     EXPECT_EQ(events(g, event::death), 1.0f);
+}
+
+namespace {
+/// a room of 8 x 8 with the player, a key and a golden apple; repeated, it fills a chunk with rooms
+const std::vector<std::string> roomRows = {
+    "########",
+    "#......#",
+    "#.k..A.#",
+    "#......#",
+    "#..@...#",
+    "#......#",
+    "#......#",
+    "########",
+};
+const std::map<char, goe::patternCell> roomLegend = {
+    {'#', {bElemTypes::_wallType, 0}},
+    {'.', {}},
+    {'k', {bElemTypes::_key, 1}},
+    {'A', {bElemTypes::_goldenAppleType, 0}},
+    {'@', {bElemTypes::_player, 0}},
+};
+
+/// the same room without the player
+std::shared_ptr<const goe::chunkPattern> emptyRoom()
+{
+    auto rows = roomRows;
+    rows[4][3] = '.';
+    return std::make_shared<const goe::chunkPattern>(goe::chunkPattern::fromRows(rows, roomLegend));
+}
+
+/// whether the chunk's cells hold what the pattern places (the floor where it places nothing)
+bool chunkFollows(const std::shared_ptr<chamber> &board, coords chunk, const goe::chunkPattern &p)
+{
+    const coords first = chamber::chunkOrigin(chunk);
+    for (int y = 0; y < chamber::chunkSize; y++)
+        for (int x = 0; x < chamber::chunkSize; x++) {
+            const auto e = board->getElement(first + coords(x, y));
+            const int want = p.at(x, y).type == bElemTypes::_belemType ? bElemTypes::_floorType : p.at(x, y).type;
+            if (!e || e->getType() != want)
+                return false;
+        }
+    return true;
+}
+} // namespace
+
+TEST(PatternTests, PatternsAreReadFromJson)
+{
+    const auto p = goe::chunkPattern::fromJson(R"({"legend": {"#": "wall", "k": ["key", 3], "D": [52, 1],
+        "~": [0, 2], ".": null}, "rows": ["#k", "D~", ".#"]})");
+    EXPECT_EQ(p.width(), 2);
+    EXPECT_EQ(p.height(), 3);
+    EXPECT_EQ(p.at(0, 0), (goe::patternCell{bElemTypes::_wallType, 0}));
+    EXPECT_EQ(p.at(1, 0), (goe::patternCell{bElemTypes::_key, 3}));
+    EXPECT_EQ(p.at(0, 1), (goe::patternCell{bElemTypes::_door, 1}));
+    EXPECT_EQ(p.at(1, 1), (goe::patternCell{bElemTypes::_floorType, 2}));
+    EXPECT_EQ(p.at(0, 2), goe::patternCell{});
+    // repeated to fill a chunk
+    EXPECT_EQ(p.at(2, 3), p.at(0, 0));
+    EXPECT_EQ(p.at(63, 63), p.at(1, 0));
+    EXPECT_TRUE(p.places(bElemTypes::_key));
+    EXPECT_FALSE(p.places(bElemTypes::_player));
+    EXPECT_EQ(goe::chunkPattern::typeByName("golden_apple"), bElemTypes::_goldenAppleType);
+}
+
+TEST(PatternTests, BadPatternsAreRefused)
+{
+    using goe::chunkPattern;
+    EXPECT_THROW(chunkPattern(0, 1, {}), std::invalid_argument);
+    EXPECT_THROW(chunkPattern(65, 1, std::vector<goe::patternCell>(65)), std::invalid_argument);
+    EXPECT_THROW(chunkPattern(2, 2, std::vector<goe::patternCell>(3)), std::invalid_argument);
+    // missiles are not placed, and types the game does not know neither
+    EXPECT_THROW(chunkPattern(1, 1, {{bElemTypes::_plainMissile, 0}}), std::invalid_argument);
+    EXPECT_THROW(chunkPattern(1, 1, {{12345, 0}}), std::invalid_argument);
+    EXPECT_THROW(chunkPattern::fromJson("not json"), std::invalid_argument);
+    EXPECT_THROW(chunkPattern::fromJson(R"({"legend": {"#": "wall"}, "rows": ["#?"]})"), std::invalid_argument);
+    EXPECT_THROW(chunkPattern::fromJson(R"({"legend": {"#": "dragon"}, "rows": ["#"]})"), std::invalid_argument);
+    EXPECT_THROW(chunkPattern::fromJson(R"({"legend": {"##": "wall"}, "rows": ["#"]})"), std::invalid_argument);
+    EXPECT_THROW(chunkPattern::fromJson(R"({"legend": {"#": "wall"}, "rows": ["##", "#"]})"), std::invalid_argument);
+    EXPECT_THROW(chunkPattern::load("no/such/pattern.json"), std::invalid_argument);
+}
+
+TEST(PatternTests, TheStartChunkCanBeBuiltFromAPattern)
+{
+    config c = withData();
+    const auto room = std::make_shared<const goe::chunkPattern>(goe::chunkPattern::fromRows(roomRows, roomLegend));
+    c.chunkPatterns[{0, 0}] = room;
+    game g(c);
+    g.newEpisode(555);
+    const auto plr = player::getActivePlayer();
+    ASSERT_TRUE(plr);
+    const auto board = plr->getBoard();
+    // the first player of the pattern is the one the game starts with, and the origin is there
+    EXPECT_TRUE(plr->getStats()->getMyPosition() == coords(3, 4));
+    EXPECT_TRUE(board->origin == coords(3, 4));
+    EXPECT_TRUE(chunkFollows(board, coords(0, 0), *room));
+    // the chunks around are random mazes
+    EXPECT_FALSE(chunkFollows(board, coords(1, 0), *room));
+    // the agent sees the pattern: a wall one cell left of the room's first column, three cells left
+    const state s = g.getState();
+    EXPECT_EQ(at(g, s, "type", 8, 8), (float) bElemTypes::_player);
+    EXPECT_EQ(at(g, s, "type", 8, 5), (float) bElemTypes::_wallType);
+    EXPECT_EQ(at(g, s, "type", 6, 7), (float) bElemTypes::_key);
+    EXPECT_EQ(at(g, s, "type", 6, 10), (float) bElemTypes::_goldenAppleType);
+    // chunks as the agent counts cells, from the origin
+    EXPECT_EQ(g.chunkAt(coords(0, 0)), std::make_pair(0, 0));
+    EXPECT_EQ(g.chunkAt(coords(60, 0)), std::make_pair(0, 0));
+    EXPECT_EQ(g.chunkAt(coords(61, 0)), std::make_pair(1, 0));
+    EXPECT_EQ(g.chunkAt(coords(-4, -5)), std::make_pair(-1, -1));
+}
+
+TEST(PatternTests, EveryChunkCanTakeTheSamePattern)
+{
+    config c = withData();
+    const auto room = emptyRoom();
+    c.defaultPattern = room;
+    game g(c);
+    std::vector<int> first;
+    for (std::uint32_t seed : {1u, 2u}) {
+        g.newEpisode(seed);
+        const auto plr = player::getActivePlayer();
+        ASSERT_TRUE(plr);
+        const auto board = plr->getBoard();
+        // no player in the pattern: the player goes on the free floor nearest the chunk's middle
+        const coords at = plr->getStats()->getMyPosition();
+        EXPECT_TRUE(board->origin == at);
+        EXPECT_LE(at.distance(coords(32, 32)), 1.5f);
+        for (int x = -1; x <= 1; x++)
+            for (int y = -1; y <= 1; y++) {
+                // the start chunk holds the player on one of its cells
+                if (x == 0 && y == 0)
+                    continue;
+                EXPECT_TRUE(chunkFollows(board, coords(x, y), *room)) << x << "," << y;
+            }
+        // any seed builds the same world
+        std::vector<int> types;
+        for (int y = -64; y < 128; y++)
+            for (int x = -64; x < 128; x++)
+                types.push_back(board->getElement(coords(x, y))->getType());
+        if (first.empty())
+            first = types;
+        else
+            EXPECT_EQ(types, first);
+    }
+}
+
+TEST(PatternTests, PatternsCanChangeBetweenChunks)
+{
+    config c = withData();
+    game g(c);
+    g.newEpisode(555);
+    const auto board = player::getActivePlayer()->getBoard();
+    // a chunk not built yet takes the pattern; random chunks stay random
+    const auto room = emptyRoom();
+    g.setChunkPattern({5, 0}, room);
+    EXPECT_FALSE(board->hasChunk(coords(5, 0)));
+    worldBuilder::growAround(board, chamber::chunkOrigin(coords(5, 0)));
+    EXPECT_TRUE(chunkFollows(board, coords(5, 0), *room));
+    g.setChunkPattern({5, 0}, nullptr);
+    g.setDefaultPattern(room);
+    worldBuilder::growAround(board, chamber::chunkOrigin(coords(-5, 0)));
+    EXPECT_TRUE(chunkFollows(board, coords(-5, 0), *room));
+    // the next episode is random again once the patterns are cleared
+    g.clearChunkPatterns();
+    g.newEpisode(555);
+    EXPECT_FALSE(chunkFollows(player::getActivePlayer()->getBoard(), coords(1, 0), *room));
+    EXPECT_TRUE(g.getConfig().chunkPatterns.empty());
 }

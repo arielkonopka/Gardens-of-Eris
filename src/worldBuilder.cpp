@@ -26,16 +26,37 @@
 #include <algorithm>
 #include <atomic>
 #include <cstdlib>
+#include <map>
+#include <mutex>
 
 namespace {
 std::atomic<std::size_t> generated = 0;
+
+/// the fixed patterns: set by an agent between ticks, read when a chunk is made
+struct patternTable
+{
+    std::mutex lock;
+    std::map<std::pair<int, int>, std::shared_ptr<const goe::chunkPattern>> byChunk;
+    std::shared_ptr<const goe::chunkPattern> fallback;
+};
+
+patternTable &patterns()
+{
+    static patternTable table;
+    return table;
+}
+
+void buildChunk(const std::shared_ptr<chamber> &world, coords chunk, bool start)
+{
+    randomLevelGenerator(world, chunk).generateChunk(start, worldBuilder::patternFor(chunk));
+    generated++;
+}
 }
 
 std::shared_ptr<chamber> worldBuilder::startNew()
 {
     auto world = chamber::makeWorld();
-    randomLevelGenerator(world, coords(0, 0)).generateChunk(true);
-    generated++;
+    buildChunk(world, coords(0, 0), true);
     while (worldBuilder::growAround(world, world->origin))
         ;
     return world;
@@ -55,10 +76,8 @@ bool worldBuilder::growAround(const std::shared_ptr<chamber> &world, coords cell
                 const coords chunk = centre + coords(dx, dy);
                 if (world->hasChunk(chunk))
                     continue;
-                if (!world->isSwapped(chunk) || !gameSerializer::swapInChunk(world, chunk)) {
-                    randomLevelGenerator(world, chunk).generateChunk(false);
-                    generated++;
-                }
+                if (!world->isSwapped(chunk) || !gameSerializer::swapInChunk(world, chunk))
+                    buildChunk(world, chunk, false);
                 return true;
             }
     return false;
@@ -95,4 +114,37 @@ void worldBuilder::bringIn(const std::shared_ptr<chamber> &world, coords cell)
 std::size_t worldBuilder::chunksGenerated()
 {
     return generated;
+}
+
+void worldBuilder::setPattern(coords chunk, std::shared_ptr<const goe::chunkPattern> pattern)
+{
+    auto &t = patterns();
+    std::lock_guard guard(t.lock);
+    if (pattern)
+        t.byChunk[{chunk.x, chunk.y}] = std::move(pattern);
+    else
+        t.byChunk.erase({chunk.x, chunk.y});
+}
+
+void worldBuilder::setDefaultPattern(std::shared_ptr<const goe::chunkPattern> pattern)
+{
+    auto &t = patterns();
+    std::lock_guard guard(t.lock);
+    t.fallback = std::move(pattern);
+}
+
+void worldBuilder::clearPatterns()
+{
+    auto &t = patterns();
+    std::lock_guard guard(t.lock);
+    t.byChunk.clear();
+    t.fallback = nullptr;
+}
+
+std::shared_ptr<const goe::chunkPattern> worldBuilder::patternFor(coords chunk)
+{
+    auto &t = patterns();
+    std::lock_guard guard(t.lock);
+    const auto it = t.byChunk.find({chunk.x, chunk.y});
+    return it != t.byChunk.end() ? it->second : t.fallback;
 }

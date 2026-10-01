@@ -2,6 +2,7 @@
 #define GOE_AGENT_GAME_H
 
 #include "agentFeatures.h"
+#include "chunkPattern.h"
 #include "commons.h"
 #include <array>
 #include <cstdint>
@@ -105,6 +106,13 @@ struct config
     /// the reward of a step: the sum of each event's count (eventName) times its weight; events
     /// left out weigh 0. The default is the score gained. Penalties take negative weights.
     std::map<std::string, float> rewardWeights = {{"score", 1.0f}};
+
+    /// chunks built from a fixed pattern instead of a random maze, by chunk: (0, 0) is the start
+    /// chunk, (1, 0) the one east of it, (0, -1) the one north of it (see game::chunkAt). A
+    /// chunk is chamber::chunkSize (64) cells on each side.
+    std::map<std::pair<int, int>, std::shared_ptr<const chunkPattern>> chunkPatterns;
+    /// the pattern of every chunk not in chunkPatterns; none: a random maze
+    std::shared_ptr<const chunkPattern> defaultPattern;
 };
 
 /// one observation
@@ -158,6 +166,16 @@ public:
     const eventCounts &stepEvents() const { return this->stepCounts; }
     const eventCounts &episodeEvents() const { return this->episodeCounts; }
 
+    /// a chunk's own pattern (nullptr removes it), for chunks made from now on: those not built
+    /// yet in this episode, and every chunk of the next episodes
+    void setChunkPattern(std::pair<int, int> chunk, std::shared_ptr<const chunkPattern> pattern);
+    /// the pattern of every chunk without its own (nullptr: a random maze), as setChunkPattern
+    void setDefaultPattern(std::shared_ptr<const chunkPattern> pattern);
+    /// every chunk a random maze again, as setChunkPattern
+    void clearChunkPatterns();
+    /// the chunk holding a cell given as the agent sees it, counted from the middle of the start area
+    std::pair<int, int> chunkAt(coords cell) const;
+
     const config &getConfig() const { return this->cfg; }
     int actions() const { return this->cfg.allowGiveUp ? actionCount : actionCount - 1; }
     const std::vector<std::string> &cellFeatureNames() const { return this->cellNames; }
@@ -170,6 +188,8 @@ private:
     void fillInventory(state &s, const std::shared_ptr<bElem> &plr) const;
     /// counts a game event the player's avatar took part in (goe::events)
     void noteEvent(int k, const bElem &subject, const bElem *actor);
+    /// hands config::chunkPatterns and defaultPattern to the world builder
+    void installPatterns() const;
 
     config cfg;
     std::vector<std::string> cellNames, playerNames, itemNames;
