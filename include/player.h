@@ -51,6 +51,11 @@ public:
     };
     static unsigned int countVisitedPlayers() ;
     static std::shared_ptr<bElem> getActivePlayer();
+    /**
+     * The best score among the avatars of this game: the ones still played (active or visited)
+     * and the ones already lost. Shown when the game is over.
+     */
+    static int bestScore();
     bool stepOnElement(std::shared_ptr<bElem> step);
     bool mechanics() final;
     bool interact(std::shared_ptr<bElem> who) final;
@@ -67,6 +72,8 @@ private:
     static std::shared_ptr<bElem> activePlayer;
     static inline thread_local bool inBackground = false;
     static std::vector<std::shared_ptr<bElem>> visitedPlayers;
+    /// the best score of the avatars already lost in this game (kept in the save)
+    static inline int lostBest = 0;
     int animPh=0;
     bool activated=false;
     bool provisioned=false;

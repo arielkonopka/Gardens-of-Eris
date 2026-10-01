@@ -37,7 +37,7 @@ class chamber;
 /**
  * @brief Saves the whole game world to a binary file and restores it.
  *
- * What is saved: the world seed (from version 6), every board registered in chamber::allChambers (normally just the endless world:
+ * What is saved: the world seed (from version 6), the best score of the avatars already lost (from version 7), every board registered in chamber::allChambers (normally just the endless world:
  * each chunk built so far with its cells and fog of war, and the board's name, colour and live
  * elements), every element reachable from them (stacked, collected, held weapons...),
  * the global clock, the instance id counter, the random generator state, and the static registries
@@ -57,7 +57,7 @@ class chamber;
 class gameSerializer
 {
 public:
-    static constexpr uint32_t formatVersion = 6;
+    static constexpr uint32_t formatVersion = 7;
     static bool saveGame(const std::string &fileName);
     static bool loadGame(const std::string &fileName);
     /// whether the file looks like a save this build can load (its magic and version), without loading it
@@ -68,6 +68,8 @@ public:
      * removed instead. False when the old save is still there afterwards.
      */
     static bool replaceSave(const std::string &fileName);
+    /// deletes the save, so a game that was lost cannot be continued. True when no save is left.
+    static bool removeSave(const std::string &fileName);
     /// empties the world (chambers, players, apples, teleporters...), for a load or a new game
     static void clearWorld();
 

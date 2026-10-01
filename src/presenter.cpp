@@ -657,13 +657,15 @@ gameEnd presenter::presentEverything()
             if (player::getActivePlayer().get() != nullptr)
                 this->showGameField();
             else {
-                // the last avatar is gone
-                std::cout << "Game over, score " << this->lastScore << "\n";
+                // the last avatar is gone; the best of all avatars of this game is what counts
+                this->lastScore = player::bestScore();
+                std::cout << "Game over, best score " << this->lastScore << "\n";
                 result = gameEnd::LOST;
                 this->fin = true;
             }
         } else {
             if (player::getActivePlayer().get() == nullptr) {
+                this->lastScore = player::bestScore();
                 result = gameEnd::LOST;
                 this->fin = true;
                 break;

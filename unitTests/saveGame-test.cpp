@@ -420,3 +420,48 @@ TEST(SaveGameTests, NewGameReplacesTheOldSave)
     std::filesystem::remove_all(blocked);
     std::remove(f.c_str());
 }
+
+TEST(SaveGameTests, LostGameShowsTheBestAvatarScoreAndLeavesNoSave)
+{
+    inputManager::getInstance(true);
+    gameSerializer::clearWorld();
+    auto mc = chamber::makeNewChamber(coords(8, 8));
+    auto first = elementFactory::generateAnElement<player>(mc, 0);
+    first->stepOnElement(mc->getElement(1, 1));
+    ASSERT_TRUE(player::getActivePlayer() == first);
+    auto second = elementFactory::generateAnElement<player>(mc, 0);
+    second->stepOnElement(mc->getElement(3, 3));
+    ASSERT_TRUE(second->interact(first)); // the player takes the second avatar on
+    auto spare = elementFactory::generateAnElement<player>(mc, 0);
+    spare->stepOnElement(mc->getElement(5, 5));
+    first->getStats()->setPoints(TOTAL, 40);
+    second->getStats()->setPoints(TOTAL, 15);
+    spare->getStats()->setPoints(TOTAL, 99);
+    EXPECT_EQ(player::bestScore(), 40);
+
+    // the best avatar is lost, its score is not; a spare avatar nobody played does not count
+    first->disposeElement();
+    spare->disposeElement();
+    ASSERT_TRUE(player::getActivePlayer() == second);
+    EXPECT_EQ(player::bestScore(), 40);
+
+    // and it survives a save and a load
+    const std::string f = tmpFile("goe-lost.goe");
+    ASSERT_TRUE(gameSerializer::saveGame(f));
+    gameSerializer::clearWorld();
+    EXPECT_EQ(player::bestScore(), 0);
+    ASSERT_TRUE(gameSerializer::loadGame(f));
+    EXPECT_EQ(player::bestScore(), 40);
+
+    // the last avatar goes: game over with the best score, and the save goes so Continue cannot bring it back
+    player::getActivePlayer()->disposeElement();
+    EXPECT_FALSE(player::getActivePlayer());
+    EXPECT_EQ(player::bestScore(), 40);
+    std::ofstream(f + ".tmp") << "half a save";
+    EXPECT_TRUE(gameSerializer::removeSave(f));
+    EXPECT_FALSE(std::filesystem::exists(f));
+    EXPECT_FALSE(std::filesystem::exists(f + ".tmp"));
+    EXPECT_FALSE(gameSerializer::canLoad(f));
+    EXPECT_TRUE(gameSerializer::removeSave(f)); // nothing to delete is fine too
+    gameSerializer::clearWorld();
+}

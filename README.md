@@ -85,7 +85,7 @@ The HUD shows your score (**P**), your level (**Dex**, see Stats) and the curren
 
 Settings saved by an older version kept Esc for giving up; the game moves it to Backspace and gives Esc to save and exit, unless you chose your keys after this change.
 
-When the last avatar is gone, a Game over screen shows your score; Enter takes you back to the title screen, where Start game (or New game) begins a new world.
+When the last avatar is gone, a Game over screen shows the best score of all the avatars you played in that game, and its save is deleted: a lost game cannot be continued. Enter takes you back to the title screen, where Start game begins a new world.
 
 ### If the game crashes
 The game writes a crash report, `crash-<date>-<time>.log`, into the save folder (the game's folder unless Config says otherwise); on Windows a message box says where it went. It holds what went wrong, the world seed, a stack trace and the last lines the game printed. Please attach it to the bug report, with what you were doing.
@@ -401,6 +401,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Game over shows the best score among the avatars of the lost game, and deletes that game's save, so Continue cannot bring a lost game back. Saves keep the best score of avatars already lost (save format 7; older saves still load).
 * The title screen offers New game next to Continue when a save exists. A new game overwrites the old save right away, so Continue always brings back the game you played last.
 * Agents can play: a headless `goe-agent` library and a `goe` Python package (a ViZDoom-like game and a Gymnasium environment), with a circle of vision around the player, the player's numbers and inventory, each with its features chosen by the agent. The same seed plays the same game.
 * Chasers play fair: the hunter, guardians, cameras and the Hound only know where you are by seeing you, and walls, brick clusters, bunkers, teleporters and closed doors block their view. When you slip out of sight they go to where they saw you last; when you are not there, or they never saw you, they patrol along the walls of the maze.

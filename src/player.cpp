@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "player.h"
+#include <algorithm>
 #include "elementSound.h"
 #include "gameEvents.h"
 
@@ -70,6 +71,17 @@ std::shared_ptr<bElem> player::getActivePlayer()
     return player::activePlayer;
 }
 
+int player::bestScore()
+{
+    int best = player::lostBest;
+    if (player::activePlayer)
+        best = std::max(best, player::activePlayer->getStats()->getPoints(TOTAL));
+    for (const auto &plr : player::visitedPlayers)
+        if (plr)
+            best = std::max(best, plr->getStats()->getPoints(TOTAL));
+    return best;
+}
+
 unsigned int player::countVisitedPlayers()
 {
     return player::visitedPlayers.size();
@@ -77,6 +89,10 @@ unsigned int player::countVisitedPlayers()
 
 oState player::disposeElement()
 {
+    // a marked avatar was played in this game (the first one, or one activated later); spare
+    // avatars nobody has played yet do not count
+    if (this->getStats()->isMarked())
+        player::lostBest = std::max(player::lostBest, this->getStats()->getPoints(TOTAL));
     if (player::activePlayer
         && this->getStats()->getInstanceId() == player::activePlayer->getStats()->getInstanceId()) {
         this->getStats()->setActive(false);
