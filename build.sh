@@ -1,19 +1,7 @@
 #!/bin/bash
 
-#
-# As the name implies, prepare a sonar coverage report path
-#
-sonarDirPrepare() {
-    pth=$(dirname `grep 'sonar.coverageReportPaths' sonar-project.properties |cut -f2 -d'='`)
-    if [ -n "${pth}" ] ; then
-	mkdir -p "${pth}" 
-    fi
-    
-}
-
 objPath=./obj/GoE-objects/
 extraflags="-g"
-sonarQ="false"
 defines="" #-D_VerbousMode_" 
 opts="-Wall -std=gnu++20  ${defines} -g -O3 -Og"
 libs="-lstdc++ -lallegro -lallegro_image -lallegro_font -lallegro_primitives -lallegro_ttf -lm -lopenal -lsndfile "
@@ -26,14 +14,13 @@ while [ $# -gt 0 ] ; do
     "--help")
 	echo "Garden of Eris or Obnoxious Labirynth build script for GNU Linux
 usage:
-./build.sh [-sq] [-m moduleName] [-g] [-a] [-t]
+./build.sh [-m moduleName] [-g] [-a] [-t]
 -gh - for github build system - install necessary packages for Ubuntu
 -rt - run the tests while you build them, combine with -t and -m
 -a - build all
 -g - build only the game elements and link the game
 -t - build only the tests
 -m moduleName - build only one cpp file, if combined with -t, then the test suit file is build.
--sq - build and run the tests just for the sonar qube analysis.
 examples:
 ./build.sh -a
 ./build.sh -m bElem
@@ -49,18 +36,11 @@ examples:
 	sudo apt update 2>&1 >/dev/null
 	echo "Performming full upgrade on the system"
 	sudo apt full-upgrade -y
-	echo "Installing allegro5, googletest, rapidjson, gcovr"
-	sudo apt install -y libgtest-dev liballegro5-dev liballegro5.2 rapidjson-dev gcovr
+	echo "Installing allegro5, googletest, rapidjson"
+	sudo apt install -y libgtest-dev liballegro5-dev liballegro5.2 rapidjson-dev
 	echo "Installing openAl and libsndFile"
 	sudo apt install -y libopenal-dev libalut-dev libsndfile1-dev
 	exit 0
-    ;;
-    "-sq")
-	sonarDirPrepare
-	extraflags="${extraflags} --coverage -fprofile-abs-path "
-	linkAdditionalFLags=" -lgcov --coverage "
-	runTests="true"
-	sonarQ="true"
     ;;
     "-m")
 	shift
@@ -130,13 +110,6 @@ if [ "${buildTests}" = "true" ] ; then
 	fi
     done
     echo "Done building tests"
-fi
-
-if [ "${sonarQ}" = "true" ] ; then
-    p="${PWD}"
-    gcovr obj/GoE-objects/src/ obj/GoE-objects/unitTests/ --sonarqube -o "${PWD}/CoverageReports/coverageReport.XML"
-
-
 fi
 
 echo "Now linking the game..."
