@@ -12,7 +12,7 @@ So, here we have a work in progress. It tends to function well enough, but consi
 Main branch build status:
 
 [![CI](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/ci.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/ci.yml)
-[![SonarCloud](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonar.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonar.yml)
+[![SonarQube](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonar.yml/badge.svg)](https://github.com/arielkonopka/Gardens-of-Eris/actions/workflows/sonar.yml)
 
 Every push builds the game and runs the unit tests on Linux and on Windows (MSYS2), and packs each build as a download on the run's page. Pushing a version tag also publishes both builds as a GitHub release:
 
@@ -21,7 +21,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-The SonarCloud analysis with test coverage runs as its own workflow, so its badge is separate from the build badge.
+The SonarQube analysis with test coverage runs as its own workflow, so its badge is separate from the build badge. It needs the server address in the `SONAR_HOST_URL` repository variable (or secret) and a token from that server in the `SONAR_TOKEN` secret; the project key is in `sonar-project.properties`. Without them, or with a token the server refuses, the scan is skipped with a warning.
 
 ## Why the idea
 

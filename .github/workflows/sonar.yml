@@ -1,4 +1,4 @@
-name: SonarCloud
+name: SonarQube
 
 on:
   push:
@@ -13,12 +13,14 @@ concurrency:
 
 jobs:
   sonar:
-    name: SonarCloud analysis
+    name: SonarQube analysis
     runs-on: ubuntu-24.04
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # the address of your SonarQube server, e.g. https://sonarqube.example.org
+      SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || secrets.SONAR_HOST_URL }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0  # Sonar needs the full history for blame and new-code detection
 
@@ -43,12 +45,24 @@ jobs:
           mkdir -p CoverageReports
           gcovr -r . --object-directory build -e unitTests --sonarqube -o CoverageReports/coverageReport.XML
 
-      - name: SonarCloud scan
-        if: env.SONAR_TOKEN != ''
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          SONAR_HOST_URL: https://sonarcloud.io
+      # A missing server address, or a token the server refuses, is a settings problem and not
+      # a code problem, so it shows as a warning instead of failing the check.
+      - name: Check SonarQube server and token
+        id: server
+        run: |
+          if [ -z "$SONAR_HOST_URL" ] || [ -z "$SONAR_TOKEN" ]; then
+            echo "::warning::Set the SONAR_HOST_URL variable (or secret) and the SONAR_TOKEN secret to run the SonarQube scan; it was skipped."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          reply=$(curl -s -u "$SONAR_TOKEN:" "${SONAR_HOST_URL%/}/api/authentication/validate" || true)
+          if echo "$reply" | grep -q '"valid":true'; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::The SonarQube server at $SONAR_HOST_URL did not accept SONAR_TOKEN (or could not be reached), so the scan was skipped. Reply: $reply"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Missing SonarCloud token
-        if: env.SONAR_TOKEN == ''
-        run: echo "::warning::SONAR_TOKEN secret is not set, so the SonarCloud scan was skipped."
+      - name: SonarQube scan
+        if: steps.server.outputs.ready == 'true'
+        uses: SonarSource/sonarqube-scan-action@v5
