@@ -240,12 +240,41 @@ bool randomLevelGenerator::placeElementCollection(const chamberArea &chmbrArea,
 }
 
 std::optional<chamberArea::areaRef> randomLevelGenerator::pickArea(int demandedSurface,
-                                                                   int tolerance)
+                                                                   int tolerance,
+                                                                   bool lockable)
 {
     auto found = this->headNode->findChambersCloseToSurface(demandedSurface, tolerance);
+    if (lockable) {
+        // prefer an area whose doors can all stand in its own walls
+        std::vector<chamberArea::areaRef> sealable;
+        for (const auto &area : found)
+            if (!this->reachesNextChunkGap(area))
+                sealable.push_back(area);
+        if (!sealable.empty())
+            found = std::move(sealable);
+    }
     if (found.empty())
         return std::nullopt;
     return goe::rng::pick(this->eng, found);
+}
+
+bool randomLevelGenerator::frontsNextChunkGap(int x, int y) const
+{
+    auto listed = [](const std::vector<int> &gaps, int offset) {
+        return std::find(gaps.begin(), gaps.end(), offset) != gaps.end();
+    };
+    return (x == this->hi.x && listed(this->eastGaps, y - this->lo.y))
+           || (y == this->hi.y && listed(this->southGaps, x - this->lo.x));
+}
+
+bool randomLevelGenerator::reachesNextChunkGap(const chamberArea &area) const
+{
+    // the cell in front of such a gap is cleared, so it may lie in the area or in its walls
+    for (int x = area.upLeft.x - 1; x <= area.downRight.x + 1; x++)
+        for (int y = area.upLeft.y - 1; y <= area.downRight.y + 1; y++)
+            if (this->frontsNextChunkGap(x, y))
+                return true;
+    return false;
 }
 
 void randomLevelGenerator::retireArea(const chamberArea &area)
@@ -411,7 +440,7 @@ bool randomLevelGenerator::placeEverything(int holes, int depth, bool start, boo
         demandedSurface += elementCollection[cnt].surface * (elementCollection[cnt].number);
     if (start) {
         // the player's starting area, behind doors that need the key placed with the player
-        auto playerArea = this->pickArea(demandedSurface, tolerance);
+        auto playerArea = this->pickArea(demandedSurface, tolerance, true);
         if (!playerArea) {
             std::cout << "Found areas is empty!\n";
             return false;
@@ -432,7 +461,7 @@ bool randomLevelGenerator::placeEverything(int holes, int depth, bool start, boo
 
     if (globalTeleporter) {
         elementCollection.push_back({bElemTypes::_teleporter, 0, 1, 0, 5});
-        if (auto teleportArea = this->pickArea(demandedSurface, tolerance)) {
+        if (auto teleportArea = this->pickArea(demandedSurface, tolerance, true)) {
             this->placeElementCollection(*teleportArea, elementCollection);
             this->placeDoors({bElemTypes::_door, 0, 1, 0, 9}, *teleportArea);
             if (auto parent = this->headNode->parentOf(*teleportArea))
@@ -460,7 +489,8 @@ bool randomLevelGenerator::placeEverything(int holes, int depth, bool start, boo
         auto parent = this->headNode->parentOf(*area);
         if (!parent)
             break; // only the whole level is left, nothing more to fill
-        if (!parent->get().childrenLock) {
+        // a door in front of the next chunk's wall gap would stand in the room, not in a wall
+        if (!parent->get().childrenLock && !this->reachesNextChunkGap(*area)) {
             int dice = this->eng() % 100;
             int keyType = this->eng() % 10;
             if (dice < (75 / holes)) {
@@ -482,7 +512,9 @@ bool randomLevelGenerator::placeEverything(int holes, int depth, bool start, boo
 
 void randomLevelGenerator::placeDoorAt(const elementToPlace &element, int x, int y)
 {
-    if (!this->steppableAt(x, y))
+    // the cell in front of the next chunk's wall gap is cleared even where a maze wall ends there;
+    // a door on it would stand beside that wall, a cell away from the gap
+    if (!this->steppableAt(x, y) || this->frontsNextChunkGap(x, y))
         return;
     this->createElement(element)->stepOnElement(this->at(x, y));
 }
@@ -501,16 +533,8 @@ bool randomLevelGenerator::placeDoors(elementToPlace element, const chamberArea 
         this->placeDoorAt(element, location.upLeft.x - 1, c2);
         this->placeDoorAt(element, location.downRight.x + 1, c2);
     }
-    // an area along a chunk's east or south side may reach a gap in the next chunk's wall, which
-    // is not ours to change; the door goes on the area's own cell in front of that gap
-    if (location.downRight.x == this->hi.x)
-        for (int g : this->eastGaps)
-            if (this->lo.y + g >= location.upLeft.y && this->lo.y + g <= location.downRight.y)
-                this->placeDoorAt(element, this->hi.x, this->lo.y + g);
-    if (location.downRight.y == this->hi.y)
-        for (int g : this->southGaps)
-            if (this->lo.x + g >= location.upLeft.x && this->lo.x + g <= location.downRight.x)
-                this->placeDoorAt(element, this->lo.x + g, this->hi.y);
+    // a gap in the next chunk's east or south wall is not ours to change, and the cell in front of
+    // it gets no door (placeDoorAt); areas that must be locked avoid those gaps (pickArea)
     return true;
 }
 

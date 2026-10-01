@@ -124,18 +124,21 @@ void soundManager::checkQueue()
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->cnt = bElem::getCntr();
-    int nm = this->findNearestMusic();
-    if (nm != this->currentMusic) {
-        if (this->currentMusic >= 0)
-            alSourcePause(this->registeredMusic[this->currentMusic].source);
-        if (nm >= 0) {
-            this->currentMusic = nm;
-            alSourcePlay(this->registeredMusic[this->currentMusic].source);
-        };
-    }
-    /**/
-    if (this->currentMusic >= 0) {
-        this->playSong(this->currentMusic);
+    if (!this->difficultySongs.empty()) {
+        this->playDifficultyMusic();
+    } else {
+        int nm = this->findNearestMusic();
+        if (nm != this->currentMusic) {
+            if (this->currentMusic >= 0)
+                alSourcePause(this->registeredMusic[this->currentMusic].source);
+            if (nm >= 0) {
+                this->currentMusic = nm;
+                alSourcePlay(this->registeredMusic[this->currentMusic].source);
+            };
+        }
+        if (this->currentMusic >= 0) {
+            this->playSong(this->currentMusic);
+        }
     }
 
     const float fx = effectsVolume();
@@ -505,8 +508,57 @@ int soundManager::setupSong(
     return this->registeredMusic.size() - 1;
 }
 
-void soundManager::playSong(int songNo)
+void soundManager::playDifficultyMusic()
 {
+    const auto now = goe::music::byDifficulty::clock::now();
+    const int pick = this->musicChoice.choose(this->difficultyNow, (int) this->difficultySongs.size(), now);
+    if (pick < 0)
+        return;
+    const int wanted = this->difficultySongs[pick];
+    if (wanted != this->currentMusic) {
+        // the song still fading out from an earlier change stops; the playing one fades out
+        if (this->fadingMusic >= 0 && this->fadingMusic != wanted)
+            alSourcePause(this->registeredMusic[this->fadingMusic].source);
+        this->fadingMusic = this->currentMusic;
+        this->currentMusic = wanted;
+        alSourcePlay(this->registeredMusic[wanted].source);
+    }
+    const float mix = this->musicChoice.mix(now);
+    this->playSong(this->currentMusic, mix);
+    if (this->fadingMusic < 0)
+        return;
+    if (mix >= 1.0f) {
+        alSourcePause(this->registeredMusic[this->fadingMusic].source);
+        this->fadingMusic = -1;
+    } else {
+        this->playSong(this->fadingMusic, 1.0f - mix);
+    }
+}
+
+void soundManager::setupDifficultyMusic()
+{
+    const int songs = (int) this->gc->music.size();
+    std::vector<int> made;
+    for (int c = 0; c < songs; c++) {
+        const int at = this->setupSong(0, c, {0.0f, 0.0f, 0.0f}, -1, false);
+        if (at >= 0)
+            made.push_back(at);
+    }
+    std::lock_guard<std::mutex> guard(this->snd_mutex);
+    for (int at : made)
+        this->registeredMusic[at].followsListener = true;
+    this->difficultySongs = std::move(made);
+}
+
+void soundManager::followDifficulty(int d)
+{
+    this->difficultyNow = d;
+}
+
+void soundManager::playSong(int songNo, float mix)
+{
+    if (this->registeredMusic[songNo].followsListener)
+        this->registeredMusic[songNo].position = this->listenerPos;
     ALint buffersProcessed = 0;
     float newVol = 5.5
                    * (this->registeredMusic[songNo].gain
@@ -514,7 +566,7 @@ void soundManager::playSong(int songNo)
     newVol = (this->registeredMusic[songNo].variableVol)
                  ? std::min((float) this->registeredMusic[songNo].gain, newVol)
                  : this->registeredMusic[songNo].gain;
-    newVol *= musicVolume();
+    newVol *= musicVolume() * mix;
     alGetSourcei(this->registeredMusic[songNo].source, AL_BUFFERS_PROCESSED, &buffersProcessed);
     alSourcef(this->registeredMusic[songNo].source, AL_GAIN, newVol);
     this->placeSource(this->registeredMusic[songNo].source, this->registeredMusic[songNo].position);

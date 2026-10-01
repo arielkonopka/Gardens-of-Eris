@@ -56,7 +56,9 @@ The labyrinth is inhabited by an assortment of creatures and contraptions. You'l
 
 ## Playing the game
 
-The game opens with a title screen: **Start**, **Config** and **Exit**. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
+The game opens with a title screen: **Continue**, **Start**, **Config** and **Exit**. Continue is there only when the save folder holds a save the game can read, and picks that game up where it was saved. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), the story scroller, and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
+
+Each time the maze grows by a new chunk, a random Discordian story scrolls along the top of the screen, unless one is still scrolling. Config switches the story scroller on or off and picks the stories file: Left and Right step through the files next to it (`data/txt/stories.json` in English, `stories.pl.json` in Polish, `stories.ro.json` in Romanian), or type the path of your own. A stories file is a JSON list of `{"title": "...", "body": "..."}`.
 
 These are the default keys. Config, Controls lets you choose other keys (two per action) and a pad button for each action: pick the action, then press the new key or pad button. Backspace leaves an action without keys, and Reset to defaults brings this layout back. The pad's stick always walks.
 
@@ -70,8 +72,9 @@ These are the default keys. Config, Controls lets you choose other keys (two per
 | Z | select the next kind of gun (the HUD shows how many of the selected kind you carry) |
 | Space | use the selected item |
 | R | drop the selected item |
-| Esc | give up this avatar (you come back in the next activated one) |
-| Shift + Esc | quit the game (the shoot key and the give-up key together) |
+| Esc or F10 | save the game and go back to the title screen; nothing is lost, and Continue picks it up again |
+| Backspace | give up this avatar (you come back in the next activated one) |
+| Shift + Backspace | quit the game without saving (the shoot key and the give-up key together) |
 | F5 / F9 | save / load the game (`savegame.goe` in the save folder) |
 
 `GardenOfEris --load <file>` starts straight from a saved game, without the title screen.
@@ -79,6 +82,8 @@ These are the default keys. Config, Controls lets you choose other keys (two per
 Every new game prints its world seed (`World seed: ...`). `GardenOfEris --seed <number>` builds that same world again, which helps when reporting a bug in the maze.
 
 The HUD shows your score (**P**), your level (**Dex**, see Stats) and the current difficulty (**D**, see Difficulty).
+
+Settings saved by an older version kept Esc for giving up; the game moves it to Backspace and gives Esc to save and exit, unless you chose your keys after this change.
 
 When the last avatar is gone, a Game over screen shows your score; Enter takes you back to the title screen, where Start begins a new world.
 
@@ -246,7 +251,7 @@ When an apple is unbeschädigt, it acts as a collectible token that must be gath
 ## Teleporters
 Every new teleporter is added to a registry (a vector of weak pointers, guarded by a mutex, so it is). A chunk being built publishes its teleporters only once it is complete, so a teleporter never links into a half-built chunk. As soon as our player interacts with a teleporter, we're checkin' if it has an attached link to its corresponding teleporter mate. We take a gander at the type of the teleporter, and we follow these steps:
 
- * If there's no established link, we pick a random teleporter from our list and remove the interacted one along with the chosen one. We set the chosen one to be "LEFT" (it will become a receiver) and pause its song. We could unpause them, but I don't think it makes sense.. 
+ * If there's no established link, we pick a random teleporter from our list and remove the interacted one along with the chosen one. We set the chosen one to be "LEFT" (it will become a receiver). Teleporters play no music: there are no separate chambers any more, only the endless maze.
  * We then set the chosen teleporter as the other end of the connection. 
  * Once the other end is all set up, we inspect the teleporter for any steppable fields. 
  * If we find one, 
@@ -309,6 +314,8 @@ However, there are limitations:
 
 Sounds are placed around the player in board cells (include/soundSpace.h): right on the screen is the right ear, up is in front and down is behind, and the volume halves with each doubling of the distance. OpenAL can only place mono sounds, so stereo samples are mixed down to mono when they are loaded; music keeps its stereo.
 
+The music follows the difficulty D: song k of the music list in skins.json plays from D = k on, and the last song plays on past the end of the list, so the list is ordered from the calmest to the wildest. A new song fades in over the old one for 5 seconds, and a song plays for at least 23 seconds before D can change it, so walking back and forth over a distance step does not flip the music (include/difficulty.h, include/difficultyMusic.h).
+
 When the element that generated the sound is removed or disposed of, only looping sounds are stopped, while others have the opportunity to cease playing by themselves.
 
 We manage sounds by maintaining a pool of sources (openAL) in a circular buffer, which aids in locating the oldest samples. When we register the sample (play it), we first search for unregistered samples; if unsuccessful, we look for samples played in a loop.
@@ -320,7 +327,7 @@ There are control switches that modify sound handling:
  * stacking - If we allow multiple sounds, do we let them play, or should we stop the sound currently playing and start anew upon request (false), or permit all instances to play while avoiding collisions by applying a delay if the previous sound did not have the chance to play?
 
 ## Save and load
-F5 saves the whole world (every chunk built so far, also the ones on disk, every element with its inventory and timers, the random generator's state) to one binary file, and F9 loads it back. The file starts with a format version; a newer game still loads older saves.
+F5 saves the whole world (every chunk built so far, also the ones on disk, every element with its inventory and timers, the random generator's state) and the world seed, so chunks built after a load fit the ones built before it, to one binary file, and F9 loads it back. Esc saves the same way before going back to the title screen; if saving fails, a message says so and the game goes on. The file starts with a format version; a newer game still loads older saves.
 
 ## Difficulty
 The game gets harder the better you get and the further you go. The difficulty D, shown as "D:" next to "Dex:" in the HUD, is the sum of:
@@ -383,6 +390,10 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Esc saves the game and goes back to the title screen without losing an avatar, and the title screen has Continue while a readable save exists. Giving up an avatar moved to Backspace. Saves keep the world seed now (save format 6; older saves still load).
+* The music changes with the difficulty: each step of D brings the next song of the music list, with a crossfade. It replaces the songs that were placed around the start of the map.
+* A story scroller: a random story from `data/txt/stories.json` scrolls along the top of the screen whenever a new chunk of the maze is made. Config switches it on or off and picks the stories file (English, Polish or Romanian, or your own). Fixed a stray bracket that made `stories.pl.json` unreadable.
+* Doors stand in the holes they close: at the edges of chunks a door used to stand one cell in front of the hole. Global teleporters no longer play music, since there are no separate chambers any more.
 * The build is warning-free with `-Wall -Wextra -Wpedantic -Wshadow`, which are now on by default. Fixed along the way: handing an inventory to a new owner made every item its own collector.
 * Explosions are heard again: landmines, bombs and bazooka missiles went off in silence because the blast never asked for its sound.
 * Puppet masters speak: each kind of controller says "controller enabled" in its own language, in a S.A.M.-like robot voice (made with espeak-ng by `tools/voices/make-controller-voices.sh`).

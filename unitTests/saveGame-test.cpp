@@ -208,6 +208,10 @@ TEST(SaveGameTests, BadFilesLeaveTheWorldAlone)
         out.write(data.data(), (std::streamsize) data.size() / 2);
     }
     EXPECT_TRUE(!gameSerializer::loadGame(cut));
+    // Continue is offered for a real save only; a cut one passes this quick check and fails on load
+    EXPECT_TRUE(gameSerializer::canLoad(good));
+    EXPECT_FALSE(gameSerializer::canLoad(tmpFile("goe-does-not-exist.goe")));
+    EXPECT_FALSE(gameSerializer::canLoad(bad));
 
     EXPECT_EQ(chamber::allChambers.size(), chambersBefore);
     EXPECT_TRUE(census() == censusBefore);
@@ -336,6 +340,20 @@ TEST(SaveGameTests, SavingTwiceReplacesTheOldSave)
     std::remove(f.c_str());
 }
 
+
+TEST(SaveGameTests, SaveKeepsTheWorldSeed)
+{
+    // chunks built after a load must fit the ones built before it, so they need the same seed
+    inputManager::getInstance(true);
+    chamber::makeNewChamber(coords(8, 8));
+    const std::string f = tmpFile("goe-seed.goe");
+    goe::rng::setWorldSeed(2323);
+    ASSERT_TRUE(gameSerializer::saveGame(f));
+    goe::rng::setWorldSeed(55);
+    ASSERT_TRUE(gameSerializer::loadGame(f));
+    EXPECT_EQ(goe::rng::worldSeed(), (goe::rng::seed) 2323);
+    std::remove(f.c_str());
+}
 
 TEST(SaveGameTests, EndlessWorldRoundTrip)
 {

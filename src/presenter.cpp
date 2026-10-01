@@ -25,8 +25,18 @@
 #include "difficulty.h"
 
 namespace presenter {
+namespace {
+/// the game runs 50 ticks a second
+constexpr double tickSeconds = 1.0 / 50;
+/// the story line's letters, in pixels; fits the strip above the game field
+constexpr int storyFontSize = 23;
+} // namespace
+
 presenter::presenter()
-    : sWidth(0)
+    : stories([this](const std::string &text) {
+        return this->storyFont ? (float) al_get_text_width(this->storyFont.get(), text.c_str()) : 0.0f;
+    })
+    , sWidth(0)
     , sHeight(0)
     , spacing(0)
     , previousPosition({0, 0})
@@ -39,7 +49,7 @@ presenter::presenter()
         exit(0);
     }
 
-    this->alTimer.reset(al_create_timer(1.0 / 50));
+    this->alTimer.reset(al_create_timer(tickSeconds));
     this->evQueue.reset(al_create_event_queue());
     al_register_event_source(this->evQueue.get(), al_get_timer_event_source(this->alTimer.get()));
     //  this->_cp_attachedBoard=board;
@@ -106,6 +116,8 @@ bool presenter::loadCofiguredData()
         std::cout << "Font assets are not loaded properly, check the configuration.\n";
         return false;
     }
+    // without it the game runs fine, just with no stories
+    this->storyFont.reset(al_load_ttf_font(gcfg->FontFile.c_str(), storyFontSize, 0));
     this->bluredElement = gcfg->bluredElement;
 
     this->splashFname = gcfg->splashScr;
@@ -441,7 +453,43 @@ void presenter::showGameField()
                    this->bsHeight,
                    _offsetX,
                    _offsetY / 2);
+    this->drawStory();
     al_flip_display();
+}
+
+void presenter::tickStories()
+{
+    const std::size_t made = worldBuilder::chunksGenerated();
+    const bool grew = made != this->seenChunks;
+    this->seenChunks = made;
+    if (!gameSettings::getInstance().getStoriesShown()) {
+        this->stories.stop();
+        return;
+    }
+    if (grew)
+        this->stories.chunkGenerated(goe::rng::cosmetic(), (float) this->bsWidth);
+    this->stories.advance((float) tickSeconds);
+}
+
+void presenter::drawStory()
+{
+    const auto &told = this->stories.current();
+    if (!told || !this->storyFont)
+        return;
+    // the strip above the game field, as wide as the field
+    const int stripHeight = _offsetY / 2;
+    int cx, cy, cw, ch;
+    al_get_clipping_rectangle(&cx, &cy, &cw, &ch);
+    al_set_clipping_rectangle(_offsetX, 0, this->bsWidth, stripHeight);
+    float x = (float) _offsetX + this->stories.x();
+    const float y = (float) (stripHeight - al_get_font_line_height(this->storyFont.get())) / 2;
+    if (!told->title.empty()) {
+        const std::string title = told->title + goe::storyScroller::separator;
+        al_draw_text(this->storyFont.get(), al_map_rgb(255, 205, 0), x, y, 0, title.c_str()); // Eris' gold
+        x += (float) al_get_text_width(this->storyFont.get(), title.c_str());
+    }
+    al_draw_text(this->storyFont.get(), al_map_rgb(255, 255, 200), x, y, 0, told->body.c_str());
+    al_set_clipping_rectangle(cx, cy, cw, ch);
 }
 
 void presenter::drawCloak()
@@ -569,7 +617,12 @@ gameEnd presenter::presentEverything()
 
     this->fin = false;
     this->lastScore = 0;
+    inputManager::getInstance().takeExitRequest(); // a press from the title screen does not count
     al_flush_event_queue(this->evQueue.get()); // ticks queued while the title screen was up
+    // read again each game, so a file picked in Config is used; seenChunks is kept, so the chunks
+    // a new game was built with tell the first story, and a loaded game waits for the maze to grow
+    this->stories.setStories(goe::loadStories(gameSettings::getInstance().getStoriesFile()));
+    this->stories.stop();
     al_start_timer(this->alTimer.get());
     while (!this->fin) {
         al_wait_for_event(this->evQueue.get(), &event);
@@ -580,6 +633,15 @@ gameEnd presenter::presentEverything()
         if (event.type == ALLEGRO_EVENT_TIMER) {
             std::lock_guard<std::mutex> guard(this->presenter_mutex);
             this->handleSaveKeys();
+            if (inputManager::getInstance().takeExitRequest() && player::getActivePlayer()) {
+                // between ticks, so the save holds one consistent moment of the world
+                const std::string saveFile = gameSettings::getInstance().getSaveFile();
+                const bool saved = gameSerializer::saveGame(saveFile);
+                std::cout << (saved ? "Game saved to " : "Saving failed: ") << saveFile << "\n";
+                result = saved ? gameEnd::SAVED : gameEnd::SAVE_FAILED;
+                this->fin = true;
+                break;
+            }
             currentPlayer = player::getActivePlayer();
             if (currentPlayer.get() != nullptr) {
                 this->_cp_attachedBoard = currentPlayer->getBoard();
@@ -588,8 +650,10 @@ gameEnd presenter::presentEverything()
                 const coords at = currentPlayer->getStats()->getMyPosition();
                 if (!worldBuilder::growAround(currentPlayer->getBoard(), at))
                     worldBuilder::shrinkAround(currentPlayer->getBoard(), at);
+                soundManager::getInstance().followDifficulty(difficulty::of(currentPlayer));
             }
             bElem::runLiveElements();
+            this->tickStories();
             if (player::getActivePlayer().get() != nullptr)
                 this->showGameField();
             else {

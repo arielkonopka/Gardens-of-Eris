@@ -50,6 +50,7 @@
 #include "gameSerializer.h"
 #include "gameSettings.h"
 #include "fogLayer.h"
+#include "storyScroller.h"
 
 #define _offsetX 64
 #define _offsetY 64
@@ -65,8 +66,9 @@
 namespace presenter
 {
 
-/// why presentEverything returned
-enum class gameEnd { QUIT, LOST };
+/// why presentEverything returned: the window closed, the last avatar was lost,
+/// or the player asked to save and go to the menu (and saving worked, or failed)
+enum class gameEnd { QUIT, LOST, SAVED, SAVE_FAILED };
 enum class presenterMode { MENU=0, SETTINGS=1,EDITOR=2,DEMO=3,GAME=4} ;
 enum class _cp_gameReasonOut { LOST=0, USERREQ=1, PAUSE=2, TELEPORTREQ=3 };
 
@@ -109,6 +111,14 @@ private:
     std::vector<coords> chaosGameTops;
     coords chaosGamelastPoint;
     goe::fontHandle myfont;
+    /// the story line over the game field, and the font it is drawn in
+    goe::fontHandle storyFont;
+    goe::storyScroller stories;
+    /// worldBuilder::chunksGenerated() when the scroller last looked
+    std::size_t seenChunks = 0;
+    /// starts a story when the maze grew, and moves the one on screen; once per tick
+    void tickStories();
+    void drawStory();
     std::string splashFname;
     fogLayer fog;
     int sWidth;

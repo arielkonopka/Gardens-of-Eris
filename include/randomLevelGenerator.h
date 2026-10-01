@@ -132,8 +132,13 @@ private:
     bool placeDoors(elementToPlace element,const chamberArea& location);
     /// puts one element of the door kind on the cell, if it is free
     void placeDoorAt(const elementToPlace &element, int x, int y);
-    /// a random area with room for demandedSurface cells, if any is left
-    std::optional<chamberArea::areaRef> pickArea(int demandedSurface,int tolerance);
+    /// a random area with room for demandedSurface cells, if any is left; a lockable one avoids
+    /// the next chunk's wall gaps where it can
+    std::optional<chamberArea::areaRef> pickArea(int demandedSurface,int tolerance,bool lockable=false);
+    /// the cell is the one in front of a gap in the east or south wall, which belongs to the next chunk
+    bool frontsNextChunkGap(int x, int y) const;
+    /// the area or its walls reach a gap in the east or south wall, so no door of this chunk can close it
+    bool reachesNextChunkGap(const chamberArea& area) const;
     /// removes a filled area from the tree, so nothing else is placed there
     void retireArea(const chamberArea& area);
 

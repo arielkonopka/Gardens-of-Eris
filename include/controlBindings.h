@@ -32,7 +32,7 @@
 namespace goe::controls {
 
 /// what the player can do; each one is bound to keys and a pad button
-enum class action { up, down, left, right, shoot, interact, drag, nextItem, nextGun, use, drop, giveUp, count };
+enum class action { up, down, left, right, shoot, interact, drag, nextItem, nextGun, use, drop, giveUp, saveAndExit, count };
 constexpr int actionCount = (int) action::count;
 /// pad buttons we keep track of
 constexpr int padButtons = 32;
@@ -66,7 +66,7 @@ class bindings
 public:
     static constexpr int maxKeys = 2;
 
-    bindings(); ///< the default layout (arrows and W A S D, Shift, Ctrl, Alt, X, Z, Space, R, Esc)
+    bindings(); ///< the default layout (arrows and W A S D, Shift, Ctrl, Alt, X, Z, Space, R, Backspace, Esc)
 
     const binding &of(action a) const;
     /// the key becomes the action's main key; the old main key stays as the spare one

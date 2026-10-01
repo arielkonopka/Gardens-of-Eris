@@ -21,8 +21,11 @@
  */
 
 #include "titleMenu.h"
+#include <algorithm>
 #include <allegro5/keycodes.h>
+#include <algorithm>
 #include <exception>
+#include <filesystem>
 #include <string>
 
 namespace {
@@ -53,12 +56,29 @@ void popUtf8(std::string &s)
     if (!s.empty())
         s.pop_back();
 }
+
+/// the stories files next to this one (stories.json, stories.pl.json, ...), sorted by name
+std::vector<std::string> storiesFilesBeside(const std::string &file)
+{
+    std::vector<std::string> found;
+    std::error_code ec;
+    const auto folder = std::filesystem::path(file).parent_path();
+    for (const auto &e : std::filesystem::directory_iterator(folder.empty() ? "." : folder, ec)) {
+        const auto name = e.path().filename().string();
+        if (e.is_regular_file(ec) && name.starts_with("stories") && name.ends_with(".json"))
+            found.push_back((folder / name).generic_string());
+    }
+    std::sort(found.begin(), found.end());
+    return found;
+}
 } // namespace
 
-titleMenu::titleMenu(gameSettings &edited, std::string file)
+titleMenu::titleMenu(gameSettings &edited, std::string file, std::function<bool()> readable)
     : settings(edited)
     , settingsFile(std::move(file))
+    , saveReadable(std::move(readable))
 {
+    this->refresh();
     this->options.push_back({"Save location",
                              [this] { return this->settings.getSaveDirectory(); },
                              [this](const std::string &v) {
@@ -91,7 +111,55 @@ titleMenu::titleMenu(gameSettings &edited, std::string file)
         "Sound effects volume",
         [this] { return this->settings.getEffectsVolume(); },
         [this](int v) { this->settings.setEffectsVolume(v); }));
+    // Enter, Left and Right all switch it
+    this->options.push_back({"Story scroller",
+                             [this] { return std::string(this->settings.getStoriesShown() ? "On" : "Off"); },
+                             {},
+                             [this](int) { this->settings.setStoriesShown(!this->settings.getStoriesShown()); }});
+    // a typed path, or Left/Right step through the other stories files in the same folder
+    this->options.push_back({"Stories file",
+                             [this] { return this->settings.getStoriesFile(); },
+                             [this](const std::string &v) { return this->settings.setStoriesFile(v); },
+                             [this](int by) {
+                                 const auto chosen = this->settings.getStoriesFile();
+                                 const auto files = storiesFilesBeside(chosen);
+                                 if (files.empty())
+                                     return;
+                                 auto at = std::find(files.begin(), files.end(), std::filesystem::path(chosen).generic_string());
+                                 const int n = (int) files.size();
+                                 const int i = at == files.end() ? (by > 0 ? -1 : 0) : (int) (at - files.begin());
+                                 this->settings.setStoriesFile(files[(std::size_t) ((i + by + n) % n)]);
+                             }});
     this->options.push_back({"Controls", [] { return std::string(); }, {}, {}});
+}
+
+void titleMenu::refresh()
+{
+    this->canContinue = this->saveReadable && this->saveReadable();
+    this->current = screen::MAIN;
+    this->selected = 0;
+    this->message.clear();
+}
+
+std::vector<titleMenu::mainItem> titleMenu::mainItems() const
+{
+    if (this->canContinue)
+        return {mainItem::CONTINUE, mainItem::START, mainItem::CONFIG, mainItem::EXIT};
+    return {mainItem::START, mainItem::CONFIG, mainItem::EXIT};
+}
+
+std::string titleMenu::labelOf(mainItem item)
+{
+    switch (item) {
+    case mainItem::CONTINUE:
+        return "Continue";
+    case mainItem::START:
+        return "Start game";
+    case mainItem::CONFIG:
+        return "Config";
+    default:
+        return "Exit";
+    }
 }
 
 int titleMenu::controlsLine() const
@@ -110,13 +178,19 @@ titleMenu::action titleMenu::keyDown(int keycode)
         else if (keycode == ALLEGRO_KEY_DOWN)
             this->move(1);
         else if (enter) {
-            if (this->selected == 0)
+            switch (this->mainItems()[this->selected]) {
+            case mainItem::CONTINUE:
+                return action::CONTINUE;
+            case mainItem::START:
                 return action::START;
-            if (this->selected == 2)
+            case mainItem::EXIT:
                 return action::EXIT;
-            this->current = screen::CONFIG;
-            this->selected = 0;
-            this->message.clear();
+            case mainItem::CONFIG:
+                this->current = screen::CONFIG;
+                this->selected = 0;
+                this->message.clear();
+                break;
+            }
         }
         break;
     case screen::CONFIG:
@@ -157,14 +231,19 @@ void titleMenu::configKey(int keycode)
         this->saveSettings();
     } else if (keycode == ALLEGRO_KEY_ESCAPE || (enter && !onOption)) { // Esc or "Back"
         this->current = screen::MAIN;
-        this->selected = 1;
+        const auto items = this->mainItems();
+        this->selected = (int) (std::find(items.begin(), items.end(), mainItem::CONFIG) - items.begin());
     } else if (enter) {
         this->message.clear();
+        const auto &opt = this->options[this->selected];
         if (this->selected == this->controlsLine()) {
             this->current = screen::CONTROLS;
             this->selected = 0;
+        } else if (!opt.apply && opt.adjust) { // a switch: Enter flips it
+            opt.adjust(1);
+            this->saveSettings();
         } else {
-            this->editBuffer = this->options[this->selected].value();
+            this->editBuffer = opt.value();
             this->current = screen::EDITING;
         }
     }
@@ -253,7 +332,7 @@ int titleMenu::lineCount() const
 {
     switch (this->current) {
     case screen::MAIN:
-        return (int) this->mainItems.size();
+        return (int) this->mainItems().size();
     case screen::CONTROLS:
     case screen::BINDING:
         return goe::controls::actionCount + 2; // "Reset to defaults" and "Back"
@@ -274,9 +353,12 @@ int titleMenu::getSelected() const
 
 std::vector<std::string> titleMenu::getLines() const
 {
-    if (this->current == screen::MAIN)
-        return this->mainItems;
     std::vector<std::string> lines;
+    if (this->current == screen::MAIN) {
+        for (auto item : this->mainItems())
+            lines.push_back(labelOf(item));
+        return lines;
+    }
     if (this->current == screen::CONTROLS || this->current == screen::BINDING) {
         const auto controls = this->settings.getControls();
         for (int c = 0; c < goe::controls::actionCount; c++) {

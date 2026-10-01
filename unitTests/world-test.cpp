@@ -75,6 +75,17 @@ TEST(WorldTests, ChunksAreFoundByFloorDivision)
     EXPECT_EQ(floorMod(130, 64), 2);
 }
 
+TEST(WorldTests, TheWorldCountsTheChunksItMakes)
+{
+    // the story scroller tells a story whenever this grows
+    const auto before = worldBuilder::chunksGenerated();
+    auto world = newWorld();
+    EXPECT_EQ(worldBuilder::chunksGenerated() - before, 25u); // 5 x 5 around the start
+    const auto started = worldBuilder::chunksGenerated();
+    ASSERT_TRUE(worldBuilder::growAround(world, chamber::chunkOrigin(coords(3, 0))));
+    EXPECT_EQ(worldBuilder::chunksGenerated(), started + 1);
+}
+
 TEST(WorldTests, CellsExistOnlyInBuiltChunks)
 {
     inputManager::getInstance(true);
@@ -454,4 +465,64 @@ TEST(WorldTests, SwappedChunksAreKeptInASave)
     ASSERT_TRUE(gameSerializer::swapInChunk(loaded, chunk));
     EXPECT_TRUE(layout(loaded, chunk) == cells);
     EXPECT_EQ(goldenApple::getAppleNumber(), apples);
+}
+
+TEST(WorldTests, NoDoorStandsInFrontOfAGapBetweenChunks)
+{
+    // a door used to stand on the cell in front of a gap in the next chunk's wall, one cell above
+    // (or beside) the hole instead of in it
+    auto isDoor = [](const std::shared_ptr<chamber> &world, coords cell) {
+        auto e = world->getElement(cell);
+        return e && e->getType() == bElemTypes::_door;
+    };
+    for (goe::rng::seed seed : {555, 4, 11, 25}) {
+        auto world = newWorld(seed);
+        for (int x = -2; x <= 2; x++)
+            for (int y = -2; y <= 2; y++)
+                if (!world->hasChunk(coords(x, y)))
+                    randomLevelGenerator(world, coords(x, y)).generateChunk(false);
+        for (const coords chunk : world->chunkKeys()) {
+            const coords first = chamber::chunkOrigin(chunk);
+            if (world->hasChunk(chunk - coords(1, 0)))
+                for (int g : randomLevelGenerator::wallGaps(chunk, true)) {
+                    const coords front = first + coords(-1, g);
+                    EXPECT_FALSE(isDoor(world, front))
+                        << "seed " << seed << ": door at " << front.x << "," << front.y << " beside the gap";
+                }
+            if (world->hasChunk(chunk - coords(0, 1)))
+                for (int g : randomLevelGenerator::wallGaps(chunk, false)) {
+                    const coords front = first + coords(g, -1);
+                    EXPECT_FALSE(isDoor(world, front))
+                        << "seed " << seed << ": door at " << front.x << "," << front.y << " above the gap";
+                }
+        }
+    }
+}
+
+TEST(WorldTests, TheStartRoomIsLockedWithoutTheNextChunksGaps)
+{
+    // the start room is closed by doors in its own walls, so it avoids the east and south gaps
+    for (goe::rng::seed seed : {555, 4, 11, 25}) {
+        auto world = newWorld(seed);
+        const coords start = world->origin;
+        const coords hi = chamber::chunkOrigin(chamber::chunkOf(start)) + (chamber::chunkSize - 1);
+        // walk the start room without passing doors or walls; it must not reach the next chunk
+        std::set<std::pair<int, int>> seen{{start.x, start.y}};
+        std::deque<coords> todo{start};
+        while (!todo.empty()) {
+            const coords c = todo.front();
+            todo.pop_front();
+            EXPECT_FALSE(c.x > hi.x || c.y > hi.y) << "seed " << seed << ": the start room opens onto the next chunk";
+            if (c.x > hi.x || c.y > hi.y)
+                break;
+            for (const coords d : {coords(1, 0), coords(-1, 0), coords(0, 1), coords(0, -1)}) {
+                const coords n = c + d;
+                auto e = world->getElement(n);
+                if (!e || e->getType() == bElemTypes::_wallType || e->getType() == bElemTypes::_door)
+                    continue;
+                if (seen.insert({n.x, n.y}).second)
+                    todo.push_back(n);
+            }
+        }
+    }
 }

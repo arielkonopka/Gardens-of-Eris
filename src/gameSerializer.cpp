@@ -31,6 +31,7 @@
 #include <fstream>
 #include <iostream>
 #include <set>
+#include <optional>
 #include <sstream>
 #include <unordered_map>
 #include <unordered_set>
@@ -737,6 +738,8 @@ bool gameSerializer::saveGame(const std::string &fileName)
         std::ostringstream rng;
         rng << goe::rng::saved();
         w.str(rng.str());
+        // chunks not built yet come from the world seed, so they must match the ones already built
+        w.u64((uint64_t) goe::rng::worldSeed());
         w.u8(teleport::firstReceiverRemoved);
         w.u32(goldenApple::appleNumber);
 
@@ -836,6 +839,20 @@ bool gameSerializer::saveGame(const std::string &fileName)
     return true;
 }
 
+bool gameSerializer::canLoad(const std::string &fileName)
+{
+    reader r(fileName);
+    if (!r.good())
+        return false;
+    try {
+        auto magic = r.pod<std::array<char, 8>>();
+        const uint32_t version = r.u32();
+        return std::memcmp(magic.data(), saveMagic, sizeof(saveMagic)) == 0 && version >= 1 && version <= formatVersion;
+    } catch (const std::exception &) {
+        return false;
+    }
+}
+
 bool gameSerializer::loadGame(const std::string &fileName)
 {
     std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
@@ -865,6 +882,10 @@ bool gameSerializer::loadGame(const std::string &fileName)
         auto instanceCounter = r.u64();
         auto lastChamberId = r.i32();
         auto rngState = r.str();
+        // before version 6 the world seed was not kept; the running one is used then
+        std::optional<uint64_t> worldSeed;
+        if (version >= 6)
+            worldSeed = r.u64();
         bool firstReceiverRemoved = r.u8();
         auto appleNumber = r.u32();
         auto activePlayerId = r.u64();
@@ -1024,12 +1045,9 @@ bool gameSerializer::loadGame(const std::string &fileName)
         gameClock::ticks = taterCounter;
         std::istringstream rng(rngState);
         rng >> goe::rng::saved();
+        if (worldSeed)
+            goe::rng::setWorldSeed((goe::rng::seed) *worldSeed);
 
-        std::vector<std::shared_ptr<bElem>> all;
-        all.reserve(ctx.byId.size());
-        for (auto &[id, e] : ctx.byId)
-            all.push_back(e);
-        restartMusic(all);
         if (player::activePlayer && player::activePlayer->getBoard())
             soundManager::getInstance().setListenerChamber(player::activePlayer->getBoard()->getInstanceId());
     } catch (const std::exception &ex) {
@@ -1169,27 +1187,6 @@ void gameSerializer::rebuildStacks(loadContext &ctx, const std::shared_ptr<chamb
             below = e;
         }
         board->chunkAt(chamber::chunkOf(cell)).cells[chamber::cellIndex(cell)] = below;
-    }
-}
-
-void gameSerializer::restartMusic(const std::vector<std::shared_ptr<bElem>> &elements)
-{
-    // music of the global teleporters is attached to them when they are placed; redo that
-    auto &sound = soundManager::getInstance();
-    for (const auto &e : elements) {
-        auto t = std::dynamic_pointer_cast<teleport>(e);
-        if (!t || t->getAttrs()->getSubtype() != 0 || !t->getBoard())
-            continue;
-        const auto id = t->getStats()->getInstanceId();
-        const bool had = sound.hasSong(id);
-        if (!had) {
-            auto pos = t->getStats()->getMyPosition();
-            sound.setupSong(id, 1, {(float) pos.x, (float) pos.y, 0.0f}, t->getBoard()->getInstanceId(), true);
-        }
-        if (t->getStats()->getMyDirection() == dir::direction::LEFT)
-            sound.pauseSong(id);
-        else if (had)
-            sound.resumeSong(id); // paused when its chunk went to disk
     }
 }
 
@@ -1372,7 +1369,6 @@ bool gameSerializer::swapInChunk(const std::shared_ptr<chamber> &world, coords k
     world->liveElems.insert(world->liveElems.end(), live.begin(), live.end());
     teleport::unpark(loaded);
     goldenApple::unpark(loaded);
-    restartMusic(loaded);
     world->swapped.erase(chamber::keyOf(key));
     std::error_code ec;
     std::filesystem::remove(file, ec);

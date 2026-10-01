@@ -38,21 +38,26 @@ class titleMenu
 public:
     /// CONTROLS lists the key layout; BINDING waits for the key or pad button of one action
     enum class screen { MAIN, CONFIG, EDITING, CONTROLS, BINDING };
-    enum class action { NONE, START, EXIT };
+    enum class action { NONE, CONTINUE, START, EXIT };
 
     /// one line of the config screen: a label, its current value, and how to change it
     struct option
     {
         std::string label;
         std::function<std::string()> value;
-        /// takes a typed value; empty for a line that opens the controls screen instead
+        /// takes a typed value; empty for a switch (Enter calls adjust) or the line that opens the controls screen
         std::function<bool(const std::string &)> apply;
         /// Left and Right step the value (-1 or +1); empty when they do nothing
         std::function<void(int)> adjust;
     };
 
-    titleMenu(gameSettings &settings, std::string settingsFile = gameSettings::settingsFile);
+    /// saveReadable says whether there is a save to continue; without it, Continue is never offered
+    titleMenu(gameSettings &settings,
+              std::string settingsFile = gameSettings::settingsFile,
+              std::function<bool()> saveReadable = {});
 
+    /// back to the main menu, asking again whether there is a save; Continue is selected when there is
+    void refresh();
     /// menus take repeated key presses (KEY_CHAR); on the BINDING screen send key downs,
     /// so that Shift, Ctrl and Alt can be bound too
     action keyDown(int keycode);
@@ -72,6 +77,10 @@ public:
     const std::string &getMessage() const;
 
 private:
+    enum class mainItem { CONTINUE, START, CONFIG, EXIT };
+    /// the main menu's lines; Continue only while a save can be read
+    std::vector<mainItem> mainItems() const;
+    static std::string labelOf(mainItem item);
     void move(int by);
     int lineCount() const;
     void applyEdit();
@@ -85,7 +94,8 @@ private:
 
     gameSettings &settings;
     std::string settingsFile;
-    std::vector<std::string> mainItems = {"Start game", "Config", "Exit"};
+    std::function<bool()> saveReadable;
+    bool canContinue = false;
     std::vector<option> options;
     screen current = screen::MAIN;
     int selected = 0;

@@ -51,6 +51,65 @@ TEST(TitleMenuTests, MainMenuOffersStartConfigExit)
     EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::START);
 }
 
+TEST(TitleMenuTests, ContinueShowsOnlyWithAReadableSave)
+{
+    scratch s;
+    bool readable = true;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile(), [&readable] { return readable; });
+    auto lines = m.getLines();
+    ASSERT_EQ(lines.size(), 4u);
+    EXPECT_EQ(lines[0], "Continue");
+    EXPECT_EQ(lines[1], "Start game");
+    EXPECT_EQ(m.getSelected(), 0);
+    EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::CONTINUE);
+    m.keyDown(ALLEGRO_KEY_DOWN);
+    EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::START);
+    m.keyDown(ALLEGRO_KEY_UP);
+    m.keyDown(ALLEGRO_KEY_UP);
+    EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::EXIT);
+
+    // Config, then back, lands on Config again
+    m.keyDown(ALLEGRO_KEY_UP);
+    EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::NONE);
+    ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
+    m.keyDown(ALLEGRO_KEY_ESCAPE);
+    EXPECT_EQ(m.getLines()[m.getSelected()], "Config");
+
+    // the save went away: refresh drops Continue and starts from the top
+    readable = false;
+    m.refresh();
+    lines = m.getLines();
+    ASSERT_EQ(lines.size(), 3u);
+    EXPECT_EQ(lines[0], "Start game");
+    EXPECT_EQ(m.getSelected(), 0);
+    EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::START);
+}
+
+TEST(TitleMenuTests, OldSettingsGiveEscToSaveAndExit)
+{
+    // settings.json from before "save and exit" had Esc for giving up
+    using goe::controls::action;
+    scratch s;
+    {
+        std::ofstream out(s.settingsFile());
+        out << R"({"controls": {"giveUp": {"keys": [)" << ALLEGRO_KEY_ESCAPE << R"(], "pad": 9}}})";
+    }
+    ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
+    const auto b = gameSettings::getInstance().getControls();
+    EXPECT_EQ(b.of(action::giveUp).keys, std::vector<int>{ALLEGRO_KEY_BACKSPACE});
+    EXPECT_EQ(b.of(action::giveUp).padButton, 9);
+    EXPECT_EQ(b.of(action::saveAndExit).keys, (std::vector<int>{ALLEGRO_KEY_ESCAPE, ALLEGRO_KEY_F10}));
+
+    // a player who chose Esc for giving up on purpose keeps it once the file knows both actions
+    auto mine = b;
+    mine.bindKey(action::giveUp, ALLEGRO_KEY_ESCAPE);
+    gameSettings::getInstance().setControls(mine);
+    ASSERT_TRUE(gameSettings::getInstance().save(s.settingsFile()));
+    gameSettings::getInstance().resetToDefaults();
+    ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
+    EXPECT_TRUE(gameSettings::getInstance().getControls() == mine);
+}
+
 TEST(TitleMenuTests, SelectionWrapsAround)
 {
     scratch s;
@@ -70,12 +129,14 @@ TEST(TitleMenuTests, ConfigShowsSaveLocationAndGoesBack)
     EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::NONE);
     ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
     auto lines = m.getLines();
-    ASSERT_EQ(lines.size(), 5u);
+    ASSERT_EQ(lines.size(), 7u);
     EXPECT_EQ(lines[0], "Save location: .");
     EXPECT_EQ(lines[1], "Music volume: 100%");
     EXPECT_EQ(lines[2], "Sound effects volume: 100%");
-    EXPECT_EQ(lines[3], "Controls");
-    EXPECT_EQ(lines[4], "Back");
+    EXPECT_EQ(lines[3], "Story scroller: On");
+    EXPECT_EQ(lines[4], "Stories file: data/txt/stories.json");
+    EXPECT_EQ(lines[5], "Controls");
+    EXPECT_EQ(lines[6], "Back");
     m.keyDown(ALLEGRO_KEY_ESCAPE);
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::MAIN);
     EXPECT_EQ(m.getSelected(), 1);
@@ -215,12 +276,66 @@ TEST(TitleMenuTests, VolumesStepByFiveAndAreKept)
     EXPECT_EQ(gameSettings::getInstance().getEffectsVolume(), 0);
 }
 
+TEST(TitleMenuTests, StoryScrollerSwitchesAndIsKept)
+{
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    openConfigAt(m, 3);
+    m.keyDown(ALLEGRO_KEY_ENTER); // a switch: Enter flips it, no editor
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
+    EXPECT_FALSE(gameSettings::getInstance().getStoriesShown());
+    EXPECT_EQ(m.getLines()[3], "Story scroller: Off");
+    EXPECT_EQ(m.getMessage(), "Saved");
+    gameSettings::getInstance().resetToDefaults();
+    ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
+    EXPECT_FALSE(gameSettings::getInstance().getStoriesShown());
+    m.keyDown(ALLEGRO_KEY_LEFT); // Left and Right flip it too
+    EXPECT_TRUE(gameSettings::getInstance().getStoriesShown());
+}
+
+TEST(TitleMenuTests, StoriesFileStepsThroughTheLanguagesAndRefusesEmptyFiles)
+{
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    openConfigAt(m, 4);
+    // the files next to stories.json, by name: stories.json, stories.pl.json, stories.ro.json
+    m.keyDown(ALLEGRO_KEY_RIGHT);
+    EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), "data/txt/stories.pl.json");
+    m.keyDown(ALLEGRO_KEY_RIGHT);
+    EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), "data/txt/stories.ro.json");
+    m.keyDown(ALLEGRO_KEY_RIGHT); // wraps around
+    EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), "data/txt/stories.json");
+    m.keyDown(ALLEGRO_KEY_LEFT);
+    EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), "data/txt/stories.ro.json");
+
+    // a typed file with no stories is refused, one with stories is taken
+    const auto empty = (s.dir / "none.json").string();
+    std::ofstream(empty) << "[{\"title\": \"no body\"}]";
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    while (!m.getEditBuffer().empty())
+        m.keyDown(ALLEGRO_KEY_BACKSPACE);
+    type(m, empty);
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::EDITING);
+    EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), "data/txt/stories.ro.json");
+    const auto mine = (s.dir / "mine.json").string();
+    std::ofstream(mine) << "[{\"title\": \"Hail\", \"body\": \"Eris\"}]";
+    while (!m.getEditBuffer().empty())
+        m.keyDown(ALLEGRO_KEY_BACKSPACE);
+    type(m, mine);
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
+    gameSettings::getInstance().resetToDefaults();
+    ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
+    EXPECT_EQ(gameSettings::getInstance().getStoriesFile(), mine);
+}
+
 TEST(TitleMenuTests, ControlsCanBeRebound)
 {
     using goe::controls::action;
     scratch s;
     titleMenu m(gameSettings::getInstance(), s.settingsFile());
-    openConfigAt(m, 3);
+    openConfigAt(m, 5);
     m.keyDown(ALLEGRO_KEY_ENTER);
     ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONTROLS);
     EXPECT_EQ(m.getTitle(), "Controls");
@@ -275,7 +390,7 @@ TEST(TitleMenuTests, ControlsCanBeRebound)
     EXPECT_TRUE(gameSettings::getInstance().getControls() == goe::controls::bindings());
     m.keyDown(ALLEGRO_KEY_ESCAPE);
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
-    EXPECT_EQ(m.getSelected(), 3);
+    EXPECT_EQ(m.getSelected(), 5);
 }
 
 TEST(ControlBindingsTests, DefaultLayoutPlaysAsBefore)
@@ -302,8 +417,12 @@ TEST(ControlBindingsTests, DefaultLayoutPlaysAsBefore)
     EXPECT_TRUE(is({ALLEGRO_KEY_X}, 3, dir::direction::NODIRECTION));
     EXPECT_TRUE(is({ALLEGRO_KEY_ALT, ALLEGRO_KEY_A}, 4, dir::direction::LEFT));
     EXPECT_TRUE(is({ALLEGRO_KEY_Z}, 5, dir::direction::NODIRECTION));
-    EXPECT_TRUE(is({ALLEGRO_KEY_ESCAPE}, 6, dir::direction::NODIRECTION));
-    EXPECT_TRUE(is({ALLEGRO_KEY_ESCAPE, ALLEGRO_KEY_LSHIFT}, 7, dir::direction::NODIRECTION));
+    EXPECT_TRUE(is({ALLEGRO_KEY_BACKSPACE}, 6, dir::direction::NODIRECTION));
+    EXPECT_TRUE(is({ALLEGRO_KEY_BACKSPACE, ALLEGRO_KEY_LSHIFT}, 7, dir::direction::NODIRECTION));
+    // save and exit wins over everything held with it, so leaving never costs an avatar
+    EXPECT_TRUE(is({ALLEGRO_KEY_ESCAPE}, 10, dir::direction::NODIRECTION));
+    EXPECT_TRUE(is({ALLEGRO_KEY_F10}, 10, dir::direction::NODIRECTION));
+    EXPECT_TRUE(is({ALLEGRO_KEY_ESCAPE, ALLEGRO_KEY_BACKSPACE, ALLEGRO_KEY_W}, 10, dir::direction::UP));
     EXPECT_TRUE(is({ALLEGRO_KEY_SPACE}, 8, dir::direction::NODIRECTION));
     EXPECT_TRUE(is({ALLEGRO_KEY_R}, 9, dir::direction::NODIRECTION));
 

@@ -42,7 +42,6 @@ public:
     oState disposeElement() override;
     bool createConnectionsWithinSubtype();
     bool additionalProvisioning(int value) override;
-    bool stepOnElement(std::shared_ptr<bElem> step) override;
     bool mechanics() final;
     bool stepOnAction(bool step,std::shared_ptr<bElem> who) override;
 
