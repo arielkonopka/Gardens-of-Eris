@@ -83,6 +83,7 @@ public:
     /// runs the game until the player quits or the last avatar is gone
     gameEnd presentEverything();
     /// the active player's score, as last shown; still there after the last avatar died
+    /// after a lost game: the best score of its avatars; otherwise the active avatar's last score
     int getLastScore() const;
     bool presentAChamber(presenterMode mod);
     bool loadCofiguredData();

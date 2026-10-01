@@ -39,11 +39,14 @@
 #include "randomStreams.h"
 
 namespace {
-/// what the player reads when a game ends
-void showEnd(titleScreen &title, int score, bool &windowOpen)
+/// what the player reads when a game ends; the lost game's save goes, so it cannot be continued
+void showEnd(titleScreen &title, int bestScore, bool &windowOpen)
 {
     // the maze never ends, so a game only ends when the last avatar is lost
-    const std::vector<std::string> lines = {"Score: " + std::to_string(score)};
+    const std::string saveFile = gameSettings::getInstance().getSaveFile();
+    if (!gameSerializer::removeSave(saveFile))
+        std::cout << "The save of the lost game " << saveFile << " could not be deleted\n";
+    const std::vector<std::string> lines = {"Best score: " + std::to_string(bestScore)};
     windowOpen = title.showMessage("Game over", lines);
 }
 } // namespace

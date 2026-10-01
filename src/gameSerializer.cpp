@@ -710,6 +710,7 @@ void gameSerializer::clearWorld()
     }
     player::activePlayer = nullptr;
     player::visitedPlayers.clear();
+    player::lostBest = 0;
     goldenApple::apples.clear();
     goldenApple::parked.clear();
     goldenApple::appleNumber = 0;
@@ -742,6 +743,7 @@ bool gameSerializer::saveGame(const std::string &fileName)
         w.u64((uint64_t) goe::rng::worldSeed());
         w.u8(teleport::firstReceiverRemoved);
         w.u32(goldenApple::appleNumber);
+        w.i32(player::lostBest);
 
         // static registries
         w.ref(player::activePlayer);
@@ -841,11 +843,15 @@ bool gameSerializer::saveGame(const std::string &fileName)
 
 bool gameSerializer::replaceSave(const std::string &fileName)
 {
-    if (saveGame(fileName))
-        return true;
+    return saveGame(fileName) || removeSave(fileName);
+}
+
+bool gameSerializer::removeSave(const std::string &fileName)
+{
     std::error_code ec;
     std::filesystem::remove(fileName, ec);
-    return !ec && !std::filesystem::exists(fileName, ec);
+    std::filesystem::remove(fileName + ".tmp", ec); // a save that never finished
+    return !std::filesystem::exists(fileName, ec);
 }
 
 bool gameSerializer::canLoad(const std::string &fileName)
@@ -897,6 +903,8 @@ bool gameSerializer::loadGame(const std::string &fileName)
             worldSeed = r.u64();
         bool firstReceiverRemoved = r.u8();
         auto appleNumber = r.u32();
+        // before version 7 the scores of lost avatars were not kept
+        const int lostBest = version >= 7 ? r.i32() : 0;
         auto activePlayerId = r.u64();
         auto visitedPlayerIds = r.ids();
         auto appleIds = r.ids();
@@ -1035,6 +1043,7 @@ bool gameSerializer::loadGame(const std::string &fileName)
         chamber::lastid = lastChamberId;
         player::activePlayer = ctx.get(activePlayerId);
         player::visitedPlayers = ctx.getAll(visitedPlayerIds);
+        player::lostBest = lostBest;
         goldenApple::apples = ctx.getAll(appleIds);
         goldenApple::appleNumber = appleNumber;
         {
