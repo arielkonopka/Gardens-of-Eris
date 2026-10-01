@@ -114,6 +114,10 @@ int main( int argc, char * argv[] )
                     goe::crashLog::setDetail("World seed", std::to_string(goe::rng::worldSeed()));
                     // the start of the endless maze; the rest is built around the player while they play
                     worldBuilder::startNew();
+                    // "New game" next to Continue: the new game overwrites the old save
+                    if (const std::string saveFile = gameSettings::getInstance().getSaveFile();
+                        gameSerializer::canLoad(saveFile) && !gameSerializer::replaceSave(saveFile))
+                        std::cout << "The old save " << saveFile << " could not be replaced\n";
                 }
             }
             played = true;

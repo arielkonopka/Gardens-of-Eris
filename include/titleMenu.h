@@ -78,9 +78,10 @@ public:
 
 private:
     enum class mainItem { CONTINUE, START, CONFIG, EXIT };
-    /// the main menu's lines; Continue only while a save can be read
+    /// the main menu's lines; Continue (and New game after it) only while a save can be read
     std::vector<mainItem> mainItems() const;
-    static std::string labelOf(mainItem item);
+    /// START reads "New game" while there is a save to continue
+    std::string labelOf(mainItem item) const;
     void move(int by);
     int lineCount() const;
     void applyEdit();

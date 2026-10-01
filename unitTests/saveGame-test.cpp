@@ -394,3 +394,29 @@ TEST(SaveGameTests, EndlessWorldRoundTrip)
     std::remove(f1.c_str());
     std::remove(f2.c_str());
 }
+
+TEST(SaveGameTests, NewGameReplacesTheOldSave)
+{
+    inputManager::getInstance(true);
+    const std::string f = tmpFile("goe-replace.goe");
+    gameSerializer::clearWorld();
+    goe::rng::setWorldSeed(111);
+    worldBuilder::startNew();
+    ASSERT_TRUE(gameSerializer::saveGame(f));
+
+    // a new game over the old one: Continue now brings back the new world
+    gameSerializer::clearWorld();
+    goe::rng::setWorldSeed(222);
+    worldBuilder::startNew();
+    ASSERT_TRUE(gameSerializer::replaceSave(f));
+    goe::rng::setWorldSeed(333);
+    ASSERT_TRUE(gameSerializer::loadGame(f));
+    EXPECT_EQ(goe::rng::worldSeed(), 222u);
+
+    // when the old save can be neither written over nor removed, it says so
+    const std::string blocked = tmpFile("goe-replace-blocked");
+    std::filesystem::create_directories(blocked + "/inside");
+    EXPECT_FALSE(gameSerializer::replaceSave(blocked));
+    std::filesystem::remove_all(blocked);
+    std::remove(f.c_str());
+}
