@@ -21,6 +21,7 @@
  */
 
 #include "landmine.h"
+#include "gameEvents.h"
 
 int landmine::getType() const
 {
@@ -40,7 +41,10 @@ bool landmine::mechanics()
 bool landmine::stepOnAction(bool step, std::shared_ptr<bElem> who)
 {
     bool r = bElem::stepOnAction(step, who);
-    if (step && who)
+    if (step && who) {
+        // a missile running into the mine sets it off for its shooter
+        goe::events::blame by(who->getStats()->getStatsOwner().lock().get());
         this->destroy();
+    }
     return r;
 }

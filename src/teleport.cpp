@@ -22,6 +22,7 @@
 #include "teleport.h"
 #include "worldBuilder.h"
 #include "elementSound.h"
+#include "gameEvents.h"
 bool teleport::firstReceiverRemoved = false;
 
 std::vector<std::weak_ptr<teleport>> teleport::allTeleporters;
@@ -254,6 +255,7 @@ bool teleport::teleportIt(std::shared_ptr<bElem> who)
         return false;
     } else {
         who->stepOnElement(goe::rng::pick(goe::rng::gameplay(), spots));
+        goe::events::report(goe::events::kind::teleport, *this, who.get());
         return true;
     }
 }

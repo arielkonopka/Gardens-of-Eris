@@ -132,3 +132,33 @@ def test_the_gymnasium_environment():
             assert total == info["score"] - start  # the rewards add up to the score gained
     finally:
         env.close()
+
+
+def test_the_reward_weighs_events():
+    assert set(goe.SHAPED_REWARD) <= set(goe.EVENTS)
+    assert set(goe.EVENT_MEANINGS) == set(goe.EVENTS)
+    with pytest.raises(ValueError):
+        goe.Game(reward_weights={"nonsense": 1.0})
+    weights = dict(goe.SHAPED_REWARD, score=0.5)
+    with goe.Game(vision_radius=2, episode_ticks=50 * 30, reward_weights=weights) as g:
+        g.new_episode(555)
+        rng = np.random.default_rng(0)
+        total = 0.0
+        while not g.is_episode_finished():
+            reward = g.make_action(int(rng.integers(1, 9)))
+            step = g.step_events
+            assert set(step) == set(goe.EVENTS)
+            assert reward == pytest.approx(sum(weights.get(k, 0.0) * v for k, v in step.items()))
+            total += reward
+        episode = g.episode_events
+        assert episode["score"] > 0
+        assert total == pytest.approx(sum(weights.get(k, 0.0) * v for k, v in episode.items()))
+
+
+def test_the_environment_reports_the_events():
+    env = goe.GoeEnv(vision_radius=2, episode_ticks=80, reward_weights={"hurt": -1.0, "score": 1.0})
+    env.reset(seed=555)
+    _, reward, _, _, info = env.step(1)
+    assert set(info["events"]) == set(goe.EVENTS)
+    assert reward == pytest.approx(info["events"]["score"] - info["events"]["hurt"])
+    env.close()

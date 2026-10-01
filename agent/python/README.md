@@ -85,9 +85,38 @@ The actions are the game's controls: `NOOP`, `MOVE_*`, `SHOOT_*`, `INTERACT_*`, 
 50 ticks a second). The action reaches the player once, in the first tick it can act, like a key
 pressed once; `game.action_taken` says whether it did.
 
-The reward is the score gained in the step. When a spare avatar takes over from a lost one, that
-step's reward is 0 and `avatars_lost` grows. The episode ends (`terminated`) when the last avatar
-is gone; the maze never ends, so set `episode_ticks` to cut episodes (`truncated`).
+By default the reward is the score gained in the step. When a spare avatar takes over from a
+lost one, that step's score is 0 and `avatars_lost` grows. The episode ends (`terminated`) when
+the last avatar is gone; the maze never ends, so set `episode_ticks` to cut episodes (`truncated`).
+
+The reward can instead weigh what the player's avatar did in the step: `reward_weights` maps
+events to weights, and the reward is the sum of each event's count times its weight
+(`game.step_events` and `game.episode_events` hold the counts; `GoeEnv` puts the step's in
+`info["events"]`). `goe.SHAPED_REWARD` is a starting point that rewards doing things and
+penalises harm:
+
+| Event | Counts | `SHAPED_REWARD` |
+|-------|--------|-----------------|
+| `score` | points gained (new cells visited, items collected, damage dealt) | 0 |
+| `collect` | items collected, each item once an episode | +5 |
+| `apple` | golden apples collected, each once an episode | +20 |
+| `use` | the usable in hand used (a broken golden apple eaten for energy) | +2 |
+| `open` | doors opened, each door once an episode | +10 |
+| `teleport` | trips through a teleporter | +5 |
+| `kill` | monsters, drones and puppet masters killed by the player's missiles and blasts | +10 |
+| `mine` | mines and bombs set off by the player's missiles and blasts | +5 |
+| `hurt` | energy lost | -0.2 |
+| `death` | avatars lost, the last one included | -50 |
+
+```python
+game = goe.Game(reward_weights=goe.SHAPED_REWARD)
+game = goe.Game(reward_weights=dict(goe.SHAPED_REWARD, score=0.1))   # with a little of the score
+```
+
+The game reports these events itself (`include/gameEvents.h`): a kill is put down to whoever
+fired the missile or set off the blast, also through a mine or bomb the shot set off. Items and
+doors count once an episode, so dropping and picking up an item, or closing and opening a
+door, earns nothing more.
 
 The same seed builds the same world, and the same actions then play the same game. There is one
 game per process: the game keeps its world in static state. Run games in parallel in separate

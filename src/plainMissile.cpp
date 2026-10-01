@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "plainMissile.h"
+#include "gameEvents.h"
 
 plainMissile::plainMissile()
     : bElem()
@@ -48,7 +49,10 @@ bool plainMissile::stepOnAction(bool step, std::shared_ptr<bElem> who)
     if (step && who->getType() != this->getType()) {
         int w = who->getAttrs()->getEnergy();
         int dw = 0;
-        who->hurt(this->getAttrs()->getEnergy());
+        {
+            goe::events::blame by(sowner.get());
+            who->hurt(this->getAttrs()->getEnergy());
+        }
         dw = w - who->getAttrs()->getEnergy();
         this->kill();
         if (sowner) {
@@ -79,7 +83,10 @@ bool plainMissile::mechanics()
     if (myel->getAttrs()->isKillable()) {
         int w = myel->getAttrs()->getEnergy();
         int dw = 0;
-        myel->hurt(this->getAttrs()->getEnergy());
+        {
+            goe::events::blame by(sowner.get());
+            myel->hurt(this->getAttrs()->getEnergy());
+        }
         dw = w - myel->getAttrs()->getEnergy();
         if (!myel->getStats()->isDying() && !myel->getStats()->isDestroying()) {
             this->kill();

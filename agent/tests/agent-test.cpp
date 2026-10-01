@@ -302,3 +302,195 @@ TEST(AgentTests, GivingUpIsOnlyThereWhenAsked)
         EXPECT_EQ(g.makeAction(action::noop), 0.0f);
     }
 }
+
+namespace {
+/// a free cell next to the player, its direction, and the actions that walk and interact there
+struct side
+{
+    dir::direction d;
+    action move, interact, shoot;
+};
+std::optional<side> freeSide(int skip = 0)
+{
+    const auto plr = player::getActivePlayer();
+    const side ways[] = {{dir::direction::UP, action::moveUp, action::interactUp, action::shootUp},
+                         {dir::direction::DOWN, action::moveDown, action::interactDown, action::shootDown},
+                         {dir::direction::LEFT, action::moveLeft, action::interactLeft, action::shootLeft},
+                         {dir::direction::RIGHT, action::moveRight, action::interactRight, action::shootRight}};
+    for (const auto &w : ways) {
+        const auto e = plr->getElementInDirection(w.d);
+        if (e && e->getType() == bElemTypes::_floorType && skip-- == 0)
+            return w;
+    }
+    return std::nullopt;
+}
+
+float events(const game &g, event e)
+{
+    return g.episodeEvents()[(std::size_t) e];
+}
+
+/// waits until the player can act again
+void settle(game &g)
+{
+    for (int s = 0; s < 10 && !g.isEpisodeFinished(); s++)
+        g.makeAction(action::noop);
+}
+} // namespace
+
+TEST(AgentTests, TheDefaultRewardIsTheScore)
+{
+    game g(withData());
+    g.newEpisode(555);
+    float reward = 0;
+    for (int s = 0; s < 40 && !g.isEpisodeFinished(); s++) {
+        const auto move = freeStep();
+        reward += g.makeAction(move ? *move : action::noop);
+    }
+    EXPECT_GT(reward, 0.0f); // new cells walked
+    EXPECT_EQ(reward, events(g, event::score));
+}
+
+TEST(AgentTests, UnknownEventsAreRefused)
+{
+    config c = withData();
+    c.rewardWeights = {{"nonsense", 1.0f}};
+    EXPECT_THROW(game g(c), std::invalid_argument);
+}
+
+TEST(AgentTests, CollectingCountsOnceAnItem)
+{
+    config c = withData();
+    c.rewardWeights = {{"collect", 5.0f}, {"apple", 20.0f}};
+    game g(c);
+    g.newEpisode(555);
+    const auto w = freeSide();
+    ASSERT_TRUE(w);
+    const auto plr = player::getActivePlayer();
+    const auto gun = elementFactory::generateAnElement<plainGun>(plr->getBoard(), 0);
+    gun->stepOnElement(plr->getElementInDirection(w->d));
+    EXPECT_EQ(g.makeAction(w->interact), 5.0f);
+    EXPECT_EQ(g.stepEvents()[(std::size_t) event::collect], 1.0f);
+    settle(g);
+    // dropped and picked up again: the same gun counts once
+    plr->getAttrs()->getInventory()->retrieveCollectibleFromInventory(gun->getStats()->getInstanceId(), true);
+    gun->stepOnElement(plr->getElementInDirection(w->d));
+    g.makeAction(w->interact);
+    settle(g);
+    EXPECT_EQ(events(g, event::collect), 1.0f);
+    // a golden apple is an apple
+    const auto apple = elementFactory::generateAnElement<goldenApple>(plr->getBoard(), 0);
+    apple->stepOnElement(plr->getElementInDirection(w->d));
+    EXPECT_EQ(g.makeAction(w->interact), 20.0f);
+    EXPECT_EQ(events(g, event::apple), 1.0f);
+    EXPECT_EQ(events(g, event::collect), 1.0f);
+}
+
+TEST(AgentTests, OpeningCountsOnceADoor)
+{
+    config c = withData();
+    c.rewardWeights = {{"open", 10.0f}};
+    game g(c);
+    g.newEpisode(555);
+    const auto w = freeSide();
+    ASSERT_TRUE(w);
+    const auto plr = player::getActivePlayer();
+    const auto d = elementFactory::generateAnElement<door>(plr->getBoard(), 1);
+    d->stepOnElement(plr->getElementInDirection(w->d));
+    d->getAttrs()->setLocked(false);
+    d->getAttrs()->setOpen(false);
+    float reward = 0;
+    for (int k = 0; k < 3; k++) { // open, close, open
+        reward += g.makeAction(w->interact);
+        settle(g);
+    }
+    EXPECT_TRUE(d->getAttrs()->isOpen());
+    EXPECT_EQ(events(g, event::open), 1.0f);
+    EXPECT_EQ(reward, 10.0f);
+}
+
+TEST(AgentTests, ShootingCountsKillsAndMines)
+{
+    config c = withData();
+    c.rewardWeights = {{"kill", 10.0f}, {"mine", 3.0f}};
+    game g(c);
+    g.newEpisode(555);
+    const auto plr = player::getActivePlayer();
+    const auto gun = elementFactory::generateAnElement<plainGun>(plr->getBoard(), 0);
+    gun->getAttrs()->setSubtype(1); // endless ammo
+    ASSERT_TRUE(plr->getAttrs()->getInventory()->addToInventory(gun));
+    const auto w = freeSide();
+    ASSERT_TRUE(w);
+    const auto target = elementFactory::generateAnElement<monster>(plr->getBoard(), 0);
+    target->stepOnElement(plr->getElementInDirection(w->d));
+    target->getStats()->setWaiting(100000); // it stays to be shot
+    float reward = 0;
+    for (int s = 0; s < 100 && events(g, event::kill) == 0 && !g.isEpisodeFinished(); s++)
+        reward += g.makeAction(w->shoot);
+    EXPECT_EQ(events(g, event::kill), 1.0f);
+    EXPECT_EQ(reward, 10.0f);
+    settle(g);
+    // a mine next to the player: its blast may take the player too, so it comes last
+    const auto w2 = freeSide();
+    ASSERT_TRUE(w2);
+    const auto mine = elementFactory::generateAnElement<landmine>(plr->getBoard(), 0);
+    mine->stepOnElement(plr->getElementInDirection(w2->d));
+    for (int s = 0; s < 20 && events(g, event::mine) == 0 && !g.isEpisodeFinished(); s++)
+        g.makeAction(w2->shoot);
+    EXPECT_EQ(events(g, event::mine), 1.0f);
+}
+
+TEST(AgentTests, TeleportingAndUsingAreCounted)
+{
+    config c = withData();
+    c.rewardWeights = {{"teleport", 2.0f}, {"use", 1.0f}};
+    game g(c);
+    g.newEpisode(555);
+    const auto plr = player::getActivePlayer();
+    // a broken apple in hand: eating it gives energy
+    const auto apple = elementFactory::generateAnElement<goldenApple>(plr->getBoard(), 0);
+    apple->hurt(1);
+    ASSERT_TRUE(plr->collect(apple));
+    plr->getAttrs()->setEnergy(50);
+    g.makeAction(action::use);
+    EXPECT_EQ(g.stepEvents()[(std::size_t) event::use], 1.0f);
+    settle(g);
+    const auto w = freeSide();
+    ASSERT_TRUE(w);
+    const auto there = elementFactory::generateAnElement<teleport>(plr->getBoard(), 7);
+    there->stepOnElement(plr->getElementInDirection(w->d));
+    const auto w2 = freeSide();
+    ASSERT_TRUE(w2);
+    const auto back = elementFactory::generateAnElement<teleport>(plr->getBoard(), 7);
+    back->stepOnElement(plr->getElementInDirection(w2->d));
+    g.makeAction(w->interact);
+    settle(g);
+    EXPECT_EQ(events(g, event::teleport), 1.0f);
+}
+
+TEST(AgentTests, HurtAndDeathArePenalised)
+{
+    config c = withData();
+    c.allowGiveUp = true;
+    c.rewardWeights = {{"hurt", -1.0f}, {"death", -50.0f}};
+    game g(c);
+    g.newEpisode(555);
+    const auto plr = player::getActivePlayer();
+    const auto w = freeSide();
+    ASSERT_TRUE(w);
+    // a missile coming at the player
+    const auto missile = elementFactory::generateAnElement<plainMissile>(plr->getBoard(), 0);
+    missile->stepOnElement(plr->getElementInDirection(w->d));
+    missile->getStats()->setMyDirection((dir::direction) (((int) w->d + 2) % 4));
+    const int energy = plr->getAttrs()->getEnergy();
+    float reward = 0;
+    for (int s = 0; s < 5; s++)
+        reward += g.makeAction(action::noop);
+    EXPECT_LT(plr->getAttrs()->getEnergy(), energy);
+    EXPECT_EQ(events(g, event::hurt), (float) (energy - plr->getAttrs()->getEnergy()));
+    EXPECT_EQ(reward, -events(g, event::hurt));
+    g.makeAction(action::giveUp);
+    for (int s = 0; s < 100 && !g.isEpisodeFinished() && g.avatarsLost() == 0; s++)
+        g.makeAction(action::noop);
+    EXPECT_EQ(events(g, event::death), 1.0f);
+}

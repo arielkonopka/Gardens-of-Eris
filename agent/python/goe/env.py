@@ -27,7 +27,8 @@ class GoeEnv(_Base):
         inventory         (sections, slots, item features)
         inventory_counts  (sections,)
     Action: Discrete, the game's controls (Game.available_actions).
-    Reward: the score gained in the step.
+    Reward: the score gained in the step, or the step's events weighed by reward_weights
+    (info["events"] holds the step's event counts).
     terminated: the last avatar is gone. truncated: episode_ticks passed.
 
     Every keyword goes to Game (vision_radius, cell_features, follow_player, ...).
@@ -60,7 +61,8 @@ class GoeEnv(_Base):
     def _info(self):
         s = self._last_state
         return {"score": s.score, "tick": s.tick, "centre": s.centre, "seed": self.game.seed,
-                "action_taken": self.game.action_taken, "avatars_lost": self.game.avatars_lost}
+                "action_taken": self.game.action_taken, "avatars_lost": self.game.avatars_lost,
+                "events": self.game.step_events}
 
     def reset(self, *, seed=None, options=None):
         """A new world. With a seed, the same seed gives the same world; without one, a fresh world

@@ -22,6 +22,7 @@
 
 #include "plainGun.h"
 #include "elementSound.h"
+#include "gameEvents.h"
 #include "viewPoint.h"
 
 std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
@@ -73,6 +74,7 @@ bool plainGun::use(std::shared_ptr<bElem> who)
             if (myel->getAttrs()->isSteppable() == true) {
                 this->createProjectible(who);
             } else if (myel->getAttrs()->isKillable()) {
+                goe::events::blame by(who.get());
                 myel->hurt(this->getAttrs()->getEnergy());
             }
             if (this->getAttrs()->getSubtype() % 2 == 0) {

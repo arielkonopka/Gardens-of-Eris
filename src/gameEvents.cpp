@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Ariel Konopka
+ * Copyright (c) 2026, Ariel Konopka
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,43 +20,53 @@
  * SOFTWARE.
  */
 
-#include "simpleBomb.h"
+
 #include "gameEvents.h"
+#include "bElem.h"
 
-bool simpleBomb::hurt(int /*points*/)
+namespace goe::events {
+namespace {
+observer &watcher()
 {
-    return this->destroy();
+    static observer o;
+    return o;
 }
 
-bool simpleBomb::kill()
+const bElem *&current()
 {
-    return this->destroy();
+    static const bElem *who = nullptr;
+    return who;
+}
+} // namespace
+
+void observe(observer o)
+{
+    watcher() = std::move(o);
 }
 
-bool simpleBomb::destroy()
+void report(kind k, const bElem &subject, const bElem *actor)
 {
-    if (this->getStats()->isDestroying() || this->triggered)
-        return false;
-
-    this->registerLiveElement(shared_from_this());
-    this->triggered = true;
-    if (const auto by = goe::events::blamed()) {
-        goe::events::report(goe::events::kind::kill, *this, by);
-        // and what its blast kills is put down to the same shooter
-        this->getStats()->setStatsOwner(std::const_pointer_cast<bElem>(by->shared_from_this()));
-    }
-    this->getStats()->setWaiting(this->fuse());
-    return true;
+    if (auto &w = watcher())
+        w(k, subject, actor);
 }
 
-bool simpleBomb::mechanics()
+blame::blame(const bElem *who) : before(current())
 {
-    if (bElem::mechanics() && !this->getStats()->isDestroying())
-        return this->explode(1.5);
-    return false;
+    current() = who;
 }
 
-int simpleBomb::getType() const
+blame::~blame()
 {
-    return bElemTypes::_simpleBombType;
+    current() = this->before;
 }
+
+const bElem *blamed()
+{
+    return current();
+}
+
+bool isDown(const bElem &e)
+{
+    return e.getStats()->isDying() || e.getStats()->isDestroying() || e.getStats()->isDisposed();
+}
+} // namespace goe::events
