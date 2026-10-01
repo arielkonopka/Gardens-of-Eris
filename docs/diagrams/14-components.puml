@@ -14,7 +14,7 @@ package "GardenOfErisLib" {
   [World\nchamber, chunks, worldBuilder,\nrandomLevelGenerator, chunkPattern] as world
   [Serializer\ngameSerializer, saves, chunk swap] as ser
   [Rules\ndifficulty, goe::rng, gameClock,\nlineOfSight, events] as rules
-  [Input\ninputManager, bindings] as input
+  [Input\ninputManager, bindings, menuPad] as input
   [Sound\nsoundManager, OpenAL, soundSpace] as sound
   [Settings and config\ngameSettings, configManager, skins.json] as cfg
   [Crash log] as crash
@@ -22,7 +22,7 @@ package "GardenOfErisLib" {
 
 package "Agent" {
   [goe::agent::game\nheadless, no window] as agent
-  [Python package goe\nnanobind, Game, GoeEnv, ChunkPattern] as python
+  [Python package goe\nnanobind, Game, GoeEnv, ChunkPattern,\ngenerate_chunk] as python
 }
 
 database "data/\nskins, sounds, music, stories" as data
@@ -51,6 +51,7 @@ cfg --> data
 cfg --> saves
 sound --> openal
 title --> cfg
+title --> input : menuPad
 crash --> saves
 python --> agent
 agent --> world

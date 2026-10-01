@@ -26,7 +26,7 @@ Ever since I was a young lad, I've dreamt of creating a game of this sort. A few
 
 Time passed, and I didn't write a single line of code. Then one day, I resolved to do a bit of coding and thought of a game to create. I pondered over the game's story, which I've only just begun to grasp.
 
-In the repo, you'll find an ubrello5 file that outlines me vision for the game's classes. Mind you, this diagram is far from complete as well.
+The classes of the game are drawn in [docs/diagrams](docs/diagrams/README.md) and described one by one in [docs/classes](docs/classes/README.md).
 
 I considered a random level generator for two reasons:
 
@@ -112,6 +112,7 @@ The game writes a crash report, `crash-<date>-<time>.log`, into the save folder 
 | The Hound | A red drone with the golden apple on its hull. It is sent after you when you stay in one 64x64 area too long; it patrols the walls until it sees you, then bites, and gives up when you leave that area. |
 | Teleporter | Local teleporters lead somewhere in the same region of the world (5 x 5 chunks); global ones (subtype 0), each in its own locked room, can take you anywhere in the maze built so far. The pairing is random and made when a teleporter is first used. |
 | Player avatar | You. Interact with an unused avatar (Ctrl + direction) to activate it; when you die you come back in the next activated one. |
+| Rubbish pile | What a dead creature carried, left on the cell where it died. Whoever can collect and steps on it takes everything in it. |
 
 ## Building the game
 
@@ -136,16 +137,16 @@ The `goe-bench` target times building the world (the start, then one chunk at a 
 
 ### Agents and Python
 
-The game can also be played by a program, without a window, sound or keyboard, for example by a learning agent such as [exRelaxer](https://github.com/arielkonopka/exRelaxer)'s. The `goe-agent` library (`agent/`) runs the game headless; the `goe` Python package (`agent/python`) wraps it as a ViZDoom-like `goe.Game` and a Gymnasium `goe.GoeEnv`. The agent sees a circle of cells around the player (or around a fixed cell), the player's numbers and its inventory, and for each it chooses which features to see: types, subtypes, qualities and states. It acts with the game's own controls, and the reward is the score gained.
+The game can also be played by a program, without a window, sound or keyboard, for example by a learning agent such as [exRelaxer](https://github.com/arielkonopka/exRelaxer)'s. The `goe-agent` library (`agent/`) runs the game headless; the `goe` Python package (`agent/python`) wraps it as a ViZDoom-like `goe.Game` and a Gymnasium `goe.GoeEnv`. The agent sees a circle of cells around the player (or around a fixed cell), the player's numbers and its inventory, and for each it chooses which features to see: types, subtypes, qualities and states. It acts with the game's own controls, and the reward is the score gained, or a weighted sum of what the player did in the step (collecting, opening doors, kills, energy lost, deaths and more; `goe.SHAPED_REWARD` is a starting point).
 
 ```
 pip install ./agent/python                    # or: cmake -S . -B build -DGOE_BUILD_PYTHON=ON
 python3 -c "import goe; env = goe.GoeEnv(); print(env.reset(seed=1)[0]['vision'].shape)"
 ```
 
-Chunks can also be built from a fixed pattern of elements instead of a random maze, chunk by chunk or all of them, so an agent trains on a world chosen for it (`goe.ChunkPattern`; an example is `agent/patterns/rooms.json`).
+Chunks can also be built from a fixed pattern of elements instead of a random maze, chunk by chunk or all of them, so an agent trains on a world chosen for it (`goe.ChunkPattern`; an example is `agent/patterns/rooms.json`). `game.generate_chunk(chunk, pattern)` gives one chunk its pattern from within an episode.
 
-`agent/python/README.md` describes the observation, the actions, the options and the patterns.
+`agent/python/README.md` describes the observation, the actions, the options and the patterns; [docs/classes/agent-interface.md](docs/classes/agent-interface.md) and [docs/classes/python-package.md](docs/classes/python-package.md) describe every class of the agent library and its Python bindings.
 
 The repository also has the older build.sh shell script (Bash):
 
@@ -170,9 +171,11 @@ examples:
 ./build.sh -m bElem -m soundManager -m presenter -t -m bElem-test
 ```
 
-### Diagrams
+### Diagrams and class documentation
 
 [docs/diagrams](docs/diagrams/README.md) holds PlantUML diagrams of the code: class diagrams of the elements, the world, the application and the agent library, a component diagram, activity diagrams of the application, a game tick and chunk generation, sequence diagrams of a player step, saving and an agent step, and state diagrams of the title screen, an element's life and a guardian drone. Render them again with `plantuml -tsvg *.puml` in that folder after a change.
+
+[docs/classes](docs/classes/README.md) describes every class of the game in Markdown, grouped by module, with most care for the agent library and its Python bindings. When you add or change a class, change its page too.
 
 ## Main assumptions
 
@@ -293,7 +296,7 @@ The player's level is **Dex** in the HUD: floor(log5(hits + 1)), where hits coun
 
 # Unit tests
 
-The unit tests use GoogleTest and live in the unitTests directory, one test program per *.cpp file (22 of them now). CMake builds each one, and `ctest` runs them all from the `GoEoOL` folder. The agent library has its own: `agent-test` (GoogleTest) and, with `-DGOE_BUILD_PYTHON=ON`, `python-tests` (pytest). regression-test keeps one test for every bug fixed, so it doesn't come back.
+The unit tests use GoogleTest and live in the unitTests directory, one test program per *.cpp file (23 of them now). CMake builds each one, and `ctest` runs them all from the `GoEoOL` folder. The agent library has its own: `agent-test` (GoogleTest) and, with `-DGOE_BUILD_PYTHON=ON`, `python-tests` (pytest). regression-test keeps one test for every bug fixed, so it doesn't come back.
 
 
 # Sound
@@ -329,7 +332,7 @@ Sample data is contained in a structure that you can access like configObject->s
 However, there are limitations:
 
  * The distance must be accurate; it is in the config file MaxSoundDistance
- * The sound must originate from the same chamber as the listener (player)
+ * The sound must originate from the board the listener (player) is on
 
 Sounds are placed around the player in board cells (include/soundSpace.h): right on the screen is the right ear, up is in front and down is behind, and the volume halves with each doubling of the distance. OpenAL can only place mono sounds, so stereo samples are mixed down to mono when they are loaded; music keeps its stereo.
 
@@ -409,6 +412,8 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Documentation: every class described in `docs/classes`, with the agent library and its Python bindings in detail; the PlantUML diagrams follow the game controller in the menus and `generate_chunk`. Outdated documents (the 2022 description document, the Dia, Visio and Umbrello diagrams, the old element picture, Bugs.txt and the mind map) are gone.
+* Agents can ask for one chunk's pattern from within an episode (`game.generate_chunk(chunk, pattern)`).
 * The title screen, Config, Controls, the hall of fame name and the Game over screens work with a game controller: stick and d-pad to move, Interact to select, Drag or Save and exit to go back.
 * PlantUML diagrams in docs/diagrams: classes, components, activities, sequences and states.
 * A hall of fame: the ten best games with name, score and date, kept in the save folder. A lost game good enough for it asks for a name. The title screen shows it after the demo.
