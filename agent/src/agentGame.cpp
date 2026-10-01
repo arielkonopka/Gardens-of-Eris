@@ -269,6 +269,20 @@ void game::clearChunkPatterns()
     this->installPatterns();
 }
 
+bool game::generateChunk(std::pair<int, int> chunk_pair, std::shared_ptr<const chunkPattern> pattern)
+{
+    const auto board = worldBoard(player::getActivePlayer());
+    if (!board)
+        return false;
+    const coords chunk = coords(chunk_pair.first, chunk_pair.second);
+    // set the pattern if provided, otherwise use the default or random
+    if (pattern)
+        this->setChunkPattern(chunk_pair, pattern);
+    // bring the chunk into memory; worldBuilder will build it if it's missing
+    worldBuilder::bringIn(board, chunk);
+    return board->hasChunk(chunk);
+}
+
 std::pair<int, int> game::chunkAt(coords cell) const
 {
     const auto board = worldBoard(player::getActivePlayer());

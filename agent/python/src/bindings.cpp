@@ -219,6 +219,10 @@ NB_MODULE(_goe, m)
         .def("clear_chunk_patterns", &game::clearChunkPatterns)
         .def(
             "chunk_at", [](const game &g, int x, int y) { return g.chunkAt(coords(x, y)); }, nb::arg("x"), nb::arg("y"))
+        .def(
+            "generate_chunk",
+            [](game &g, std::pair<int, int> chunk, const std::optional<goe::chunkPattern> &p) { return g.generateChunk(chunk, shared(p)); },
+            nb::arg("chunk"), nb::arg("pattern").none())
         .def_prop_ro("action_count", &game::actions)
         .def_prop_ro("cell_feature_names", &game::cellFeatureNames)
         .def_prop_ro("player_feature_names", &game::playerFeatureNames)

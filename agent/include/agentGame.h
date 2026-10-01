@@ -175,6 +175,9 @@ public:
     void clearChunkPatterns();
     /// the chunk holding a cell given as the agent sees it, counted from the middle of the start area
     std::pair<int, int> chunkAt(coords cell) const;
+    /// generates the chunk at (chunk_x, chunk_y) with the given pattern (or the default/random);
+    /// the chunk must not exist yet; true if successful (the chunk was built), false if no world
+    bool generateChunk(std::pair<int, int> chunk, std::shared_ptr<const chunkPattern> pattern = nullptr);
 
     const config &getConfig() const { return this->cfg; }
     int actions() const { return this->cfg.allowGiveUp ? actionCount : actionCount - 1; }
