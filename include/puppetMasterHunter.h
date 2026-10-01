@@ -24,11 +24,16 @@
 
 #include "puppetMasterFR.h"
 
-/// chases the active player, around walls, while the player is within sight range; wanders otherwise
+/**
+ * chases the active player, around walls, while it sees them within sightRange; when they slip out
+ * of sight it goes to where it saw them last, and when they are not there it patrols the walls
+ */
 class puppetMasterHunter : public puppetMasterFR
 {
 public:
     static constexpr int sightRange = 12;
+    /// how far around itself it searches for a way to where the player was seen
+    static constexpr int trailRadius = 23;
     bool drive(std::shared_ptr<bElem> body) override;
 };
 

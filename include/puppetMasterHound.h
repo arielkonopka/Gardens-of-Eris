@@ -29,8 +29,10 @@
  *
  * watch() runs once per tick. When the active player has stayed in the same area
  * (difficulty::areaOf) for longer than difficulty::houndPatience, a drone driven by a hound
- * appears a short way off. The hound chases the player around walls and bites when it reaches
- * them, for as long as they stay in that area; once they leave it, the drone dies. While one hound is out no other is sent, and the
+ * appears a short way off. It does not see through walls: it patrols the walls until it sees the
+ * player, chases them around walls and bites when it reaches them, and when they slip out of sight
+ * it goes to where it saw them last. It hunts for as long as they stay in that area; once they leave
+ * it, the drone dies. While one hound is out no other is sent, and the
  * patience starts over after each one, so camping keeps being punished.
  */
 class puppetMasterHound : public puppetMasterFR
@@ -38,7 +40,7 @@ class puppetMasterHound : public puppetMasterFR
     friend class gameSerializer;
 
 public:
-    /// how far around itself the hound searches for a way to the player
+    /// how far the hound sees, and how far around itself it searches for a way to the player
     static constexpr int searchRadius = 55;
     /// how far from the player a hound appears
     static constexpr int spawnDistance = 15;

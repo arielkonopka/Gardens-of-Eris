@@ -24,6 +24,7 @@
 #include "difficulty.h"
 #include "chamber.h"
 #include "elementFactory.h"
+#include "lineOfSight.h"
 #include "patrollingDrone.h"
 #include "player.h"
 #include "puppetMasterGuardian.h"
@@ -40,32 +41,6 @@ bool securityCamera::additionalProvisioning(int subtype)
 int securityCamera::getType() const
 {
     return bElemTypes::_securityCamera;
-}
-
-bool securityCamera::lineOfSight(std::shared_ptr<chamber> board, coords from, coords to)
-{
-    // Bresenham's line; only the cells strictly between the two ends must be see-through
-    int dx = std::abs(to.x - from.x), dy = -std::abs(to.y - from.y);
-    int sx = from.x < to.x ? 1 : -1, sy = from.y < to.y ? 1 : -1;
-    int err = dx + dy;
-    coords c = from;
-    while (true) {
-        int e2 = 2 * err;
-        if (e2 >= dy) {
-            err += dy;
-            c.x += sx;
-        }
-        if (e2 <= dx) {
-            err += dx;
-            c.y += sy;
-        }
-        if (c == to)
-            return true;
-        auto e = board->getElement(c);
-        // drones do not block the view, so guardians never hide the player from their camera
-        if (!e || !(e->getAttrs()->isSteppable() || e->getType() == bElemTypes::_patrollingDrone))
-            return false;
-    }
 }
 
 void securityCamera::spawnGuardians()
@@ -106,7 +81,7 @@ bool securityCamera::mechanics()
         int dx = p.x - me.x, dy = p.y - me.y;
         const int sight = difficulty::cameraSight(difficulty::current());
         if (dx * dx + dy * dy <= sight * sight
-            && securityCamera::lineOfSight(this->getBoard(), me, p)) {
+            && goe::sight::clear(this->getBoard(), me, p)) {
             this->alertAt = p;
             this->alertNumber++;
         }

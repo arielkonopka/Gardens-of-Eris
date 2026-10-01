@@ -56,6 +56,8 @@ public:
     virtual void onAttach(std::shared_ptr<bElem> body);
     /// moves the body one step; called by the body when it is free to act
     virtual bool drive(std::shared_ptr<bElem> body);
+    /// where this controller last saw the player; NOCOORDS when it has no trail to follow
+    coords getLastSeen() const { return this->lastSeen; }
 
 protected:
     /// the default behaviour: go straight, turn at random or when blocked
@@ -66,6 +68,26 @@ protected:
     bool step(std::shared_ptr<bElem> body, dir::direction d);
     /// when the prey is right next to the body: turns to it, hurts it and rests; false otherwise
     bool bite(std::shared_ptr<bElem> body, std::shared_ptr<bElem> prey, int damage);
+    /**
+     * Chasers never cheat: they only know where the player is by seeing them. lookout() returns the
+     * active player when they are within range of the body with nothing opaque in between
+     * (goe::sight), and remembers that cell as lastSeen; nullptr otherwise.
+     */
+    std::shared_ptr<bElem> lookout(std::shared_ptr<bElem> body, int range);
+    /**
+     * walks towards lastSeen, around walls, never leaving the circle of radius around centre.
+     * Next to that cell: faces the player when they are still in sight, otherwise they are not
+     * where expected, and the trail goes cold. Returns false when there is no trail to follow
+     * (cold, or no walk leads there), so the caller patrols instead.
+     */
+    bool followTrail(std::shared_ptr<bElem> body, bool preyInSight, coords centre, int radius);
+    /**
+     * patrols the maze along its walls (right-hand rule). When radius > 0, cells outside the
+     * circle of radius around centre count as walls, so the patrol keeps inside it.
+     */
+    bool followWall(std::shared_ptr<bElem> body, coords centre = NOCOORDS, int radius = 0);
+    /// where the player was last seen; NOCOORDS when the trail is cold
+    coords lastSeen = NOCOORDS;
     /// the one of the four directions that points most directly from one cell to another
     static dir::direction towards(coords from, coords to);
     /**

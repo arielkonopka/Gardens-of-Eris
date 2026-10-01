@@ -29,7 +29,7 @@
  *
  * On its first tick it spawns difficulty::guardianCount patrolling drones next to itself, each driven by a
  * puppetMasterGuardian linked to this camera. Whenever it sees the active player within
- * difficulty::cameraSight, with nothing solid in between, it records where, and the guardians go there.
+ * difficulty::cameraSight, with nothing opaque in between (goe::sight), it records where, and the guardians go there.
  * Guardians never leave the circle of radius leash around the camera.
  */
 class securityCamera : public bElem
@@ -49,8 +49,6 @@ public:
     coords getAlertPosition() const { return this->alertAt; }
     /// grows by one every time the camera sees the player, so guardians can tell a new sighting
     unsigned int getAlertNumber() const { return this->alertNumber; }
-    /// true when nothing solid (drones aside) lies on the straight line between the two cells
-    static bool lineOfSight(std::shared_ptr<chamber> board, coords from, coords to);
 
 private:
     void spawnGuardians();
