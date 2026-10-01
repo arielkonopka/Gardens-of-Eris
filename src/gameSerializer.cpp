@@ -31,6 +31,7 @@
 #include <fstream>
 #include <iostream>
 #include <set>
+#include <optional>
 #include <sstream>
 #include <unordered_map>
 #include <unordered_set>
@@ -452,8 +453,8 @@ void gameSerializer::writeElement(writer &w, const std::shared_ptr<bElem> &e)
         w.ref(g->gun);
         w.i32(g->home.x);
         w.i32(g->home.y);
-        w.i32(g->target.x);
-        w.i32(g->target.y);
+        w.i32(g->lastSeen.x);
+        w.i32(g->lastSeen.y);
         w.u32(g->handledAlert);
     }
 }
@@ -685,7 +686,7 @@ std::shared_ptr<bElem> gameSerializer::readElement(reader &r, loadContext &ctx)
         int x = r.i32();
         g->home = ctx.position(x, r.i32());
         x = r.i32();
-        g->target = ctx.position(x, r.i32());
+        g->lastSeen = ctx.position(x, r.i32());
         g->handledAlert = r.u32();
     }
 
@@ -737,6 +738,8 @@ bool gameSerializer::saveGame(const std::string &fileName)
         std::ostringstream rng;
         rng << goe::rng::saved();
         w.str(rng.str());
+        // chunks not built yet come from the world seed, so they must match the ones already built
+        w.u64((uint64_t) goe::rng::worldSeed());
         w.u8(teleport::firstReceiverRemoved);
         w.u32(goldenApple::appleNumber);
 
@@ -836,6 +839,20 @@ bool gameSerializer::saveGame(const std::string &fileName)
     return true;
 }
 
+bool gameSerializer::canLoad(const std::string &fileName)
+{
+    reader r(fileName);
+    if (!r.good())
+        return false;
+    try {
+        auto magic = r.pod<std::array<char, 8>>();
+        const uint32_t version = r.u32();
+        return std::memcmp(magic.data(), saveMagic, sizeof(saveMagic)) == 0 && version >= 1 && version <= formatVersion;
+    } catch (const std::exception &) {
+        return false;
+    }
+}
+
 bool gameSerializer::loadGame(const std::string &fileName)
 {
     std::lock_guard<std::recursive_mutex> worldLock(chamber::worldMutex);
@@ -865,6 +882,10 @@ bool gameSerializer::loadGame(const std::string &fileName)
         auto instanceCounter = r.u64();
         auto lastChamberId = r.i32();
         auto rngState = r.str();
+        // before version 6 the world seed was not kept; the running one is used then
+        std::optional<uint64_t> worldSeed;
+        if (version >= 6)
+            worldSeed = r.u64();
         bool firstReceiverRemoved = r.u8();
         auto appleNumber = r.u32();
         auto activePlayerId = r.u64();
@@ -1024,6 +1045,8 @@ bool gameSerializer::loadGame(const std::string &fileName)
         gameClock::ticks = taterCounter;
         std::istringstream rng(rngState);
         rng >> goe::rng::saved();
+        if (worldSeed)
+            goe::rng::setWorldSeed((goe::rng::seed) *worldSeed);
 
         if (player::activePlayer && player::activePlayer->getBoard())
             soundManager::getInstance().setListenerChamber(player::activePlayer->getBoard()->getInstanceId());

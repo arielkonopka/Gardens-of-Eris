@@ -71,48 +71,65 @@ int main( int argc, char * argv[] )
         myPresenter->initializeDisplay();
         myPresenter->loadCofiguredData();
         myPresenter->showSplash();
-        soundManager::getInstance().setupSong(0,0, {0.0f,0.0f,0.0f},0,true);
-        soundManager::getInstance().setupSong(2,2, {1.0f,130.0f,0.0f},-1,true);
-        soundManager::getInstance().setupSong(3,3, {0.0f,170.0f,0.0f},-1,true);
-        soundManager::getInstance().setupSong(10,5, {550.0f,0.0f,0.0f},-1,true);
-        soundManager::getInstance().setupSong(11,6, {550.0f,550.0f,0.0f},-1,true);
-        soundManager::getInstance().setupSong(12,7, {1.0f,550.0f,0.0f},-1,true);
-        soundManager::getInstance().setupSong(13,8, {250.0f,250.0f,0.0f},-1,true);
-        soundManager::getInstance().setupSong(4,4, {0.0f,0.0f,0.0f},1,true);
-        soundManager::getInstance().setupSong(5,3, {0.0f,0.0f,0.0f},2,true);
-        soundManager::getInstance().setupSong(6,2, {0.0f,0.0f,0.0f},3,true);
-        soundManager::getInstance().setupSong(8,0, {0.0f,0.0f,0.0f},5,true);
-        soundManager::getInstance().setupSong(9,0, {0.0f,0.0f,0.0f},6,true);
+        // the music follows the difficulty: the higher D, the further down the music list
+        soundManager::getInstance().setupDifficultyMusic();
 
-        titleMenu menu(gameSettings::getInstance());
+        titleMenu menu(gameSettings::getInstance(), gameSettings::settingsFile, [] {
+            return gameSerializer::canLoad(gameSettings::getInstance().getSaveFile());
+        });
         titleScreen title(menu);
         const auto firstSeed = goe::rng::worldSeed();
         bool windowOpen = true;
-        for (int game = 0; windowOpen; game++) {
-            if (game == 0 && !saveToLoad.empty() && gameSerializer::loadGame(saveToLoad)) {
+        bool played = false;    // a world was built or loaded before, so a new game starts over
+        bool backToGame = false; // saving failed, so the player goes back to the game they were leaving
+        for (bool first = true; windowOpen; first = false) {
+            if (backToGame) {
+                backToGame = false;
+            } else if (first && !saveToLoad.empty() && gameSerializer::loadGame(saveToLoad)) {
                 std::cout << "Loaded " << saveToLoad << "\n";
                 goe::crashLog::setDetail("Loaded save", saveToLoad);
             } else {
-                if (title.run() == titleMenu::action::EXIT)
+                const auto choice = title.run();
+                if (choice == titleMenu::action::EXIT)
                     break;
                 // the save folder may have changed on the config screen
                 goe::crashLog::setFolder(gameSettings::getInstance().getSaveDirectory());
-                title.showBusy("Building the maze...");
-                if (game > 0) {
-                    // a new game: the old world goes, and "--seed" builds the same world again
-                    gameSerializer::clearWorld();
-                    goe::rng::setWorldSeed(seedGiven ? firstSeed : goe::rng::freshSeed());
+                if (choice == titleMenu::action::CONTINUE) {
+                    const std::string saveFile = gameSettings::getInstance().getSaveFile();
+                    title.showBusy("Loading the maze...");
+                    if (!gameSerializer::loadGame(saveFile)) {
+                        windowOpen = title.showMessage("Cannot continue", {"The save could not be read:", saveFile});
+                        continue;
+                    }
+                    std::cout << "Loaded " << saveFile << "\n";
+                    goe::crashLog::setDetail("Loaded save", saveFile);
+                } else {
+                    title.showBusy("Building the maze...");
+                    if (played) {
+                        // a new game: the old world goes, and "--seed" builds the same world again
+                        gameSerializer::clearWorld();
+                        goe::rng::setWorldSeed(seedGiven ? firstSeed : goe::rng::freshSeed());
+                    }
+                    std::cout << "World seed: " << goe::rng::worldSeed() << "\n";
+                    goe::crashLog::setDetail("World seed", std::to_string(goe::rng::worldSeed()));
+                    // the start of the endless maze; the rest is built around the player while they play
+                    worldBuilder::startNew();
                 }
-                std::cout << "World seed: " << goe::rng::worldSeed() << "\n";
-                goe::crashLog::setDetail("World seed", std::to_string(goe::rng::worldSeed()));
-                // the start of the endless maze; the rest is built around the player while they play
-                worldBuilder::startNew();
             }
+            played = true;
             soundManager::getInstance().enableSound();
             const auto end = myPresenter->presentEverything();
             if (end == presenter::gameEnd::QUIT)
                 break;
-            showEnd(title, myPresenter->getLastScore(), windowOpen);
+            if (end == presenter::gameEnd::LOST)
+                showEnd(title, myPresenter->getLastScore(), windowOpen);
+            else if (end == presenter::gameEnd::SAVE_FAILED) {
+                windowOpen = title.showMessage("The game could not be saved",
+                                               {gameSettings::getInstance().getSaveFile(),
+                                                "Your game goes on. Check that the save folder can be written."});
+                backToGame = true;
+            }
+            // SAVED: back to the title screen, where Continue picks the game up again
         }
     }
     videoManager::getInstance().shutdown();

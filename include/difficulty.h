@@ -99,6 +99,14 @@ namespace difficulty {
     {
         return d < 1 ? 0 : std::max(11 * five, 10 * twentyThree - twentyThree * (d - 1)) * ticksPerSecond;
     }
+    /// the song for D: the k-th song of the music list plays from D = k on, the last one past the list;
+    /// -1 when there is no music
+    constexpr int songFor(int d, int songs) { return songs <= 0 ? -1 : std::clamp(d, 0, songs - 1); }
+    /// seconds one song takes to fade into the next
+    constexpr int musicCrossfadeSeconds = five;
+    /// seconds a song keeps playing before D may change it, so walking back and forth over
+    /// a distance step does not flip the music
+    constexpr int musicHoldSeconds = twentyThree;
 }
 
 #endif // DIFFICULTY_H

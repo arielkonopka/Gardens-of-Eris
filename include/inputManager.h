@@ -58,6 +58,9 @@ public:
     static inputManager& getInstance(bool testmode = false);
     void hapticKick(float strength);
     void stop();
+    /// whether the save and exit control went down since the last call; a tap shorter than
+    /// a game tick counts too
+    bool takeExitRequest();
 private:
     float sesitivity=0.4;
 
@@ -70,6 +73,7 @@ private:
     void startInput();
     controlItem lastItem=controlItem(0,dir::direction::NODIRECTION);
     goe::controls::inputState held; ///< keys, pad buttons and stick, as the input thread last saw them
+    std::atomic<bool> exitRequest=false; ///< set by the input thread, taken by the game thread
 
     static std::once_flag once;
     goe::eventQueueHandle evQueue;

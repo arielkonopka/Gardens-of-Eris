@@ -56,7 +56,7 @@ The labyrinth is inhabited by an assortment of creatures and contraptions. You'l
 
 ## Playing the game
 
-The game opens with a title screen: **Start**, **Config** and **Exit**. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), the story scroller, and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
+The game opens with a title screen: **Continue**, **Start**, **Config** and **Exit**. Continue is there only when the save folder holds a save the game can read, and picks that game up where it was saved. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), the story scroller, and the controls; all of it is kept in `settings.json` next to the game. Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
 
 Each time the maze grows by a new chunk, a random Discordian story scrolls along the top of the screen, unless one is still scrolling. Config switches the story scroller on or off and picks the stories file: Left and Right step through the files next to it (`data/txt/stories.json` in English, `stories.pl.json` in Polish, `stories.ro.json` in Romanian), or type the path of your own. A stories file is a JSON list of `{"title": "...", "body": "..."}`.
 
@@ -72,8 +72,9 @@ These are the default keys. Config, Controls lets you choose other keys (two per
 | Z | select the next kind of gun (the HUD shows how many of the selected kind you carry) |
 | Space | use the selected item |
 | R | drop the selected item |
-| Esc | give up this avatar (you come back in the next activated one) |
-| Shift + Esc | quit the game (the shoot key and the give-up key together) |
+| Esc or F10 | save the game and go back to the title screen; nothing is lost, and Continue picks it up again |
+| Backspace | give up this avatar (you come back in the next activated one) |
+| Shift + Backspace | quit the game without saving (the shoot key and the give-up key together) |
 | F5 / F9 | save / load the game (`savegame.goe` in the save folder) |
 
 `GardenOfEris --load <file>` starts straight from a saved game, without the title screen.
@@ -81,6 +82,8 @@ These are the default keys. Config, Controls lets you choose other keys (two per
 Every new game prints its world seed (`World seed: ...`). `GardenOfEris --seed <number>` builds that same world again, which helps when reporting a bug in the maze.
 
 The HUD shows your score (**P**), your level (**Dex**, see Stats) and the current difficulty (**D**, see Difficulty).
+
+Settings saved by an older version kept Esc for giving up; the game moves it to Backspace and gives Esc to save and exit, unless you chose your keys after this change.
 
 When the last avatar is gone, a Game over screen shows your score; Enter takes you back to the title screen, where Start begins a new world.
 
@@ -101,9 +104,9 @@ The game writes a crash report, `crash-<date>-<time>.log`, into the save folder 
 | Monster | Roams the maze. Monsters collect things if their skin allows it (`canCollect` in `skins.json`), and some have no inventory on purpose. |
 | Bunker | A fixed turret that looks along its four lines and fires at you. |
 | Kiki and bouba | Kiki is a death-ray emitter; the beam is made of boubas, which hurt whatever stands in them. |
-| Patrolling drone and puppet master | A drone does nothing until you hand it a puppet master (a controller). The controller decides how it moves: **patrol** (wanders, and becomes an extra camera for you), **collector** (goes for collectibles it can see), **hunter** (chases you around walls when you are near), **wall follower** (keeps a hand on the wall and walks the maze). When a controller takes over a drone it says "controller enabled" in a robot voice, each kind in its own language: patrol in English, collector in Polish, hunter in German, wall follower in French, a camera's guardian in Russian and the Hound in Latin. |
-| Security camera | Watches for you. When it sees you, its guardian drones come to check the spot. Guardians fight you when they see you, shoot along clear lines, and never go further than 55 cells from their camera. |
-| The Hound | A red drone with the golden apple on its hull. It is sent after you when you stay in one 64x64 area too long; it bites, and gives up when you leave that area. |
+| Patrolling drone and puppet master | A drone does nothing until you hand it a puppet master (a controller). The controller decides how it moves: **patrol** (wanders, and becomes an extra camera for you), **collector** (goes for collectibles it can see), **hunter** (chases you around walls when it sees you, goes to where it saw you last when you slip away, and patrols the walls otherwise), **wall follower** (keeps a hand on the wall and walks the maze). When a controller takes over a drone it says "controller enabled" in a robot voice, each kind in its own language: patrol in English, collector in Polish, hunter in German, wall follower in French, a camera's guardian in Russian and the Hound in Latin. |
+| Security camera | Watches for you. When it sees you, its guardian drones come to check the spot. Guardians fight you when they see you, shoot along clear lines, go to where you were last seen when you slip away, patrol the walls around the camera when there is nobody to find, and never go further than 55 cells from their camera. |
+| The Hound | A red drone with the golden apple on its hull. It is sent after you when you stay in one 64x64 area too long; it patrols the walls until it sees you, then bites, and gives up when you leave that area. |
 | Teleporter | Local teleporters lead somewhere in the same region of the world (5 x 5 chunks); global ones (subtype 0), each in its own locked room, can take you anywhere in the maze built so far. The pairing is random and made when a teleporter is first used. |
 | Player avatar | You. Interact with an unused avatar (Ctrl + direction) to activate it; when you die you come back in the next activated one. |
 
@@ -322,6 +325,8 @@ However, there are limitations:
 
 Sounds are placed around the player in board cells (include/soundSpace.h): right on the screen is the right ear, up is in front and down is behind, and the volume halves with each doubling of the distance. OpenAL can only place mono sounds, so stereo samples are mixed down to mono when they are loaded; music keeps its stereo.
 
+The music follows the difficulty D: song k of the music list in skins.json plays from D = k on, and the last song plays on past the end of the list, so the list is ordered from the calmest to the wildest. A new song fades in over the old one for 5 seconds, and a song plays for at least 23 seconds before D can change it, so walking back and forth over a distance step does not flip the music (include/difficulty.h, include/difficultyMusic.h).
+
 When the element that generated the sound is removed or disposed of, only looping sounds are stopped, while others have the opportunity to cease playing by themselves.
 
 We manage sounds by maintaining a pool of sources (openAL) in a circular buffer, which aids in locating the oldest samples. When we register the sample (play it), we first search for unregistered samples; if unsuccessful, we look for samples played in a loop.
@@ -333,7 +338,7 @@ There are control switches that modify sound handling:
  * stacking - If we allow multiple sounds, do we let them play, or should we stop the sound currently playing and start anew upon request (false), or permit all instances to play while avoiding collisions by applying a delay if the previous sound did not have the chance to play?
 
 ## Save and load
-F5 saves the whole world (every chunk built so far, also the ones on disk, every element with its inventory and timers, the random generator's state) to one binary file, and F9 loads it back. The file starts with a format version; a newer game still loads older saves.
+F5 saves the whole world (every chunk built so far, also the ones on disk, every element with its inventory and timers, the random generator's state) and the world seed, so chunks built after a load fit the ones built before it, to one binary file, and F9 loads it back. Esc saves the same way before going back to the title screen; if saving fails, a message says so and the game goes on. The file starts with a format version; a newer game still loads older saves.
 
 ## Difficulty
 The game gets harder the better you get and the further you go. The difficulty D, shown as "D:" next to "Dex:" in the HUD, is the sum of:
@@ -397,6 +402,9 @@ New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, 
 
 ## ChangeLog
 * Agents can play: a headless `goe-agent` library and a `goe` Python package (a ViZDoom-like game and a Gymnasium environment), with a circle of vision around the player, the player's numbers and inventory, each with its features chosen by the agent. The same seed plays the same game.
+* Chasers play fair: the hunter, guardians, cameras and the Hound only know where you are by seeing you, and walls, brick clusters, bunkers, teleporters and closed doors block their view. When you slip out of sight they go to where they saw you last; when you are not there, or they never saw you, they patrol along the walls of the maze.
+* Esc saves the game and goes back to the title screen without losing an avatar, and the title screen has Continue while a readable save exists. Giving up an avatar moved to Backspace. Saves keep the world seed now (save format 6; older saves still load).
+* The music changes with the difficulty: each step of D brings the next song of the music list, with a crossfade. It replaces the songs that were placed around the start of the map.
 * A story scroller: a random story from `data/txt/stories.json` scrolls along the top of the screen whenever a new chunk of the maze is made. Config switches it on or off and picks the stories file (English, Polish or Romanian, or your own). Fixed a stray bracket that made `stories.pl.json` unreadable.
 * Doors stand in the holes they close: at the edges of chunks a door used to stand one cell in front of the hole. Global teleporters no longer play music, since there are no separate chambers any more.
 * The build is warning-free with `-Wall -Wextra -Wpedantic -Wshadow`, which are now on by default. Fixed along the way: handing an inventory to a new owner made every item its own collector.

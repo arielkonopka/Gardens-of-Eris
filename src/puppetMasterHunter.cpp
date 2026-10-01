@@ -21,22 +21,12 @@
  */
 
 #include "puppetMasterHunter.h"
-#include "player.h"
-#include <cstdlib>
 
 bool puppetMasterHunter::drive(std::shared_ptr<bElem> body)
 {
-    auto prey = player::getActivePlayer();
-    if (!prey || prey->getBoard() != body->getBoard())
-        return this->wander(body);
-    auto from = body->getStats()->getMyPosition();
-    auto to = prey->getStats()->getMyPosition();
-    int dx = to.x - from.x, dy = to.y - from.y;
-    if (std::abs(dx) + std::abs(dy) > sightRange)
-        return this->wander(body);
-    // walk around walls towards the player, never further than sightRange from where we are
-    auto d = pathTowards(body, to, from, sightRange);
-    if (d != dir::direction::NODIRECTION && this->step(body, d))
+    // chase what we see, then where we saw it; patrol the walls when the trail is cold
+    auto seen = this->lookout(body, sightRange);
+    if (this->followTrail(body, seen != nullptr, body->getStats()->getMyPosition(), trailRadius))
         return true;
-    return this->wander(body);
+    return this->followWall(body);
 }

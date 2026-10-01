@@ -28,6 +28,8 @@
 #include "puppetMasterGuardian.h"
 #include "puppetMasterHound.h"
 #include "viewPoint.h"
+#include "lineOfSight.h"
+#include "player.h"
 #include "chamber.h"
 #include <algorithm>
 #include <cstdlib>
@@ -91,6 +93,77 @@ bool puppetMasterFR::bite(std::shared_ptr<bElem> body, std::shared_ptr<bElem> pr
     this->turn(body, towards(b, p));
     prey->hurt(damage);
     body->getStats()->setWaiting(GoEConstants::_mov_delay * 2);
+    return true;
+}
+
+std::shared_ptr<bElem> puppetMasterFR::lookout(std::shared_ptr<bElem> body, int range)
+{
+    auto prey = player::getActivePlayer();
+    if (!prey || prey->getBoard() != body->getBoard())
+        return nullptr;
+    coords me = body->getStats()->getMyPosition(), p = prey->getStats()->getMyPosition();
+    if (distance2(me, p) > range * range || !goe::sight::clear(body->getBoard(), me, p))
+        return nullptr;
+    this->lastSeen = p;
+    return prey;
+}
+
+bool puppetMasterFR::followTrail(std::shared_ptr<bElem> body, bool preyInSight, coords centre, int radius)
+{
+    if (this->lastSeen == NOCOORDS)
+        return false;
+    coords me = body->getStats()->getMyPosition();
+    if (distance2(this->lastSeen, centre) > radius * radius) {
+        this->lastSeen = NOCOORDS; // out of our reach
+        return false;
+    }
+    if (std::abs(this->lastSeen.x - me.x) + std::abs(this->lastSeen.y - me.y) <= 1) {
+        if (preyInSight && !(this->lastSeen == me)) {
+            this->turn(body, towards(me, this->lastSeen));
+            return true;
+        }
+        this->lastSeen = NOCOORDS; // checked, nobody here
+        return false;
+    }
+    auto d = pathTowards(body, this->lastSeen, centre, radius);
+    if (d == dir::direction::NODIRECTION) {
+        this->lastSeen = NOCOORDS; // cannot get there
+        return false;
+    }
+    if (!this->step(body, d))
+        this->turn(body, d); // something walked into the way; try again next time
+    return true;
+}
+
+bool puppetMasterFR::followWall(std::shared_ptr<bElem> body, coords centre, int radius)
+{
+    coords me = body->getStats()->getMyPosition();
+    // a body already outside its circle (a loaded game, a push) patrols freely until it is back
+    const bool bounded = radius > 0 && !(centre == NOCOORDS) && distance2(me, centre) <= radius * radius;
+    auto inside = [&](coords offset) {
+        return !bounded || distance2(coords(me.x + offset.x, me.y + offset.y), centre) <= radius * radius;
+    };
+    auto solid = [&](coords offset) {
+        auto e = body->getElementInDirection(offset);
+        return !inside(offset) || !e || !e->getAttrs()->isSteppable();
+    };
+    auto go = [&](dir::direction d) { return inside(dir::directionToCoordsMap[(int) d]) && this->step(body, d); };
+    dir::direction cdir = body->getStats()->getMyDirection();
+    dir::direction right = rightOf(cdir);
+    // right-hand rule: when the wall on our right just ended, go around its corner;
+    // otherwise go straight, then right, then left, and turn back only in a dead end.
+    // In an open room this walks straight until it meets a wall, instead of circling. Now and
+    // then it lets go of a corner, so it does not circle a pillar forever, but finds the maze's walls.
+    coords toRight = dir::directionToCoordsMap[(int) right];
+    coords toBack = dir::directionToCoordsMap[(int) behind(cdir)];
+    coords backRight(toRight.x + toBack.x, toRight.y + toBack.y);
+    const bool letGo = goe::rng::gameplay()() % 23 == 0;
+    if (!letGo && !solid(toRight) && solid(backRight) && go(right))
+        return true;
+    for (auto d : {cdir, right, leftOf(cdir), behind(cdir)})
+        if (go(d))
+            return true;
+    this->turn(body, right);
     return true;
 }
 

@@ -30,9 +30,10 @@ class securityCamera;
  * @brief Drives a guardian drone for a security camera.
  *
  * When the guardian itself sees the player within difficulty::cameraSight, it fights: it hurts the player
- * when next to them, shoots along a clear row or column, and chases them otherwise. When its
- * camera reports a new sighting, it walks there to check. It never leaves the camera's leash,
- * and when there is nothing to do it patrols around the camera.
+ * when next to them, shoots along a clear row or column, and chases them otherwise. Neither the
+ * guardian nor its camera sees through walls (goe::sight). When the player slips out of sight, or
+ * the camera reports a new sighting, it walks to where they were last seen to check; when they are
+ * not there it patrols the walls around the camera. It never leaves the camera's leash.
  */
 class puppetMasterGuardian : public puppetMasterFR
 {
@@ -51,7 +52,6 @@ private:
     std::weak_ptr<securityCamera> camera;
     std::shared_ptr<bElem> gun;
     coords home = NOCOORDS;     ///< the centre of the leash when the camera is gone
-    coords target = NOCOORDS;   ///< where we are going to check
     unsigned int handledAlert = 0;
 };
 

@@ -27,6 +27,7 @@
 #include "allegroHandles.h"
 #include <atomic>
 #include "commons.h"
+#include "difficultyMusic.h"
 #include <map>
 #include <vector>
 #include <iostream>
@@ -71,6 +72,7 @@ using muNode=struct mudNode
     bool variableVol=true;
     float gain=1.0;
     unsigned int bElemInstanceId=0;
+    bool followsListener=false; ///< heard from where the listener is, like the difficulty music
 };
 
 using stNode=struct sndNode
@@ -117,13 +119,21 @@ public:
     void resumeSong(unsigned int bElemInstanceId);
     /// whether the element has music set up (playing or paused)
     bool hasSong(unsigned int bElemInstanceId);
-    void playSong(int songNo);
+    /// streams the song and sets its volume; mix scales it during a crossfade
+    void playSong(int songNo, float mix = 1.0f);
+    /// sets up every song of the music list to play by difficulty (see difficultyMusic.h),
+    /// in place of songs placed on the board
+    void setupDifficultyMusic();
+    /// the game's current difficulty D, for the difficulty music
+    void followDifficulty(int d);
     void moveSong(int songNo, coords3d newPosition,int newChamber);
 private:
     bool isSongConfigured(int songNo,coords3d position,int chamberId);
     /// pauseSong for a caller that already holds snd_mutex
     void pauseSongLocked(unsigned int bElemInstanceId);
    int findNearestMusic();
+    /// the difficulty music's part of checkQueue: picks the song for D and crossfades into it
+    void playDifficultyMusic();
     void threadLoop();
     std::mutex snd_mutex;
     ALenum determineFormat(SF_INFO fileInfo,SNDFILE *sndfile);
@@ -153,6 +163,11 @@ private:
     std::atomic<bool> active=false;
     int regSndPos=0;
     int currentMusic=-1; ///< index into registeredMusic, -1 while none plays
+    /// indexes into registeredMusic of the difficulty music, in the music list's order; empty when songs are placed on the board
+    std::vector<int> difficultySongs;
+    std::atomic<int> difficultyNow=0;
+    goe::music::byDifficulty musicChoice;
+    int fadingMusic=-1; ///< the song fading out while currentMusic fades in, -1 when none
     std::jthread myThread;
 };
 
