@@ -7,8 +7,8 @@ package "Game (game thread)" {
   [goe::music::cues\nsighted, chased, endangered -> now()] as cues
   [securityCamera] as cam
   [puppetMasterGuardian] as guard
-  [titleMenu Config\nMusic: Skin samples / Performer,\nPerformer sound, Music variety, Music tempo] as menu
-  [gameSettings\nmusic, musicVolume, performerSound,\nmusicVariety, musicTempo] as settings
+  [titleMenu Config\nMusic: Skin samples / Performer,\nPerformer sound, Music style,\nMusic variety, Music tempo] as menu
+  [gameSettings\nmusic, musicVolume, performerSound,\nmusicStyle, musicVariety, musicTempo] as settings
 }
 
 package "Adaptive musician (no game headers)" {
@@ -17,6 +17,7 @@ package "Adaptive musician (no game headers)" {
   [performerPersonality\nlatent traits -> 15 traits, key, mode,\ntempo, 3 instruments] as person
   [songbook\nsongs: key, mode, tempo, groove;\nsections, intensity, drum level,\nsongs coming back] as songs
   [composer + vocabulary\nrhythm, harmony, melody, drums,\nphrases, motif memory per song, themes] as comp
+  [musicGenres\nMixed, Free, Rave, Techno, Metal, Disco,\nPsytrance, Jazz, Rock: tempo, grooves,\nbass line, chords, modes] as genres
   [musicChips\nAdLib, SID, POKEY, Game Boy:\ninstruments, drum kit, chip model] as chips
   [eventQueue\nnote on/off at exact samples] as queue
   [synthesizer\nvoice pool in channels per part, oscillators,\nenvelopes, filter, vibrato, arpeggios,\nstepped volume, pitch grid, pan, mix, soft clip] as synth
@@ -34,9 +35,9 @@ guard --> cues : chased, endangered
 pres --> cues : now()
 pres --> sm : difficulty, situation
 menu --> settings
-sm --> settings : which music, volume,\nsound, variety, tempo
+sm --> settings : which music, volume,\nsound, style, variety, tempo
 sm --> stream : pump(level, situation, gain)
-sm --> director : setStyle, setVariety,\nsetTempoScale (atomics)
+sm --> director : setStyle, setGenre, setVariety,\nsetTempoScale (atomics)
 stream --> director : composeAhead, renderAudio
 director --> tension
 director --> songs : next phrase plan
@@ -44,6 +45,8 @@ director --> comp
 director --> chips : soundFor(style)
 chips --> synth : dress
 songs --> person : dressed for the song
+songs --> genres : a style per song
+comp --> genres : bass line, chords
 director --> queue
 director --> synth
 comp --> person

@@ -38,6 +38,7 @@ bool adaptiveMusician::initialize(const audioFormat &f, std::uint64_t seed, int 
     this->setlist = songbook(seed);
     this->band = synthesizer(this->rate, voices);
     this->styleNow = (chipStyle) this->styleWanted.load();
+    this->genreNow = (genre) this->genreWanted.load();
     this->sound = soundFor(this->styleNow, this->who);
     dress(this->band, this->sound);
     this->queue.clear();
@@ -84,6 +85,11 @@ void adaptiveMusician::setVolume(float volume)
 void adaptiveMusician::setStyle(chipStyle style)
 {
     this->styleWanted = std::clamp((int) style, 0, chipStyleCount - 1);
+}
+
+void adaptiveMusician::setGenre(genre g)
+{
+    this->genreWanted = std::clamp((int) g, 0, genreCount - 1);
 }
 
 void adaptiveMusician::setVariety(float variety)
@@ -139,7 +145,7 @@ void adaptiveMusician::follow(std::int64_t until)
     }
 }
 
-void adaptiveMusician::escalate()
+void adaptiveMusician::cutAtNextBar()
 {
     // the new situation is heard from the next bar line, not after the rest of the phrase
     const std::int64_t soonest = this->now + (std::int64_t) (0.05f * this->rate);
@@ -187,7 +193,11 @@ void adaptiveMusician::composeAhead()
         this->restyle(style);
     const auto wanted = (situation) this->situationWanted.load();
     if ((int) wanted > (int) this->playing)
-        this->escalate();
+        this->cutAtNextBar();
+    if (const auto g = (genre) this->genreWanted.load(); g != this->genreNow) {
+        this->genreNow = g;
+        this->cutAtNextBar(); // the songbook ends a song of another style at the next phrase
+    }
     const float variety = this->varietyWanted;
     const float tempoScale = this->tempoWanted;
     const auto lookahead = (std::int64_t) (tuning::lookaheadSeconds * this->rate);
@@ -197,7 +207,7 @@ void adaptiveMusician::composeAhead()
         this->follow(this->composedUntil - lookahead);
         const musicalState state = this->feeling.state();
         this->band.setShift(this->shiftFor(state));
-        phrasePlan plan = this->setlist.next(this->who, state, wanted, variety);
+        phrasePlan plan = this->setlist.next(this->who, state, wanted, variety, this->genreNow);
         plan.arpeggioChords = this->sound.arpeggioChords;
         const auto [first, last] = this->band.channelsOf(part::drums);
         plan.drumChannels = last - first;

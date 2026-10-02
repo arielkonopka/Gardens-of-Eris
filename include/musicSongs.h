@@ -23,6 +23,7 @@
 #define MUSICSONGS_H
 
 #include "musicEvents.h"
+#include "musicGenres.h"
 #include "musicPersonality.h"
 #include "musicTension.h"
 #include <array>
@@ -57,6 +58,7 @@ struct song
     float energyLean = 0.0f; ///< added to the performer's energy for this song
     float articulationLean = 0.0f;
     std::array<std::uint8_t, 3> progressions{}; ///< the vocabulary::progressions it favours
+    genre style = genre::free; ///< never mixed: a mixed set gives each song a style
 };
 
 /// what the next phrase is, in the set and in its song
@@ -76,6 +78,7 @@ struct phrasePlan
     int groove = 0;
     float swing = 0.0f;
     std::array<std::uint8_t, 3> progressions{0, 1, 2};
+    genre style = genre::free;
     // set by the musician from the chip it plays on
     bool arpeggioChords = false;
     int drumChannels = 4;
@@ -86,8 +89,10 @@ class songbook
 public:
     explicit songbook(std::uint64_t seed = 0);
     /// the plan of the next phrase; when the song is over, a new one starts or an earlier one comes back.
-    /// variety 0..1: 0 long songs near home that often come back, 1 short songs that wander far
-    phrasePlan next(const performerPersonality &who, const musicalState &tension, situation now, float variety);
+    /// variety 0..1: 0 long songs near home that often come back, 1 short songs that wander far.
+    /// style: the music style chosen; a song of another style ends at once (Mixed: any style)
+    phrasePlan next(const performerPersonality &who, const musicalState &tension, situation now, float variety,
+                    genre style = genre::free);
     /// the performer as the current song asks: its key, mode and tempo, a little more or less energy
     performerPersonality dressed(const performerPersonality &who) const;
     const song &current() const { return this->songs[(std::size_t) this->playing]; }
@@ -95,7 +100,7 @@ public:
     int songsReturned() const { return this->returned; }
 
 private:
-    song make(const performerPersonality &who, float variety, int slot);
+    song make(const performerPersonality &who, float variety, int slot, genre style);
     section sectionOf(int phrase, const song &s) const;
     std::array<song, tuning::songMemory> songs{};
     int count = 0;     ///< songs remembered

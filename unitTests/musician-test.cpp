@@ -2,6 +2,7 @@
 #include "adaptiveMusician.h"
 #include "musicChips.h"
 #include "musicComposer.h"
+#include "musicGenres.h"
 #include "musicCues.h"
 #include "musicPersonality.h"
 #include "musicSongs.h"
@@ -10,6 +11,7 @@
 #include "gameClock.h"
 #include "difficulty.h"
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cmath>
@@ -1115,6 +1117,7 @@ TEST(Musician, TempoSettingAndStyleChangesAreHeard)
         adaptiveMusician m;
         m.setTempoScale(scale);
         m.setVariety(0.0f);
+        m.setGenre(genre::free); // the performer's own tempo, not a style's
         EXPECT_TRUE(m.initialize({rate, 2}, 14));
         render(m, 2);
         return m.lastPhrase().tempo;
@@ -1138,4 +1141,135 @@ TEST(Musician, TempoSettingAndStyleChangesAreHeard)
     for (std::size_t i = 0; i < (std::size_t) rate; i++) // the first second after the change
         energy += (double) after[i] * after[i];
     EXPECT_GT(std::sqrt(energy / rate), 0.01);
+}
+
+// ---- styles ----
+
+namespace {
+constexpr genre playedStyles[] = {genre::free,  genre::rave,      genre::techno, genre::metal,
+                                  genre::disco, genre::psytrance, genre::jazz,   genre::rock};
+}
+
+TEST(Styles, EverySongKeepsItsStylesRules)
+{
+    const auto who = performerPersonality::generate(21);
+    musicalState calm;
+    for (const genre g : playedStyles) {
+        const genreRules &rules = rulesOf(g);
+        songbook book(21);
+        std::set<int> grooves;
+        for (int k = 0; k < 300; k++) {
+            const auto plan = book.next(who, calm, situation::calm, 0.7f, g);
+            const auto p = book.dressed(who);
+            ASSERT_TRUE(plan.style == g) << nameOf(g);
+            grooves.insert(plan.groove);
+            EXPECT_GE(p.baseTempo, tuning::minTempo);
+            EXPECT_LE(p.baseTempo, tuning::maxTempo);
+            if (rules.maxTempo > 0.0f) {
+                EXPECT_GE(p.baseTempo, rules.minTempo - 0.01f) << nameOf(g);
+                EXPECT_LE(p.baseTempo, rules.maxTempo + 0.01f) << nameOf(g);
+            }
+            if (rules.grooves[0] >= 0) {
+                EXPECT_NE(std::find(rules.grooves.begin(), rules.grooves.end(), plan.groove), rules.grooves.end())
+                    << nameOf(g) << " plays its own grooves";
+            }
+            if (plan.part != section::breakdown) {
+                EXPECT_GE(plan.drums, rules.drumFloor) << nameOf(g);
+                EXPECT_LE(plan.drums, rules.drumCeiling) << nameOf(g);
+            }
+            EXPECT_LE(p.busyness(), tuning::busynessBudget + 1e-4f);
+        }
+        if (g == genre::free) {
+            EXPECT_GT(grooves.size(), 3u) << "the performer's own way keeps all its grooves";
+        }
+    }
+}
+
+TEST(Styles, MixedPlaysASetOfStyles)
+{
+    const auto who = performerPersonality::generate(22);
+    musicalState calm;
+    songbook book(22);
+    std::set<int> styles;
+    for (int k = 0; k < 800; k++) {
+        const auto plan = book.next(who, calm, situation::calm, 0.8f, genre::mixed);
+        EXPECT_FALSE(plan.style == genre::mixed) << "every song has a style of its own";
+        styles.insert((int) plan.style);
+    }
+    EXPECT_GE(styles.size(), 6u);
+}
+
+TEST(Styles, ChoosingAStyleEndsASongOfAnotherAtOnce)
+{
+    const auto who = performerPersonality::generate(23);
+    musicalState calm;
+    songbook book(23);
+    auto plan = book.next(who, calm, situation::calm, 0.2f, genre::jazz);
+    plan = book.next(who, calm, situation::calm, 0.2f, genre::jazz);
+    ASSERT_FALSE(plan.songStart);
+    plan = book.next(who, calm, situation::calm, 0.2f, genre::metal);
+    EXPECT_TRUE(plan.songStart);
+    EXPECT_TRUE(plan.style == genre::metal);
+    // and no jazz song comes back while metal is chosen
+    for (int k = 0; k < 300; k++)
+        EXPECT_TRUE(book.next(who, calm, situation::calm, 0.2f, genre::metal).style == genre::metal);
+}
+
+TEST(Styles, EachStylePlaysItsOwnBassLine)
+{
+    const auto who = performerPersonality::generate(24);
+    tensionController t(24);
+    t.settle(96);
+    const std::map<genre, int> notesPerBar = {{genre::techno, 4},  {genre::psytrance, 12}, {genre::disco, 8},
+                                              {genre::metal, 11},  {genre::jazz, 4},       {genre::rock, 8},
+                                              {genre::rave, 8}};
+    for (const auto &[g, wanted] : notesPerBar) {
+        composer c(24);
+        phraseBuffer buf;
+        phrasePlan plan;
+        plan.style = g;
+        for (int k = 0; k < 6; k++) {
+            c.compose(who, t.state(), situation::calm, (float) rate, plan, buf);
+            int bass = 0;
+            std::set<int> pitches;
+            for (int i = 0; i < buf.count; i++) {
+                const auto &ev = buf.events[(std::size_t) i];
+                if (ev.who == part::bass && ev.what == noteEvent::kind::on) {
+                    bass++;
+                    pitches.insert((int) ev.pitch);
+                }
+            }
+            EXPECT_EQ(bass, wanted * c.report().bars) << nameOf(g);
+            EXPECT_TRUE(c.report().style == g);
+            if (g == genre::disco) {
+                EXPECT_GE(pitches.size(), 2u) << "the octave jumps";
+            }
+        }
+    }
+}
+
+TEST(Styles, AStyleNeverChangesTheInstruments)
+{
+    adaptiveMusician m;
+    m.setStyle(chipStyle::pokey);
+    m.setGenre(genre::psytrance);
+    ASSERT_TRUE(m.initialize({rate, 2}, 25));
+    render(m, 4);
+    EXPECT_TRUE(m.musicStyle() == genre::psytrance);
+    EXPECT_TRUE(m.lastPhrase().style == genre::psytrance);
+    EXPECT_TRUE(m.style() == chipStyle::pokey) << "the chip stays as chosen";
+    m.setGenre(genre::jazz);
+    const auto after = render(m, 4);
+    EXPECT_TRUE(m.lastPhrase().style == genre::jazz) << "the new style starts at the next bar";
+    EXPECT_TRUE(m.style() == chipStyle::pokey);
+    float peak = 0;
+    for (float v : after)
+        peak = std::max(peak, std::fabs(v));
+    EXPECT_GT(peak, 0.01f);
+    EXPECT_LE(peak, 1.0f);
+    // the names round trip, whatever the case and the spaces
+    for (int g = 0; g < genreCount; g++)
+        EXPECT_TRUE(genreNamed(nameOf((genre) g)) == (genre) g);
+    EXPECT_TRUE(genreNamed("psy trance") == genre::psytrance);
+    EXPECT_TRUE(genreNamed("polka") == genre::mixed);
 }

@@ -82,16 +82,16 @@ Composes and synthesizes music at runtime; the full design is in
 
 - `adaptiveMusician`: the Music Director and the only class the game uses. `initialize(format,
   seed)`, `shutdown()`; from any thread `setDifficulty` (0..256), `setSituation`, `setEnabled`,
-  `setVolume` (its own gain), `setStyle` (the chip), `setVariety` (0..1), `setTempoScale`
+  `setVolume` (its own gain), `setStyle` (the chip), `setGenre` (the music style), `setVariety` (0..1), `setTempoScale`
   (0.5..1.5), `pause`, `resume`; on the audio thread `composeAhead()` and `renderAudio(frames)`
   (real-time safe). Inspectors for tests: `personality`, `tension`, `lastPhrase`, `synth`, `songs`,
-  `style`, `position`, `queued`, `phrasesComposed`.
+  `style`, `musicStyle`, `position`, `queued`, `phrasesComposed`.
 - `tensionController` (`musicTension.h`): `targetFor(difficulty)` (0.70 * x^1.222), per-part
   smoothing (`smoothed()`), the mood walk, `state()` with the mood added.
 - `performerPersonality` (`musicPersonality.h`): `generate(seed)` from five latent traits; fifteen
   playing traits, key, mode, tempo, three `instrument`s; `busyness()`, `withinLimits()`; `scaleOf(mode)`.
-- `songbook` (`musicSongs.h`): `next(personality, state, situation, variety)` plans the next phrase
-  (`phrasePlan`: the song, its `section`, intensity, drum level, fill, which parts play, groove,
+- `songbook` (`musicSongs.h`): `next(personality, state, situation, variety, style)` plans the next phrase
+  (`phrasePlan`: the song, its style, its `section`, intensity, drum level, fill, which parts play, groove,
   swing, progressions); starts a new `song` or brings an earlier one back when a song ends;
   `dressed(personality)` is the performer in the song's key, mode, tempo and energy.
 - `composer` (`musicComposer.h`): `compose(personality, state, situation, rate, plan, phraseBuffer)`
@@ -104,6 +104,9 @@ Composes and synthesizes music at runtime; the full design is in
   `oscillator`, `envelope`, `lowPass`, `instrument`, `chipModel`, `pitchGrid`, `softClip`.
 - `chipStyle`, `bandSound`, `soundFor(style, personality)`, `dress(synthesizer, bandSound)`,
   `nameOf`, `styleNamed` (`musicChips.h`): the AdLib, SID, POKEY and Game Boy sounds.
+- `genre`, `genreRules`, `rulesOf(genre)`, `nameOf`, `genreNamed`, `sameName` (`musicGenres.h`): the
+  music styles (Mixed, Free, Rave, Techno, Metal, Disco, Psytrance, Jazz, Rock): tempo range, grooves,
+  `bassLine`, `chordShape`, chord rhythm, progressions, modes, colour, melody density, drum range.
 - `noteEvent` (with `arp` for arpeggiated chords), `eventQueue` (a fixed heap, `cutAt`),
   `randomStream`, `situation`, `part`, `drum` (`musicEvents.h`).
 - `tuning` (`musicianTuning.h`): every tunable number.

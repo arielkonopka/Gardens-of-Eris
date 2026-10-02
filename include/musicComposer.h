@@ -84,6 +84,7 @@ struct phraseReport
     int maxLeap = 0;        ///< semitones
     int maxSimultaneous = 0; ///< lead, chord and bass notes at once (the drums have their own channels)
     std::uint32_t song = 0;
+    genre style = genre::free;
     section part = section::verse;
     int drums = 0;          ///< the drum level played, 0..3
     int drumHits = 0;
@@ -130,12 +131,13 @@ private:
     void remember(situation s, const motif &m);
 
     int writeChords(const performerPersonality &who, const musicalState &tension, const vocabulary::theme &th,
-                    const std::array<int, 4> &roots, bool arpeggio, double step, phraseBuffer &out);
+                    const std::array<int, 4> &roots, const phrasePlan &plan, double step, phraseBuffer &out);
     void writeDrums(const performerPersonality &who, const phrasePlan &plan, double step, float rate, phraseBuffer &out);
     /// the sample a sixteenth of the phrase starts at, with the song's swing
     std::int64_t timeOf(int sixteenth, double step) const;
     void writeBass(const performerPersonality &who, const musicalState &tension, const vocabulary::theme &th,
-                   const std::array<int, 4> &roots, bool pedal, double step, float rate, phraseBuffer &out);
+                   const std::array<int, 4> &roots, bool pedal, const phrasePlan &plan, double step, float rate,
+                   phraseBuffer &out);
     void writeLead(const performerPersonality &who, const musicalState &tension, const vocabulary::theme &th,
                    const motif &m, const std::array<int, 4> &roots, double step, float rate, phraseBuffer &out);
 
