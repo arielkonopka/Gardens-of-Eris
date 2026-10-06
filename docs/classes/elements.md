@@ -115,7 +115,8 @@ interacts, drags, cycles items, uses, drops or gives up (see `controlItem` in
 
 - `getActivePlayer()`: the avatar being played; `nullptr` is game over.
 - Unused avatars found in the maze are activated by interacting with them; when the active one
-  dies the next activated one takes over (`visitedPlayers`, `countVisitedPlayers()`).
+  dies the next activated one takes over (`visitedPlayers`, `countVisitedPlayers()`). Waking one
+  reports `goe::events::kind::activate`.
 - `bestScore()`: the best score of every avatar of this game, lost ones included (kept in saves).
 - `backgroundScope`: while one lives on a thread, players made there never become the active
   player, so a spare avatar in a new chunk does not take over.

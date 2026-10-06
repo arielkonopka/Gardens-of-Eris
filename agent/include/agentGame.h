@@ -65,6 +65,7 @@ enum class event : int {
     hurt,     ///< energy lost
     death,    ///< avatars lost (the last one included)
     explore,  ///< cells that came into the player's sight for the first time this episode
+    avatar,   ///< spare avatars woken by walking into them, each once (they join the avatars to switch to)
     count
 };
 constexpr int eventCount = (int) event::count;

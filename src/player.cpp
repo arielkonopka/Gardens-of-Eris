@@ -123,6 +123,7 @@ bool player::interact(std::shared_ptr<bElem> who)
         player::visitedPlayers.push_back(shared_from_this());
         goe::sound::play(*this, "Player", "ActivateAvatar");
         this->getStats()->setMarked(true);
+        goe::events::report(goe::events::kind::activate, *this, who.get());
     }
     return true;
 }

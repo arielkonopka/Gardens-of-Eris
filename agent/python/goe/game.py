@@ -23,10 +23,11 @@ EVENT_MEANINGS = {
     "hurt": "energy lost",
     "death": "avatars lost (the last one included)",
     "explore": "cells that came into the player's sight for the first time this episode",
+    "avatar": "spare avatars woken by walking into them, each once",
 }
 # a reward from events, as a starting point: things done are rewarded, harm is penalised
 SHAPED_REWARD = {"collect": 5.0, "apple": 20.0, "use": 2.0, "open": 10.0, "teleport": 5.0, "kill": 10.0,
-                 "mine": 5.0, "hurt": -0.2, "death": -50.0}
+                 "mine": 5.0, "avatar": 10.0, "hurt": -0.2, "death": -50.0}
 
 
 def default_data_dir():
@@ -88,7 +89,7 @@ class Game:
     reward_weights      {event: weight}: a step's reward is the sum of its event counts (EVENTS)
                         times these weights; None: the score gained ({"score": 1}).
                         SHAPED_REWARD rewards collecting, using, opening, teleporting, apples,
-                        kills and mines, and penalises hurt and death
+                        kills, mines and woken avatars, and penalises hurt and death
     chunk_patterns      {(chunk x, chunk y): ChunkPattern or path of a JSON pattern}: those chunks
                         are built from the pattern instead of a random maze. (0, 0) is the start
                         chunk, (1, 0) the one east of it, (0, -1) the one north; chunk_at says

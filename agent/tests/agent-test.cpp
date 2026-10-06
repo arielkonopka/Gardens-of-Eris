@@ -5,6 +5,7 @@
 #include "chamber.h"
 #include "elementFactory.h"
 #include "elements.h"
+#include "gameEvents.h"
 #include "worldBuilder.h"
 #include <gtest/gtest.h>
 #include <algorithm>
@@ -511,6 +512,55 @@ TEST(AgentTests, ShootingCountsKillsAndMines)
     for (int s = 0; s < 20 && events(g, event::mine) == 0 && !g.isEpisodeFinished(); s++)
         g.makeAction(w2->shoot);
     EXPECT_EQ(events(g, event::mine), 1.0f);
+}
+
+TEST(AgentTests, SteppingOnAMineIsADeathNotAMine)
+{
+    // a landmine blames the stats owner of whoever steps on it: a missile's shooter, but a player
+    // owns no stats, so walking onto one is not a mine. The mine destroys its rider outright, so
+    // the avatar is lost without losing energy first: a death, never hurt
+    config c = withData();
+    c.rewardWeights = {{"mine", 3.0f}, {"hurt", -1.0f}};
+    game g(c);
+    g.newEpisode(555);
+    const auto plr = player::getActivePlayer();
+    const auto w = freeSide();
+    ASSERT_TRUE(w);
+    const auto mine = elementFactory::generateAnElement<landmine>(plr->getBoard(), 0);
+    mine->stepOnElement(plr->getElementInDirection(w->d));
+    float reward = g.makeAction(w->move);
+    EXPECT_TRUE(goe::events::isDown(*mine));
+    for (int s = 0; s < 40 && events(g, event::death) == 0; s++)
+        reward += g.makeAction(action::noop);
+    EXPECT_TRUE(plr->getStats()->isDisposed());
+    EXPECT_EQ(events(g, event::death), 1.0f);
+    EXPECT_EQ(events(g, event::hurt), 0.0f);
+    EXPECT_EQ(events(g, event::mine), 0.0f);
+    EXPECT_EQ(reward, 0.0f);
+}
+
+TEST(AgentTests, WakingASpareAvatarCountsOnce)
+{
+    config c = withData();
+    c.rewardWeights = {{"avatar", 10.0f}};
+    game g(c);
+    g.newEpisode(555);
+    const auto plr = player::getActivePlayer();
+    const auto w = freeSide();
+    ASSERT_TRUE(w);
+    const auto spare = elementFactory::generateAnElement<player>(plr->getBoard(), 0);
+    spare->stepOnElement(plr->getElementInDirection(w->d));
+    ASSERT_FALSE(spare->getStats()->isActive());
+    const auto before = player::countVisitedPlayers();
+    EXPECT_EQ(g.makeAction(w->interact), 10.0f);
+    EXPECT_EQ(g.stepEvents()[(std::size_t) event::avatar], 1.0f);
+    EXPECT_EQ(player::countVisitedPlayers(), before + 1);
+    EXPECT_EQ(player::getActivePlayer(), plr);
+    settle(g);
+    // woken once: walking into it again earns nothing more
+    g.makeAction(w->interact);
+    settle(g);
+    EXPECT_EQ(events(g, event::avatar), 1.0f);
 }
 
 TEST(AgentTests, TeleportingAndUsingAreCounted)

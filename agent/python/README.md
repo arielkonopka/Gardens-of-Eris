@@ -112,6 +112,7 @@ penalises harm:
 | `hurt` | energy lost | -0.2 |
 | `death` | avatars lost, the last one included | -50 |
 | `explore` | cells that came into the player's sight for the first time this episode (an exploration bonus) | 0 |
+| `avatar` | spare avatars woken by walking into them, each once (they join the avatars to switch to) | +10 |
 
 ```python
 game = goe.Game(reward_weights=goe.SHAPED_REWARD)

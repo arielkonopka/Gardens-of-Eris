@@ -36,6 +36,7 @@ enum class kind : int {
     open,     ///< actor opened subject, a door (unlocked with a key, or opened)
     teleport, ///< actor was sent through subject, a teleporter
     kill,     ///< actor's missile or blast killed or destroyed subject
+    activate, ///< actor woke subject, a spare avatar, so it joins the avatars to switch to
 };
 
 /// actor may be null: nobody known did it
