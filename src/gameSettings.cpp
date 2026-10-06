@@ -211,8 +211,7 @@ bool gameSettings::load(const std::string &file)
     if (doc.HasMember("effectsVolume") && doc["effectsVolume"].IsInt())
         this->setEffectsVolume(doc["effectsVolume"].GetInt());
     if (doc.HasMember("music") && doc["music"].IsString())
-        this->setMusicSource(std::string(doc["music"].GetString()) == "performer" ? musicSource::performer
-                                                                                  : musicSource::samples);
+        this->setMusicSource(musicSourceNamed(doc["music"].GetString()));
     if (doc.HasMember("performerSound") && doc["performerSound"].IsString())
         this->setPerformerSound(goe::musician::styleNamed(doc["performerSound"].GetString()));
     if (doc.HasMember("musicStyle") && doc["musicStyle"].IsString())
@@ -251,7 +250,7 @@ bool gameSettings::save(const std::string &file) const
     w.Key("effectsVolume");
     w.Int(this->getEffectsVolume());
     w.Key("music");
-    w.String(this->getMusicSource() == musicSource::performer ? "performer" : "samples");
+    w.String(nameOf(this->getMusicSource()));
     w.Key("performerSound");
     w.String(std::string(goe::musician::nameOf(this->getPerformerSound())).c_str());
     w.Key("musicStyle");

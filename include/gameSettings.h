@@ -64,8 +64,15 @@ public:
 
     /// where the music comes from: the songs listed in skins.json, played by difficulty, or the
     /// adaptive musician (adaptiveMusician.h), who composes and plays its own; the sound thread reads it
-    enum class musicSource { samples, performer };
+    enum class musicSource { samples, performer, dj };
     musicSource getMusicSource() const { return this->music; }
+    /// the name settings.json keeps: "samples", "performer" or "dj"
+    static const char *nameOf(musicSource s) { return s == musicSource::performer ? "performer" : s == musicSource::dj ? "dj" : "samples"; }
+    /// the source of a name; anything unknown is the skin samples
+    static musicSource musicSourceNamed(const std::string &name)
+    {
+        return name == "performer" ? musicSource::performer : name == "dj" ? musicSource::dj : musicSource::samples;
+    }
     void setMusicSource(musicSource s) { this->music = s; }
     /// the chip the performer's band sounds like (AdLib, SID, POKEY, Game Boy)
     goe::musician::chipStyle getPerformerSound() const { return this->performerSound; }

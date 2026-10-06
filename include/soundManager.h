@@ -28,6 +28,7 @@
 #include <atomic>
 #include "commons.h"
 #include "difficultyMusic.h"
+#include "autoDJ.h"
 #include "musicEvents.h"
 #include <map>
 #include <vector>
@@ -36,6 +37,7 @@
 #include <AL/alc.h>
 #include <AL/alext.h>
 #include "configManager.h"
+#include "gameSettings.h"
 #include <sndfile.h>
 #include <deque>
 #include <cmath>
@@ -76,6 +78,8 @@ using muNode=struct mudNode
     float gain=1.0;
     unsigned int bElemInstanceId=0;
     bool followsListener=false; ///< heard from where the listener is, like the difficulty music
+    double framesDone=0; ///< frames of the buffers already played and taken off the source (it keeps counting over loops)
+    std::deque<int> queuedFrames; ///< frames in each buffer still on the source, oldest first
 };
 
 using stNode=struct sndNode
@@ -144,8 +148,23 @@ private:
     static bool performerChosen();
     /// the musician's part of the sound thread: starts, feeds or stops its stream, outside snd_mutex
     void streamPerformer();
-    /// stops the skins.json songs while the performer plays (snd_mutex held)
+    /// stops the skins.json songs while the performer plays, or when Config switches the music (snd_mutex held)
     void silenceSongsLocked();
+    /// reads the next piece of a song into one of its buffers and queues it, from the start again at the end
+    bool queueNextPiece(muNode &song, ALuint buffer);
+
+    // the DJ (Config, Music: DJ, see autoDJ.h), in soundManagerDJ.cpp; snd_mutex held unless said
+    /// the DJ's part of checkQueue: picks the song for D and danger, and mixes into it on the beat
+    void playDJMusic();
+    /// stops a song and refills it from `seconds` into the song, ready to play
+    void cueSong(int song, double seconds);
+    /// where a song is, in seconds into the song
+    double songPosition(int song);
+    /// what the DJ knows of a registered song
+    const goe::dj::trackInfo &djInfo(int song) const;
+    int djIndexOf(int song) const;
+    /// the listening thread: analyses (or remembers) every song, then maps them; takes snd_mutex itself
+    void listenToSongs(std::stop_token stop, std::vector<std::string> files);
     std::mutex snd_mutex;
     ALenum determineFormat(SF_INFO fileInfo,SNDFILE *sndfile);
     void setSoundPosition(std::shared_ptr<stNode> snd,coords3d pos);
@@ -181,10 +200,26 @@ private:
     goe::music::byDifficulty musicChoice;
     int fadingMusic=-1; ///< the song fading out while currentMusic fades in, -1 when none
     std::atomic<int> situationNow = 0;
+    gameSettings::musicSource playingSource = gameSettings::musicSource::samples; ///< the music Config chose last round
+    /// the DJ: what it knows of each of difficultySongs, its map, and the mix in progress
+    std::vector<goe::dj::songEntry> djSongs;
+    std::vector<std::string> djFiles; ///< the file of each of difficultySongs, for the listening thread
+    goe::dj::mapping djMap;
+    goe::music::byDifficulty djChoice;
+    int djPending = -1; ///< the song waiting for its mix point, cued; -1 when none
+    goe::dj::mixPlan djPlan;
+    double djCuedAt = 0.0; ///< where the pending song was cued, in its seconds
+    std::chrono::steady_clock::time_point djMixAt{};
+    std::chrono::steady_clock::time_point djMixStart{};
+    double djFade = goe::dj::plainMix;
+    float djGain = 1.0f; ///< the usual (median) gain of the music list, which the DJ plays every song at
+    float djPitch = 1.0f; ///< the speed the playing song came in at; it glides back to 1 after the mix
     int deviceRate = 44100; ///< the output rate OpenAL mixes at; the musician renders at it
     /// made on the sound thread when the performer is first chosen; lives until the manager goes
     std::unique_ptr<performerStream> performer;
     std::jthread myThread;
+    /// listens to the songs the first time the DJ is chosen; declared last, so it stops first
+    std::jthread djListener;
 };
 
 #endif // SOUNDMANAGER_H
