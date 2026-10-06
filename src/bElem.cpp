@@ -46,6 +46,11 @@ bool bElem::collectOnAction(bool collected, std::shared_ptr<bElem> who)
     return true;
 }
 
+bool bElem::collectibleBy(const bElem & /*who*/) const
+{
+    return true;
+}
+
 std::shared_ptr<chamber> bElem::getBoard() const
 {
     return this->attachedBoard.lock();
@@ -329,7 +334,8 @@ bool bElem::collect(std::shared_ptr<bElem> collectible)
 {
     std::shared_ptr<bElem> collected;
     if (collectible.get() == nullptr || !collectible->getAttrs()->isCollectible()
-        || !this->getAttrs()->canCollect() || collectible->getStats()->isDying()
+        || !this->getAttrs()->canCollect() || !collectible->collectibleBy(*this)
+        || collectible->getStats()->isDying()
         || collectible->getStats()->isTeleporting() || collectible->getStats()->isDestroying()) {
         return false;
     }

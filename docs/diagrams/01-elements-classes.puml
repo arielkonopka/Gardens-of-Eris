@@ -87,7 +87,7 @@ package "Controllers (puppet masters)" {
     +{static} create(board, subtype)
     #lookout(body, range)
     #followTrail()
-    #followWall()
+    #pathTowards()
   }
   class puppetMasterCollector
   class puppetMasterHunter
@@ -134,5 +134,7 @@ note bottom of puppetMasterFR
   Chasers see only through goe::sight
   (lineOfSight.h); never read the
   player position directly.
+  Idle monsters and drones roam the
+  maze with goe::roam (roam.h).
 end note
 @enduml

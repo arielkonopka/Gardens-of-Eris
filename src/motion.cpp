@@ -38,7 +38,7 @@ bool moveOnto(const std::shared_ptr<bElem> &who, const std::shared_ptr<bElem> &t
 
 bool canCollect(const std::shared_ptr<bElem> &who, const std::shared_ptr<bElem> &what)
 {
-    return who->getAttrs()->canCollect() && what->getAttrs()->isCollectible();
+    return who->getAttrs()->canCollect() && what->getAttrs()->isCollectible() && what->collectibleBy(*who);
 }
 
 bool push(const std::shared_ptr<bElem> &who, const std::shared_ptr<bElem> &what,

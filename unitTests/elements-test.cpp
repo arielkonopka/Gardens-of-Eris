@@ -629,7 +629,7 @@ TEST(ElementTests, MonsterHurtsAdjacentPlayer)
     EXPECT_TRUE(plr->getAttrs()->getEnergy() < before || goneOrGoing(plr));
 }
 
-TEST(ElementTests, MonsterTurnsWhenBlocked)
+TEST(ElementTests, MonsterTakesAnotherWayWhenBlocked)
 {
     auto mc = walledRoom(10, 10);
     place<wall>(mc, 0, 2, 1);
@@ -637,12 +637,10 @@ TEST(ElementTests, MonsterTurnsWhenBlocked)
     activePlayerAt(mc, 1, 1);
     auto mon = place<monster>(mc, 0, 6, 1); // facing up, straight into the border wall
     ASSERT_TRUE(mon->getStats()->getMyDirection() == dir::direction::UP);
+    // it does not stand at the wall, but goes another way in the same turn
     run(1);
-    EXPECT_TRUE(isAt(mon, 6, 1));
-    EXPECT_TRUE(mon->getStats()->getMyDirection() == dir::direction::LEFT);
-    run(GoEConstants::_mov_delay * 4);
-    EXPECT_TRUE(mon->getStats()->getMyPosition().x < 6);
-    EXPECT_EQ(mon->getStats()->getMyPosition().y, 1);
+    EXPECT_TRUE(!isAt(mon, 6, 1));
+    EXPECT_TRUE(mon->getStats()->getMyDirection() != dir::direction::UP);
 }
 
 TEST(ElementTests, CollectingIsReadFromTheConfig)

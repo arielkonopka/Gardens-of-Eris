@@ -46,6 +46,7 @@ The base class of every element. Elements are always owned by `std::shared_ptr`
 | `collect(item)` | Lifts the item into this element's inventory; reports `goe::events::kind::collect`. |
 | `dropItem(instanceId)` | Puts an item from the inventory back on the board. |
 | `collectOnAction(collected, who)` | Called on the item when it is collected or dropped. |
+| `collectibleBy(who)` | False when this collectible must not end up with `who` (a loose controller and a drone); `collect` and `motion` then treat it as an obstacle. |
 | `use(item)` | Uses an item (a gun shoots). |
 | `interact(who)` | What happens when `who` presses interact against this element (doors open, teleporters send, drones take a controller). The base version sets the interaction timer. |
 | `hurt(points)` | Takes energy; at 0 the element is killed. |

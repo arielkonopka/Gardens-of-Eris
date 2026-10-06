@@ -24,5 +24,5 @@
 
 bool puppetMasterWallFollower::drive(std::shared_ptr<bElem> body)
 {
-    return this->followWall(body);
+    return goe::roam::followWall(body);
 }

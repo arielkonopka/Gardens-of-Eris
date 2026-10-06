@@ -10,7 +10,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | [Basics](basics.md) | `bElemTypes`, `GoEConstants`, `coords`, `myUtility::Coords`, `dir::direction`, `controlItem` |
 | [Elements: the base class](elements-core.md) | `bElem`, `bElemAttr`, `bElemStats`, `inventory`, `elementFactory`, `motion`, `elementView`, `goe::sound` |
 | [Elements: the kinds](elements.md) | floor, wall, door, key, teleporter, guns, missiles, apples, bombs, landmines, player, monster, drone, camera, bunker, kiki and bouba |
-| [Controllers](puppet-masters.md) | `puppetMasterFR` and its kinds, `goe::sight` |
+| [Controllers](puppet-masters.md) | `puppetMasterFR` and its kinds, `goe::roam`, `goe::sight` |
 | [The world](world.md) | `chamber`, `chamber::fence`, `worldBuilder`, `randomLevelGenerator`, `chamberArea`, `goe::chunkPattern` |
 | [Rules](rules.md) | `difficulty`, `goe::music::byDifficulty`, `goe::music::cues`, `goe::rng`, `gameClock`, `goe::events`, `randomWordGen` |
 | [Saving](saving.md) | `gameSerializer`: saves, loads and chunk swap |
@@ -69,6 +69,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `goe::musician::tuning` | `include/musicianTuning.h` | [media](media.md) |
 | `goe::musician::vocabulary` | `include/musicVocabulary.h` | [media](media.md) |
 | `goe::rng` | `include/randomStreams.h` | [rules](rules.md) |
+| `goe::roam` | `include/roam.h` | [puppet-masters](puppet-masters.md) |
 | `goe::sight` | `include/lineOfSight.h` | [puppet-masters](puppet-masters.md) |
 | `goe::sound` | `include/elementSound.h` | [elements-core](elements-core.md) |
 | `goe::storyScroller` | `include/storyScroller.h` | [application](application.md) |

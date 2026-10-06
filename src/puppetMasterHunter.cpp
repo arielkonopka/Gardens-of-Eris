@@ -28,5 +28,5 @@ bool puppetMasterHunter::drive(std::shared_ptr<bElem> body)
     auto seen = this->lookout(body, sightRange);
     if (this->followTrail(body, seen != nullptr, body->getStats()->getMyPosition(), trailRadius))
         return true;
-    return this->followWall(body);
+    return goe::roam::followWall(body);
 }
