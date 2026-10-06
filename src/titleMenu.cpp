@@ -113,18 +113,23 @@ titleMenu::titleMenu(gameSettings &edited, std::string file, std::function<bool(
         "Sound effects volume",
         [this] { return this->settings.getEffectsVolume(); },
         [this](int v) { this->settings.setEffectsVolume(v); }));
-    // Enter, Left and Right all switch it
+    // Skin samples, Performer or DJ: Enter and Right step forward, Left back
     this->options.push_back({"Music",
                              [this] {
-                                 return std::string(this->settings.getMusicSource() == gameSettings::musicSource::performer
-                                                        ? "Performer"
-                                                        : "Skin samples");
+                                 switch (this->settings.getMusicSource()) {
+                                 case gameSettings::musicSource::performer:
+                                     return std::string("Performer");
+                                 case gameSettings::musicSource::dj:
+                                     return std::string("DJ");
+                                 default:
+                                     return std::string("Skin samples");
+                                 }
                              },
                              {},
-                             [this](int) {
-                                 const bool performer = this->settings.getMusicSource() == gameSettings::musicSource::performer;
-                                 this->settings.setMusicSource(performer ? gameSettings::musicSource::samples
-                                                                         : gameSettings::musicSource::performer);
+                             [this](int by) {
+                                 constexpr int n = 3;
+                                 const int now = (int) this->settings.getMusicSource();
+                                 this->settings.setMusicSource((gameSettings::musicSource) (((now + by) % n + n) % n));
                              }});
     // the performer's chip: Enter and Right step forward, Left back
     this->options.push_back({"Performer sound",

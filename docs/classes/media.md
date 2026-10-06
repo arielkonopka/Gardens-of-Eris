@@ -67,6 +67,34 @@ A singleton playing sound through OpenAL on its own thread.
   by `difficulty::musicianLevel`) and `followSituation`, and passes Config's performer sound,
   music variety and music tempo to the musician on every pump. The stream is made the first time it
   is chosen and lives as long as the manager. The device's rate (`ALC_FREQUENCY`) is the musician's rate.
+- The DJ (`soundManagerDJ.cpp`): when `gameSettings` chooses it, `playDJMusic()` plays the same
+  songs by `goe::dj`'s map and mixes. The first time, `djListener` (a thread) listens to every song
+  or takes its analysis from `musicmap.json` in the save folder, then maps them under `snd_mutex`.
+  `cueSong` seeks a song and fills its buffers, `songPosition` reads where a song is
+  (`framesDone` of the buffers played plus `AL_SAMPLE_OFFSET`). A new song is cued ahead and
+  started on its mix point within a sound round, the round's error made up with `AL_SAMPLE_OFFSET`;
+  `AL_PITCH` bends its speed. Switching the music in Config silences the old choice first.
+
+## The DJ (`goe::dj`, `musicAnalysis.h`, `autoDJ.h`)
+
+The third way of making music (Config, Music: DJ). No game header is included.
+
+- `analyse(mono, rate)`, `analyseFile(path, stop)` give a `trackInfo`: length, `bpm` (spectral-flux
+  autocorrelation with a log-normal tempo prior around 130 bpm, then a fine grid search), the beat
+  grid and the downbeat (the strongest of four beats), `beatStrength` (`hasBeat()` from 0.2),
+  `entry` (the first downbeat past a quiet intro), loudness, flux and brightness. Files are mixed to
+  mono at about 11 kHz.
+- `mapSongs(songs)`: ranks the songs by intensity (loudness 30%, flux 35%, brightness 15%, tempo 20%)
+  and spreads them over levels 0..`topLevel` (10); keeps the "Play": "danger" songs, or makes the most
+  intense song the danger song; `gains` play every song as loud as the average one.
+- `planMix(playing, next, urgent)`: a `mixPlan` (wait, cue point, speed, fade). It waits for the next
+  bar, or the next eight-bar phrase within 12 s; bends the new song by up to 8% to the playing tempo,
+  or double or half of it; fades over four bars (3 to 10 s), two bars when the beats cannot match;
+  danger takes the next beat and one bar. `crossfade(x)` is equal-power, `glide` brings the speed
+  back to 1 over 16 s.
+- `analysisCache`: `musicmap.json`, keyed by file, size and time, versioned by `analysisVersion`.
+- `goe-dj song ...` prints the analysis and map; `goe-dj --mix out.wav [seconds] [--danger] song ...`
+  renders a mix the way the game mixes.
 
 ## `performerStream` (`performerStream.h`)
 

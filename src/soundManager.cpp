@@ -85,6 +85,7 @@ soundManager::soundManager()
 
 soundManager::~soundManager()
 {
+    this->djListener = {}; // stops and joins the listening thread before anything it uses goes
     this->active = false;
     if (this->myThread.joinable())
         this->myThread.join(); // the loop checks the flag every 10 ms
@@ -131,10 +132,18 @@ void soundManager::checkQueue()
 {
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     this->cnt = bElem::getCntr();
-    if (performerChosen()) {
+    const auto source = gameSettings::getInstance().getMusicSource();
+    if (source != this->playingSource) {
+        this->silenceSongsLocked(); // the new choice starts its own music
+        this->playingSource = source;
+    }
+    if (source == gameSettings::musicSource::performer) {
         this->silenceSongsLocked();
     } else if (!this->difficultySongs.empty()) {
-        this->playDifficultyMusic();
+        if (source == gameSettings::musicSource::dj)
+            this->playDJMusic();
+        else
+            this->playDifficultyMusic();
     } else {
         int nm = this->findNearestMusic();
         if (nm != this->currentMusic) {
@@ -497,20 +506,9 @@ int soundManager::setupSong(
     alSourcef(source, AL_GAIN, std::min(muNd.gain, (float) 1.0) * musicVolume());
     const int buffersNum = 3;
     alGenBuffers(buffersNum, &muNd.Abuffers[0]);
-    for (int n = 0; n < buffersNum; n++) {
-        std::vector<short> buff(65536);
-        int num_frames = sf_readf_short(muNd.musicFile.get(),
-                                        buff.data(),
-                                        buff.size() / muNd.musFileinfo.channels);
-        if (num_frames < 1)
+    for (int n = 0; n < buffersNum; n++)
+        if (!this->queueNextPiece(muNd, muNd.Abuffers[n]))
             break;
-        alBufferData(muNd.Abuffers[n],
-                     muNd.format,
-                     buff.data(),
-                     buff.size() * sizeof(short),
-                     muNd.musFileinfo.samplerate);
-    }
-    alSourceQueueBuffers(muNd.source, buffersNum, &muNd.Abuffers[0]);
     muNd.isRegistered = true;
     this->registeredMusic.push_back(muNd);
 
@@ -551,18 +549,33 @@ void soundManager::setupDifficultyMusic()
     const int songs = (int) this->gc->music.size();
     std::vector<int> made;
     std::vector<goe::music::songSlot> slots;
+    std::vector<std::string> files;
     for (int c = 0; c < songs; c++) {
         const int at = this->setupSong(0, c, {0.0f, 0.0f, 0.0f}, -1, false);
         if (at < 0)
             continue; // a missing song is left out, the others keep their levels
         made.push_back(at);
         slots.push_back({this->gc->music[c].difficulty, this->gc->music[c].danger});
+        files.push_back(this->gc->music[c].filename);
     }
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     for (int at : made)
         this->registeredMusic[at].followsListener = true;
     this->difficultySongs = std::move(made);
+    // the DJ knows only the danger marks until it has listened to the songs
+    this->djSongs.clear();
+    for (const auto &slot : slots)
+        this->djSongs.push_back({.info = {}, .danger = slot.danger});
+    this->djMap = goe::dj::mapSongs(this->djSongs);
+    std::vector<float> gains;
+    for (int at : this->difficultySongs)
+        gains.push_back(this->registeredMusic[at].gain);
+    if (!gains.empty()) {
+        std::ranges::nth_element(gains, gains.begin() + gains.size() / 2);
+        this->djGain = gains[gains.size() / 2];
+    }
     this->difficultySlots = std::move(slots);
+    this->djFiles = std::move(files);
 }
 
 void soundManager::followDifficulty(int d)
@@ -590,31 +603,35 @@ void soundManager::playSong(int songNo, float mix)
         return;
     }
 
+    auto &song = this->registeredMusic[songNo];
     while (buffersProcessed--) {
         ALuint buffer;
-        alSourceUnqueueBuffers(this->registeredMusic[songNo].source, 1, &buffer);
-
-        std::vector<short> buff(65536);
-        int num_frames = sf_readf_short(this->registeredMusic[songNo].musicFile.get(),
-                                        buff.data(),
-                                        buff.size()
-                                            / this->registeredMusic[songNo].musFileinfo.channels);
-        if (num_frames < 1) {
-            sf_seek(this->registeredMusic[songNo].musicFile.get(), 0, 0);
-            num_frames = sf_readf_short(this->registeredMusic[songNo].musicFile.get(),
-                                        buff.data(),
-                                        buff.size()
-                                            / this->registeredMusic[songNo].musFileinfo.channels);
-            if (num_frames < 1)
-                break;
+        alSourceUnqueueBuffers(song.source, 1, &buffer);
+        if (!song.queuedFrames.empty()) {
+            song.framesDone += song.queuedFrames.front();
+            song.queuedFrames.pop_front();
         }
-        alBufferData(buffer,
-                     this->registeredMusic[songNo].format,
-                     buff.data(),
-                     buff.size() * sizeof(short),
-                     this->registeredMusic[songNo].musFileinfo.samplerate);
-        alSourceQueueBuffers(this->registeredMusic[songNo].source, 1, &buffer);
+        if (!this->queueNextPiece(song, buffer))
+            break;
     }
+}
+
+bool soundManager::queueNextPiece(muNode &song, ALuint buffer)
+{
+    std::vector<short> buff(65536);
+    const int channels = song.musFileinfo.channels;
+    sf_count_t frames = sf_readf_short(song.musicFile.get(), buff.data(), (sf_count_t) buff.size() / channels);
+    if (frames < 1) {
+        sf_seek(song.musicFile.get(), 0, SEEK_SET);
+        frames = sf_readf_short(song.musicFile.get(), buff.data(), (sf_count_t) buff.size() / channels);
+        if (frames < 1)
+            return false;
+    }
+    // only what was read: a buffer padded with silence would be a gap at the end of every loop
+    alBufferData(buffer, song.format, buff.data(), (ALsizei) (frames * channels * sizeof(short)), song.musFileinfo.samplerate);
+    alSourceQueueBuffers(song.source, 1, &buffer);
+    song.queuedFrames.push_back((int) frames);
+    return true;
 }
 
 /**
@@ -648,11 +665,15 @@ bool soundManager::performerChosen()
 
 void soundManager::silenceSongsLocked()
 {
-    for (int song : {this->currentMusic, this->fadingMusic})
-        if (song >= 0)
+    for (int song : {this->currentMusic, this->fadingMusic, this->djPending})
+        if (song >= 0) {
             alSourcePause(this->registeredMusic[(std::size_t) song].source);
+            alSourcef(this->registeredMusic[(std::size_t) song].source, AL_PITCH, 1.0f);
+        }
     // when the songs come back, the difficulty music (or the nearest song) starts again
-    this->currentMusic = this->fadingMusic = -1;
+    this->currentMusic = this->fadingMusic = this->djPending = -1;
+    this->musicChoice = {};
+    this->djChoice = {};
 }
 
 void soundManager::followSituation(goe::musician::situation s)

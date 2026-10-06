@@ -113,6 +113,10 @@ target_link_libraries(goe-bench ${LIBRARIES})
 add_executable(goe-musician ${CMAKE_SOURCE_DIR}/benchmarks/goe-musician.cpp $<TARGET_OBJECTS:GardenOfErisLib>)
 target_link_libraries(goe-musician ${LIBRARIES})
 
+# The DJ without the game: shows how it hears and maps songs, or renders a mix of them to a WAV file
+add_executable(goe-dj ${CMAKE_SOURCE_DIR}/benchmarks/goe-dj.cpp $<TARGET_OBJECTS:GardenOfErisLib>)
+target_link_libraries(goe-dj ${LIBRARIES})
+
 # The game without a window, sound or keyboard, for agents; and its Python package
 if(GOE_BUILD_AGENT)
   add_subdirectory(agent)
