@@ -124,6 +124,7 @@ agent's own avatars did (the actor is a `player`):
 | `hurt` | Energy the same avatar lost during the step (energy gained is not subtracted). |
 | `death` | An avatar was lost, the last one included. |
 | `explore` | Cells that came into the player's sight for the first time this episode (counted at the end of the step). A small weight makes it a count-based exploration bonus. |
+| `avatar` | The player woke a spare avatar by walking into it (`goe::events::kind::activate`); each avatar once, since a woken one stays marked. |
 
 ## `goe::agent::config`
 
@@ -193,7 +194,7 @@ The inventory parts the agent can see: `weapons`, `usables`, `keys`, `mods`, `to
 ## `goe::agent::event`
 
 What the agent's avatar did or suffered in a step: `score`, `collect`, `apple`, `use`, `open`,
-`teleport`, `kill`, `mine`, `hurt`, `death`, `explore` (see the table above). `eventCount`,
+`teleport`, `kill`, `mine`, `hurt`, `death`, `explore`, `avatar` (see the table above). `eventCount`,
 `eventName(event)`, `eventByName(name)` and `eventCounts` (one `float` per event) go with it.
 
 ## `goe::agent::feature` (`agentFeatures.h`)

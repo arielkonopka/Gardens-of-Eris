@@ -51,7 +51,7 @@ Not meant to be used directly, but everything the Python files use comes from he
 |---|---|
 | `DEFAULT_DATA_DIR` | the `GoEoOL` folder of the checkout the module was built from |
 | `ACTIONS` | action names, in `goe::agent::action` order (`NOOP`, `MOVE_UP`, ..., `GIVE_UP`) |
-| `EVENTS` | event names (`score`, `collect`, ..., `death`, `explore`) |
+| `EVENTS` | event names (`score`, `collect`, ..., `death`, `explore`, `avatar`) |
 | `SECTIONS` | inventory section names (`weapons`, `usables`, `keys`, `mods`, `tokens`) |
 | `ELEMENT_FEATURES`, `PLAYER_FEATURES` | the names of the C++ feature tables |
 | `CELL_FEATURES` | `["exists", "in_sight", "visits", "seen", "novelty"]` |

@@ -73,7 +73,8 @@ itself does not listen; with no watcher, `report` does nothing.
 
 - `kind`: `collect` (subject collected by actor), `use` (actor used subject, its usable),
   `open` (actor opened a door), `teleport` (actor sent through a teleporter), `kill` (actor's
-  missile or blast killed or destroyed subject).
+  missile or blast killed or destroyed subject), `activate` (actor woke subject, a spare avatar,
+  in `player::interact`).
 - `observe(fn)`: one watcher at a time (`goe::agent::game` is one); an empty function clears it.
 - `report(kind, subject, actor)`: called by the elements; the actor may be null.
 - `blame(who)`: while one lives, kills are put down to `who` (the shooter of a missile or the one

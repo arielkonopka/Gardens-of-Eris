@@ -53,7 +53,7 @@ constexpr std::array<actionInfo, actionCount> actionTable = {{
 }};
 
 constexpr std::array<std::string_view, eventCount> eventNames = {
-    "score", "collect", "apple", "use", "open", "teleport", "kill", "mine", "hurt", "death", "explore"};
+    "score", "collect", "apple", "use", "open", "teleport", "kill", "mine", "hurt", "death", "explore", "avatar"};
 
 constexpr std::array<std::string_view, sectionCount> sectionNames = {"weapons", "usables", "keys", "mods", "tokens"};
 
@@ -382,6 +382,9 @@ void game::noteEvent(int k, const bElem &subject, const bElem *actor)
         else if (type == bElemTypes::_monster || type == bElemTypes::_patrollingDrone
                  || type == bElemTypes::_puppetMasterType)
             add(event::kill);
+        break;
+    case goe::events::kind::activate:
+        add(event::avatar);
         break;
     }
 }
