@@ -304,7 +304,7 @@ TEST(TitleMenuTests, StoryScrollerSwitchesAndIsKept)
     EXPECT_TRUE(gameSettings::getInstance().getStoriesShown());
 }
 
-TEST(TitleMenuTests, MusicSwitchesBetweenSkinSamplesAndThePerformer)
+TEST(TitleMenuTests, MusicStepsThroughSkinSamplesThePerformerAndTheDJ)
 {
     scratch s;
     titleMenu m(gameSettings::getInstance(), s.settingsFile());
@@ -317,8 +317,16 @@ TEST(TitleMenuTests, MusicSwitchesBetweenSkinSamplesAndThePerformer)
     EXPECT_TRUE(gameSettings::getInstance().getMusicSource() == gameSettings::musicSource::samples);
     ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
     EXPECT_TRUE(gameSettings::getInstance().getMusicSource() == gameSettings::musicSource::performer);
-    m.keyDown(ALLEGRO_KEY_RIGHT); // Left and Right flip it too
+    m.keyDown(ALLEGRO_KEY_RIGHT); // Right steps on to the DJ
+    EXPECT_EQ(m.getLines()[3], "Music: DJ");
+    EXPECT_TRUE(gameSettings::getInstance().getMusicSource() == gameSettings::musicSource::dj);
+    gameSettings::getInstance().resetToDefaults();
+    ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
+    EXPECT_TRUE(gameSettings::getInstance().getMusicSource() == gameSettings::musicSource::dj);
+    m.keyDown(ALLEGRO_KEY_RIGHT); // and round to the skin samples
     EXPECT_EQ(m.getLines()[3], "Music: Skin samples");
+    m.keyDown(ALLEGRO_KEY_LEFT); // Left steps back
+    EXPECT_EQ(m.getLines()[3], "Music: DJ");
 }
 
 TEST(TitleMenuTests, PerformerSoundVarietyAndTempoAreChosenAndKept)
