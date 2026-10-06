@@ -45,6 +45,20 @@ def test_the_composition_can_be_chosen():
         assert g.inventory_sections == ["weapons", "keys"]
 
 
+def test_cells_remember_what_the_player_saw():
+    assert goe.CELL_FEATURES == ["exists", "in_sight", "visits", "seen", "novelty"]
+    with goe.Game(cell_features=["visits", "seen", "novelty"]) as g:
+        g.new_episode(555)
+        first = g.get_state().vision
+        assert first[0, 8, 8] == 1 and first[1, 8, 8] == 1
+        assert first[2, 0, 8] == 1  # out of sight: never seen
+        g.make_action("NOOP")
+        second = g.get_state().vision
+        # standing still, the view is the same but more familiar
+        assert second[1, 8, 8] == 2
+        assert second[2, 8, 8] < first[2, 8, 8]
+
+
 def test_the_vision_can_stay_on_a_fixed_cell():
     with goe.Game(follow_player=False, fixed_centre=(3, -2), vision_radius=1, cell_features=["type"]) as g:
         g.new_episode(555)

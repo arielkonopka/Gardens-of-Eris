@@ -10,6 +10,7 @@
 #include "worldBuilder.h"
 #include <array>
 #include <atomic>
+#include <cmath>
 #include <cstdlib>
 #include <stdexcept>
 
@@ -52,7 +53,7 @@ constexpr std::array<actionInfo, actionCount> actionTable = {{
 }};
 
 constexpr std::array<std::string_view, eventCount> eventNames = {
-    "score", "collect", "apple", "use", "open", "teleport", "kill", "mine", "hurt", "death"};
+    "score", "collect", "apple", "use", "open", "teleport", "kill", "mine", "hurt", "death", "explore"};
 
 constexpr std::array<std::string_view, sectionCount> sectionNames = {"weapons", "usables", "keys", "mods", "tokens"};
 
@@ -61,6 +62,9 @@ constexpr std::array<std::string_view, sectionCount> sectionNames = {"weapons", 
 const std::array cellOnly = {
     feature{"exists", "the cell is built (1), or not built yet or outside the circle (0)", [](bElem &) { return 1.0f; }},
     feature{"in_sight", "the cell is within the player's view radius", [](bElem &) { return 0.0f; }},
+    feature{"visits", "times the player stepped onto the cell this episode", [](bElem &) { return 0.0f; }},
+    feature{"seen", "steps this episode that ended with the cell in the player's sight", [](bElem &) { return 0.0f; }},
+    feature{"novelty", "1 / sqrt(1 + seen): 1 for a cell never seen, smaller the more familiar", [](bElem &) { return 1.0f; }, 1.0f},
 };
 const std::array itemOnly = {
     feature{"selected", "the active weapon, or the usable in hand", [](bElem &) { return 0.0f; }},
@@ -68,6 +72,12 @@ const std::array itemOnly = {
 // clang-format on
 
 const std::vector<std::string> defaultItemFeatures = {"type", "subtype", "energy", "ammo", "max_ammo", "selected"};
+
+/// a board cell as one key
+std::uint64_t keyOf(coords c)
+{
+    return ((std::uint64_t) (std::uint32_t) c.x << 32) | (std::uint32_t) c.y;
+}
 
 int indexOf(const std::vector<std::string> &names, std::string_view name)
 {
@@ -122,6 +132,11 @@ std::shared_ptr<chamber> worldBoard(const std::shared_ptr<bElem> &plr)
 }
 } // namespace
 
+std::vector<std::string> cellOnlyFeatureNames()
+{
+    return namesOf(cellOnly);
+}
+
 std::string actionName(action a)
 {
     return std::string(actionTable.at((std::size_t) a).name);
@@ -174,6 +189,9 @@ game::game(config c) : cfg(std::move(c))
     this->itemReads = select(this->itemNames, {elementFeatures(), itemOnly});
     this->inSightAt = indexOf(this->cellNames, "in_sight");
     this->selectedAt = indexOf(this->itemNames, "selected");
+    this->visitsAt = indexOf(this->cellNames, "visits");
+    this->seenAt = indexOf(this->cellNames, "seen");
+    this->noveltyAt = indexOf(this->cellNames, "novelty");
     if (this->cfg.inventorySections.empty())
         for (int s = 0; s < sectionCount; s++)
             this->shownSections.push_back((section) s);
@@ -237,6 +255,50 @@ void game::newEpisode(std::optional<std::uint32_t> seed)
     this->episodeCounts.fill(0.0f);
     this->collected.clear();
     this->opened.clear();
+    this->memory.clear();
+    this->lastCell = NOCOORDS;
+    this->rememberPosition();
+    this->rememberSight();
+}
+
+void game::rememberPosition()
+{
+    const auto plr = player::getActivePlayer();
+    if (!plr)
+        return;
+    const coords at = plr->getStats()->getMyPosition();
+    if (at == this->lastCell || at == NOCOORDS)
+        return;
+    this->lastCell = at;
+    this->memory[keyOf(at)].visits++;
+}
+
+int game::rememberSight()
+{
+    const auto plr = player::getActivePlayer();
+    const auto board = plr ? plr->getBoard() : nullptr;
+    if (!board)
+        return 0;
+    const coords at = plr->getStats()->getMyPosition();
+    const float sight = plr->getViewRadius();
+    const int r = (int) std::ceil(sight);
+    int fresh = 0;
+    for (int dy = -r; dy <= r; dy++)
+        for (int dx = -r; dx <= r; dx++) {
+            const coords cell = at + coords(dx, dy);
+            // the same test as in_sight; cells not built yet are not seen
+            if (cell.distance(at) > sight || !board->getElement(cell))
+                continue;
+            if (this->memory[keyOf(cell)].seen++ == 0)
+                fresh++;
+        }
+    return fresh;
+}
+
+const game::cellMemory *game::recall(coords cell) const
+{
+    const auto it = this->memory.find(keyOf(cell));
+    return it == this->memory.end() ? nullptr : &it->second;
 }
 
 void game::installPatterns() const
@@ -336,6 +398,7 @@ bool game::advance(controlItem control)
         worldBuilder::shrinkAround(plr->getBoard(), at);
     bElem::runLiveElements();
     inputManager::getInstance(true).setControlItem(nothing);
+    this->rememberPosition();
     this->ticks++;
     return !this->isEpisodeFinished();
 }
@@ -374,6 +437,7 @@ float game::makeAction(action a)
         if (aliveBefore && this->isPlayerDead())
             this->stepCounts[(std::size_t) event::death] += 1.0f;
     }
+    this->stepCounts[(std::size_t) event::explore] = (float) this->rememberSight();
     float reward = 0.0f;
     for (std::size_t e = 0; e < (std::size_t) eventCount; e++) {
         this->episodeCounts[e] += this->stepCounts[e];
@@ -447,6 +511,14 @@ void game::fillVision(state &s, const std::shared_ptr<bElem> &plr, const std::sh
                     s.vision[f * cells + at] = this->cellReads[f].read(*e);
             if (this->inSightAt >= 0 && plr)
                 s.vision[(std::size_t) this->inSightAt * cells + at] = cell.distance(seer) <= sight ? 1.0f : 0.0f;
+            if (const auto m = this->recall(cell)) {
+                if (this->visitsAt >= 0)
+                    s.vision[(std::size_t) this->visitsAt * cells + at] = (float) m->visits;
+                if (this->seenAt >= 0)
+                    s.vision[(std::size_t) this->seenAt * cells + at] = (float) m->seen;
+                if (this->noveltyAt >= 0)
+                    s.vision[(std::size_t) this->noveltyAt * cells + at] = 1.0f / std::sqrt(1.0f + (float) m->seen);
+            }
         }
 }
 

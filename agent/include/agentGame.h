@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <map>
 #include <set>
+#include <unordered_map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -63,6 +64,7 @@ enum class event : int {
     mine,     ///< mines and bombs set off by the player's missiles and blasts
     hurt,     ///< energy lost
     death,    ///< avatars lost (the last one included)
+    explore,  ///< cells that came into the player's sight for the first time this episode
     count
 };
 constexpr int eventCount = (int) event::count;
@@ -70,6 +72,9 @@ constexpr int eventCount = (int) event::count;
 std::string eventName(event e);
 std::optional<event> eventByName(std::string_view name);
 using eventCounts = std::array<float, eventCount>;
+/// the names only vision cells have, which game fills itself: "exists", "in_sight" and the
+/// episode's memory of each cell, "visits", "seen" and "novelty"
+std::vector<std::string> cellOnlyFeatureNames();
 
 struct config
 {
@@ -84,8 +89,11 @@ struct config
     bool followPlayer = true;
     /// the fixed centre, counted from the middle of the start area (chamber::origin); used when followPlayer is false
     coords fixedCentre = coords(0, 0);
-    /// what each vision cell holds: element feature names, plus the cell names "exists" (the
-    /// cell is built) and "in_sight" (within the player's view radius). Empty: all of them.
+    /// what each vision cell holds: element feature names, plus the cell names (see
+    /// cellOnlyFeatureNames): "exists" (the cell is built), "in_sight" (within the player's view
+    /// radius), "visits" (times the player stepped onto it this episode), "seen" (steps that
+    /// ended with it in the player's sight) and "novelty" (1 / sqrt(1 + seen): 1 for a cell never
+    /// seen, smaller the more familiar it is). Empty: all of them.
     std::vector<std::string> cellFeatures;
     /// the player's numbers: element and player feature names. Empty: all of them.
     std::vector<std::string> playerFeatures;
@@ -189,6 +197,19 @@ public:
 private:
     void fillVision(state &s, const std::shared_ptr<bElem> &plr, const std::shared_ptr<chamber> &board) const;
     void fillInventory(state &s, const std::shared_ptr<bElem> &plr) const;
+    /// what the episode remembers of a cell, for the novelty channels; by board cell, so it
+    /// outlives chunks going to disk
+    struct cellMemory
+    {
+        std::uint32_t visits = 0;
+        std::uint32_t seen = 0;
+    };
+    /// counts a visit when the player stands on a new cell; runs every tick
+    void rememberPosition();
+    /// counts a sighting of every built cell within the player's view radius; returns how many
+    /// were seen for the first time. Runs at the end of every step.
+    int rememberSight();
+    const cellMemory *recall(coords cell) const;
     /// counts a game event the player's avatar took part in (goe::events)
     void noteEvent(int k, const bElem &subject, const bElem *actor);
     /// hands config::chunkPatterns and defaultPattern to the world builder
@@ -201,6 +222,7 @@ private:
     /// where the names game fills itself sit among the names; -1 when not asked for
     int inSightAt = -1;
     int selectedAt = -1;
+    int visitsAt = -1, seenAt = -1, noveltyAt = -1;
     /// the avatar the score is read from
     unsigned long playerId = 0;
     int lostAvatars = 0;
@@ -212,6 +234,9 @@ private:
     eventCounts stepCounts{}, episodeCounts{};
     /// what counts once an episode: items collected and doors opened, by instance id
     std::set<unsigned long> collected, opened;
+    std::unordered_map<std::uint64_t, cellMemory> memory;
+    /// the cell the active avatar stood on in the last tick
+    coords lastCell = NOCOORDS;
 };
 
 } // namespace goe::agent

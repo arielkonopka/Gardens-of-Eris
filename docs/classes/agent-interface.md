@@ -123,6 +123,7 @@ agent's own avatars did (the actor is a `player`):
 | `mine` | A bomb or landmine was set off the same way. |
 | `hurt` | Energy the same avatar lost during the step (energy gained is not subtracted). |
 | `death` | An avatar was lost, the last one included. |
+| `explore` | Cells that came into the player's sight for the first time this episode (counted at the end of the step). A small weight makes it a count-based exploration bonus. |
 
 ## `goe::agent::config`
 
@@ -135,7 +136,7 @@ How the game is observed and played. Every field has a default.
 | `bool circle` | true | Cells further than the radius from the centre are left empty (their absent values). |
 | `bool followPlayer` | true | Centre the vision on the active player; false: on `fixedCentre`. |
 | `coords fixedCentre` | (0, 0) | The fixed centre, from `chamber::origin`. |
-| `std::vector<std::string> cellFeatures` | all | What each vision cell holds: element feature names plus `exists` and `in_sight`. |
+| `std::vector<std::string> cellFeatures` | all | What each vision cell holds: element feature names plus the cell names (`cellOnlyFeatureNames()`): `exists`, `in_sight`, `visits`, `seen`, `novelty`. |
 | `std::vector<std::string> playerFeatures` | all | Element and player feature names. |
 | `std::vector<section> inventorySections` | all | The sections shown, in order. |
 | `int inventorySlots` | 5 | Items shown per section; more are left out, fewer leave empty slots (type -1). |
@@ -192,7 +193,7 @@ The inventory parts the agent can see: `weapons`, `usables`, `keys`, `mods`, `to
 ## `goe::agent::event`
 
 What the agent's avatar did or suffered in a step: `score`, `collect`, `apple`, `use`, `open`,
-`teleport`, `kill`, `mine`, `hurt`, `death` (see the table above). `eventCount`,
+`teleport`, `kill`, `mine`, `hurt`, `death`, `explore` (see the table above). `eventCount`,
 `eventName(event)`, `eventByName(name)` and `eventCounts` (one `float` per event) go with it.
 
 ## `goe::agent::feature` (`agentFeatures.h`)
@@ -230,7 +231,20 @@ Player features: `x`, `y`, `score`, `shots`, `steps`, `collects`, `view_radius`,
 `difficulty`, `avatars`.
 
 Names only one place has, filled in by `game` itself: `exists` and `in_sight` for cells,
-`selected` for items.
+`selected` for items. Cells also carry the episode's memory of them:
+
+| Name | Value |
+|------|-------|
+| `visits` | times the player stepped onto the cell this episode (the start cell counts once) |
+| `seen` | steps that ended with the cell within the player's view radius (as `in_sight`); cells not built yet are never seen |
+| `novelty` | 1 / sqrt(1 + `seen`): 1 for a cell never seen, falling as it grows familiar |
+
+The memory is kept by `game` per board cell (`cellMemory`), so it survives chunks going to disk,
+and is cleared by `newEpisode`. A visit is counted in every tick the active avatar stands on a
+cell other than in the tick before; sight is counted once per `makeAction`. Unlike an element's
+instance id, these values mean the same thing on every cell, so a network still learns
+patterns that carry over from place to place, while an empty floor no longer looks the same
+before and after a step.
 
 To add a feature, add a row to the table in `agentFeatures.cpp`; it shows up in the C++ defaults,
 in Python's `ELEMENT_FEATURES` or `PLAYER_FEATURES`, and in `describe_features()` without

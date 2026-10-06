@@ -69,7 +69,11 @@ Each part's composition is a list of names (`goe.describe_features()` says what 
   timed states as ticks left (`moving`, `waiting`, `dying`, `teleporting`, ...), `facing` and
   `direction` (0 up, 1 left, 2 down, 3 right, 4 none), `items` carried, `stack` and `below_type`
   (what lies under it);
-- cell features: `exists` (the cell is built), `in_sight` (within the player's view radius);
+- cell features: `exists` (the cell is built), `in_sight` (within the player's view radius),
+  and the episode's memory of the cell: `visits` (times the player stepped onto it), `seen`
+  (steps that ended with it in sight) and `novelty` (1 / sqrt(1 + seen), 1 for a cell never
+  seen). They tell familiar ground from new ground, so a walk over empty floor still changes
+  what the agent sees;
 - player features: `x`, `y` (from the middle of the start area), `score`, `shots`, `steps`,
   `collects`, `view_radius`, `dex`, `difficulty`, `avatars` (spares collected);
 - item features: `selected` (the active weapon, the usable in hand).
@@ -107,6 +111,7 @@ penalises harm:
 | `mine` | mines and bombs set off by the player's missiles and blasts | +5 |
 | `hurt` | energy lost | -0.2 |
 | `death` | avatars lost, the last one included | -50 |
+| `explore` | cells that came into the player's sight for the first time this episode (an exploration bonus) | 0 |
 
 ```python
 game = goe.Game(reward_weights=goe.SHAPED_REWARD)
