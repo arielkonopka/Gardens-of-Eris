@@ -22,6 +22,7 @@ EVENT_MEANINGS = {
     "mine": "mines and bombs set off by the player's missiles and blasts",
     "hurt": "energy lost",
     "death": "avatars lost (the last one included)",
+    "explore": "cells that came into the player's sight for the first time this episode",
 }
 # a reward from events, as a starting point: things done are rewarded, harm is penalised
 SHAPED_REWARD = {"collect": 5.0, "apple": 20.0, "use": 2.0, "open": 10.0, "teleport": 5.0, "kill": 10.0,
@@ -74,7 +75,7 @@ class Game:
     follow_player       centre the vision on the active player; False: on fixed_centre
     fixed_centre        (x, y) counted from the middle of the start area
     cell_features       what each vision cell holds: names from ELEMENT_FEATURES and CELL_FEATURES
-                        (exists, in_sight); None: all of them
+                        (exists, in_sight, visits, seen, novelty); None: all of them
     player_features     names from ELEMENT_FEATURES and PLAYER_FEATURES; None: all of them
     inventory_sections  names from SECTIONS (weapons, usables, keys, mods, tokens); None: all
     inventory_slots     items shown per section

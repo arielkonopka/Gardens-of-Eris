@@ -57,6 +57,13 @@ std::optional<action> freeStep()
     }
     return std::nullopt;
 }
+
+/// waits until the player can act again
+void settle(game &g)
+{
+    for (int s = 0; s < 10 && !g.isEpisodeFinished(); s++)
+        g.makeAction(action::noop);
+}
 } // namespace
 
 TEST(AgentTests, ActionsAreTheGameControls)
@@ -103,7 +110,7 @@ TEST(AgentTests, TheDefaultObservationHasEverything)
     g.newEpisode(555);
     const state s = g.getState();
     const auto names = g.cellFeatureNames();
-    EXPECT_EQ(names.size(), elementFeatures().size() + 2);
+    EXPECT_EQ(names.size(), elementFeatures().size() + cellOnlyFeatureNames().size());
     EXPECT_EQ(names.front(), "type");
     EXPECT_EQ(g.playerFeatureNames().size(), elementFeatures().size() + playerFeatures().size());
     EXPECT_EQ(s.visionSide, 17);
@@ -147,6 +154,58 @@ TEST(AgentTests, TheVisionIsACircleAroundThePlayer)
             EXPECT_EQ(at(g, s, "type", row, col), (float) e->getType()) << row << "," << col;
             EXPECT_EQ(at(g, s, "subtype", row, col), (float) e->getAttrs()->getSubtype());
         }
+}
+
+TEST(AgentTests, CellsRememberVisitsAndSightings)
+{
+    config c = withData();
+    c.cellFeatures = {"type", "in_sight", "visits", "seen", "novelty"};
+    game g(c);
+    g.newEpisode(555);
+    state s = g.getState();
+    // the start cell is visited and seen once; a cell out of sight is new
+    EXPECT_EQ(at(g, s, "visits", 8, 8), 1.0f);
+    EXPECT_EQ(at(g, s, "seen", 8, 8), 1.0f);
+    EXPECT_FLOAT_EQ(at(g, s, "novelty", 8, 8), 1.0f / std::sqrt(2.0f));
+    EXPECT_EQ(at(g, s, "in_sight", 0, 8), 0.0f);
+    EXPECT_EQ(at(g, s, "seen", 0, 8), 0.0f);
+    EXPECT_EQ(at(g, s, "novelty", 0, 8), 1.0f);
+    EXPECT_EQ(at(g, s, "novelty", 0, 0), 1.0f); // outside the circle: never seen
+
+    // a noop keeps the player in place: no new visit, one more sighting
+    g.makeAction(action::noop);
+    s = g.getState();
+    EXPECT_EQ(at(g, s, "visits", 8, 8), 1.0f);
+    EXPECT_EQ(at(g, s, "seen", 8, 8), 2.0f);
+    EXPECT_FLOAT_EQ(at(g, s, "novelty", 8, 8), 1.0f / std::sqrt(3.0f));
+
+    // a step and a step back: the start cell is visited twice, the cell next to it once
+    const auto there = freeStep();
+    ASSERT_TRUE(there);
+    const auto plr = player::getActivePlayer();
+    const coords start = plr->getStats()->getMyPosition();
+    g.makeAction(*there);
+    settle(g);
+    const coords next = player::getActivePlayer()->getStats()->getMyPosition();
+    ASSERT_NE(next, start);
+    const std::map<action, action> back = {{action::moveUp, action::moveDown},
+                                           {action::moveDown, action::moveUp},
+                                           {action::moveLeft, action::moveRight},
+                                           {action::moveRight, action::moveLeft}};
+    g.makeAction(back.at(*there));
+    settle(g);
+    ASSERT_EQ(player::getActivePlayer()->getStats()->getMyPosition(), start);
+    s = g.getState();
+    const coords d = next - start;
+    EXPECT_EQ(at(g, s, "visits", 8, 8), 2.0f);
+    EXPECT_EQ(at(g, s, "visits", 8 + d.y, 8 + d.x), 1.0f);
+    EXPECT_GT(at(g, s, "seen", 8, 8), 2.0f);
+
+    // a new episode forgets
+    g.newEpisode(555);
+    s = g.getState();
+    EXPECT_EQ(at(g, s, "visits", 8, 8), 1.0f);
+    EXPECT_EQ(at(g, s, "seen", 8, 8), 1.0f);
 }
 
 TEST(AgentTests, TheVisionCanStayOnAFixedCell)
@@ -333,12 +392,6 @@ float events(const game &g, event e)
     return g.episodeEvents()[(std::size_t) e];
 }
 
-/// waits until the player can act again
-void settle(game &g)
-{
-    for (int s = 0; s < 10 && !g.isEpisodeFinished(); s++)
-        g.makeAction(action::noop);
-}
 } // namespace
 
 TEST(AgentTests, TheDefaultRewardIsTheScore)
@@ -352,6 +405,23 @@ TEST(AgentTests, TheDefaultRewardIsTheScore)
     }
     EXPECT_GT(reward, 0.0f); // new cells walked
     EXPECT_EQ(reward, events(g, event::score));
+}
+
+TEST(AgentTests, NewCellsInSightCountAsExplore)
+{
+    config c = withData();
+    c.rewardWeights = {{"explore", 1.0f}};
+    game g(c);
+    g.newEpisode(555);
+    // standing still sees nothing new
+    EXPECT_EQ(g.makeAction(action::noop), 0.0f);
+    float reward = 0;
+    for (int s = 0; s < 40 && !g.isEpisodeFinished(); s++) {
+        const auto move = freeStep();
+        reward += g.makeAction(move ? *move : action::noop);
+    }
+    EXPECT_GT(reward, 0.0f);
+    EXPECT_EQ(reward, events(g, event::explore));
 }
 
 TEST(AgentTests, UnknownEventsAreRefused)

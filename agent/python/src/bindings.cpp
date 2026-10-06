@@ -92,7 +92,7 @@ NB_MODULE(_goe, m)
     m.attr("SECTIONS") = sections;
     m.attr("ELEMENT_FEATURES") = namesOf(elementFeatures());
     m.attr("PLAYER_FEATURES") = namesOf(playerFeatures());
-    m.attr("CELL_FEATURES") = std::vector<std::string>{"exists", "in_sight"};
+    m.attr("CELL_FEATURES") = cellOnlyFeatureNames();
     m.attr("ITEM_FEATURES") = std::vector<std::string>{"selected"};
     m.def("describe_features", []() {
         auto all = describe(elementFeatures());
