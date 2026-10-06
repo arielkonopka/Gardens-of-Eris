@@ -57,8 +57,9 @@ A singleton playing sound through OpenAL on its own thread.
   pool used round-robin.
 - `setListenerPosition`, `setListenerChamber`: the player moves the listener.
 - `stopSoundsByElementId(id)`: when an element goes, its looping sounds stop.
-- Music: `setupDifficultyMusic()` and `followDifficulty(d)` play the music list by D with a
-  crossfade (`goe::music::byDifficulty`); `setupSong`, `pauseSong`, `resumeSong`, `moveSong`,
+- Music: `setupDifficultyMusic()`, `followDifficulty(d)` and `followSituation(s)` play the music
+  list by D, with the danger song while a camera or guardian is onto the player, and a crossfade
+  (`goe::music::byDifficulty`); `setupSong`, `pauseSong`, `resumeSong`, `moveSong`,
   `hasSong` handle songs placed on the board.
 - Volumes come from `gameSettings`.
 - The Performer: when `gameSettings` chooses it, the skins.json songs pause and `streamPerformer()`

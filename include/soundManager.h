@@ -176,6 +176,7 @@ private:
     int currentMusic=-1; ///< index into registeredMusic, -1 while none plays
     /// indexes into registeredMusic of the difficulty music, in the music list's order; empty when songs are placed on the board
     std::vector<int> difficultySongs;
+    std::vector<goe::music::songSlot> difficultySlots; ///< the level and role of each of difficultySongs
     std::atomic<int> difficultyNow=0;
     goe::music::byDifficulty musicChoice;
     int fadingMusic=-1; ///< the song fading out while currentMusic fades in, -1 when none

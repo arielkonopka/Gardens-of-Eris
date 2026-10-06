@@ -48,6 +48,7 @@ jobs:
           mkdir -p dist/GardensOfEris
           cp build/GardenOfEris dist/GardensOfEris/
           cp -r GoEoOL/data dist/GardensOfEris/
+          cp LICENSE CREDITS.md dist/GardensOfEris/
           tar -C dist -czf GardensOfEris-linux-x86_64.tar.gz GardensOfEris
 
       - uses: actions/upload-artifact@v4
@@ -92,6 +93,7 @@ jobs:
           mkdir -p dist/GardensOfEris
           cp build/GardenOfEris.exe dist/GardensOfEris/
           cp -r GoEoOL/data dist/GardensOfEris/
+          cp LICENSE CREDITS.md dist/GardensOfEris/
           # Ship the MinGW runtime and library DLLs next to the game
           ldd build/GardenOfEris.exe | awk '/\/ucrt64\// {print $3}' | sort -u | xargs -r -I{} cp {} dist/GardensOfEris/
 

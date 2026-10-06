@@ -520,7 +520,9 @@ int soundManager::setupSong(
 void soundManager::playDifficultyMusic()
 {
     const auto now = goe::music::byDifficulty::clock::now();
-    const int pick = this->musicChoice.choose(this->difficultyNow, (int) this->difficultySongs.size(), now);
+    const bool threatened = this->situationNow.load() != (int) goe::musician::situation::calm;
+    const int pick
+        = this->musicChoice.choose(this->difficultyNow, threatened, this->difficultySlots, now, goe::rng::audio());
     if (pick < 0)
         return;
     const int wanted = this->difficultySongs[pick];
@@ -548,15 +550,19 @@ void soundManager::setupDifficultyMusic()
 {
     const int songs = (int) this->gc->music.size();
     std::vector<int> made;
+    std::vector<goe::music::songSlot> slots;
     for (int c = 0; c < songs; c++) {
         const int at = this->setupSong(0, c, {0.0f, 0.0f, 0.0f}, -1, false);
-        if (at >= 0)
-            made.push_back(at);
+        if (at < 0)
+            continue; // a missing song is left out, the others keep their levels
+        made.push_back(at);
+        slots.push_back({this->gc->music[c].difficulty, this->gc->music[c].danger});
     }
     std::lock_guard<std::mutex> guard(this->snd_mutex);
     for (int at : made)
         this->registeredMusic[at].followsListener = true;
     this->difficultySongs = std::move(made);
+    this->difficultySlots = std::move(slots);
 }
 
 void soundManager::followDifficulty(int d)

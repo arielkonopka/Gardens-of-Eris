@@ -25,32 +25,75 @@
 #include "difficulty.h"
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
+#include <vector>
 
 namespace goe::music {
 
+/// one song of the skin's music list, as the chooser sees it
+struct songSlot
+{
+    int level = 0;       ///< the lowest D the song plays at ("Difficulty" in skins.json)
+    bool danger = false; ///< plays while a camera or a guardian is onto the player ("Play": "danger")
+};
+
 /**
- * @brief Which song plays for the current difficulty, and how far the fade into it has come.
+ * @brief Which song plays for the current difficulty and danger, and how far the fade into it has come.
  *
- * The sound thread asks it every round. A new song is chosen as soon as the first D is known;
+ * The sound thread asks it every round. The songs of the highest level not above D take turns;
+ * below the lowest level the lowest one plays. A new song is chosen as soon as the first D is known;
  * after that D can move the music only once the song has played for difficulty::musicHoldSeconds.
+ * Danger does not wait: a danger song starts at once and plays for at least
+ * difficulty::musicDangerHoldSeconds, then the difficulty music comes back.
  */
 class byDifficulty
 {
 public:
     using clock = std::chrono::steady_clock;
 
-    /// the index of the song to play (difficulty::songFor), -1 when there is no music
-    int choose(int d, int songs, clock::time_point now)
+    /// the index into songs of the song to play, -1 when there is no music.
+    /// roll picks among songs that share a level (or among danger songs).
+    int choose(int d, bool threatened, const std::vector<songSlot> &songs, clock::time_point now, std::uint32_t roll)
     {
-        const int wanted = difficulty::songFor(d, songs);
-        if (wanted == this->current)
-            return this->current;
-        if (this->current >= 0 && this->current < songs
-            && now - this->changed < std::chrono::seconds(difficulty::musicHoldSeconds))
-            return this->current;
-        this->current = wanted;
-        this->changed = now;
-        return this->current;
+        const int n = (int) songs.size();
+        if (n == 0)
+            return this->current = -1;
+        const bool playing = this->current >= 0 && this->current < n;
+        const auto played = now - this->changed;
+        if (threatened) {
+            const int wanted = this->pick(songs, roll, [](const songSlot &s) { return s.danger; });
+            if (wanted >= 0)
+                return this->start(wanted, now);
+        }
+        if (playing) {
+            const auto hold = songs[this->current].danger ? difficulty::musicDangerHoldSeconds
+                                                          : difficulty::musicHoldSeconds;
+            if (played < std::chrono::seconds(hold))
+                return this->current;
+        }
+        const int level = levelFor(d, songs);
+        int wanted = this->pick(songs, roll, [level](const songSlot &s) { return !s.danger && s.level == level; });
+        if (wanted < 0) // only danger songs in the list
+            wanted = this->pick(songs, roll, [](const songSlot &) { return true; });
+        return this->start(wanted, now);
+    }
+
+    /// the level that plays at D: the highest one not above D, or the lowest one when D is below them all
+    static int levelFor(int d, const std::vector<songSlot> &songs)
+    {
+        int best = -1;
+        int lowest = -1;
+        bool any = false;
+        for (const auto &s : songs) {
+            if (s.danger)
+                continue;
+            if (!any || s.level < lowest)
+                lowest = s.level;
+            if (s.level <= d && (best < 0 || s.level > best))
+                best = s.level;
+            any = true;
+        }
+        return best >= 0 ? best : lowest;
     }
 
     /// how loud the chosen song is against the one before it: 0 when it has just started, 1 when the fade is over
@@ -63,6 +106,30 @@ public:
 private:
     int current = -1;
     clock::time_point changed{};
+
+    int start(int wanted, clock::time_point now)
+    {
+        if (wanted != this->current) {
+            this->current = wanted;
+            this->changed = now;
+        }
+        return this->current;
+    }
+
+    /// the playing song when it fits, else one of the fitting songs chosen by roll; -1 when none fits
+    template <typename Fits>
+    int pick(const std::vector<songSlot> &songs, std::uint32_t roll, Fits fits) const
+    {
+        std::vector<int> fitting;
+        for (int c = 0; c < (int) songs.size(); c++)
+            if (fits(songs[c]))
+                fitting.push_back(c);
+        if (fitting.empty())
+            return -1;
+        if (std::ranges::find(fitting, this->current) != fitting.end())
+            return this->current;
+        return fitting[roll % fitting.size()];
+    }
 };
 
 } // namespace goe::music

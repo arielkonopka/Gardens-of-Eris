@@ -20,58 +20,129 @@
    "Music":
    [
      {
+        "Filename":"data/music/ericskiff/15 Prologue.mp3",
+        "Name":"Eric Skiff - Prologue",
+        "Difficulty":0,
+        "gain":0.3
+     },
+     {
         "Filename":"data/music/bacalao/01 Bacalao - Cheat Codes.mp3",
-        "Name":"Song #1",
-        "chamberId":0,
+        "Name":"Bacalao - Cheat Codes",
+        "Difficulty":0,
+        "gain":0.3
+     },
+     {
+        "Filename":"data/music/ericskiff/16 We're all under the stars.mp3",
+        "Name":"Eric Skiff - We're all under the stars",
+        "Difficulty":1,
         "gain":0.3
      },
      {
         "Filename":"data/music/bacalao/02 Bacalao - Gods (remix).mp3",
-        "Name":"Song #2",
-        "chamberId":1,
+        "Name":"Bacalao - Gods (remix)",
+        "Difficulty":1,
         "gain":0.1
-        
+     },
+     {
+        "Filename":"data/music/ericskiff/06 Searching.mp3",
+        "Name":"Eric Skiff - Searching",
+        "Difficulty":2,
+        "gain":0.3
      },
      {
         "Filename":"data/music/bacalao/03 Bacalao - Bungalao.mp3",
-        "Name":"Song #3",
-        "chamberId":1,
+        "Name":"Bacalao - Bungalao",
+        "Difficulty":2,
+        "gain":0.3
+     },
+     {
+        "Filename":"data/music/ericskiff/05 Come and Find Me.mp3",
+        "Name":"Eric Skiff - Come and Find Me",
+        "Difficulty":3,
         "gain":0.3
      },
      {
         "Filename":"data/music/bacalao/03 Bacalao - Shadow of the Beast (remix).mp3",
-        "Name":"Song #4",
-        "chamberId":1,
+        "Name":"Bacalao - Shadow of the Beast (remix)",
+        "Difficulty":3,
+        "gain":0.3
+     },
+     {
+        "Filename":"data/music/ericskiff/02 Underclocked (underunderclocked mix).mp3",
+        "Name":"Eric Skiff - Underclocked (underunderclocked mix)",
+        "Difficulty":4,
         "gain":0.3
      },
      {
         "Filename":"data/music/bacalao/10 Bacalao - Pole Dance.mp3",
-        "Name":"Song #5",
-        "chamberId":1,
+        "Name":"Bacalao - Pole Dance",
+        "Difficulty":4,
+        "gain":0.3
+     },
+     {
+        "Filename":"data/music/ericskiff/01 A Night Of Dizzy Spells.mp3",
+        "Name":"Eric Skiff - A Night Of Dizzy Spells",
+        "Difficulty":5,
         "gain":0.3
      },
      {
         "Filename":"data/music/bacalao/01 Bacalao - Patou Patou.mp3",
-        "Name":"Song #6",
-        "chamberId":1,
+        "Name":"Bacalao - Patou Patou",
+        "Difficulty":5,
+        "gain":0.3
+     },
+     {
+        "Filename":"data/music/ericskiff/03 Chibi Ninja.mp3",
+        "Name":"Eric Skiff - Chibi Ninja",
+        "Difficulty":6,
         "gain":0.3
      },
      {
         "Filename":"data/music/bacalao/04 Bacalao - Protron.mp3",
-        "Name":"Song #7",
-        "chamberId":1,
+        "Name":"Bacalao - Protron",
+        "Difficulty":6,
+        "gain":0.3
+     },
+     {
+        "Filename":"data/music/ericskiff/10 Arpanauts.mp3",
+        "Name":"Eric Skiff - Arpanauts",
+        "Difficulty":7,
         "gain":0.3
      },
      {
         "Filename":"data/music/bacalao/06 Bacalao - Tokyo Tourist.mp3",
-        "Name":"Song #8",
-        "chamberId":1,
+        "Name":"Bacalao - Tokyo Tourist",
+        "Difficulty":7,
+        "gain":0.3
+     },
+     {
+        "Filename":"data/music/ericskiff/13 Digital Native.mp3",
+        "Name":"Eric Skiff - Digital Native",
+        "Difficulty":8,
         "gain":0.3
      },
      {
         "Filename":"data/music/bacalao/07 Bacalao - Kyoto Tourist.mp3",
-        "Name":"Song #9",
-        "chamberId":1,
+        "Name":"Bacalao - Kyoto Tourist",
+        "Difficulty":8,
+        "gain":0.3
+     },
+     {
+        "Filename":"data/music/ericskiff/07 We're the Resistors.mp3",
+        "Name":"Eric Skiff - We're the Resistors",
+        "Difficulty":9,
+        "gain":0.3
+     },
+     {
+        "Filename":"data/music/ericskiff/14 Jumpshot.mp3",
+        "Name":"Eric Skiff - Jumpshot",
+        "Difficulty":10,
+        "gain":0.3
+     },
+     {
+        "Filename":"data/music/ericskiff/12 HHAvok-main.mp3",
+        "Name":"Eric Skiff - HHAvok (main)",
+        "Play":"danger",
         "gain":0.3
      }
    ]

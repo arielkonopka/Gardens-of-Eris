@@ -95,6 +95,8 @@ using musicData=struct ErisMusicData
     int chamberId=-1;
     float gain=1.0;
     coords3d position={0,0,0};
+    int difficulty=0; ///< the lowest D the song plays at ("Difficulty"; its place in the list when missing)
+    bool danger=false; ///< plays while the player is in danger ("Play": "danger")
 };
 
 

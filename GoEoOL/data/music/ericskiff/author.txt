@@ -1,0 +1,13 @@
+Music author:
+Eric Skiff
+http://ericskiff.com/music
+the music is taken from the album Resistor Anthems (2021):
+https://ericskiff.com/music/EricSkiff-ResistorAnthems2021.zip
+
+License:
+https://creativecommons.org/licenses/by/4.0/
+
+Attribution, as the author asks for it:
+Music: Eric Skiff - <song name> - Resistor Anthems - Available at http://EricSkiff.com/music
+
+The songs are fetched with tools/music/fetch-eric-skiff.sh.

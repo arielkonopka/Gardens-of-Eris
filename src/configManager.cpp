@@ -92,6 +92,8 @@ void configManager::configReload()
             md.gain = music[c]["gain"].GetFloat();
         if (music[c].HasMember("chamberId"))
             md.chamberId = music[c]["chamberId"].GetInt();
+        md.difficulty = music[c].HasMember("Difficulty") ? music[c]["Difficulty"].GetInt() : (int) c;
+        md.danger = music[c].HasMember("Play") && std::string(music[c]["Play"].GetString()) == "danger";
         if (music[c].HasMember("Position")) {
             md.position.x = music[c]["Position"][0].GetFloat();
             md.position.y = music[c]["Position"][1].GetFloat();

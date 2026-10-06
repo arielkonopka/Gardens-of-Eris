@@ -200,22 +200,49 @@ TEST(DifficultyTests, HoundComesForACampingPlayerAndGivesUpWhenTheyLeave)
 TEST(DifficultyTests, MusicFollowsTheDifficultyWithAHoldAndACrossfade)
 {
     using namespace std::chrono_literals;
-    EXPECT_EQ(difficulty::songFor(0, 9), 0);
-    EXPECT_EQ(difficulty::songFor(4, 9), 4);
-    EXPECT_EQ(difficulty::songFor(23, 9), 8); // the last song plays on
-    EXPECT_EQ(difficulty::songFor(3, 0), -1);
+    std::vector<goe::music::songSlot> nine;
+    for (int c = 0; c < 9; c++)
+        nine.push_back({c, false});
+    EXPECT_EQ(goe::music::byDifficulty::levelFor(0, nine), 0);
+    EXPECT_EQ(goe::music::byDifficulty::levelFor(4, nine), 4);
+    EXPECT_EQ(goe::music::byDifficulty::levelFor(23, nine), 8); // the last song plays on
 
     goe::music::byDifficulty music;
     const auto t0 = goe::music::byDifficulty::clock::now();
-    EXPECT_EQ(music.choose(0, 9, t0), 0); // the first song starts at once, fading in
+    EXPECT_EQ(music.choose(3, false, {}, t0, 0), -1); // no music
+    EXPECT_EQ(music.choose(0, false, nine, t0, 0), 0); // the first song starts at once, fading in
     EXPECT_FLOAT_EQ(music.mix(t0), 0.0f);
     EXPECT_NEAR(music.mix(t0 + 2500ms), 0.5f, 0.01f);
     EXPECT_FLOAT_EQ(music.mix(t0 + 5s), 1.0f);
     // D goes up, but the song has not played long enough yet
-    EXPECT_EQ(music.choose(1, 9, t0 + 10s), 0);
-    EXPECT_EQ(music.choose(1, 9, t0 + 23s), 1);
+    EXPECT_EQ(music.choose(1, false, nine, t0 + 10s, 0), 0);
+    EXPECT_EQ(music.choose(1, false, nine, t0 + 23s, 0), 1);
     EXPECT_FLOAT_EQ(music.mix(t0 + 23s), 0.0f);
     // walking back over the step does not flip it straight back
-    EXPECT_EQ(music.choose(0, 9, t0 + 30s), 1);
-    EXPECT_EQ(music.choose(0, 9, t0 + 46s), 0);
+    EXPECT_EQ(music.choose(0, false, nine, t0 + 30s, 0), 1);
+    EXPECT_EQ(music.choose(0, false, nine, t0 + 46s, 0), 0);
+}
+
+TEST(DifficultyTests, SongsShareLevelsAndADangerSongCutsIn)
+{
+    using namespace std::chrono_literals;
+    // two songs from D 0, one from D 2, a gap, one from D 5, and a danger song
+    const std::vector<goe::music::songSlot> songs
+        = {{0, false}, {0, false}, {2, false}, {5, false}, {0, true}};
+    EXPECT_EQ(goe::music::byDifficulty::levelFor(1, songs), 0);
+    EXPECT_EQ(goe::music::byDifficulty::levelFor(4, songs), 2); // between levels the lower one plays
+    EXPECT_EQ(goe::music::byDifficulty::levelFor(9, songs), 5);
+    EXPECT_EQ(goe::music::byDifficulty::levelFor(-1, {{3, false}, {7, false}}), 3); // below them all, the lowest
+
+    goe::music::byDifficulty music;
+    const auto t0 = goe::music::byDifficulty::clock::now();
+    EXPECT_EQ(music.choose(0, false, songs, t0, 1), 1); // the roll picks among the songs of a level
+    EXPECT_EQ(music.choose(0, false, songs, t0 + 30s, 0), 1); // the playing one stays while it fits
+    // danger does not wait for the hold, and the danger song never plays for D alone
+    EXPECT_EQ(music.choose(0, true, songs, t0 + 31s, 0), 4);
+    EXPECT_EQ(music.choose(9, false, songs, t0 + 35s, 0), 4); // the danger song holds a little
+    EXPECT_EQ(music.choose(9, false, songs, t0 + 41s, 0), 3); // then D picks again at once
+    // a list of only danger songs still plays something
+    goe::music::byDifficulty lone;
+    EXPECT_EQ(lone.choose(0, false, {{0, true}}, t0, 7), 0);
 }
