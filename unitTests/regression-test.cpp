@@ -491,3 +491,145 @@ TEST(RegressionTests, ExplosionsAreHeard)
         bElem::runLiveElements();
     EXPECT_TRUE(log.has(bElemTypes::_simpleBombType, "Explosives/Explode"));
 }
+
+namespace {
+/**
+ * a perfect maze of n x n rooms (cells at odd coordinates, walls between them), carved by a
+ * depth first walk with a fixed seed, with the player walled into the top left room
+ */
+std::shared_ptr<chamber> mazeWithPlayer(int n, std::shared_ptr<bElem> &plr)
+{
+    auto mc = roomWithPlayer(coords(2 * n + 3, 2 * n + 3), plr);
+    auto solid = [&mc](int x, int y) { elementFactory::generateAnElement<wall>(mc, 0)->stepOnElement(mc->getElement(x, y)); };
+    // the player stays in the corner outside the maze, out of every monster's sight
+    for (int x = 1; x < 2 * n + 2; x++)
+        for (int y = 1; y < 2 * n + 2; y++)
+            if (x % 2 == 1 || y % 2 == 1)
+                solid(x, y);
+    std::vector<bool> carved(n * n, false);
+    std::vector<coords> walk{coords(0, 0)};
+    carved[0] = true;
+    unsigned int seed = 23;
+    while (!walk.empty()) {
+        coords c = walk.back();
+        std::vector<coords> next;
+        for (auto d : {coords(1, 0), coords(-1, 0), coords(0, 1), coords(0, -1)}) {
+            coords m(c.x + d.x, c.y + d.y);
+            if (m.x >= 0 && m.y >= 0 && m.x < n && m.y < n && !carved[m.y * n + m.x])
+                next.push_back(m);
+        }
+        if (next.empty()) {
+            walk.pop_back();
+            continue;
+        }
+        seed = seed * 1103515245u + 12345u;
+        coords m = next[(seed >> 16) % next.size()];
+        carved[m.y * n + m.x] = true;
+        // the room and the wall between the two rooms become floor
+        for (auto cell : {coords(2 * m.x + 2, 2 * m.y + 2), coords(c.x + m.x + 2, c.y + m.y + 2), coords(2 * c.x + 2, 2 * c.y + 2)})
+            if (mc->getElement(cell)->getType() == bElemTypes::_wallType)
+                mc->getElement(cell)->removeElement();
+        walk.push_back(m);
+    }
+    return mc;
+}
+
+/// the cells an element stands on over the given number of ticks, and its longest stay in one cell
+std::pair<size_t, int> roamed(const std::shared_ptr<bElem> &e, int ticks)
+{
+    std::set<std::pair<int, int>> cells;
+    coords last = e->getStats()->getMyPosition();
+    int still = 0, longest = 0;
+    for (int c = 0; c < ticks; c++) {
+        bElem::runLiveElements();
+        coords now = e->getStats()->getMyPosition();
+        cells.insert({now.x, now.y});
+        still = now == last ? still + 1 : 0;
+        longest = std::max(longest, still);
+        last = now;
+    }
+    return {cells.size(), longest};
+}
+} // namespace
+
+// Monster thread of 2026-10-06: a monster that saw rubbish, a gun or a broken apple down a
+// corridor turned to it and waited, and the wait started over each turn, so it froze for good.
+TEST(RegressionTests, MonstersWalkToWhatTheySee)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(15, 5), plr);
+    auto mon = elementFactory::generateAnElement<monster>(mc, 0);
+    mon->stepOnElement(mc->getElement(3, 3));
+    auto pile = elementFactory::generateAnElement<rubbish>(mc, 0);
+    pile->stepOnElement(mc->getElement(11, 3));
+    for (int c = 0; c < 500 && !pile->getStats()->isCollected(); c++)
+        bElem::runLiveElements();
+    EXPECT_TRUE(pile->getStats()->isCollected());
+    EXPECT_TRUE(pile->getStats()->getCollector().lock() == mon);
+}
+
+// Monster thread of 2026-10-06: a monster with a key that saw the key's door froze in front of it,
+// because monsters cannot open doors by walking into them. It now unlocks the door and goes on.
+TEST(RegressionTests, MonstersOpenDoorsTheyHaveKeysFor)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(15, 5), plr);
+    auto mon = elementFactory::generateAnElement<monster>(mc, 0);
+    mon->stepOnElement(mc->getElement(3, 3));
+    ASSERT_TRUE(mon->collect(elementFactory::generateAnElement<key>(mc, 2)));
+    auto gate = elementFactory::generateAnElement<door>(mc, 2);
+    gate->stepOnElement(mc->getElement(9, 3));
+    for (int c = 0; c < 500 && !gate->getAttrs()->isOpen(); c++)
+        bElem::runLiveElements();
+    EXPECT_TRUE(gate->getAttrs()->isOpen());
+    EXPECT_NE(mon->getStats()->getMyPosition(), coords(3, 3));
+}
+
+// Monster thread of 2026-10-06: an idle monster only walked straight and turned at walls, so in a
+// maze it paced one corridor back and forth (9 of 449 cells). Idle creatures now roam the maze.
+TEST(RegressionTests, IdleMonstersAndDronesRoamTheMaze)
+{
+    const int n = 15, cells = 2 * n * n - 1; // n is odd, so (n + 1, n + 1) is the middle room
+    std::shared_ptr<bElem> plr;
+    auto mc = mazeWithPlayer(n, plr);
+    auto mon = elementFactory::generateAnElement<monster>(mc, 0);
+    mon->stepOnElement(mc->getElement(n + 1, n + 1));
+    auto [seen, still] = roamed(mon, 25000);
+    EXPECT_GT(seen, (size_t) cells / 2);
+    EXPECT_LT(still, 5 * 5);
+    mon->disposeElement();
+
+    // the plain patrol and the collector roam the same way
+    for (int kind : {(int) puppetMasterFR::patrol, (int) puppetMasterFR::collector}) {
+        auto drone = elementFactory::generateAnElement<patrollingDrone>(mc, 0);
+        drone->stepOnElement(mc->getElement(n + 1, n + 1));
+        drone->attachController(puppetMasterFR::create(mc, kind));
+        auto [droneSeen, droneStill] = roamed(drone, 25000);
+        EXPECT_GT(droneSeen, (size_t) cells / 2) << "kind " << kind;
+        drone->disposeElement();
+    }
+}
+
+// Monster thread of 2026-10-06: a drone that walked into a loose controller picked it up and
+// dropped it straight back into the same cell, every turn, so it stood there for good.
+TEST(RegressionTests, DronesWalkAroundLooseControllers)
+{
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(9, 9), plr);
+    auto drone = elementFactory::generateAnElement<patrollingDrone>(mc, 0);
+    drone->stepOnElement(mc->getElement(4, 5));
+    drone->attachController(puppetMasterFR::create(mc, puppetMasterFR::wallFollower));
+    drone->getStats()->setWaiting(0);
+    auto loose = puppetMasterFR::create(mc, puppetMasterFR::hunter);
+    loose->stepOnElement(mc->getElement(4, 4));
+    drone->getStats()->setMyDirection(dir::direction::UP); // facing it
+    EXPECT_FALSE(drone->collect(loose));
+    auto [seen, still] = roamed(drone, 500);
+    EXPECT_GT(seen, (size_t) 5);
+    EXPECT_FALSE(loose->getStats()->isCollected());
+    // it stays on the board (the drone may push it about), where the player can pick it up
+    coords at = loose->getStats()->getMyPosition();
+    ASSERT_NE(at, NOCOORDS);
+    EXPECT_TRUE(mc->getElement(at) == loose);
+    EXPECT_TRUE(plr->collect(loose));
+}

@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "monster.h"
+#include "roam.h"
 
 bool monster::additionalProvisioning(int subtype)
 {
@@ -61,11 +62,9 @@ bool monster::checkNeigh()
 #ifdef _VerbousMode_
         std::cout << "  ** CHK isCollectible\n";
 #endif
-        if (e->getAttrs()->isCollectible() && this->getAttrs()->canCollect()) {
-            this->collect(e);
+        // one item a turn; the next one is picked up on the next turn
+        if (e->getAttrs()->isCollectible() && this->getAttrs()->canCollect() && this->collect(e)) {
             this->getStats()->setWaiting(GoEConstants::_mov_delay);
-            r = true;
-            /// we do that on purpose, so it would be continued in next cycle
             return true;
         }
 #ifdef _VerbousMode_
@@ -96,16 +95,17 @@ bool monster::checkNeigh()
                     && ((this->getAttrs()->canCollect()
                          && this->getAttrs()->getInventory()->getActiveWeapon() != nullptr)
                         || this->weapon != nullptr)) {
+                    // the native gun first, else the one from the inventory - surprise thing:)
+                    std::shared_ptr<bElem> gun = this->weapon;
+                    if (!gun)
+                        gun = this->getAttrs()->getInventory()->getActiveWeapon();
                     this->getStats()->setFacing(d);
-                    if (this->weapon != nullptr) {
-                        this->weapon->use(shared_from_this()); // shoot an object with native gun
-                    } else if (this->getAttrs()->getInventory()->getActiveWeapon()) {
-                        this->getAttrs()->getInventory()->getActiveWeapon()->use(
-                            shared_from_this()); // shoot with the one from the inventory - surprise thing:)
-                    }
+                    // a gun that cannot fire nor is charging is empty: the monster goes on its way
+                    if (!gun->use(shared_from_this()) && !gun->getStats()->isWaiting())
+                        break;
                     this->getStats()->setWaiting(
                         GoEConstants::_mov_delay); // will wait next couple times
-                    break;
+                    return true;
                 }
                 // if it is something interesting, go and fetch it
                 if (e->getType() == bElemTypes::_stash || e->getType() == bElemTypes::_rubishType
@@ -114,11 +114,9 @@ bool monster::checkNeigh()
                     || e->getAttrs()
                            ->isWeapon()) // take the dir::direction towards remainings from other objects, broken apples or guns
                 {
-                    this->getStats()->setMyDirection(d);
-                    this->getStats()->setFacing(d);
-                    this->inited = false;
-                    this->getStats()->setWaiting(GoEConstants::_mov_delay); // will wait...
-                    return false;
+                    // walk there now: waiting first would start the same wait again next turn,
+                    // and the monster would never move. Blocked, it roams on instead.
+                    return goe::roam::step(shared_from_this(), d);
                 }
 
                 // closed door? and we got a key?
@@ -127,10 +125,12 @@ bool monster::checkNeigh()
                     && (this->getAttrs()->getInventory()->countTokens(bElemTypes::_key,
                                                                       e->getAttrs()->getSubtype())
                         > 0)) {
-                    this->getStats()->setMyDirection(d);
-                    this->inited = false;
-                    this->getStats()->setWaiting(GoEConstants::_mov_delay);
-                    return false;
+                    // right in front of it, the monster unlocks the door with its key
+                    if (e == this->getElementInDirection(d)) {
+                        goe::roam::turn(shared_from_this(), d);
+                        return e->interact(shared_from_this());
+                    }
+                    return goe::roam::step(shared_from_this(), d);
                 }
                 // we do not see behind non steppable objects
                 if (!e->getAttrs()->isSteppable() || e->getElementInDirection(d) == nullptr)
@@ -143,20 +143,16 @@ bool monster::checkNeigh()
 }
 bool monster::mechanics()
 {
-    //dir::direction newDir = dir::direction::NODIRECTION;
-    dir::direction newDir = (dir::direction)(((int) this->getStats()->getMyDirection() + 1) % 4);
     if (!bElem::mechanics())
         return false;
+    // bites, shoots, picks up or walks to something it saw
     if (this->checkNeigh())
         return true;
     if (this->getStats()->isWaiting())
         return true;
-    if (this->moveInDirection(this->getStats()->getMyDirection()))
-        return true;
-    this->getStats()->setMyDirection(newDir);
-    this->getStats()->setFacing(newDir);
-    this->getStats()->setWaiting(5);
-    return true;
+    // nothing to do: roam the maze, each monster keeping the wall on its own side
+    return goe::roam::followWall(shared_from_this(),
+                                 this->rotA == 1 ? goe::roam::hand::left : goe::roam::hand::right);
 }
 
 bool monster::steppableNeigh()

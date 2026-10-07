@@ -37,13 +37,13 @@ bool puppetMasterCollector::drive(std::shared_ptr<bElem> body)
     for (int c = 0; c < 4; c++) {
         auto d = (dir::direction) (((int) cdir + c) % 4);
         auto seen = this->firstSolidInDirection(body, d);
-        if (!seen || !seen->getAttrs()->isCollectible() || seen->getType() == this->getType())
+        if (!seen || !seen->getAttrs()->isCollectible() || !seen->collectibleBy(*body))
             continue;
         if (d == cdir)
-            return this->step(body, d) || this->wander(body);
+            return goe::roam::step(body, d) || goe::roam::followWall(body);
         // turn towards it one quarter at a time, like the original collector did
-        this->turn(body, d == behind(cdir) ? ((goe::rng::gameplay()() % 2) ? leftOf(cdir) : rightOf(cdir)) : d);
+        goe::roam::turn(body, d == goe::roam::behind(cdir) ? ((goe::rng::gameplay()() % 2) ? goe::roam::leftOf(cdir) : goe::roam::rightOf(cdir)) : d);
         return true;
     }
-    return this->wander(body);
+    return goe::roam::followWall(body);
 }

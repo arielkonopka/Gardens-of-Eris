@@ -32,7 +32,7 @@ bool puppetMasterHound::drive(std::shared_ptr<bElem> body)
 {
     auto prey = player::getActivePlayer();
     if (!prey || prey->getBoard() != body->getBoard())
-        return this->wander(body);
+        return goe::roam::followWall(body);
     coords p = prey->getStats()->getMyPosition();
     if (this->home == NOCOORDS)
         this->home = difficulty::areaOf(p);
@@ -45,7 +45,7 @@ bool puppetMasterHound::drive(std::shared_ptr<bElem> body)
         return true;
     if (this->followTrail(body, seen != nullptr, body->getStats()->getMyPosition(), searchRadius))
         return true;
-    return this->followWall(body);
+    return goe::roam::followWall(body);
 }
 
 void puppetMasterHound::watch()

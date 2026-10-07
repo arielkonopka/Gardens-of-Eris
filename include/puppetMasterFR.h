@@ -23,6 +23,7 @@
 #define PUPPETMASTERFR_H
 
 #include <bElem.h>
+#include "roam.h"
 
 /**
  * @brief A controller: once handed to a patrolling drone, it decides how the drone moves.
@@ -50,7 +51,9 @@ public:
     puppetMasterFR() = default;
     ~puppetMasterFR() override = default;
     int getType() const override;
-    bool collectOnAction(bool c, std::shared_ptr<bElem> who) override;
+    /// a drone never picks up a loose controller: controllers are only handed over by the player
+    /// (patrollingDrone::interact), so to a drone a loose one is in the way like a wall
+    bool collectibleBy(const bElem &who) const override;
 
     /// called once, when the controller is handed to its body
     virtual void onAttach(std::shared_ptr<bElem> body);
@@ -60,12 +63,6 @@ public:
     coords getLastSeen() const { return this->lastSeen; }
 
 protected:
-    /// the default behaviour: go straight, turn at random or when blocked
-    bool wander(std::shared_ptr<bElem> body);
-    /// turns the body to face d and makes it wait, without moving
-    void turn(std::shared_ptr<bElem> body, dir::direction d);
-    /// moves the body in d, facing that way; returns false when blocked
-    bool step(std::shared_ptr<bElem> body, dir::direction d);
     /// when the prey is right next to the body: turns to it, hurts it and rests; false otherwise
     bool bite(std::shared_ptr<bElem> body, std::shared_ptr<bElem> prey, int damage);
     /**
@@ -78,14 +75,9 @@ protected:
      * walks towards lastSeen, around walls, never leaving the circle of radius around centre.
      * Next to that cell: faces the player when they are still in sight, otherwise they are not
      * where expected, and the trail goes cold. Returns false when there is no trail to follow
-     * (cold, or no walk leads there), so the caller patrols instead.
+     * (cold, or no walk leads there), so the caller roams instead (goe::roam).
      */
     bool followTrail(std::shared_ptr<bElem> body, bool preyInSight, coords centre, int radius);
-    /**
-     * patrols the maze along its walls (right-hand rule). When radius > 0, cells outside the
-     * circle of radius around centre count as walls, so the patrol keeps inside it.
-     */
-    bool followWall(std::shared_ptr<bElem> body, coords centre = NOCOORDS, int radius = 0);
     /// where the player was last seen; NOCOORDS when the trail is cold
     coords lastSeen = NOCOORDS;
     /// the one of the four directions that points most directly from one cell to another
@@ -97,9 +89,6 @@ protected:
      */
     static dir::direction pathTowards(std::shared_ptr<bElem> body, coords goal, coords centre, int radius);
     static int distance2(coords a, coords b) { return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y); }
-    static dir::direction leftOf(dir::direction d) { return (dir::direction) (((int) d + 1) % 4); }
-    static dir::direction rightOf(dir::direction d) { return (dir::direction) (((int) d + 3) % 4); }
-    static dir::direction behind(dir::direction d) { return (dir::direction) (((int) d + 2) % 4); }
 };
 
 #endif // PUPPETMASTERFR_H

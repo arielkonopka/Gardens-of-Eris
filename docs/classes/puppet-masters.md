@@ -1,4 +1,4 @@
-# Controllers: puppet masters and line of sight
+# Controllers: puppet masters, roaming and line of sight
 
 A puppet master is an element (type 77) that, once handed to a `patrollingDrone`, decides how the
 drone moves. The same drone behaves differently depending on which controller drives it. The kind
@@ -27,30 +27,29 @@ The base class and the patrol behaviour.
 | `enum kind` | `patrol`, `collector`, `hunter`, `wallFollower`, `guardian`, `hound`; kinds below `looseKinds` are placed in the maze for the player to find. |
 | `static create(board, subtype)` | Makes the controller class matching the subtype. |
 | `virtual onAttach(body)` | Called once when the controller is handed to its body. |
-| `virtual drive(body)` | Moves the body one step; the patrol wanders. |
+| `virtual drive(body)` | Moves the body one step; the patrol roams the maze keeping the wall on its left (`goe::roam`). |
 | `getLastSeen()` | Where this controller last saw the player; `NOCOORDS` when the trail is cold. |
+| `collectibleBy(who)` | False for drones: a drone never picks up a loose controller, it walks around it. |
 
 Helpers for subclasses (protected):
 
 | Helper | What it does |
 |---|---|
-| `wander(body)` | Go straight, turn at random or when blocked. |
-| `turn(body, d)`, `step(body, d)` | Face a direction and wait; move one cell. |
 | `bite(body, prey, damage)` | Hurt the prey when it is right next to the body, then rest. |
 | `lookout(body, range)` | The active player when they are within range with nothing opaque in between (`goe::sight`); remembers the cell as `lastSeen`. Chasers never read the player's position any other way. |
 | `followTrail(body, preyInSight, centre, radius)` | Walk to `lastSeen` around walls, never leaving the circle; false when there is no trail to follow. |
-| `followWall(body, centre, radius)` | Patrol along the walls (right-hand rule), treating cells outside the circle as walls. |
 | `pathTowards(body, goal, centre, radius)` | First step of a shortest walk to a cell next to `goal`, within the circle. |
-| `towards`, `distance2`, `leftOf`, `rightOf`, `behind` | Direction and distance arithmetic. |
+| `towards`, `distance2` | Direction and distance arithmetic. |
 
 To add a behaviour: subclass `puppetMasterFR`, override `drive()` (and `onAttach()` if needed),
 add a kind to the enum and to `create()`. A new chaser uses `lookout`, `followTrail` and
-`followWall`, never the player's position directly.
+`goe::roam::followWall`, never the player's position directly. Nothing that moves stands idle:
+with nothing to do it roams with `goe::roam`.
 
 ## `puppetMasterCollector` (`puppetMasterCollector.h`)
 
 Drives its body towards collectibles it sees in a straight line (`firstSolidInDirection`), and
-wanders otherwise.
+roams the maze otherwise.
 
 ## `puppetMasterHunter` (`puppetMasterHunter.h`)
 
@@ -80,6 +79,20 @@ drone driven by a hound `spawnDistance` (15) cells away. It patrols the walls un
 player (within `searchRadius`, 55), chases and bites (`biteDamage` 5), follows the trail when they
 slip away, and dies when they leave the area. One hound at a time; the patience starts over after
 each.
+
+## `goe::roam` (namespace, `roam.h`)
+
+How creatures move about the maze when nothing else calls them. Monsters and every controller use
+it, so an idle creature never stands still: it roams the maze along its walls.
+
+- `hand`: `right` or `left`, the side a creature keeps the wall on.
+- `followWall(body, side, centre, radius)`: one move of the wall follower rule. Around a corner
+  when the wall at its side just ended, else straight, towards the wall, away from it, and back
+  only in a dead end. One move in 23 it lets go of a corner, so it does not circle a pillar
+  forever. When `radius > 0`, cells outside the circle around `centre` count as walls (a
+  guardian's leash). Always does something: a step, or a turn when walled in.
+- `turn(body, d)`, `step(body, d)`: face a direction and wait; move one cell and wait.
+- `leftOf`, `rightOf`, `behind`: direction arithmetic.
 
 ## `goe::sight` (namespace, `lineOfSight.h`)
 

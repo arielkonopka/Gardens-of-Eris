@@ -53,7 +53,7 @@ bool puppetMasterGuardian::fight(std::shared_ptr<bElem> body, std::shared_ptr<bE
         return true;
     coords b = body->getStats()->getMyPosition(), p = prey->getStats()->getMyPosition();
     if ((p.x == b.x || p.y == b.y) && this->gun && !this->gun->getStats()->isWaiting()) {
-        this->turn(body, towards(b, p));
+        goe::roam::turn(body, towards(b, p));
         this->gun->use(body);
         return true;
     }
@@ -97,9 +97,9 @@ bool puppetMasterGuardian::drive(std::shared_ptr<bElem> body)
     // 4. strayed to the edge of the leash: head back towards the camera
     if (distance2(me, centre) > (leash - 2) * (leash - 2)) {
         auto d = pathTowards(body, centre, centre, leash);
-        if (d != dir::direction::NODIRECTION && this->step(body, d))
+        if (d != dir::direction::NODIRECTION && goe::roam::step(body, d))
             return true;
     }
     // 5. nothing going on: patrol the walls around the camera
-    return this->followWall(body, centre, leash - 2);
+    return goe::roam::followWall(body, goe::roam::hand::right, centre, leash - 2);
 }

@@ -59,16 +59,11 @@ int puppetMasterFR::getType() const
     return bElemTypes::_puppetMasterType;
 }
 
-bool puppetMasterFR::collectOnAction(bool c, std::shared_ptr<bElem> who)
+bool puppetMasterFR::collectibleBy(const bElem &who) const
 {
-    bool r = bElem::collectOnAction(c, who);
-    // a drone that walks into a loose controller does not get driven by it, it drops it again;
-    // controllers are only handed over by the player (patrollingDrone::interact)
-    if (c && r && who && who->getType() == bElemTypes::_patrollingDrone
-        && who->getAttrs()->getInventory()->retrieveCollectibleFromInventory(
-            this->getStats()->getInstanceId(), false))
-        return who->dropItem(this->getStats()->getInstanceId());
-    return true;
+    // a drone that walked into a loose controller used to pick it up and drop it straight back
+    // into the same cell, again every turn, so it stood there for good
+    return who.getType() != bElemTypes::_patrollingDrone;
 }
 
 void puppetMasterFR::onAttach(std::shared_ptr<bElem> body)
@@ -90,7 +85,7 @@ bool puppetMasterFR::bite(std::shared_ptr<bElem> body, std::shared_ptr<bElem> pr
     coords b = body->getStats()->getMyPosition(), p = prey->getStats()->getMyPosition();
     if (std::abs(p.x - b.x) + std::abs(p.y - b.y) != 1)
         return false;
-    this->turn(body, towards(b, p));
+    goe::roam::turn(body, towards(b, p));
     prey->hurt(damage);
     body->getStats()->setWaiting(GoEConstants::_mov_delay * 2);
     return true;
@@ -119,7 +114,7 @@ bool puppetMasterFR::followTrail(std::shared_ptr<bElem> body, bool preyInSight, 
     }
     if (std::abs(this->lastSeen.x - me.x) + std::abs(this->lastSeen.y - me.y) <= 1) {
         if (preyInSight && !(this->lastSeen == me)) {
-            this->turn(body, towards(me, this->lastSeen));
+            goe::roam::turn(body, towards(me, this->lastSeen));
             return true;
         }
         this->lastSeen = NOCOORDS; // checked, nobody here
@@ -130,87 +125,16 @@ bool puppetMasterFR::followTrail(std::shared_ptr<bElem> body, bool preyInSight, 
         this->lastSeen = NOCOORDS; // cannot get there
         return false;
     }
-    if (!this->step(body, d))
-        this->turn(body, d); // something walked into the way; try again next time
-    return true;
-}
-
-bool puppetMasterFR::followWall(std::shared_ptr<bElem> body, coords centre, int radius)
-{
-    coords me = body->getStats()->getMyPosition();
-    // a body already outside its circle (a loaded game, a push) patrols freely until it is back
-    const bool bounded = radius > 0 && !(centre == NOCOORDS) && distance2(me, centre) <= radius * radius;
-    auto inside = [&](coords offset) {
-        return !bounded || distance2(coords(me.x + offset.x, me.y + offset.y), centre) <= radius * radius;
-    };
-    auto solid = [&](coords offset) {
-        auto e = body->getElementInDirection(offset);
-        return !inside(offset) || !e || !e->getAttrs()->isSteppable();
-    };
-    auto go = [&](dir::direction d) { return inside(dir::directionToCoordsMap[(int) d]) && this->step(body, d); };
-    dir::direction cdir = body->getStats()->getMyDirection();
-    dir::direction right = rightOf(cdir);
-    // right-hand rule: when the wall on our right just ended, go around its corner;
-    // otherwise go straight, then right, then left, and turn back only in a dead end.
-    // In an open room this walks straight until it meets a wall, instead of circling. Now and
-    // then it lets go of a corner, so it does not circle a pillar forever, but finds the maze's walls.
-    coords toRight = dir::directionToCoordsMap[(int) right];
-    coords toBack = dir::directionToCoordsMap[(int) behind(cdir)];
-    coords backRight(toRight.x + toBack.x, toRight.y + toBack.y);
-    const bool letGo = goe::rng::gameplay()() % 23 == 0;
-    if (!letGo && !solid(toRight) && solid(backRight) && go(right))
-        return true;
-    for (auto d : {cdir, right, leftOf(cdir), behind(cdir)})
-        if (go(d))
-            return true;
-    this->turn(body, right);
+    if (!goe::roam::step(body, d))
+        goe::roam::turn(body, d); // something walked into the way; try again next time
     return true;
 }
 
 bool puppetMasterFR::drive(std::shared_ptr<bElem> body)
 {
-    return this->wander(body);
-}
-
-void puppetMasterFR::turn(std::shared_ptr<bElem> body, dir::direction d)
-{
-    body->getStats()->setMyDirection(d);
-    body->getStats()->setFacing(d);
-    body->getStats()->setWaiting(GoEConstants::_mov_delay);
-}
-
-bool puppetMasterFR::step(std::shared_ptr<bElem> body, dir::direction d)
-{
-    if (!body->moveInDirection(d))
-        return false;
-    body->getStats()->setMyDirection(d);
-    body->getStats()->setFacing(d);
-    body->getStats()->setWaiting(GoEConstants::_mov_delay);
-    return true;
-}
-
-bool puppetMasterFR::wander(std::shared_ptr<bElem> body)
-{
-    dir::direction cdir = body->getStats()->getMyDirection();
-    dir::direction left = leftOf(cdir), right = rightOf(cdir);
-    auto open = [&body](dir::direction d) {
-        auto e = body->getElementInDirection(d);
-        return e && e->getAttrs()->isSteppable();
-    };
-    int roulette = goe::rng::gameplay()() % 555;
-    // now and then take a side passage, each side with the same probability
-    if (roulette == 5 && open(left)) {
-        this->turn(body, left);
-        return true;
-    }
-    if (roulette == 25 && open(right)) {
-        this->turn(body, right);
-        return true;
-    }
-    if (this->step(body, cdir))
-        return true;
-    this->turn(body, (goe::rng::gameplay()() % 2 == 0) ? right : left);
-    return true;
+    // the plain patrol roams the maze keeping the wall on its left, so it does not walk the same
+    // way as the wall follower
+    return goe::roam::followWall(body, goe::roam::hand::left);
 }
 
 dir::direction puppetMasterFR::pathTowards(std::shared_ptr<bElem> body, coords goal, coords centre, int radius)

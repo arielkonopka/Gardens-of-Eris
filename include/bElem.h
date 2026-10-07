@@ -96,6 +96,8 @@ public:
     virtual bool mechanics();
     virtual bool stepOnAction(bool step,std::shared_ptr<bElem> who);
     virtual bool collectOnAction(bool collected,std::shared_ptr<bElem> who);
+    /// false when this collectible must not end up with who; who then treats it as an obstacle
+    virtual bool collectibleBy(const bElem &who) const;
     virtual bool use(std::shared_ptr<bElem> use);
     virtual bool interact(std::shared_ptr<bElem> who);
 

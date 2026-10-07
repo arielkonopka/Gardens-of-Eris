@@ -123,8 +123,11 @@ interacts, drags, cycles items, uses, drops or gives up (see `controlItem` in
 - `getViewRadius()` grows with the steps taken.
 
 ### `monster` (`monster.h`)
-Type 6. Walks straight and turns when blocked (`checkNeigh`, `steppableNeigh`). Collects if its
-skin allows (`canCollect` in `skins.json`); some have no inventory on purpose.
+Type 6. `checkNeigh` does what the monster sees first: bites a player next to it, picks up a
+collectible next to it, shoots a player or a driven drone in a straight line, walks to rubbish,
+guns or broken apples it sees, and unlocks a door it holds the key for. With nothing to do it
+roams the maze along its walls (`goe::roam`), each monster keeping the wall on its own side.
+Collects if its skin allows (`canCollect` in `skins.json`); some have no inventory on purpose.
 
 ### `patrollingDrone` (`patrollingDrone.h`)
 Type 7. Does nothing until it gets a controller. A collector interacting with a subtype 0 drone
