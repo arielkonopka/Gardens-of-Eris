@@ -42,7 +42,7 @@ destroying, teleporting and fading animations.
 ## `configManager` (`configManager.h`)
 
 A singleton that reads `skins.json` once and exposes it as `gameConfig`: font, sprite sheet, splash
-screen, fog bitmap, tile size, the music list, the default animations, the sprites
+screen, fog bitmap, tile size, the music list and who made it (`musicCredits`), the default animations, the sprites
 (`spriteData`, with each subtype's `attributeData` that `bElemAttr` starts from), and the sound
 samples by element type, subtype, event type and event (`sampleData`). `configReload()` reads it
 again.

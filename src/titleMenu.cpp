@@ -242,8 +242,8 @@ void titleMenu::pressed()
 std::vector<titleMenu::mainItem> titleMenu::mainItems() const
 {
     if (this->canContinue)
-        return {mainItem::CONTINUE, mainItem::START, mainItem::CONFIG, mainItem::EXIT};
-    return {mainItem::START, mainItem::CONFIG, mainItem::EXIT};
+        return {mainItem::CONTINUE, mainItem::START, mainItem::CONFIG, mainItem::CREDITS, mainItem::EXIT};
+    return {mainItem::START, mainItem::CONFIG, mainItem::CREDITS, mainItem::EXIT};
 }
 
 std::string titleMenu::labelOf(mainItem item) const
@@ -256,6 +256,8 @@ std::string titleMenu::labelOf(mainItem item) const
         return this->canContinue ? "New game" : "Start game";
     case mainItem::CONFIG:
         return "Config";
+    case mainItem::CREDITS:
+        return "Credits";
     default:
         return "Exit";
     }
@@ -290,6 +292,11 @@ titleMenu::action titleMenu::keyDown(int keycode)
                 this->selected = 0;
                 this->message.clear();
                 break;
+            case mainItem::CREDITS:
+                this->current = screen::CREDITS;
+                this->selected = 0;
+                this->message.clear();
+                break;
             }
         }
         break;
@@ -312,6 +319,9 @@ titleMenu::action titleMenu::keyDown(int keycode)
     case screen::BINDING:
         this->bindingKey(keycode);
         break;
+    case screen::CREDITS:
+        this->creditsKey(keycode);
+        break;
     }
     return action::NONE;
 }
@@ -330,9 +340,7 @@ void titleMenu::configKey(int keycode)
         this->options[this->selected].adjust(keycode == ALLEGRO_KEY_LEFT ? -1 : 1);
         this->saveSettings();
     } else if (keycode == ALLEGRO_KEY_ESCAPE || (enter && !onOption)) { // Esc or "Back"
-        this->current = screen::MAIN;
-        const auto items = this->mainItems();
-        this->selected = (int) (std::find(items.begin(), items.end(), mainItem::CONFIG) - items.begin());
+        this->backToMain(mainItem::CONFIG);
     } else if (enter) {
         this->message.clear();
         const auto &opt = this->options[this->selected];
@@ -386,6 +394,36 @@ void titleMenu::bindingKey(int keycode)
     this->settings.setControls(controls);
     this->current = screen::CONTROLS;
     this->saveSettings();
+}
+
+void titleMenu::creditsKey(int keycode)
+{
+    // Up and Down scroll; "Back" is the only thing to choose, so Enter goes back like Esc
+    const int lastTop = std::max(0, this->lineCount() - this->visibleLines);
+    if (keycode == ALLEGRO_KEY_UP || keycode == ALLEGRO_KEY_PGUP)
+        this->selected = std::max(0, this->selected - (keycode == ALLEGRO_KEY_UP ? 1 : this->visibleLines));
+    else if (keycode == ALLEGRO_KEY_DOWN || keycode == ALLEGRO_KEY_PGDN)
+        this->selected = std::min(lastTop, this->selected + (keycode == ALLEGRO_KEY_DOWN ? 1 : this->visibleLines));
+    else if (keycode == ALLEGRO_KEY_ESCAPE || keycode == ALLEGRO_KEY_ENTER || keycode == ALLEGRO_KEY_PAD_ENTER
+             || keycode == ALLEGRO_KEY_SPACE)
+        this->backToMain(mainItem::CREDITS);
+}
+
+void titleMenu::backToMain(mainItem from)
+{
+    this->current = screen::MAIN;
+    const auto items = this->mainItems();
+    this->selected = (int) (std::find(items.begin(), items.end(), from) - items.begin());
+}
+
+void titleMenu::setCredits(std::vector<std::string> lines)
+{
+    this->credits = std::move(lines);
+}
+
+void titleMenu::setVisibleLines(int lines)
+{
+    this->visibleLines = std::max(1, lines);
 }
 
 void titleMenu::padButton(int button)
@@ -468,6 +506,8 @@ int titleMenu::lineCount() const
     case screen::CONTROLS:
     case screen::BINDING:
         return goe::controls::actionCount + 2; // "Reset to defaults" and "Back"
+    case screen::CREDITS:
+        return (int) this->getLines().size();
     default:
         return (int) this->options.size() + 1;
     }
@@ -503,6 +543,12 @@ std::vector<std::string> titleMenu::getLines() const
         lines.push_back("Back");
         return lines;
     }
+    if (this->current == screen::CREDITS) {
+        lines = this->credits.empty() ? std::vector<std::string>{"No music credits found"} : this->credits;
+        lines.emplace_back();
+        lines.push_back("Back");
+        return lines;
+    }
     for (int c = 0; c < (int) this->options.size(); c++) {
         const auto &o = this->options[c];
         bool editing = this->current == screen::EDITING && c == this->selected;
@@ -521,6 +567,8 @@ std::string titleMenu::getTitle() const
     case screen::CONTROLS:
     case screen::BINDING:
         return "Controls";
+    case screen::CREDITS:
+        return "Credits";
     default:
         return "Config";
     }

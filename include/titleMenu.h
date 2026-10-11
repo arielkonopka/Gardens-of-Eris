@@ -37,8 +37,9 @@
 class titleMenu
 {
 public:
-    /// CONTROLS lists the key layout; BINDING waits for the key or pad button of one action
-    enum class screen { MAIN, CONFIG, EDITING, CONTROLS, BINDING };
+    /// CONTROLS lists the key layout; BINDING waits for the key or pad button of one action;
+    /// CREDITS lists who made the music (setCredits)
+    enum class screen { MAIN, CONFIG, EDITING, CONTROLS, BINDING, CREDITS };
     /// DEMO: nobody pressed anything for a while, so the game plays itself (setDemoAfter)
     enum class action { NONE, CONTINUE, START, EXIT, DEMO };
 
@@ -78,6 +79,11 @@ public:
     action wait(double seconds);
     /// a press of any kind (also one the menu does nothing with) starts the wait over
     void pressed();
+    /// the lines the Credits screen shows (goe::credits::lines)
+    void setCredits(std::vector<std::string> lines);
+    /// how many lines the screen has room for; the Credits screen scrolls no further than its last
+    /// page. On CREDITS getSelected() is the top line shown.
+    void setVisibleLines(int lines);
 
     screen getScreen() const;
     int getSelected() const;
@@ -90,7 +96,7 @@ public:
     const std::string &getMessage() const;
 
 private:
-    enum class mainItem { CONTINUE, START, CONFIG, EXIT };
+    enum class mainItem { CONTINUE, START, CONFIG, CREDITS, EXIT };
     /// the main menu's lines; Continue (and New game after it) only while a save can be read
     std::vector<mainItem> mainItems() const;
     /// START reads "New game" while there is a save to continue
@@ -101,6 +107,9 @@ private:
     void configKey(int keycode);
     void controlsKey(int keycode);
     void bindingKey(int keycode);
+    void creditsKey(int keycode);
+    /// from a screen the main menu opened, back to the main menu with that screen's item selected
+    void backToMain(mainItem from);
     /// stores the settings and says whether that worked
     void saveSettings();
     /// the option that opens the controls screen
@@ -115,6 +124,8 @@ private:
     int selected = 0;
     std::string editBuffer;
     std::string message;
+    std::vector<std::string> credits;
+    int visibleLines = 1;
     double demoAfter = 0;
     double idle = 0;
 };

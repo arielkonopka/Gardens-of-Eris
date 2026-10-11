@@ -14,7 +14,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | [The world](world.md) | `chamber`, `chamber::fence`, `worldBuilder`, `randomLevelGenerator`, `chamberArea`, `goe::chunkPattern` |
 | [Rules](rules.md) | `difficulty`, `goe::music::byDifficulty`, `goe::music::cues`, `goe::rng`, `gameClock`, `goe::events`, `randomWordGen` |
 | [Saving](saving.md) | `gameSerializer`: saves, loads and chunk swap |
-| [The application](application.md) | `main.cpp`, `presenter`, `titleScreen`, `titleMenu`, `menuPad`, `bindings`, `inputManager`, `gameSettings`, `autopilot`, `hallOfFame`, `storyScroller`, `crashLog` |
+| [The application](application.md) | `main.cpp`, `presenter`, `titleScreen`, `titleMenu`, `menuPad`, `bindings`, `inputManager`, `gameSettings`, `autopilot`, `hallOfFame`, `storyScroller`, `crashLog`, `goe::credits` |
 | [Seeing and hearing](media.md) | `viewPoint`, `fogLayer`, `fogMask`, Allegro handles, `videoManager`, `videoDriver`, `configManager`, `soundManager`, `soundSpace`, `performerStream`, the adaptive musician (`goe::musician`), the DJ (`goe::dj`) |
 
 ## Where each class lives
@@ -51,6 +51,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `goe::controls::bindings` | `include/controlBindings.h` | [application](application.md) |
 | `goe::controls::menuPad` | `include/menuPad.h` | [application](application.md) |
 | `goe::crashLog` | `include/crashLog.h` | [application](application.md) |
+| `goe::credits` | `include/musicCredits.h` | [application](application.md) |
 | `goe::events` | `include/gameEvents.h` | [rules](rules.md) |
 | `goe::hallOfFame` | `include/hallOfFame.h` | [application](application.md) |
 | `goe::music::byDifficulty` | `include/difficultyMusic.h` | [rules](rules.md) |

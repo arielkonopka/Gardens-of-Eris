@@ -39,16 +39,17 @@ void type(titleMenu &m, const std::string &text)
 } // namespace
 
 
-TEST(TitleMenuTests, MainMenuOffersStartConfigExit)
+TEST(TitleMenuTests, MainMenuOffersStartConfigCreditsExit)
 {
     scratch s;
     titleMenu m(gameSettings::getInstance(), s.settingsFile());
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::MAIN);
     auto lines = m.getLines();
-    ASSERT_EQ(lines.size(), 3u);
+    ASSERT_EQ(lines.size(), 4u);
     EXPECT_EQ(lines[0], "Start game");
     EXPECT_EQ(lines[1], "Config");
-    EXPECT_EQ(lines[2], "Exit");
+    EXPECT_EQ(lines[2], "Credits");
+    EXPECT_EQ(lines[3], "Exit");
     EXPECT_EQ(m.getSelected(), 0);
     EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::START);
 }
@@ -59,7 +60,7 @@ TEST(TitleMenuTests, ContinueShowsOnlyWithAReadableSave)
     bool readable = true;
     titleMenu m(gameSettings::getInstance(), s.settingsFile(), [&readable] { return readable; });
     auto lines = m.getLines();
-    ASSERT_EQ(lines.size(), 4u);
+    ASSERT_EQ(lines.size(), 5u);
     EXPECT_EQ(lines[0], "Continue");
     // with a save, starting over reads "New game"
     EXPECT_EQ(lines[1], "New game");
@@ -73,6 +74,7 @@ TEST(TitleMenuTests, ContinueShowsOnlyWithAReadableSave)
 
     // Config, then back, lands on Config again
     m.keyDown(ALLEGRO_KEY_UP);
+    m.keyDown(ALLEGRO_KEY_UP);
     EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::NONE);
     ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
     m.keyDown(ALLEGRO_KEY_ESCAPE);
@@ -82,7 +84,7 @@ TEST(TitleMenuTests, ContinueShowsOnlyWithAReadableSave)
     readable = false;
     m.refresh();
     lines = m.getLines();
-    ASSERT_EQ(lines.size(), 3u);
+    ASSERT_EQ(lines.size(), 4u);
     EXPECT_EQ(lines[0], "Start game");
     EXPECT_EQ(m.getSelected(), 0);
     EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::START);
@@ -118,7 +120,7 @@ TEST(TitleMenuTests, SelectionWrapsAround)
     scratch s;
     titleMenu m(gameSettings::getInstance(), s.settingsFile());
     m.keyDown(ALLEGRO_KEY_UP);
-    EXPECT_EQ(m.getSelected(), 2);
+    EXPECT_EQ(m.getSelected(), 3);
     EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::EXIT);
     m.keyDown(ALLEGRO_KEY_DOWN);
     EXPECT_EQ(m.getSelected(), 0);
@@ -693,4 +695,64 @@ TEST(TitleMenuTests, PadBindsButtonsOnTheControlsScreen)
     EXPECT_EQ(gameSettings::getInstance().getControls().of(goe::controls::action::up).padButton, 6);
     m.command(menuCommand::back);
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
+}
+
+TEST(TitleMenuTests, CreditsScrollAndGoBack)
+{
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    std::vector<std::string> credits;
+    for (int i = 0; i < 20; i++)
+        credits.push_back("line " + std::to_string(i));
+    m.setCredits(credits);
+    m.setVisibleLines(5);
+    m.keyDown(ALLEGRO_KEY_DOWN);
+    m.keyDown(ALLEGRO_KEY_DOWN);
+    EXPECT_EQ(m.getLines()[m.getSelected()], "Credits");
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    ASSERT_TRUE(m.getScreen() == titleMenu::screen::CREDITS);
+    EXPECT_EQ(m.getTitle(), "Credits");
+    auto lines = m.getLines();
+    ASSERT_EQ(lines.size(), 22u); // the credits, a gap and "Back"
+    EXPECT_EQ(lines.front(), "line 0");
+    EXPECT_EQ(lines.back(), "Back");
+    // the selection is the top line shown: Up stops at the top, Down at the last page
+    EXPECT_EQ(m.getSelected(), 0);
+    m.keyDown(ALLEGRO_KEY_UP);
+    EXPECT_EQ(m.getSelected(), 0);
+    m.keyDown(ALLEGRO_KEY_DOWN);
+    EXPECT_EQ(m.getSelected(), 1);
+    for (int i = 0; i < 40; i++)
+        m.keyDown(ALLEGRO_KEY_DOWN);
+    EXPECT_EQ(m.getSelected(), 22 - 5);
+    m.keyDown(ALLEGRO_KEY_PGUP);
+    EXPECT_EQ(m.getSelected(), 22 - 10);
+    // the credits never start the demo
+    m.setDemoAfter(1);
+    EXPECT_TRUE(m.wait(5) == titleMenu::action::NONE);
+    // Esc goes back with Credits selected; so does Enter, the pad's confirm and its back button
+    m.keyDown(ALLEGRO_KEY_ESCAPE);
+    ASSERT_TRUE(m.getScreen() == titleMenu::screen::MAIN);
+    EXPECT_EQ(m.getLines()[m.getSelected()], "Credits");
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::MAIN);
+    m.command(goe::controls::menuCommand::confirm);
+    m.command(goe::controls::menuCommand::down);
+    EXPECT_EQ(m.getSelected(), 1);
+    m.command(goe::controls::menuCommand::back);
+    EXPECT_TRUE(m.getScreen() == titleMenu::screen::MAIN);
+    EXPECT_EQ(m.getLines()[m.getSelected()], "Credits");
+}
+
+TEST(TitleMenuTests, CreditsSayWhenThereAreNone)
+{
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    m.keyDown(ALLEGRO_KEY_UP);
+    m.keyDown(ALLEGRO_KEY_UP);
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    ASSERT_TRUE(m.getScreen() == titleMenu::screen::CREDITS);
+    EXPECT_EQ(m.getLines().front(), "No music credits found");
+    EXPECT_EQ(m.getLines().back(), "Back");
 }

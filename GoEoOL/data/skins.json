@@ -141,9 +141,27 @@
      },
      {
         "Filename":"data/music/ericskiff/12 HHAvok-main.mp3",
-        "Name":"Eric Skiff - HHAvok (main)",
+        "Name":"Eric Skiff - HHAvok-main",
         "Play":"danger",
         "gain":0.3
+     }
+   ]
+   ,
+   "MusicCredits":
+   [
+     {
+        "Folder":"data/music/ericskiff/",
+        "Artist":"Eric Skiff",
+        "Album":"Resistor Anthems",
+        "Licence":"CC BY 4.0",
+        "Source":"ericskiff.com/music"
+     },
+     {
+        "Folder":"data/music/bacalao/",
+        "Artist":"Bacalao",
+        "Album":"Cheat Codes / 2012-2022 Essentials",
+        "Licence":"CC BY 4.0",
+        "Source":"freemusicarchive.org/music/Bacalao"
      }
    ]
    ,

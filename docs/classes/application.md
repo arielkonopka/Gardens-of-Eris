@@ -46,7 +46,7 @@ buttons.
 What the title screen shows and how it reacts, without any drawing, so it can be tested.
 
 - `screen`: `MAIN`, `CONFIG`, `EDITING` (typing a value), `CONTROLS`, `BINDING` (waiting for a key
-  or pad button). `action`: `NONE`, `CONTINUE`, `START`, `EXIT`, `DEMO`.
+  or pad button), `CREDITS` (who made the music). `action`: `NONE`, `CONTINUE`, `START`, `EXIT`, `DEMO`.
 - `option`: one Config line with its label, value, `apply` for typed values and `adjust` for Left
   and Right.
 - Input: `keyDown(keycode)`, `typed(codepoint)`, `padButton(button)` (on `BINDING`),
@@ -54,8 +54,26 @@ What the title screen shows and how it reacts, without any drawing, so it can be
 - The demo: `setDemoAfter(seconds)`, `wait(seconds)` returns `DEMO` once the main menu waited long
   enough, `pressed()` starts the wait over.
 - `refresh()` asks again whether there is a save, so Continue and New game show.
+- Credits: `setCredits(lines)` gives the Credits screen its lines (`goe::credits::lines`), and
+  `setVisibleLines(n)` tells it how many fit. On `CREDITS`, `getSelected()` is the top line shown:
+  Up and Down (Page Up and Page Down by a page) scroll no further than the last page, and Enter or Esc
+  (the pad's confirm or back) return to the main menu.
 - Reading it: `getScreen()`, `getSelected()`, `getLines()`, `getTitle()`, `getEditBuffer()`,
   `getMessage()`.
+
+## `goe::credits` (`musicCredits.h`)
+
+The Credits screen's lines, from the music list and `"MusicCredits"` in `skins.json` (one entry per
+music folder: `Folder`, `Artist`, `Album`, `Licence`, `Source`).
+
+- `creditFor(file, credits)`: the credit whose folder holds the song's file, or `nullptr`.
+- `titleOf(song, artist)`: the song's `Name` without `"Artist - "` in front.
+- `lines(music, credits)`: per credit, "Music by" the artist, the album and licence, the source and
+  the titles of its songs (each once, in list order); songs no credit covers come last under "Other
+  music", so none is left out. Credits with no song in the list are skipped.
+
+A test checks that every song of `skins.json` has a credit with a licence and a source, and that
+CREDITS.md lists it.
 
 ## `goe::controls::menuPad` and `editName` (`menuPad.h`)
 
