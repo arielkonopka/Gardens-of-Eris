@@ -2,11 +2,12 @@
 title Title screen states (titleMenu, titleScreen)
 [*] --> MAIN
 note "Keys and pad alike: stick or d-pad moves,\nInteract button = Enter, Drag or Save and exit = Esc\n(goe::controls::menuPad)" as padNote
-state MAIN : Continue (when a save exists)\nStart, Config, Exit
+state MAIN : Continue (when a save exists)\nStart, Config, Credits, Exit
 state CONFIG : save folder, music, sound,\nstories, demo times, Controls
 state EDITING : typing a value (save folder, stories file)
 state CONTROLS : key and pad bindings
 state BINDING : waiting for a key or pad button
+state CREDITS : music credits from skins.json\n(Up/Down scroll)
 state Demo : autopilot plays a far chunk
 state HallOfFame : top 10, shown for hallOfFameLength s
 state Game : presentEverything(false)
@@ -20,6 +21,8 @@ CONFIG --> CONTROLS : Controls
 CONTROLS --> BINDING : Enter on an action
 BINDING --> CONTROLS : key or button pressed
 CONTROLS --> CONFIG : Back
+MAIN --> CREDITS : Credits
+CREDITS --> MAIN : Back / Enter / Esc
 MAIN --> Demo : idle demoWait + rand(demoWait) s
 Demo --> MAIN : any key, pad button\nor stick push (DEMO_OVER)
 Demo --> HallOfFame : demoLength s passed (DEMO_DONE)

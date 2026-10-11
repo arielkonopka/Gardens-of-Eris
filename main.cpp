@@ -39,6 +39,8 @@
 #include "randomStreams.h"
 #include "difficulty.h"
 #include "hallOfFame.h"
+#include "musicCredits.h"
+#include "configManager.h"
 #include <filesystem>
 
 namespace {
@@ -133,6 +135,14 @@ int main( int argc, char * argv[] )
         titleMenu menu(gameSettings::getInstance(), gameSettings::settingsFile, [] {
             return gameSerializer::canLoad(gameSettings::getInstance().getSaveFile());
         });
+        {
+            // the Credits screen: who made the songs of the music list
+            const auto &cfg = configManager::getInstance()->getConfig();
+            std::vector<goe::credits::song> songs;
+            for (const auto &m : cfg->music)
+                songs.push_back({m.filename, m.name});
+            menu.setCredits(goe::credits::lines(songs, cfg->musicCredits));
+        }
         titleScreen title(menu);
         const auto firstSeed = goe::rng::worldSeed();
         bool windowOpen = true;

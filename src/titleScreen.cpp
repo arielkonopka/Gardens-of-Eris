@@ -162,9 +162,13 @@ void titleScreen::draw()
     }
     // lines that do not fit above the message and the help scroll, keeping the selection in view
     const int fits = std::max(1, (int) ((h - lineH * 3.5f - y) / lineH));
-    const int first = std::clamp(this->menu.getSelected() - fits / 2, 0, std::max(0, (int) lines.size() - fits));
+    this->menu.setVisibleLines(fits);
+    // the credits scroll from their top line, and "Back" (the last line) is the only one to choose
+    const bool credits = this->menu.getScreen() == titleMenu::screen::CREDITS;
+    const int first = std::clamp(credits ? this->menu.getSelected() : this->menu.getSelected() - fits / 2, 0,
+                                 std::max(0, (int) lines.size() - fits));
     for (int c = first; c < (int) lines.size() && c < first + fits; c++) {
-        bool sel = c == this->menu.getSelected();
+        bool sel = credits ? c + 1 == (int) lines.size() : c == this->menu.getSelected();
         std::string text = sel ? "> " + lines[c] + " <" : lines[c];
         al_draw_text(this->font.get(), sel ? chosen : normal, w / 2, y, ALLEGRO_ALIGN_CENTER, text.c_str());
         y += lineH;
@@ -189,6 +193,9 @@ void titleScreen::draw()
         break;
     case titleMenu::screen::BINDING:
         help = {"Press the new key or pad button; Backspace clears it, Esc cancels"};
+        break;
+    case titleMenu::screen::CREDITS:
+        help = {"Up/Down or the pad's stick to scroll, Enter, Esc, " + ok + " or " + back + " to go back"};
         break;
     default:
         help = {"Up/Down or the pad's stick to choose, Enter or " + ok + " to select"};

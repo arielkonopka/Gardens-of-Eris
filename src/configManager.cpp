@@ -57,6 +57,8 @@ void configManager::configReload()
     this->gConfObj->gTeleporting.clear();
     this->gConfObj->sylables.clear();
     this->gConfObj->sprites.clear();
+    this->gConfObj->music.clear();
+    this->gConfObj->musicCredits.clear();
     if (this->skinDefJson.HasMember("Blur")) {
         rapidjson::Value &blur = this->skinDefJson["Blur"];
         for (unsigned int c = 0; c < blur.Size(); c++) {
@@ -100,6 +102,14 @@ void configManager::configReload()
             md.position.z = music[c]["Position"][2].GetFloat();
         }
         this->gConfObj->music.push_back(md);
+    }
+    if (this->skinDefJson.HasMember("MusicCredits")) {
+        auto text = [](const rapidjson::Value &v, const char *key) {
+            return v.HasMember(key) && v[key].IsString() ? std::string(v[key].GetString()) : std::string();
+        };
+        for (const auto &c : this->skinDefJson["MusicCredits"].GetArray())
+            this->gConfObj->musicCredits.push_back(
+                {text(c, "Folder"), text(c, "Artist"), text(c, "Album"), text(c, "Licence"), text(c, "Source")});
     }
 
     auto convTabsInt = [](rapidjson::Value &tab, std::vector<coords> &v) {

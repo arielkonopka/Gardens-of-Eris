@@ -37,6 +37,7 @@
 #include "inputManager.h"
 #include "objectTypes.h"
 #include "commons.h"
+#include "musicCredits.h"
 
 // Singleton pattern, we will not have multiple config files, therefore we do not need multiple instances of config manager
 // this class will read the config json file, and expose gathered information to whatever class needing it
@@ -112,6 +113,8 @@ typedef struct gameConfig
     std::string baseDir;
     int spacing; //We use spacing in the sprite png file, just for our comfort
     std::vector<musicData> music;
+    /// who made the music, folder by folder ("MusicCredits"), for the Credits screen
+    std::vector<goe::credits::musicCredit> musicCredits;
     std::vector<std::string> sylables;
     std::vector<coords> gDying;
     std::vector<coords> gDestroying;
