@@ -110,6 +110,9 @@ A singleton with its own input thread reading the keyboard and the pad.
   agent library set it directly). A way first pressed from standing still is held back for
   `diagonalGrace` (40 ms), so two keys pressed almost together make a diagonal; an item set in
   code is never held back.
+- `setScreenTurn(eighths)`: the game loop passes the shown view's `fieldView::keyTurn()`, and the
+  ways the player presses are turned by it, so in 3D up moves up the screen; items set in code
+  keep the board's ways.
 - `takeExitRequest()`: whether Save and exit went down since the last call.
 - `activity()`: counts presses (keys, pad buttons, stick pushes); the demo ends when it changes.
 - `getInstance(true)`: test mode, with no keyboard, joystick or thread (unit tests and the agent).

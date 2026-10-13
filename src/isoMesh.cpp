@@ -61,14 +61,24 @@ meshBuilder::meshBuilder(float towardsEyeX, float towardsEyeY)
     this->eyeY = len > 0 ? towardsEyeY / len : 1.0f;
 }
 
-void meshBuilder::add(shape s, float x, float y, const picture &p, bool cut)
+bool hides(float eyeX, float eyeY, float dx, float dy)
+{
+    const float len = std::hypot(eyeX, eyeY);
+    if (len <= 0)
+        return false;
+    const float ex = eyeX / len, ey = eyeY / len;
+    const float towards = dx * ex + dy * ey;
+    return towards > 0 && towards <= ghostTowards && std::abs(dx * ey - dy * ex) <= ghostAcross;
+}
+
+void meshBuilder::add(shape s, float x, float y, const picture &p)
 {
     switch (s) {
     case shape::ground:
         this->ground(x, y, p);
         break;
     case shape::block:
-        this->block(x, y, p, cut ? cutHeight : blockHeight);
+        this->block(x, y, p);
         break;
     case shape::standee:
         this->standee(x, y, p);

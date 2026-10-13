@@ -79,14 +79,25 @@ constexpr float westFace = 0.7f;
 constexpr float standee = 0.95f;
 } // namespace light
 
+/// blocks this near the line from a cell to the camera, towards the camera and to its sides, are
+/// drawn see-through, so they never hide what stands in that cell (the avatar)
+constexpr float ghostTowards = 2.6f;
+constexpr float ghostAcross = 1.6f;
+/// how much of a see-through block shows
+constexpr float ghostOpacity = 0.3f;
+
+/**
+ * Whether a block (dx, dy) cells from the avatar stands between it and the camera, which looks
+ * from (eyeX, eyeY) on the floor: then it is drawn see-through.
+ */
+bool hides(float eyeX, float eyeY, float dx, float dy);
+
 /// Collects triangles, two per square face.
 class meshBuilder
 {
 public:
     /// how tall a block is, in cells; a little less than a standee, so walls hide less
     static constexpr float blockHeight = 0.75f;
-    /// how tall a block is when it is cut away, so the avatar behind it shows
-    static constexpr float cutHeight = 0.15f;
     /// how far above the floor flat things lie, so they never fight with it
     static constexpr float flatLift = 0.02f;
     /// a standee's width and height, in cells
@@ -98,9 +109,8 @@ public:
      */
     meshBuilder(float eyeX, float eyeY);
 
-    /// the element whose cell has its north west corner at (x, y), in the given shape; a cut
-    /// block is a low one
-    void add(shape s, float x, float y, const picture &p, bool cut = false);
+    /// the element whose cell has its north west corner at (x, y), in the given shape
+    void add(shape s, float x, float y, const picture &p);
     void ground(float x, float y, const picture &p);
     void flat(float x, float y, const picture &p);
     void block(float x, float y, const picture &p, float height = blockHeight);

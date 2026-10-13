@@ -30,6 +30,7 @@
 #include "videoDriver.h"
 #include "videoManager.h"
 #include "viewPoint.h"
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <numbers>
@@ -42,10 +43,6 @@ constexpr float eyeY = 1.0f;
 constexpr float eyeDistance = 60.0f;
 /// how much higher than the floor the camera aims, so the field sits in the middle of the screen
 constexpr float aimHeight = 0.5f;
-/// blocks between the avatar and the camera, this far towards the camera and this far to the
-/// sides, are cut low, so the avatar is never hidden behind a wall
-constexpr float cutTowards = 2.6f;
-constexpr float cutAcross = 1.6f;
 
 goe::bitmapHandle depthBitmap(int w, int h)
 {
@@ -68,6 +65,7 @@ isoFieldView::isoFieldView(coords fieldSize, coords tile, int sheetSpacing, cons
     , fieldPx(fieldSize)
     , field(depthBitmap(fieldSize.x, fieldSize.y))
     , mesh(eyeX, eyeY)
+    , ghosts(eyeX, eyeY)
 {
     // how far the screen reaches on the floor: across the line of sight, and along it
     const float ppc = zoom * (float) tile.x;
@@ -107,11 +105,10 @@ void isoFieldView::buildMesh(const fieldFrame &frame, coords origin, float cx, f
     const float focusX = (float) focusCell.x + (float) focusMove.x / (float) this->tileSize.x;
     const float focusY = (float) focusCell.y + (float) focusMove.y / (float) this->tileSize.y;
     auto inFrontOfFocus = [&](int x, int y) {
-        const float dx = (float) x - focusX, dy = (float) y - focusY;
-        const float towards = -(dx * fx + dy * fy);
-        return towards > 0 && towards <= cutTowards && std::abs(dx * fy - dy * fx) <= cutAcross;
+        return goe::iso::hides(eyeX, eyeY, (float) x - focusX, (float) y - focusY);
     };
     this->mesh.clear();
+    this->ghosts.clear();
     this->placed.clear();
     const int side = 2 * this->radius + 1;
     for (int x = 0; x < side; x++)
@@ -143,10 +140,10 @@ void isoFieldView::buildMesh(const fieldFrame &frame, coords origin, float cx, f
                 const auto &stats = *e->getStats();
                 // exploding, dying and teleporting keep their sprite animations
                 const bool changing = stats.isDying() || stats.isDestroying() || stats.isTeleporting();
+                const bool ghost = ve->shape == goe::iso::shape::block && inFrontOfFocus(x, y);
                 if (changing
-                    || !this->addModel(*ve, e->getAttrs()->getSubtype(), (int) stats.getFacing(), np, ex, ey,
-                                       inFrontOfFocus(x, y)))
-                    this->mesh.add(ve->shape, ex, ey, pictureOf(*cell), inFrontOfFocus(x, y));
+                    || !this->addModel(*ve, e->getAttrs()->getSubtype(), (int) stats.getFacing(), np, ex, ey, ghost))
+                    (ghost ? this->ghosts : this->mesh).add(ve->shape, ex, ey, pictureOf(*cell));
             }
         }
 }
@@ -166,17 +163,14 @@ bool isoFieldView::addModel(const videoElement::videoElementDef &ve,
                             coords at,
                             float x,
                             float y,
-                            bool cut)
+                            bool ghost)
 {
     const auto *m = this->models.find(ve, subType, facing);
     if (!m)
         return false;
-    const float squash = cut && ve.shape == goe::iso::shape::block && m->height > 0
-                             ? std::min(1.0f, goe::iso::meshBuilder::cutHeight / m->height)
-                             : 1.0f;
     const auto tint = m->spec->tintFor(subType);
     auto put = [&](int quarters, bool lid = false, bool eighth = false) {
-        this->placed.push_back({m, x, y, quarters, eighth, squash, tint, lid});
+        this->placed.push_back({m, x, y, quarters, eighth, ghost, tint, lid});
     };
     switch (m->spec->place) {
     case goe::models::layout::cell: {
@@ -201,12 +195,13 @@ bool isoFieldView::addModel(const videoElement::videoElementDef &ve,
     return true;
 }
 
-void isoFieldView::drawModels()
+void isoFieldView::drawModels(bool ghosts)
 {
     for (const auto &pm : this->placed) {
+        if (pm.ghost != ghosts)
+            continue;
         ALLEGRO_TRANSFORM t;
         al_identity_transform(&t);
-        al_scale_transform_3d(&t, 1, 1, pm.squash);
         if (pm.eighth) // the same way turned() turns a quarter: x to y
             al_rotate_transform_3d(&t, 0, 0, 1, std::numbers::pi_v<float> / 4);
         al_translate_transform_3d(&t, pm.x + 0.5f, pm.y + 0.5f, 0);
@@ -221,6 +216,42 @@ void isoFieldView::drawModels()
                                   pm.model->corners,
                                   ALLEGRO_PRIM_TRIANGLE_LIST);
     }
+}
+
+void isoFieldView::drawGhosts(ALLEGRO_BITMAP *sheet)
+{
+    this->ghostVertices.clear();
+    for (const auto &v : this->ghosts.vertices())
+        this->ghostVertices.push_back({v.x, v.y, v.z, v.u, v.v, al_map_rgba_f(v.light, v.light, v.light, 1.0f)});
+    const bool anyModel = std::ranges::any_of(this->placed, &placedModel::ghost);
+    if (this->ghostVertices.empty() && !anyModel)
+        return;
+    ALLEGRO_TRANSFORM still;
+    al_identity_transform(&still);
+    auto drawAll = [&] {
+        al_set_shader_matrix("placement", &still);
+        const std::array<float, 3> noTint{1, 1, 1};
+        al_set_shader_float_vector("tint", 3, noTint.data(), 1);
+        if (!this->ghostVertices.empty())
+            al_draw_prim(this->ghostVertices.data(), nullptr, sheet, 0, (int) this->ghostVertices.size(),
+                         ALLEGRO_PRIM_TRIANGLE_LIST);
+        this->drawModels(true);
+    };
+    // first only their depth, so the second pass paints just the face nearest the camera, once:
+    // a see-through block shows what stands behind it, not its own far sides
+    al_set_render_state(ALLEGRO_WRITE_MASK, ALLEGRO_MASK_DEPTH);
+    drawAll();
+    int op, src, dst;
+    al_get_blender(&op, &src, &dst);
+    al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_INVERSE_ALPHA); // the shader premultiplies
+    al_set_render_state(ALLEGRO_WRITE_MASK, ALLEGRO_MASK_RGBA);
+    al_set_render_state(ALLEGRO_DEPTH_FUNCTION, ALLEGRO_RENDER_LESS_EQUAL);
+    al_set_shader_float("opacity", goe::iso::ghostOpacity);
+    drawAll();
+    al_set_shader_float("opacity", 1.0f);
+    al_set_render_state(ALLEGRO_DEPTH_FUNCTION, ALLEGRO_RENDER_LESS);
+    al_set_render_state(ALLEGRO_WRITE_MASK, ALLEGRO_MASK_RGBA | ALLEGRO_MASK_DEPTH);
+    al_set_blender(op, src, dst);
 }
 
 void isoFieldView::useCamera(float cx, float cy)
@@ -309,6 +340,7 @@ void isoFieldView::draw(const fieldFrame &frame)
     al_clear_depth_buffer(1.0f);
     al_use_shader(shader);
     this->setFogUniforms(origin);
+    al_set_shader_float("opacity", 1.0f);
     ALLEGRO_TRANSFORM still;
     al_identity_transform(&still);
     al_set_shader_matrix("placement", &still);
@@ -321,7 +353,8 @@ void isoFieldView::draw(const fieldFrame &frame)
                      0,
                      (int) this->vertices.size(),
                      ALLEGRO_PRIM_TRIANGLE_LIST);
-    this->drawModels();
+    this->drawModels(false);
+    this->drawGhosts(floorDef->sprites.get());
     al_use_shader(nullptr);
     al_set_render_state(ALLEGRO_DEPTH_TEST, 0);
     al_set_target_bitmap(target);

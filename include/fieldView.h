@@ -52,6 +52,9 @@ class fieldView
 public:
     virtual ~fieldView() = default;
     virtual void draw(const fieldFrame &frame) = 0;
+    /// eighths of a turn (anticlockwise, as dir::turned) that bring a way pressed on the screen
+    /// to the way it goes on the board, so up always moves up the screen
+    virtual int keyTurn() const { return 0; }
 };
 
 #endif // FIELDVIEW_H

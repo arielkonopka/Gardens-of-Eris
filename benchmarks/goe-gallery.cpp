@@ -50,6 +50,9 @@ int main(int argc, char **argv)
     put<wall>(board, coords(7, 7));
 
     auto avatar = put<player>(board, coords(10, 5));
+    // walls between the avatar and the camera, which turn see-through
+    put<wall>(board, coords(9, 6));
+    put<wall>(board, coords(10, 7));
     viewPoint::get_instance().setOwner(avatar);
     std::vector<std::function<void(coords)>> things{
         [&](coords c) { put<key>(board, c, 0); },

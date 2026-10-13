@@ -12,15 +12,18 @@ another element that uncovers the map around it (a patrol drone acts as an extra
 
 `fieldView` is how the game loop draws the game field: one `draw(fieldFrame)` onto the current
 target. A `fieldFrame` carries the active avatar (its board is drawn), the `fieldCamera`, how many
-whole cells the field shows, and where on the target it goes. Each way of looking at the field is
-one implementation:
+whole cells the field shows, and where on the target it goes. `keyTurn()` says how far the ways
+the player presses turn so they follow its screen (0 in 2D; -1, an eighth clockwise, in 3D, where
+up the screen is the board's north east). Each way of looking at the field is one implementation:
 - `flatFieldView`: the sprites seen from above, still elements first, then the ones on the move,
   the avatar last, all drawn into a scene bitmap and shown through the `fogLayer`.
 - `isoFieldView`: the 3D isometric view. Each frame it builds the mesh of the cells the camera
   sees (`goe::iso::meshBuilder`), places it from the corner of a window around the camera so the
   numbers stay small, and draws it in one `al_draw_prim` call into a bitmap with a depth buffer.
   The camera looks from the south west at 35.26 degrees (true isometric), orthographic, `zoom`
-  screen pixels per tile pixel. Blocks between the avatar and the camera are cut low. Its shader
+  screen pixels per tile pixel. Blocks between the avatar and the camera
+  (`goe::iso::hides`) are drawn see-through (`ghostOpacity`) after everything solid: first only
+  their depth, then their colour, so only their face nearest the camera blends in. Its shader
   (`data/shaders/isoVertex.glvs`, `isoPixel.glps`, GLSL ES compatible) cuts out the clear pixels
   of standing pictures, lays the floor over the board's colour and mixes in the fog from the same
   `fogLayer` mask and pattern as the 2D view. `ready()` is false when the depth buffer or the
