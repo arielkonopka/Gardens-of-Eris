@@ -120,6 +120,10 @@ target_link_libraries(goe-musician ${LIBRARIES})
 add_executable(goe-dj ${CMAKE_SOURCE_DIR}/benchmarks/goe-dj.cpp $<TARGET_OBJECTS:GardenOfErisLib>)
 target_link_libraries(goe-dj ${LIBRARIES})
 
+# One of every element in the 3D view, saved as a picture: a quick look at the skin's 3D models
+add_executable(goe-gallery ${CMAKE_SOURCE_DIR}/benchmarks/goe-gallery.cpp $<TARGET_OBJECTS:GardenOfErisLib>)
+target_link_libraries(goe-gallery ${LIBRARIES})
+
 # The game without a window, sound or keyboard, for agents; and its Python package
 if(GOE_BUILD_AGENT)
   add_subdirectory(agent)

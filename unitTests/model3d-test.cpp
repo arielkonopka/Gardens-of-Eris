@@ -204,6 +204,49 @@ TEST(Model3d, ReadsModelEntriesFromSkins)
     EXPECT_TRUE(specsOf("12").empty());
 }
 
+TEST(Model3d, TipsAStandingModelOverAndSetsItOnTheFloor)
+{
+    // a stick standing up from the floor, 2 high
+    goe::models::mesh stick;
+    stick.triangles = {{0, 0, 0, 0, 0, 1, 0, 0}, {0.1f, 0, 0, 0, 0, 1, 0, 0}, {0, 0, 2, 0, 0, 1, 0, 0}};
+    goe::models::spec s;
+    s.scale = 0.5f; // stays 1 long
+    s.tip = -90;
+    const auto south = goe::models::placed(stick, s).bounds();
+    EXPECT_NEAR(south.min[2], 0.0f, 1e-5f);
+    EXPECT_NEAR(south.max[2], 0.0f, 1e-5f); // lying flat
+    EXPECT_NEAR(south.max[1] - south.min[1], 1.0f, 1e-5f);
+    // its tip points south (y grows to the south): the top went to the larger y
+    const auto &lying = goe::models::placed(stick, s).triangles;
+    EXPECT_GT(lying[2].y, lying[0].y);
+    EXPECT_NEAR(lying[2].nz, 0.0f, 1e-5f); // the normal tipped with it
+    s.tip = 90;
+    const auto &north = goe::models::placed(stick, s).triangles;
+    EXPECT_LT(north[2].y, north[0].y);
+}
+
+TEST(Model3d, BuiltinShapesStandOnTheFloorInsideTheirCell)
+{
+    for (const auto *name : {"builtin:blob", "builtin:star"}) {
+        const auto m = goe::models::load(name, {});
+        ASSERT_TRUE(m.has_value()) << name;
+        EXPECT_FALSE(m->triangles.empty());
+        EXPECT_TRUE(m->image.empty());
+        const auto b = m->bounds();
+        EXPECT_NEAR(b.min[2], 0.0f, 1e-4f) << name;
+        for (int axis = 0; axis < 2; axis++) {
+            EXPECT_GE(b.min[axis], -0.5f) << name;
+            EXPECT_LE(b.max[axis], 0.5f) << name;
+        }
+        for (const auto &c : m->triangles)
+            EXPECT_NEAR(std::hypot(c.nx, c.ny, c.nz), 1.0f, 1e-3f) << name;
+    }
+    EXPECT_FALSE(goe::models::load("builtin:nothing", {}).has_value());
+    // the skin's folder is not put in front of a builtin name
+    EXPECT_EQ(specsOf(R"({"File": "builtin:blob", "Tip": 30})")[0].file, "builtin:blob");
+    EXPECT_FLOAT_EQ(specsOf(R"({"File": "builtin:blob", "Tip": 30})")[0].tip, 30.0f);
+}
+
 TEST(Model3d, EveryModelTheSkinNamesLoadsAndIsCredited)
 {
     // CC0 needs no credit, but each pack keeps its licence file and a line in CREDITS.md
@@ -218,6 +261,8 @@ TEST(Model3d, EveryModelTheSkinNamesLoadsAndIsCredited)
             const auto m = goe::models::load(s.file, s.nodes);
             ASSERT_TRUE(m.has_value()) << s.file << " for " << sprite.name;
             EXPECT_GT(goe::models::placed(*m, s).bounds().max[2], 0.0f) << s.file;
+            if (s.file.starts_with(goe::models::builtinPrefix))
+                continue; // made in code, nothing to credit
             const std::filesystem::path folder = std::filesystem::path(s.file).parent_path();
             EXPECT_TRUE(std::filesystem::exists(folder / "LICENSE.txt")) << folder;
             EXPECT_NE(creditsMd.str().find("| " + folder.filename().string() + " |"), std::string::npos)

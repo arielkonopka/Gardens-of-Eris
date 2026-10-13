@@ -47,7 +47,9 @@ std::optional<goe::models::spec> readModelSpec(const rapidjson::Value &v, const 
     if (!v.IsObject() || !v.HasMember("File") || !v["File"].IsString())
         return std::nullopt;
     goe::models::spec s;
-    s.file = baseDir + v["File"].GetString();
+    s.file = v["File"].GetString();
+    if (!std::string_view(s.file).starts_with(goe::models::builtinPrefix))
+        s.file = baseDir + s.file;
     if (v.HasMember("SubType") && v["SubType"].IsInt())
         s.subType = v["SubType"].GetInt();
     if (v.HasMember("Facing") && v["Facing"].IsInt())
@@ -59,6 +61,7 @@ std::optional<goe::models::spec> readModelSpec(const rapidjson::Value &v, const 
     if (v.HasMember("Scale") && v["Scale"].IsNumber())
         s.scale = v["Scale"].GetFloat();
     s.stretch = tripleOr(v, "Stretch", s.stretch);
+    s.tip = numberOr(v, "Tip", s.tip);
     s.turn = numberOr(v, "Turn", s.turn);
     s.lift = numberOr(v, "Lift", s.lift);
     s.tint = tripleOr(v, "Tint", s.tint);

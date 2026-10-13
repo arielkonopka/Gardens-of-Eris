@@ -57,6 +57,8 @@ public:
     bool ready() const;
     /// cells drawn around the centre, each way
     int reach() const { return this->radius; }
+    /// shows every cell as seen, without the fog (the model gallery, goe-gallery)
+    void reveal(bool all) { this->revealed = all; }
 
 private:
     /// a model standing on the field this frame
@@ -90,6 +92,7 @@ private:
     coords fieldPx;
     int radius;
     int shaderId = -1;
+    bool revealed = false;
     goe::bitmapHandle field;
     fogLayer fog;
     goe::iso::meshBuilder mesh;
