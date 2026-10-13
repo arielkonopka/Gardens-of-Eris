@@ -90,7 +90,9 @@ controlItem inputManager::getCtrlItem()
     if (!this->scripted && item.dir != dir::direction::NODIRECTION && !dir::isDiagonal(item.dir)
         && std::chrono::steady_clock::now() - this->firstWay.load() < diagonalGrace)
         return controlItem(-1, dir::direction::NODIRECTION); // a second way may be on its way
-    return item;
+    if (this->scripted)
+        return item;
+    return controlItem(item.type, dir::turned(item.dir, this->screenTurn));
 }
 
 void inputManager::setControlItem(controlItem item)

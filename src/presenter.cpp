@@ -153,7 +153,9 @@ void presenter::showGameField()
     al_clear_to_color(fogLayer::plainColour());
     const coords fieldAt(fieldMargin, fieldMargin / 2);
     this->hud->draw(player, fieldAt.x, fieldAt.y + this->fieldPx.y, this->fieldPx.x - 1);
-    this->chosenView().draw({player, *this->camera, this->fieldCells, fieldAt, this->fieldPx});
+    auto &view = this->chosenView();
+    inputManager::getInstance().setScreenTurn(view.keyTurn());
+    view.draw({player, *this->camera, this->fieldCells, fieldAt, this->fieldPx});
     this->drawStory();
     this->drawDemoNote();
     al_flip_display();

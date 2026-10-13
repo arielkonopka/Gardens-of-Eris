@@ -197,14 +197,18 @@ TEST(IsoMesh, ABlockShowsItsTopAndTheTwoSidesFacingTheCamera)
                     || v.light == goe::iso::light::eastFace);
 }
 
-TEST(IsoMesh, ACutBlockIsLow)
+TEST(IsoMesh, OnlyBlocksBetweenTheAvatarAndTheCameraAreSeeThrough)
 {
-    auto m = fromSouthWest();
-    m.add(shape::block, 0, 0, somePicture, true);
-    float highest = 0;
-    for (const auto &v : m.vertices())
-        highest = std::max(highest, v.z);
-    EXPECT_FLOAT_EQ(highest, meshBuilder::cutHeight);
+    // the camera looks from the south west: (-1, 1) on the floor
+    using goe::iso::hides;
+    EXPECT_TRUE(hides(-1, 1, -1, 1));
+    EXPECT_TRUE(hides(-1, 1, 0, 1));
+    EXPECT_TRUE(hides(-1, 1, -1, 0));
+    EXPECT_FALSE(hides(-1, 1, 1, -1)) << "behind the avatar";
+    EXPECT_FALSE(hides(-1, 1, 1, 0)) << "beside it, no nearer the camera";
+    EXPECT_FALSE(hides(-1, 1, 0, 0));
+    EXPECT_FALSE(hides(-1, 1, -3, 3)) << "too far towards the camera to cover it";
+    EXPECT_FALSE(hides(-1, 1, 1, 3)) << "too far to the side";
 }
 
 TEST(IsoMesh, AStandeeStandsInTheMiddleOfItsCellFacingTheCamera)

@@ -61,6 +61,9 @@ public:
     controlItem getCtrlItem();
     static constexpr std::chrono::milliseconds diagonalGrace{40};
     void setControlItem(controlItem item);
+    /// turns the ways the player presses by eighths (dir::turned), so they follow the screen of
+    /// the view shown (fieldView::keyTurn); commands set in code keep the board's ways
+    void setScreenTurn(int eighths) { this->screenTurn = eighths; }
     virtual ~inputManager();
     bool pressed_keys[ALLEGRO_KEY_MAX];
     /// testmode skips the keyboard, joystick and input thread, for unit tests
@@ -88,6 +91,7 @@ private:
     /// when a way was first held after none was, on the steady clock
     std::atomic<std::chrono::steady_clock::time_point> firstWay{};
     std::atomic<bool> scripted=false; ///< the item was set in code, not by the player
+    std::atomic<int> screenTurn=0; ///< set by the game thread, see setScreenTurn
 
     static std::once_flag once;
     goe::eventQueueHandle evQueue;

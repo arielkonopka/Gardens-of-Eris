@@ -69,7 +69,7 @@ These are the default keys. Config, Controls lets you choose other keys (two per
 
 | Key | What it does |
 |---|---|
-| Arrows or W A S D | walk; two together (Up and Left, say) walk diagonally |
+| Arrows or W A S D | walk; two together (Up and Left, say) walk diagonally. In the 3D view the keys follow the screen: Up walks up the screen |
 | Shift + direction | shoot the selected gun |
 | Ctrl + direction | interact with, or pick up, what is next to you |
 | Alt + direction | drag what is behind you |
@@ -433,6 +433,8 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* In the 3D view the keys, stick and d-pad follow the screen: Up walks up the screen (the board's north east), not up-left. The 2D view, the demo and agents keep the board's ways.
+* In the 3D view, walls between the camera and your avatar turn see-through instead of sinking into the floor, so you see the maze around you as it is.
 * Eight-way movement: everything that moves can go diagonally (two keys at once, or the stick or d-pad between two ways). A diagonal step is blocked only when both cells beside it are, so walls touching at a corner still seal the maze. Missiles fly diagonally, bunkers look along eight lines, chasers walk, bite and shoot diagonally, the demo's autopilot uses all eight ways; wall followers keep to the four sides. Sprites face the way they go across; 3D models turn to the diagonal (and arrows no longer fly tail first). The agent library gains `MOVE_UP_LEFT` ... `SHOOT_DOWN_RIGHT` (before `GIVE_UP`), and directions 5 to 8 in its features.
 * The refresher: a shot golden apple turns into a refresher (type 901, a green bottle) instead of a broken apple. Old saves load their broken apples as refreshers. Golden apples are the apple from DataBrace's Fruit Pack 01 (CC0), painted gold; `tools/models/blend-to-glb.py` exports a pack that comes only as a `.blend`.
 * A broken golden apple that blows up in an inventory now blows up where its carrier stands and takes the carrier with it. Before, the carrier lived on, and an apple that had no board kept sitting in the inventory, drained, still feeding its carrier.
