@@ -40,6 +40,8 @@ The Eric Skiff songs are not kept in the repository yet; `tools/music/fetch-eric
 
 The 3D view draws these models (`"Model"` in `skins.json`). Each folder under `GoEoOL/data/models` keeps its pack's own licence file. Only CC0 models go in, so nothing has to be relicensed.
 
+`tools/models/fetch-models.sh` fetches more CC0 packs into `GoEoOL/data/models` (run it with no arguments for the list). Only the models `skins.json` uses are committed; add a row here for each new folder.
+
 | Folder | Pack | Author | Used for | Source | Licence |
 |---|---|---|---|---|---|
 | kaykit-dungeon | KayKit Dungeon Remastered 1.0 | Kay Lousberg | floor, walls, doors, keys, crates, rubbish | [kaylousberg.com](https://www.kaylousberg.com), [GitHub](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
