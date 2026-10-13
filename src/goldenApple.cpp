@@ -105,7 +105,8 @@ bool goldenApple::mechanics()
         return false;
     }
     int e = _owner->getAttrs()->getEnergy();
-    if (e < 100) {
+    // a drained apple has nothing left to give; it is blowing up
+    if (e < 100 && this->getAttrs()->getEnergy() > 0) {
         this->getStats()->setWaiting(55);
         _owner->getAttrs()->setEnergy(e + 5);
         this->hurt(5);

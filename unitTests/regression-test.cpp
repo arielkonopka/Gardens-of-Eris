@@ -633,3 +633,32 @@ TEST(RegressionTests, DronesWalkAroundLooseControllers)
     EXPECT_TRUE(mc->getElement(at) == loose);
     EXPECT_TRUE(plr->collect(loose));
 }
+
+// Played 2026-10-13: a broken golden apple exploded in the player's inventory, but the player
+// lived on, the apple stayed in the inventory with 500 energy and kept feeding the player.
+TEST(RegressionTests, ABrokenAppleThatBlowsUpInTheInventoryKillsItsCarrier)
+{
+    // with the board handed to the inventory (as a chunk change does) and without
+    for (const bool boardKnown : {false, true}) {
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(8, 8), plr);
+    plr->stepOnElement(mc->getElement(4, 4));
+    auto apple = elementFactory::generateAnElement<goldenApple>(mc, 0);
+    apple->stepOnElement(mc->getElement(5, 4));
+    apple->hurt(1); // broken: it feeds its carrier and drains itself
+    ASSERT_EQ(apple->getAttrs()->getSubtype(), 1);
+    ASSERT_TRUE(plr->collect(apple));
+    if (boardKnown)
+        plr->setBoard(mc);
+    ASSERT_EQ(apple->getBoard() != nullptr, boardKnown);
+    plr->getAttrs()->setEnergy(10);
+    apple->getAttrs()->setEnergy(6);
+    const auto id = apple->getStats()->getInstanceId();
+    for (int i = 0; i < 2000 && !plr->getStats()->isDisposed(); i++) {
+        bElem::tick();
+        bElem::runLiveElements();
+    }
+    EXPECT_TRUE(plr->getStats()->isDisposed() || plr->getStats()->isDying() || plr->getStats()->isDestroying()) << boardKnown;
+    EXPECT_FALSE(plr->getAttrs()->getInventory()->findInInventory(id)) << boardKnown;
+    }
+}
