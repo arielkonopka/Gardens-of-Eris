@@ -24,7 +24,7 @@
 
 #define CGLTF_IMPLEMENTATION
 #include "model3d.h"
-#include "cgltf.h"
+#include "gltfFile.h"
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -35,10 +35,24 @@
 #include <numbers>
 
 namespace goe::models {
-namespace {
-using gltfData = std::unique_ptr<cgltf_data, decltype(&cgltf_free)>;
+namespace gltf {
+data open(const std::string &file)
+{
+    cgltf_options options{};
+    cgltf_data *raw = nullptr;
+    if (cgltf_parse_file(&options, file.c_str(), &raw) != cgltf_result_success)
+        return {nullptr, &cgltf_free};
+    data out(raw, &cgltf_free);
+    if (cgltf_load_buffers(&options, out.get(), file.c_str()) != cgltf_result_success)
+        return {nullptr, &cgltf_free};
+    return out;
+}
 
-/// the folder of a file, with its last slash, for the files a .gltf refers to
+bool wanted(const cgltf_node &node, std::span<const std::string> nodes)
+{
+    return nodes.empty() || std::ranges::find(nodes, std::string_view(node.name ? node.name : "")) != nodes.end();
+}
+
 std::string folderOf(const std::string &file)
 {
     const auto slash = file.find_last_of("/\\");
@@ -82,6 +96,25 @@ std::array<float, 3> colourOf(const cgltf_material *m)
     const float *c = m->pbr_metallic_roughness.base_color_factor;
     return {c[0], c[1], c[2]};
 }
+
+void picture::take(const cgltf_primitive &prim, const std::string &file)
+{
+    const cgltf_image *img = imageOf(prim.material);
+    if (img && !this->image)
+        this->image = img;
+    else if (img && img != this->image)
+        std::cout << file << ": only the first texture is used\n";
+}
+
+void picture::paint(mesh &out, const std::string &file) const
+{
+    if (this->image && !readImage(*this->image, folderOf(file), out))
+        std::cout << file << ": its texture could not be read\n";
+}
+} // namespace gltf
+
+namespace {
+using namespace gltf;
 
 /// a primitive's triangles, moved by the node's matrix and turned into the board's axes
 void addTriangles(const cgltf_primitive &prim, const std::array<float, 16> &matrix, mesh &out)
@@ -155,36 +188,23 @@ std::optional<mesh> load(const std::string &file, std::span<const std::string> n
 {
     if (std::string_view(file).starts_with(builtinPrefix))
         return builtin(std::string_view(file).substr(builtinPrefix.size()));
-    cgltf_options options{};
-    cgltf_data *raw = nullptr;
-    if (cgltf_parse_file(&options, file.c_str(), &raw) != cgltf_result_success)
-        return std::nullopt;
-    gltfData data(raw, &cgltf_free);
-    if (cgltf_load_buffers(&options, data.get(), file.c_str()) != cgltf_result_success)
+    const auto data = gltf::open(file);
+    if (!data)
         return std::nullopt;
     mesh out;
-    const cgltf_image *picture = nullptr;
+    gltf::picture picture;
     for (cgltf_size i = 0; i < data->nodes_count; i++) {
         const cgltf_node &node = data->nodes[i];
-        if (!node.mesh)
-            continue;
-        if (!nodes.empty()
-            && std::ranges::find(nodes, std::string_view(node.name ? node.name : "")) == nodes.end())
+        if (!node.mesh || !gltf::wanted(node, nodes))
             continue;
         std::array<float, 16> matrix{};
         cgltf_node_transform_world(&node, matrix.data());
         for (cgltf_size p = 0; p < node.mesh->primitives_count; p++) {
-            const auto &prim = node.mesh->primitives[p];
-            const cgltf_image *img = imageOf(prim.material);
-            if (img && !picture)
-                picture = img;
-            else if (img && img != picture)
-                std::cout << file << ": only the first texture is used\n";
-            addTriangles(prim, matrix, out);
+            picture.take(node.mesh->primitives[p], file);
+            addTriangles(node.mesh->primitives[p], matrix, out);
         }
     }
-    if (picture && !readImage(*picture, folderOf(file), out))
-        std::cout << file << ": its texture could not be read\n";
+    picture.paint(out, file);
     if (out.triangles.empty())
         return std::nullopt;
     return out;
@@ -317,6 +337,11 @@ std::array<float, 3> spec::tintFor(int kind) const
     return this->tints[(std::size_t) (((kind % n) + n) % n)];
 }
 
+bool spec::animated() const
+{
+    return std::ranges::any_of(this->moves, [](const std::string &m) { return !m.empty(); });
+}
+
 const spec *pick(std::span<const spec> specs, int subType, int facing)
 {
     for (const auto &s : specs)
@@ -325,23 +350,43 @@ const spec *pick(std::span<const spec> specs, int subType, int facing)
     return nullptr;
 }
 
+namespace {
+/// tipped over about the east-west axis, as spec::tip says
+void tip(mesh &m, const spec &s)
+{
+    if (s.tip == 0)
+        return;
+    const float a = s.tip * std::numbers::pi_v<float> / 180.0f;
+    const float co = std::cos(a), si = std::sin(a);
+    forEachCorner(m, [&](corner &c) {
+        c = corner{c.x, c.y * co - c.z * si, c.y * si + c.z * co, c.nx, c.ny * co - c.nz * si, c.ny * si + c.nz * co,
+                   c.u, c.v, c.colour};
+    });
+}
+} // namespace
+
+fitting fit(const mesh &m, const spec &s)
+{
+    mesh tipped = m;
+    tip(tipped, s);
+    const box b = tipped.bounds();
+    const float footprint = std::max(b.size(0), b.size(1));
+    return {s.tip != 0 ? b.min[2] : 0.0f,
+            (b.min[0] + b.max[0]) / 2,
+            (b.min[1] + b.max[1]) / 2,
+            s.scale.value_or(footprint > 0 ? 1.0f / footprint : 1.0f)};
+}
+
 mesh placed(mesh m, const spec &s)
 {
-    if (s.tip != 0) {
-        const float a = s.tip * std::numbers::pi_v<float> / 180.0f;
-        const float co = std::cos(a), si = std::sin(a);
-        forEachCorner(m, [&](corner &c) {
-            c = corner{c.x, c.y * co - c.z * si, c.y * si + c.z * co, c.nx, c.ny * co - c.nz * si, c.ny * si + c.nz * co,
-                       c.u, c.v, c.colour};
-        });
-        const float floor = m.bounds().min[2];
-        forEachCorner(m, [&](corner &c) { c.z -= floor; });
-    }
-    const box b = m.bounds();
-    const float midX = (b.min[0] + b.max[0]) / 2;
-    const float midY = (b.min[1] + b.max[1]) / 2;
-    const float footprint = std::max(b.size(0), b.size(1));
-    const float scale = s.scale.value_or(footprint > 0 ? 1.0f / footprint : 1.0f);
+    const fitting f = fit(m, s);
+    return placed(std::move(m), s, f);
+}
+
+mesh placed(mesh m, const spec &s, const fitting &f)
+{
+    tip(m, s);
+    const float midX = f.midX, midY = f.midY, scale = f.scale;
     const float angle = s.turn * std::numbers::pi_v<float> / 180.0f;
     const float co = std::cos(angle), si = std::sin(angle);
     forEachCorner(m, [&](corner &c) {
@@ -349,7 +394,7 @@ mesh placed(mesh m, const spec &s)
         // clockwise seen from above: south (0, 1) turns to west (-1, 0)
         c.x = (x * co - y * si) * scale * s.stretch[0];
         c.y = (x * si + y * co) * scale * s.stretch[1];
-        c.z = c.z * scale * s.stretch[2] + s.lift;
+        c.z = (c.z - f.floor) * scale * s.stretch[2] + s.lift;
         const float nx = c.nx * co - c.ny * si, ny = c.nx * si + c.ny * co;
         // a stretch changes which way faces look: normals scale by its inverse
         const float sx = nx / s.stretch[0], sy = ny / s.stretch[1], sz = c.nz / s.stretch[2];

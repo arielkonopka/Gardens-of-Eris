@@ -46,7 +46,7 @@ nothing about cameras or screens, so the same mesh can be drawn by any camera (o
 standees turn to face the eye direction and block sides facing away are left out. Faces are lit by
 direction (`light`): tops brightest, the sides darker.
 
-## `goe::models` and `modelLibrary` (`model3d.h`, `modelLibrary.h`)
+## `goe::models`, `goe::models::rig` and `modelLibrary` (`model3d.h`, `rig.h`, `modelLibrary.h`)
 
 The 3D models, read from glTF 2.0 files (`.glb`) with [cgltf](https://github.com/jkuhlmann/cgltf)
 (`third_party/cgltf`, MIT). `goe::models` works on the CPU only, so the tests need no display:
@@ -62,11 +62,28 @@ before anything else. `builtin(name)` makes a shape in code instead of reading a
 does it for a file named `builtin:blob` or `builtin:star`), set on the floor and filling its cell.
 `spec` is one `"Model"` entry; `pick(specs, subtype,
 facing)` finds the one for an element now, and `readModelSpecs` (`configManager.h`) reads them.
+`fit(mesh, spec)` works out how `placed` moves a mesh (its floor, middle and scale) so the poses of
+an animated model all stand on the same spot; `placed(mesh, spec, fitting)` uses it. The file
+helpers both readers share (`open`, `wanted`, the texture) are in `goe::models::gltf`
+(`gltfFile.h`).
+
+`rig` is an animated model: `rig::load(file, nodes)` reads the meshes with their skeleton (glTF
+skins: up to four joints pull each corner; a mesh that is no skin, a sword in a hand, follows its
+own node) and the animation clips. `clip(name)` finds a clip, `length(clip)` says how long it runs,
+and `pose(clip, seconds)` bends the meshes into that moment (clip -1: as the file binds them), in
+the board's axes like `load`, on the CPU. `image()` is the texture every pose shares. A `"Model"`
+entry with `Animations` (`spec::moves`, by `move`: idle, walk, death) is animated.
 
 `modelLibrary` (needs the display) makes each model once, the first time the 3D view needs it:
 four vertex buffers, one per quarter turn with the light baked into the vertex colours, and a
 texture shared by models painted with the same picture. `find(def, subtype, facing)` returns
 nullptr when the skin gives no model or the file cannot be read, and the view draws the shape.
+An animated model keeps its `rig` and its clips instead; `plays(move)` says whether it has a clip
+for a move. `posed(model, move, at, eighths)` gives its corners in a moment (`at`: seconds into
+standing about or walking, looped; the part of dying done), turned and lit, made once a frame for
+each model, move, moment (30 a second) and turn, and `startFrame()` forgets them. The 3D view
+picks the move from the element: dying, moving, or standing about, with three phases so a crowd
+does not march in step; an element dying without a death clip shows its sprite animation.
 
 `fieldCamera` is which part of the board is shown. `follow(centre, cells, boardSize)` moves it
 `step` (8) pixels a frame towards the window centred on `centre`, so the view glides; a bounded

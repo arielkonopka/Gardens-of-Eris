@@ -122,7 +122,7 @@ void isoFieldView::buildMesh(const fieldFrame &frame, coords origin, float cx, f
                 // nobody has been here: plain floor, which the fog covers
                 if (floorDef && !floorDef->defArray.empty() && !floorDef->defArray[0].empty()
                     && !floorDef->defArray[0][0].empty()) {
-                    if (!this->addModel(*floorDef, 0, 0, np, (float) x, (float) y, false))
+                    if (!this->addModel(*floorDef, 0, 0, np, (float) x, (float) y, false, motion{}))
                         this->mesh.ground((float) x, (float) y, pictureOf(floorDef->defArray[0][0][0]));
                 }
                 continue;
@@ -139,13 +139,26 @@ void isoFieldView::buildMesh(const fieldFrame &frame, coords origin, float cx, f
                 const float ey = (float) y + (float) off.y / (float) this->tileSize.y;
                 const auto &stats = *e->getStats();
                 // exploding, dying and teleporting keep their sprite animations
-                const bool changing = stats.isDying() || stats.isDestroying() || stats.isTeleporting();
+                const bool changing = stats.isDestroying() || stats.isTeleporting();
                 const bool ghost = ve->shape == goe::iso::shape::block && inFrontOfFocus(x, y);
                 if (changing
-                    || !this->addModel(*ve, e->getAttrs()->getSubtype(), (int) stats.getFacing(), np, ex, ey, ghost))
+                    || !this->addModel(*ve, e->getAttrs()->getSubtype(), (int) stats.getFacing(), np, ex, ey, ghost,
+                                       this->motionOf(*e)))
                     (ghost ? this->ghosts : this->mesh).add(ve->shape, ex, ey, pictureOf(*cell));
             }
         }
+}
+
+isoFieldView::motion isoFieldView::motionOf(bElem &e) const
+{
+    auto &stats = *e.getStats();
+    if (stats.isDying()) {
+        const float total = (float) std::max(1u, stats.getKillTimeReq());
+        return {goe::models::move::death, 1.0f - (float) stats.getKilled() / total};
+    }
+    // a few phases, so a crowd does not march in step, while sharing poses
+    const float phase = (float) (stats.getInstanceId() % 3) * 0.37f;
+    return {stats.isMoving() ? goe::models::move::walk : goe::models::move::idle, this->clock + phase};
 }
 
 bool isoFieldView::joins(coords at) const
@@ -163,14 +176,15 @@ bool isoFieldView::addModel(const videoElement::videoElementDef &ve,
                             coords at,
                             float x,
                             float y,
-                            bool ghost)
+                            bool ghost,
+                            motion now)
 {
     const auto *m = this->models.find(ve, subType, facing);
-    if (!m)
+    if (!m || (now.move == goe::models::move::death && !m->plays(now.move)))
         return false;
     const auto tint = m->spec->tintFor(subType);
     auto put = [&](int quarters, bool lid = false, bool eighth = false) {
-        this->placed.push_back({m, x, y, quarters, eighth, ghost, tint, lid});
+        this->placed.push_back({m, x, y, quarters, eighth, ghost, tint, lid, now.move, now.at});
     };
     switch (m->spec->place) {
     case goe::models::layout::cell: {
@@ -195,13 +209,24 @@ bool isoFieldView::addModel(const videoElement::videoElementDef &ve,
     return true;
 }
 
-void isoFieldView::drawModels(bool ghosts)
+void isoFieldView::drawModels(bool seeThrough)
 {
     for (const auto &pm : this->placed) {
-        if (pm.ghost != ghosts)
+        if (pm.ghost != seeThrough)
             continue;
         ALLEGRO_TRANSFORM t;
         al_identity_transform(&t);
+        if (pm.model->rig) {
+            // posed and turned on the CPU: only moved to its cell here
+            const auto corners = this->models.posed(*pm.model, pm.motion, pm.at, pm.quarters * 2 + (pm.eighth ? 1 : 0));
+            al_translate_transform_3d(&t, pm.x + 0.5f, pm.y + 0.5f, 0);
+            al_set_shader_matrix("placement", &t);
+            al_set_shader_float_vector("tint", 3, pm.tint.data(), 1);
+            if (!corners.empty())
+                al_draw_prim(corners.data(), nullptr, pm.model->texture.get(), 0, (int) corners.size(),
+                             ALLEGRO_PRIM_TRIANGLE_LIST);
+            continue;
+        }
         if (pm.eighth) // the same way turned() turns a quarter: x to y
             al_rotate_transform_3d(&t, 0, 0, 1, std::numbers::pi_v<float> / 4);
         al_translate_transform_3d(&t, pm.x + 0.5f, pm.y + 0.5f, 0);
@@ -322,6 +347,8 @@ void isoFieldView::draw(const fieldFrame &frame)
     const float cy = frame.camera.topCells() + (float) frame.cells.y / 2;
     // everything is placed from the window's corner, so the numbers stay small far out in the maze
     const coords origin((int) std::floor(cx) - this->radius, (int) std::floor(cy) - this->radius);
+    this->clock = (float) std::fmod(al_get_time(), 3600.0);
+    this->models.startFrame();
     this->buildMesh(frame, origin, cx, cy);
     const colour c = board->getChColour();
     this->boardColour = {(float) c.r / 255.0f, (float) c.g / 255.0f, (float) c.b / 255.0f};

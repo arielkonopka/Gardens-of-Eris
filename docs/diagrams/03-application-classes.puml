@@ -108,7 +108,12 @@ class "goe::iso::meshBuilder" as meshBuilder {
 }
 class modelLibrary {
   +find(def, subtype, facing)
+  +posed(model, move, at, eighths)
   vertex buffers per quarter turn
+}
+class "goe::models::rig" as rig {
+  +load(glb, nodes)
+  +pose(clip, seconds) : mesh
 }
 class "goe::models" as models <<namespace>> {
   +load(glb, nodes) : mesh
@@ -155,6 +160,7 @@ isoFieldView *-- fogLayer : mask and pattern
 isoFieldView ..> sprites
 isoFieldView *-- modelLibrary : "Model" in skins.json
 modelLibrary ..> models
+modelLibrary *-- rig : animated models
 flatFieldView *-- fogLayer
 flatFieldView *-- spritePainter
 hudView *-- spritePainter
