@@ -110,7 +110,7 @@ What a collector carries, in five vectors: `weapons`, `usables`, `keys`, `mods`,
 | `changeOwner(who)`, `updateBoard()` | Moves the items to a new owner or board. |
 | `retrieveCollectibleFromInventory`, `removeCollectibleFromInventory`, `findInInventory`, `removeToken` | By instance id or position. |
 | `clear()`, `isEmpty()` | Let go of everything; nothing held. |
-| `runLives()` | Runs the mechanics of items that act while carried (a broken golden apple draining). |
+| `runLives()` | Runs the mechanics of items that act while carried (a refresher draining). |
 
 ## `elementFactory` (`elementFactory.h`)
 

@@ -601,7 +601,7 @@
      {
         "Type": 900,
         "Name": "goldenApple",
-        "Model": { "File": "builtin:apple", "Scale": 0.55 },
+        "Model": { "File": "data/models/fruit-pack-01/golden_apple.glb", "Scale": 3.4, "Turn": 30 },
       "AnimDef": [ [ [ [ 6, 11 ] ] ], [ [ [ 8, 11 ] ] ] ],
         "Samples": [
           {

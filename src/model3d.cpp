@@ -205,17 +205,17 @@ point unit(const point &p)
 }
 
 /// a triangle with one normal for its face, the low-poly look of the model packs
-void facet(mesh &m, const point &a, const point &b, const point &c, const point &colour = {1, 1, 1})
+void facet(mesh &m, const point &a, const point &b, const point &c)
 {
     const point u{b[0] - a[0], b[1] - a[1], b[2] - a[2]}, v{c[0] - a[0], c[1] - a[1], c[2] - a[2]};
     const point n = unit({u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]});
     for (const auto &p : {a, b, c})
-        m.triangles.push_back({p[0], p[1], p[2], n[0], n[1], n[2], 0.5f, 0.5f, colour});
+        m.triangles.push_back({p[0], p[1], p[2], n[0], n[1], n[2], 0.5f, 0.5f});
 }
 
 /// a ball around (0, 0, 0.5); radius(theta, phi) says how far out each point is (theta from the
 /// top, phi round the side), 0.5 fitting the cell
-mesh ball(const std::function<float(float, float)> &radius, const point &colour = {1, 1, 1})
+mesh ball(const std::function<float(float, float)> &radius)
 {
     constexpr int rings = 8, segments = 12;
     auto at = [&](int ring, int seg) {
@@ -229,9 +229,9 @@ mesh ball(const std::function<float(float, float)> &radius, const point &colour 
         for (int seg = 0; seg < segments; seg++) {
             const point a = at(ring, seg), b = at(ring, seg + 1), c = at(ring + 1, seg + 1), d = at(ring + 1, seg);
             if (ring > 0)
-                facet(m, a, c, b, colour);
+                facet(m, a, c, b);
             if (ring < rings - 1)
-                facet(m, a, d, c, colour);
+                facet(m, a, d, c);
         }
     return m;
 }
@@ -280,39 +280,6 @@ mesh blob()
     });
 }
 
-/// a golden apple: a ball dimpled at the top and the bottom, a stem and a leaf
-mesh apple()
-{
-    constexpr point gold{1.0f, 0.78f, 0.22f}, stem{0.45f, 0.3f, 0.15f}, leaf{0.35f, 0.75f, 0.25f};
-    mesh m = ball(
-        [](float theta, float) {
-            const float c = std::cos(theta);
-            const float dimple = c > 0 ? std::pow(c, 8.0f) * 0.25f : std::pow(-c, 8.0f) * 0.15f;
-            return 0.42f * (1 - dimple) * (1 + 0.08f * std::sin(theta));
-        },
-        gold);
-    // the stem: a thin, slightly leaning box from the dimple up
-    const float top = 0.5f + 0.42f * 0.75f;
-    const float w = 0.025f;
-    const point lean{0.04f, 0.0f, 0.16f};
-    for (int side = 0; side < 4; side++) {
-        const float a0 = std::numbers::pi_v<float> / 2 * (float) side, a1 = a0 + std::numbers::pi_v<float> / 2;
-        const point b0{w * std::cos(a0), w * std::sin(a0), top}, b1{w * std::cos(a1), w * std::sin(a1), top};
-        const point t0{b0[0] + lean[0], b0[1] + lean[1], b0[2] + lean[2]},
-            t1{b1[0] + lean[0], b1[1] + lean[1], b1[2] + lean[2]};
-        facet(m, b0, b1, t1, stem);
-        facet(m, b0, t1, t0, stem);
-    }
-    // the leaf: a flat diamond off the stem, both faces
-    const point root{0.02f, 0.0f, top + 0.08f}, tip{-0.2f, 0.08f, top + 0.16f}, left{-0.09f, 0.1f, top + 0.06f},
-        right{-0.1f, -0.02f, top + 0.16f};
-    facet(m, root, left, tip, leaf);
-    facet(m, root, tip, right, leaf);
-    facet(m, root, tip, left, leaf);
-    facet(m, root, right, tip, leaf);
-    return m;
-}
-
 /// set on the floor
 mesh grounded(mesh m)
 {
@@ -326,8 +293,6 @@ std::optional<mesh> builtin(std::string_view name)
 {
     if (name == "blob")
         return grounded(blob());
-    if (name == "apple")
-        return grounded(apple());
     if (name == "star")
         return grounded(star());
     return std::nullopt;
