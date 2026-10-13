@@ -82,6 +82,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `goe::storyScroller` | `include/storyScroller.h` | [application](application.md) |
 | `goe` (Python) | `agent/python/goe/` | [python-package](python-package.md) |
 | `goldenApple` | `include/goldenApple.h` | [elements](elements.md) |
+| `refresher` | `include/refresher.h` | [elements](elements.md) |
 | `hudView` | `include/hudView.h` | [media](media.md) |
 | `inputManager` | `include/inputManager.h` | [application](application.md) |
 | `isoFieldView` | `include/isoFieldView.h` | [media](media.md) |

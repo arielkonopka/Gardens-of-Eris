@@ -52,6 +52,7 @@
 #include "kiki.h"
 #include "difficulty.h"
 #include "landmine.h"
+#include "refresher.h"
 #include "puppetMasterHound.h"
 
 #endif // ELEMENTS_H_INCLUDED

@@ -41,12 +41,9 @@ public:
     bool kill() final;
     bool destroy() final;
     bool hurt(int points) override;
-    bool interact(std::shared_ptr<bElem> who) override;
-    bool mechanics() override;
     goldenApple()=default;
     oState disposeElement() final;
     bool additionalProvisioning(int subtype) final;
-    bool collectOnAction(bool collected, std::shared_ptr<bElem> who) override;
     /// the given elements' apples leave the list while their chunk is on disk; they still count
     static void park(const std::vector<std::shared_ptr<bElem>> &elements);
     /// puts the given elements' parked apples back into the list

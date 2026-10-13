@@ -14,7 +14,7 @@ bElem
  ├─ puppetMasterFR ── (see puppet-masters.md)
  └─ explosives (virtual base)
       ├─ simpleBomb ── landmine
-      ├─ goldenApple
+      ├─ goldenApple, refresher
       ├─ bazookaMissile
       └─ bouba
 ```
@@ -79,17 +79,24 @@ its shooter (`setStatsOwner`, `goe::events::blame`).
 
 ### `goldenApple` (`goldenApple.h`)
 Type 900, an `explosives`. The thing the player is looking for, collected as a token. Shot or
-hurt, it breaks: a broken apple is a usable that heals its holder and drains its own energy, and
-explodes in the inventory when it runs out. The static list of apples still out in the world
+hurt on the board, it is an apple no more: a `refresher` takes its cell. The static list of apples still out in the world
 (`getApple(num)`, `getAppleNumber()`) is guarded by a mutex; `park` and `unpark` take apples in
 swapped-out chunks off the list and back while they still count.
+
+### `refresher` (`refresher.h`)
+Type 901, an `explosives`: a shot golden apple. Carried, it gives its carrier `dose` (5) energy
+every `pause` (55) ticks while the carrier has less than `fullUp` (100), and loses as much itself;
+using it (`interact`) gives a dose at once. Drained, it blows up where its carrier stands and takes
+the carrier with it. Saves from before it existed load a shot apple (an apple of subtype 1) as a
+refresher.
 
 ## Explosives
 
 ### `explosives` (`explosives.h`)
 The virtual base of everything that blows up. `explode(blastRadius)` spreads the blast cell by
 cell (`traverser`, a cellular automaton) and hurts or destroys what it reaches, blamed on whoever
-set it off.
+set it off. One that blows up while carried leaves the inventory, blows up where its carrier
+stands and destroys the carrier.
 
 ### `simpleBomb` (`simpleBomb.h`)
 Type 602. `hurt`, `kill` or `destroy` set it off; it explodes after `fuse()` ticks (15).

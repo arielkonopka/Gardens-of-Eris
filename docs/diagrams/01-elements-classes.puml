@@ -66,6 +66,7 @@ package "Collectibles" {
   class plainGun
   class bazooka
   class goldenApple
+  class refresher
 }
 package "Creatures" {
   class player
@@ -117,6 +118,7 @@ explosives <|-- simpleBomb
 simpleBomb <|-- landmine
 explosives <|-- bouba
 explosives <|-- goldenApple
+explosives <|-- refresher
 explosives <|-- bazookaMissile
 bElem <|-- puppetMasterFR
 puppetMasterFR <|-- puppetMasterCollector

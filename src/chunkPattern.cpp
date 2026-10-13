@@ -143,6 +143,7 @@ const std::vector<std::pair<std::string, int>> &chunkPattern::typeNames()
         {"bomb", bElemTypes::_simpleBombType},
         {"landmine", bElemTypes::_landmineType},
         {"golden_apple", bElemTypes::_goldenAppleType},
+        {"refresher", bElemTypes::_refresherType},
     };
     return names;
 }

@@ -73,8 +73,9 @@ struct mesh {
 std::optional<mesh> load(const std::string &file, std::span<const std::string> nodes = {});
 
 /**
- * Shapes made in code, for elements no model pack has: "blob" (a soft, wobbly ball, bouba) and
- * "star" (a spiky star, kiki). White, so a tint colours them; standing on the floor (z from 0).
+ * Shapes made in code, for elements no model pack has: "blob" (a soft, wobbly ball, bouba),
+ * "star" (a spiky star, kiki), both white so a tint colours them, and "apple" (a golden apple with
+ * a brown stem and a green leaf). They stand on the floor (z from 0).
  */
 std::optional<mesh> builtin(std::string_view name);
 /// "builtin:", what a model's file name starts with for a shape made in code

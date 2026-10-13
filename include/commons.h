@@ -85,6 +85,7 @@ namespace bElemTypes {
 
     // Special items - more mysterious than the Golden Apple itself
     constexpr int _goldenAppleType = 900;   ///< A golden apple - oh yes, the chaos bringer. You want this, or do you?
+    constexpr int _refresherType = 901;    ///< A refresher - a shot golden apple: it feeds you, until it doesn't.
     constexpr int _stash = 600;             ///< A stash - what's inside? Probably more chaos.
     constexpr int _simpleBombType = 602;    ///< A simple bomb - it's simple, but don't underestimate the explosion.
     constexpr int _landmineType = 603;      ///< A landmine - looks almost like floor, and goes off when something steps on it.

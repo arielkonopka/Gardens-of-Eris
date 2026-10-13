@@ -9,8 +9,7 @@
 
 const coords point(10, 10);
 /***
- * @brief unit test for testing type of the object, its subtype, and the change in subtype after being hurt.
- * We also test whether the interactive flag changed
+ * @brief unit test for testing type of the object, its subtype, and that a hurt apple turns into a refresher
  */
 TEST(GoldenAppleTests, GetTypeTest)
 {
@@ -26,9 +25,8 @@ TEST(GoldenAppleTests, GetTypeTest)
             EXPECT_TRUE(goldenAppleObj2->getAttrs()->getSubtype()==0);
             EXPECT_TRUE(!goldenAppleObj2->getAttrs()->isInteractive());
             goldenAppleObj2->hurt(1);
-            goldenAppleObj2->hurt(1);
-            EXPECT_TRUE(goldenAppleObj2->getAttrs()->getSubtype()!=0);
-            EXPECT_TRUE(goldenAppleObj2->getAttrs()->isInteractive());
+            // shot, it is a refresher now
+            EXPECT_EQ(chamber->getElement(x, 0)->getType(), bElemTypes::_refresherType);
         }
     }
     bElem::tick();
@@ -40,9 +38,8 @@ TEST(GoldenAppleTests, GetTypeTest)
     EXPECT_TRUE(goldenAppleObj->getAttrs()->getSubtype()==0);
     EXPECT_TRUE(!goldenAppleObj->getAttrs()->isInteractive());
     goldenAppleObj->hurt(1);
-    EXPECT_TRUE(goldenAppleObj->getAttrs()->getSubtype()!=0);
-    EXPECT_TRUE(goldenAppleObj->getAttrs()->isInteractive());
-    goldenAppleObj->disposeElement();
+    EXPECT_EQ(chamber->getElement(point/2)->getType(), bElemTypes::_refresherType);
+    chamber->getElement(point/2)->disposeElement();
     for(int x=0; x<point.x; x++)
     {
         chamber->getElement(x,0)->disposeElement();
@@ -99,3 +96,45 @@ TEST(GoldenAppleTests, GetAppleNumberTest)
 }
 
 
+
+/// a shot apple becomes a refresher on its cell, and stops counting as an apple
+TEST(GoldenAppleTests, AShotAppleTurnsIntoARefresher)
+{
+    auto board = chamber::makeNewChamber(point);
+    auto apple = elementFactory::generateAnElement<goldenApple>(board, 0);
+    apple->stepOnElement(board->getElement(4, 4));
+    const int before = goldenApple::getAppleNumber();
+    EXPECT_TRUE(apple->hurt(1));
+    EXPECT_TRUE(apple->getStats()->isDisposed());
+    EXPECT_EQ(goldenApple::getAppleNumber(), before - 1);
+    const auto there = board->getElement(4, 4);
+    ASSERT_TRUE(there);
+    EXPECT_EQ(there->getType(), bElemTypes::_refresherType);
+    EXPECT_TRUE(there->getAttrs()->isCollectible());
+    EXPECT_TRUE(there->getAttrs()->isInteractive());
+    there->disposeElement();
+}
+
+/// using a refresher gives a dose of energy and costs it the same
+TEST(GoldenAppleTests, ARefresherFeedsWhoUsesIt)
+{
+    auto board = chamber::makeNewChamber(point);
+    auto fresh = elementFactory::generateAnElement<refresher>(board, 0);
+    fresh->stepOnElement(board->getElement(4, 4));
+    auto who = elementFactory::generateAnElement<monster>(board, 0);
+    who->stepOnElement(board->getElement(5, 4));
+    who->getAttrs()->setEnergy(20);
+    const int stock = fresh->getAttrs()->getEnergy();
+    bElem::tick();
+    EXPECT_TRUE(fresh->interact(who));
+    EXPECT_EQ(who->getAttrs()->getEnergy(), 20 + refresher::dose);
+    EXPECT_EQ(fresh->getAttrs()->getEnergy(), stock - refresher::dose);
+    // a drained one gives nothing
+    fresh->getAttrs()->setEnergy(0);
+    for (int i = 0; i < refresher::pause + 1; i++)
+        bElem::tick();
+    fresh->interact(who);
+    EXPECT_EQ(who->getAttrs()->getEnergy(), 20 + refresher::dose);
+    fresh->disposeElement();
+    who->disposeElement();
+}

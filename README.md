@@ -101,7 +101,8 @@ The game writes a crash report, `crash-<date>-<time>.log`, into the save folder 
 | Floor, wall | The maze itself. Floors come in a few looks; walls stand until they don't. |
 | Brick cluster | Can't be killed, but can be pushed around and blown up. Also used to block passages instead of a door. |
 | Door and key | A door opens for a key of its colour. Rooms are often locked, and the key is usually placed somewhere else. |
-| Golden apple | The thing you are here for. Shoot one and it becomes a healing item that drains itself and finally explodes in your inventory, taking you with it. |
+| Golden apple | The thing you are here for. Shoot one and it turns into a refresher. |
+| Refresher | A shot golden apple, a green bottle. Carried, it tops up your energy now and then (use it for a dose at once) and drains itself; drained, it explodes in your inventory and takes you with it. |
 | Plain gun, bazooka | Weapons to pick up. Shooting fast makes weaker shots. |
 | Simple bomb | Explodes when shot or hit by another explosion. |
 | Landmine | Looks almost like floor: a pentagon plate with the Sacred Chao on it. Goes off when anything steps on it and takes that thing with it. Only the maze further from the start has them, and the further out, the more. |
@@ -430,6 +431,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* The refresher: a shot golden apple turns into a refresher (type 901, a green bottle) instead of a broken apple. Old saves load their broken apples as refreshers. Golden apples are a golden apple model made in code (`builtin:apple`).
 * A broken golden apple that blows up in an inventory now blows up where its carrier stands and takes the carrier with it. Before, the carrier lived on, and an apple that had no board kept sitting in the inventory, drained, still feeding its carrier.
 * More 3D models: golden apples are coin stacks, guns are crossbows firing arrows, bombs, landmines, drones (space trucks), bunkers, security cameras, puppet masters (spellbooks) and teleporters (landing pads) come from the KayKit adventurers, skeletons, space base and prototype packs (CC0); bouba and kiki are shapes made in code. `Tip` and `builtin:` in `Model`, and the `goe-gallery` tool.
 * 3D models in the 3D view: walls, floor, doors, keys, crates and rubbish are real models from KayKit Dungeon Remastered (CC0). Walls join their neighbours, doors stand across their corridor and show the doorway when open, keys float in their colour. `Model` in skins.json picks a glTF file per element (subtype and facing too); everything else is drawn as before.

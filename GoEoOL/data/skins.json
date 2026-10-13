@@ -551,9 +551,57 @@
         
      },
      {
+        "Type": 901,
+        "Name": "refresher",
+        "Model": { "File": "data/models/kaykit-dungeon/bottle_A_labeled_green.glb", "Scale": 0.8 },
+        "AnimDef": [ [ [ [ 8, 11 ] ] ] ],
+        "Samples": [
+          {
+            "SubType": -1,
+            "stEvents": [
+              {
+                "EventType": "Found",
+                "eventData": [
+                  {
+                    "Event": "Collect",
+                    "fname": "data/sounds/collect.ogg",
+                    "name": "Collect refresher sound",
+                    "description": "Sound of a refresher being collected (cc) Ariel Konopka",
+                    "allowMulti": true,
+                    "stacking": true,
+                    "modeOfAction": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "Attributes": [
+          {
+            "SubType": -1,
+            "Killable": true,
+            "Destroyable": true,
+            "Steppable": false,
+            "isMovable": false,
+            "isInteractive": true,
+            "isCollectible": true,
+            "canPush": false,
+            "canBePushed": false,
+            "canCollect": false,
+            "isWeapon": false,
+            "isOpen": false,
+            "isLocked": false,
+            "energy": 555,
+            "maxEnergy": 555,
+            "ammo": 0,
+            "maxAmmo": 0
+          }
+        ]
+     },
+     {
         "Type": 900,
         "Name": "goldenApple",
-        "Model": { "File": "data/models/kaykit-dungeon/coin_stack_small.glb", "Scale": 0.5, "Turn": 30, "Tints": [ [1, 1, 1], [1, 0.6, 0.45] ] },
+        "Model": { "File": "builtin:apple", "Scale": 0.55 },
       "AnimDef": [ [ [ [ 6, 11 ] ] ], [ [ [ 8, 11 ] ] ] ],
         "Samples": [
           {

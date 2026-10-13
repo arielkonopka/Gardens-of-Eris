@@ -255,7 +255,12 @@ std::shared_ptr<bElem> gameSerializer::createByType(int type, int subtype, std::
     case bElemTypes::_teleporter:
         return elementFactory::generateAnElement<teleport>(board, subtype);
     case bElemTypes::_goldenAppleType:
+        // saves before the refresher kept a shot apple as an apple of subtype 1
+        if (subtype != 0)
+            return elementFactory::generateAnElement<refresher>(board, 0);
         return elementFactory::generateAnElement<goldenApple>(board, subtype);
+    case bElemTypes::_refresherType:
+        return elementFactory::generateAnElement<refresher>(board, subtype);
     case bElemTypes::_simpleBombType:
         return elementFactory::generateAnElement<simpleBomb>(board, subtype);
     case bElemTypes::_landmineType:
