@@ -14,14 +14,14 @@ chunks out, `farChunk`) and the Game over screen with the hall of fame (`showEnd
 
 ## `presenter::presenter` (`presenter.h`)
 
-The game loop and the renderer.
+The game loop. It draws each tick through a `fieldView` (the game field), the `hudView` (the
+stats strip) and its own overlays (the story line, the demo note); see [media](media.md).
 
 | Member | What it does |
 |---|---|
 | `presentEverything(demo, demoSeconds)` | Runs the game, 50 ticks a second, until it ends; returns a `gameEnd`. Each tick: the demo's checks or F5 / F9 / Esc, the world grows or shrinks around the player (`worldBuilder`), the music follows D, `bElem::runLiveElements`, the story scroller, then the game field, fog and HUD are drawn. In a demo the autopilot plays and nothing is saved. |
 | `getLastScore()` | The score shown last; after a lost game the best of its avatars. |
 | `initializeDisplay()`, `loadCofiguredData()`, `showSplash()` | Set-up. |
-| `showGameField()`, `showObjectTile(...)`, `showText(...)`, `prepareStatsThing()` | Drawing the board, tiles, text and the HUD. |
 
 `gameEnd` is `QUIT` (window closed), `LOST` (last avatar gone), `SAVED` / `SAVE_FAILED` (Esc),
 `DEMO_OVER` (a press during the demo), `DEMO_DONE` (the demo's time is up).

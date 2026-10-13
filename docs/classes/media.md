@@ -8,6 +8,36 @@ another element that uncovers the map around it (a patrol drone acts as an extra
 `getViewPoints(start, end)` returns the points (`vpPoint`: x, y, radius) in a region for the fog;
 `isPointVisible`, `calculateObscured` answer for one cell.
 
+## The game field views (`fieldView.h`, `flatFieldView.h`, `fieldCamera.h`)
+
+`fieldView` is how the game loop draws the game field: one `draw(fieldFrame)` onto the current
+target. A `fieldFrame` carries the active avatar (its board is drawn), the `fieldCamera`, how many
+whole cells the field shows, and where on the target it goes. Each way of looking at the field is
+one implementation:
+- `flatFieldView`: the sprites seen from above, still elements first, then the ones on the move,
+  the avatar last, all drawn into a scene bitmap and shown through the `fogLayer`.
+
+`fieldCamera` is which part of the board is shown. `follow(centre, cells, boardSize)` moves it
+`step` (8) pixels a frame towards the window centred on `centre`, so the view glides; a bounded
+board keeps the window inside. `topLeft()` is the cell in the corner, `scroll()` the pixels past
+it, `leftCells()` / `topCells()` the same as fractions of a cell.
+
+## `hudView` (`hudView.h`)
+
+The stats strip under the game field: avatar, energy, weapon, usable item, keys, apples, score,
+Dex and D. `draw(player, dx, dy, width)` paints it and puts it on the current target.
+
+## `spritePainter` and `goe::sprites` (`spritePainter.h`, `spriteFrame.h`)
+
+`goe::sprites::frame(elem, def)` is which cell of the sprite sheet an element shows now: its
+subtype, facing and animation phase, or the dying, destroying or teleporting (fading out, fading
+in) sequence while one runs. `pixelOf(cell, tileSize, spacing)` is that cell's pixels. Every view
+uses them, so the rules live in one place.
+
+`spritePainter::draw(elem, cellPx, layer, withMotion)` blits an element and what it stands on:
+`layer::still` leaves moving elements for later (and says so), `layer::moving` draws only those,
+`layer::top` only the element itself (the HUD's icons).
+
 ## `fogLayer` (`fogLayer.h`)
 
 Draws the game field under the fog. What nobody sees is covered by the `FogBitmap` of `skins.json`,

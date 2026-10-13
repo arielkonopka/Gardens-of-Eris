@@ -15,7 +15,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | [Rules](rules.md) | `difficulty`, `goe::music::byDifficulty`, `goe::music::cues`, `goe::rng`, `gameClock`, `goe::events`, `randomWordGen` |
 | [Saving](saving.md) | `gameSerializer`: saves, loads and chunk swap |
 | [The application](application.md) | `main.cpp`, `presenter`, `titleScreen`, `titleMenu`, `menuPad`, `bindings`, `inputManager`, `gameSettings`, `autopilot`, `hallOfFame`, `storyScroller`, `crashLog`, `goe::credits` |
-| [Seeing and hearing](media.md) | `viewPoint`, `fogLayer`, `fogMask`, Allegro handles, `videoManager`, `videoDriver`, `configManager`, `soundManager`, `soundSpace`, `performerStream`, the adaptive musician (`goe::musician`), the DJ (`goe::dj`) |
+| [Seeing and hearing](media.md) | `viewPoint`, `fieldView`, `flatFieldView`, `fieldCamera`, `hudView`, `spritePainter`, `goe::sprites`, `fogLayer`, `fogMask`, Allegro handles, `videoManager`, `videoDriver`, `configManager`, `soundManager`, `soundSpace`, `performerStream`, the adaptive musician (`goe::musician`), the DJ (`goe::dj`) |
 
 ## Where each class lives
 
@@ -39,6 +39,9 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `elementFactory` | `include/elementFactory.h` | [elements-core](elements-core.md) |
 | `elementView` | `include/elementView.h` | [elements-core](elements-core.md) |
 | `explosives` | `include/explosives.h` | [elements](elements.md) |
+| `fieldCamera` | `include/fieldCamera.h` | [media](media.md) |
+| `fieldView`, `fieldFrame` | `include/fieldView.h` | [media](media.md) |
+| `flatFieldView` | `include/flatFieldView.h` | [media](media.md) |
 | `floorElement` | `include/floorElement.h` | [elements](elements.md) |
 | `fogLayer` | `include/fogLayer.h` | [media](media.md) |
 | `fogMask` | `include/fogMask.h` | [media](media.md) |
@@ -73,9 +76,11 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `goe::roam` | `include/roam.h` | [puppet-masters](puppet-masters.md) |
 | `goe::sight` | `include/lineOfSight.h` | [puppet-masters](puppet-masters.md) |
 | `goe::sound` | `include/elementSound.h` | [elements-core](elements-core.md) |
+| `goe::sprites` | `include/spriteFrame.h` | [media](media.md) |
 | `goe::storyScroller` | `include/storyScroller.h` | [application](application.md) |
 | `goe` (Python) | `agent/python/goe/` | [python-package](python-package.md) |
 | `goldenApple` | `include/goldenApple.h` | [elements](elements.md) |
+| `hudView` | `include/hudView.h` | [media](media.md) |
 | `inputManager` | `include/inputManager.h` | [application](application.md) |
 | `inventory` | `include/inventory.h` | [elements-core](elements-core.md) |
 | `key` | `include/key.h` | [elements](elements.md) |
@@ -103,6 +108,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `simpleBomb` | `include/simpleBomb.h` | [elements](elements.md) |
 | `soundManager` | `include/soundManager.h` | [media](media.md) |
 | `soundSpace` | `include/soundSpace.h` | [media](media.md) |
+| `spritePainter` | `include/spritePainter.h` | [media](media.md) |
 | `teleport` | `include/teleport.h` | [elements](elements.md) |
 | `titleMenu` | `include/titleMenu.h` | [application](application.md) |
 | `titleScreen` | `include/titleScreen.h` | [application](application.md) |

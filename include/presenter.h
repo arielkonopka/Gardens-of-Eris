@@ -24,45 +24,14 @@
 #ifndef CHAMBERPRESENTER_H
 #define CHAMBERPRESENTER_H
 #include "allegroHandles.h"
-#include "commons.h"
-
-#include <allegro5/allegro5.h>
-#include <allegro5/allegro_font.h>
-#include <allegro5/allegro_ttf.h>
-#include <allegro5/allegro_image.h>
-#include <allegro5/allegro_primitives.h>
-#include "allegro5/allegro_native_dialog.h"
-#include <vector>
-#include <string>
-#include "chamber.h"
-#include "videoElementDef.h"
-#include "elements.h"
-#include "inputManager.h"
-#include "objectTypes.h"
-#include "configManager.h"
-#include "soundManager.h"
-#include <thread>
-#include <videoDriver.h>
-#include <mutex>
-#include <viewPoint.h>
-#include <allegro5/allegro_primitives.h>
-#include "videoManager.h"
-#include "gameSerializer.h"
-#include "gameSettings.h"
-#include "fogLayer.h"
-#include "storyScroller.h"
 #include "autopilot.h"
-
-#define _offsetX 64
-#define _offsetY 64
-
-#define _mode_onlyFloor 4
-#define _mode_onlyTop   5
-#define _mode_all       6
-
-
-
-
+#include "fieldCamera.h"
+#include "fieldView.h"
+#include "hudView.h"
+#include "storyScroller.h"
+#include <memory>
+#include <mutex>
+#include <string>
 
 namespace presenter
 {
@@ -71,11 +40,12 @@ namespace presenter
 /// the player asked to save and go to the menu (and saving worked, or failed),
 /// the player pressed something during the demo, or the demo's time was up
 enum class gameEnd { QUIT, LOST, SAVED, SAVE_FAILED, DEMO_OVER, DEMO_DONE };
-enum class presenterMode { MENU=0, SETTINGS=1,EDITOR=2,DEMO=3,GAME=4} ;
-enum class _cp_gameReasonOut { LOST=0, USERREQ=1, PAUSE=2, TELEPORTREQ=3 };
 
-
-
+/**
+ * The game loop: ticks the world 50 times a second and shows each tick. The game field is
+ * drawn by a fieldView, the stats strip by the hudView; the presenter adds the story line and
+ * the demo note over them.
+ */
 class presenter
 {
 public:
@@ -89,19 +59,12 @@ public:
     /// the active player's score, as last shown; still there after the last avatar died
     /// after a lost game: the best score of its avatars; otherwise the active avatar's last score
     int getLastScore() const;
-    bool presentAChamber(presenterMode mod);
     bool loadCofiguredData();
     void showSplash();
-    bool showObjectTile(int x,int y,int offsetX,int offsetY,std::shared_ptr<bElem> elem,bool ignoreOffset,int mode);
-    void showText(int x,int y,int offsetX,int offsetY,std::string text);
-    //relX and relY are coordinates on a board, that indicate where the player is
-    void showGameField();
-    //void showGameFieldLoop();
-    void prepareStatsThing();
-
 
 private:
-    void drawCloak();
+    /// draws one frame: the field, the stats strip, the story line and the demo note
+    void showGameField();
     bool fin=false;
     int lastScore=0;
     bool saveKeyDown=false;
@@ -110,12 +73,6 @@ private:
     int pendingSaveOp=0;
     /// F5 saves the game, F9 loads it; both act once per key press, between game ticks
     void handleSaveKeys();
-    bool mStarted=false;
-    void eyeCandy(int flavour);
-    std::vector<coords> chaosGamePoints;
-    std::vector<coords> chaosGameTops;
-    coords chaosGamelastPoint;
-    goe::fontHandle myfont;
     /// the story line over the game field, and the font it is drawn in
     goe::fontHandle storyFont;
     goe::storyScroller stories;
@@ -129,41 +86,19 @@ private:
     goe::autopilot pilot;
     void drawDemoNote();
     std::string splashFname;
-    fogLayer fog;
-    int sWidth;
-    int sHeight;
+    /// the display, less a margin
     int scrHeight;
     int scrWidth;
-    int spacing;
-    int scrTilesX;
-    int scrTilesY;
-    // float viewRadius=6.3;
-    coords previousPosition;
-    coords positionOnScreen;
-    std::vector<coords> bluredElement;
-    coords bluredElement25=NOCOORDS;
-    coords bluredElement50=NOCOORDS;
-    coords bluredElement75=NOCOORDS;
-    goe::bitmapHandle internalBitmap;
-    goe::bitmapHandle statsStripe;
-    int bsHeight,bsWidth;
-    _cp_gameReasonOut presentGamePlay();
-    std::shared_ptr<chamber> _cp_attachedBoard;
+    /// whole cells across and down the field, and the field's size in pixels
+    coords fieldCells{0, 0};
+    coords fieldPx{0, 0};
+    std::unique_ptr<fieldCamera> camera;
+    std::unique_ptr<fieldView> view;
+    std::unique_ptr<hudView> hud;
     goe::timerHandle alTimer;
     goe::eventQueueHandle evQueue; // after the timer, so the queue goes first
-    typedef struct movingSprite
-    {
-        int x;
-        int y;
-        std::shared_ptr<bElem> elem;
-
-    } movingSprite;
-
-    std::thread myThread;
     std::mutex presenter_mutex;
-    std::vector<coords> poses;
-
 };
 
-#endif // CHAMBERPRESENTER_H
 }
+#endif // CHAMBERPRESENTER_H

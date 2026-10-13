@@ -96,6 +96,21 @@ class videoDriver
 class configManager <<singleton>> {
   skins.json
 }
+interface fieldView {
+  +draw(fieldFrame)
+}
+class flatFieldView
+class fieldCamera {
+  +follow(centre, cells, boardSize)
+  +topLeft() / scroll()
+}
+class hudView {
+  +draw(player, x, y, width)
+}
+class spritePainter
+class "goe::sprites" as sprites <<namespace>> {
+  +frame(elem, def) : sheet cell
+}
 class fogLayer
 class "goe::storyScroller" as storyScroller
 class viewPoint <<singleton>>
@@ -116,7 +131,15 @@ gameSettings *-- bindings
 inputManager ..> bindings : translate keys and pad
 presenter --> inputManager
 presenter *-- autopilot : demo
-presenter *-- fogLayer
+presenter *-- fieldCamera
+presenter *-- fieldView : 2D now
+presenter *-- hudView
+fieldView <|.. flatFieldView
+flatFieldView *-- fogLayer
+flatFieldView *-- spritePainter
+hudView *-- spritePainter
+spritePainter ..> sprites
+spritePainter ..> videoDriver
 presenter *-- storyScroller
 presenter ..> soundManager
 soundManager *-- performerStream : when Performer is chosen
