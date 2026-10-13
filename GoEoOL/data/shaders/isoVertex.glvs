@@ -1,0 +1,32 @@
+// The 3D field, vertex part. GLSL ES 1.00 compatible, like the 2D fog shader.
+// Positions are in cells, measured from the north west corner of the drawn window, z up.
+attribute vec4 al_pos;
+attribute vec4 al_color;
+attribute vec2 al_texcoord;
+uniform mat4 al_projview_matrix;
+uniform bool al_use_tex_matrix;
+uniform mat4 al_tex_matrix;
+uniform vec2 tilePx;        // a cell in fog scene pixels
+uniform vec4 maskMap;       // fog mask: 1/(cell*true width), 1/(cell*true height), height/true height
+uniform vec4 patternMap;    // fog pattern: width, height, width/true width, height/true height
+uniform vec2 patternOffset; // where the pattern starts, so it stays put in the world
+varying vec4 varying_color;
+varying vec2 varying_texcoord;
+varying vec2 varying_maskcoord;
+varying vec2 varying_patterncoord;
+
+void main()
+{
+    varying_color = al_color;
+    if (al_use_tex_matrix) {
+        vec4 uv = al_tex_matrix * vec4(al_texcoord, 0.0, 1.0);
+        varying_texcoord = uv.xy;
+    } else
+        varying_texcoord = al_texcoord;
+    // how much is seen is read where the point stands on the floor; the fog's pattern climbs up
+    // the sides of the walls, instead of running down them in streaks
+    vec2 scenePx = al_pos.xy * tilePx;
+    varying_maskcoord = vec2(scenePx.x * maskMap.x, maskMap.z - scenePx.y * maskMap.y);
+    varying_patterncoord = (vec2(al_pos.x, al_pos.y - al_pos.z) * tilePx + patternOffset) / patternMap.xy;
+    gl_Position = al_projview_matrix * al_pos;
+}

@@ -14,14 +14,14 @@ chunks out, `farChunk`) and the Game over screen with the hall of fame (`showEnd
 
 ## `presenter::presenter` (`presenter.h`)
 
-The game loop and the renderer.
+The game loop. It draws each tick through a `fieldView` (the game field), the `hudView` (the
+stats strip) and its own overlays (the story line, the demo note); see [media](media.md).
 
 | Member | What it does |
 |---|---|
-| `presentEverything(demo, demoSeconds)` | Runs the game, 50 ticks a second, until it ends; returns a `gameEnd`. Each tick: the demo's checks or F5 / F9 / Esc, the world grows or shrinks around the player (`worldBuilder`), the music follows D, `bElem::runLiveElements`, the story scroller, then the game field, fog and HUD are drawn. In a demo the autopilot plays and nothing is saved. |
+| `presentEverything(demo, demoSeconds)` | Runs the game, 50 ticks a second, until it ends; returns a `gameEnd`. Each tick: the demo's checks or F5 / F9 / Esc, F3 (switch the view), the world grows or shrinks around the player (`worldBuilder`), the music follows D, `bElem::runLiveElements`, the story scroller, then the game field, fog and HUD are drawn. In a demo the autopilot plays and nothing is saved. |
 | `getLastScore()` | The score shown last; after a lost game the best of its avatars. |
 | `initializeDisplay()`, `loadCofiguredData()`, `showSplash()` | Set-up. |
-| `showGameField()`, `showObjectTile(...)`, `showText(...)`, `prepareStatsThing()` | Drawing the board, tiles, text and the HUD. |
 
 `gameEnd` is `QUIT` (window closed), `LOST` (last avatar gone), `SAVED` / `SAVE_FAILED` (Esc),
 `DEMO_OVER` (a press during the demo), `DEMO_DONE` (the demo's time is up).
@@ -118,7 +118,8 @@ music and effects volume, the music source (`getMusicSource`: `samples`, the ski
 `performer`, the [adaptive musician](../adaptive-musician.md); `"music"` in the file), the
 performer's sound (`getPerformerSound`, a `goe::musician::chipStyle`; `"performerSound"`), the music
 style (`getMusicStyle`, a `goe::musician::genre`; `"musicStyle"`, Mixed by default), music
-variety (0..100%, `"musicVariety"`) and music tempo (50..150%, `"musicTempo"`), story scroller on or off and its file, the demo times (`demoWait`,
+variety (0..100%, `"musicVariety"`) and music tempo (50..150%, `"musicTempo"`), the game field's
+view (`getView`, a `fieldViewKind`: `flat` or `iso`; `"view"`: `"2D"` or `"3D"`), story scroller on or off and its file, the demo times (`demoWait`,
 `demoLength`, `hallOfFameLength`, 5 to 3600 s) and the control bindings. `load`, `save`,
 `resetToDefaults`. A new option gets a field here, a line in `load` and `save`, and a line in
 `titleMenu`'s Config screen.

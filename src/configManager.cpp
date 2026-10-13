@@ -137,6 +137,8 @@ void configManager::configReload()
         spriteData sdata;
         sdata.name = sprlist[c]["Name"].GetString();
         sdata.eType = sprlist[c]["Type"].GetInt();
+        if (sprlist[c].HasMember("Shape") && sprlist[c]["Shape"].IsString())
+            sdata.shape = sprlist[c]["Shape"].GetString();
         if (sprlist[c].HasMember("Attributes")) {
             for (unsigned int i = 0; i < sprlist[c]["Attributes"].Size(); i++) {
                 /*

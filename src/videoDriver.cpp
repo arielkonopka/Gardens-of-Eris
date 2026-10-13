@@ -89,6 +89,11 @@ videoDriver::videoDriver()
             }
             ved->defArray.push_back(dirs);
         }
+        ved->shape = goe::iso::parseShape(config->sprites[c].shape)
+                         .value_or(goe::iso::defaultShape(config->sprites[c].eType));
+        if (!config->sprites[c].shape.empty() && !goe::iso::parseShape(config->sprites[c].shape))
+            std::cout << "Unknown Shape \"" << config->sprites[c].shape << "\" for "
+                      << config->sprites[c].name << ", using the default\n";
         this->sprites[config->sprites[c].eType] = ved;
     }
 }

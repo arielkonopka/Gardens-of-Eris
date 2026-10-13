@@ -6,10 +6,8 @@
 #include <cstring>
 #include <iostream>
 
-namespace {
-
 /// a bitmap's real texture size; Allegro may pad it, e.g. to a power of two on older GPUs
-coords textureSize(ALLEGRO_BITMAP *bmp)
+coords fogLayer::textureSize(ALLEGRO_BITMAP *bmp)
 {
     int w = 0, h = 0;
     if (!al_get_opengl_texture_size(bmp, &w, &h) || w <= 0 || h <= 0)
@@ -17,6 +15,7 @@ coords textureSize(ALLEGRO_BITMAP *bmp)
     return {w, h};
 }
 
+namespace {
 /// creates a bitmap with the given flags and format, leaving Allegro's defaults as they were
 goe::bitmapHandle createBitmap(int w, int h, int flags, int format)
 {
@@ -96,6 +95,13 @@ void fogLayer::upload()
     al_unlock_bitmap(bmp);
 }
 
+void fogLayer::refresh(std::span<const vpPoint> points)
+{
+    // standing still leaves the mask as it was, and then nothing goes to the GPU
+    if (this->mask && this->mask->paint(points, coords(this->tileSize.x / 2, this->tileSize.y / 2)))
+        this->upload();
+}
+
 void fogLayer::draw(ALLEGRO_BITMAP *scene,
                     std::span<const vpPoint> points,
                     coords worldOrigin,
@@ -106,9 +112,7 @@ void fogLayer::draw(ALLEGRO_BITMAP *scene,
         al_draw_bitmap_region(scene, sx, sy, w, h, dx, dy, 0);
         return;
     }
-    // standing still leaves the mask as it was, and then nothing goes to the GPU
-    if (this->mask->paint(points, coords(this->tileSize.x / 2, this->tileSize.y / 2)))
-        this->upload();
+    this->refresh(points);
 
     const coords sceneTex = textureSize(scene);
     const coords maskTex = textureSize(this->maskBitmap.get());

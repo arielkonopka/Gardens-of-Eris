@@ -75,6 +75,8 @@ typedef struct spriteData
     std::vector<coords> fadingIn;
     std::vector<coords> teleporting;
     std::vector<attributeData> attributes;
+    /// how it stands in the 3D view ("Shape": ground, block, standee or flat); empty for the default
+    std::string shape;
 } spriteData;
 
 using sampleData= struct sampleData

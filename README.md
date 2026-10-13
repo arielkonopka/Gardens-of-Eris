@@ -53,7 +53,7 @@ The labyrinth is inhabited by an assortment of creatures and contraptions. You'l
 
 ## Playing the game
 
-The game opens with a title screen: **Start game**, **Config**, **Credits** and **Exit**. When the save folder holds a save the game can read, it shows **Continue** and **New game** instead of Start game: Continue picks that game up where it was saved, and New game builds a new world that takes the old save's place at once, so the old game is gone. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), the music (Skin samples, the songs of `skins.json`; Performer, a musician that composes and plays its own music as you play; or DJ, which mixes the songs of `skins.json` like a DJ), the performer's sound (AdLib, SID, POKEY or Game Boy), how varied its music is and its tempo, the story scroller, and the controls; all of it is kept in `settings.json` next to the game. Credits lists who made the music the game plays, with album, licence and where to find it (Up and Down scroll, Enter or Esc go back). Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
+The game opens with a title screen: **Start game**, **Config**, **Credits** and **Exit**. When the save folder holds a save the game can read, it shows **Continue** and **New game** instead of Start game: Continue picks that game up where it was saved, and New game builds a new world that takes the old save's place at once, so the old game is gone. Config sets the folder the game is saved to, the music and sound effects volumes (Left and Right change them in steps of 5%), the music (Skin samples, the songs of `skins.json`; Performer, a musician that composes and plays its own music as you play; or DJ, which mixes the songs of `skins.json` like a DJ), the performer's sound (AdLib, SID, POKEY or Game Boy), how varied its music is and its tempo, the view (2D, or 3D isometric), the story scroller, and the controls; all of it is kept in `settings.json` next to the game. Credits lists who made the music the game plays, with album, licence and where to find it (Up and Down scroll, Enter or Esc go back). Starting a game builds the maze around you, and the maze keeps growing in every direction as you walk: it never ends.
 
 The menus also work with a game controller. The left stick or the d-pad moves through them (held, it keeps moving), the Interact button (pad button 0, A on an Xbox pad) selects, and the Drag button (pad button 1, B) or the Save and exit button goes back, so rebinding those in Controls moves them in the menus too. With a pad, Left and Right change values in Config, and the hall of fame name is entered arcade style: Up and Down change the last letter, Right adds a letter and Left takes one away. Only the save folder and the stories file path need a keyboard to type.
 
@@ -79,6 +79,7 @@ These are the default keys. Config, Controls lets you choose other keys (two per
 | Backspace | give up this avatar (you come back in the next activated one) |
 | Shift + Backspace | quit the game without saving (the shoot key and the give-up key together) |
 | F5 / F9 | save / load the game (`savegame.goe` in the save folder) |
+| F3 | switch between the 2D view and the 3D isometric view (kept in `settings.json`) |
 
 `GardenOfEris --load <file>` starts straight from a saved game, without the title screen.
 
@@ -249,6 +250,8 @@ This file contains the skin definition for the game. It has quite a flexible des
 It also contains the music and sound information.
 
 `FogBitmap` sets what covers the places nobody sees, e.g. `"FogBitmap": "data/graph/fog.png"`. The bitmap is tiled over the world and stays put while the view scrolls; a power-of-two size such as 256x256 is safest on phones. Without the entry, or when the file cannot be loaded, the fog is the plain dark colour. The default fog is drawn by `tools/make-fog.py`.
+
+`Shape` on an element says how it stands in the 3D isometric view: `ground` (a square on the floor), `block` (a cube with the sprite on its top and sides), `standee` (an upright picture facing the camera) or `flat` (a square just above the floor). Without it the floor is `ground`, walls, brick clusters and doors are `block`, the landmine is `flat` and everything else is a `standee`. The 3D view uses the same sprite sheet, so every skin works in both views.
 
 
 **TBD**
@@ -425,6 +428,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* A 3D isometric view (Config, View, or F3 in the game): walls are blocks, the floor is a plane, creatures and things stand up as pictures, all seen by an isometric camera from the south west, with the same skin and the same fog as the 2D view. Walls between the camera and your avatar are cut low, so you are never hidden. `Shape` in skins.json picks how each element stands. Under the hood the game loop now draws the field through one view interface (2D or 3D), the HUD has its own class, and a 3D view for VR later only needs another camera.
 * Credits on the title screen: a Credits item lists every song the game plays with its artist, album, licence and source, read from `skins.json` so it stays in step with the music. Works with keys and a game controller.
 * Monsters no longer freeze. One that saw rubbish, a gun or a broken apple turned to it and waited, and the wait started over every turn; one with a key froze in front of the key's door. Now it walks to what it sees and unlocks doors it has the key for. With nothing to do, monsters and drones roam the maze along its walls instead of pacing one corridor, and drones walk around loose controllers instead of picking them up and dropping them back forever.
 * Agents get an `avatar` event when they wake a spare avatar (worth +10 in `SHAPED_REWARD`). Walking onto a landmine is not counted as `mine` (that stays for mines the player's shots set off); it kills the avatar outright, so it shows as `death`, not `hurt`. Tests cover both.

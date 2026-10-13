@@ -8,6 +8,57 @@ another element that uncovers the map around it (a patrol drone acts as an extra
 `getViewPoints(start, end)` returns the points (`vpPoint`: x, y, radius) in a region for the fog;
 `isPointVisible`, `calculateObscured` answer for one cell.
 
+## The game field views (`fieldView.h`, `flatFieldView.h`, `fieldCamera.h`)
+
+`fieldView` is how the game loop draws the game field: one `draw(fieldFrame)` onto the current
+target. A `fieldFrame` carries the active avatar (its board is drawn), the `fieldCamera`, how many
+whole cells the field shows, and where on the target it goes. Each way of looking at the field is
+one implementation:
+- `flatFieldView`: the sprites seen from above, still elements first, then the ones on the move,
+  the avatar last, all drawn into a scene bitmap and shown through the `fogLayer`.
+- `isoFieldView`: the 3D isometric view. Each frame it builds the mesh of the cells the camera
+  sees (`goe::iso::meshBuilder`), places it from the corner of a window around the camera so the
+  numbers stay small, and draws it in one `al_draw_prim` call into a bitmap with a depth buffer.
+  The camera looks from the south west at 35.26 degrees (true isometric), orthographic, `zoom`
+  screen pixels per tile pixel. Blocks between the avatar and the camera are cut low. Its shader
+  (`data/shaders/isoVertex.glvs`, `isoPixel.glps`, GLSL ES compatible) cuts out the clear pixels
+  of standing pictures, lays the floor over the board's colour and mixes in the fog from the same
+  `fogLayer` mask and pattern as the 2D view. `ready()` is false when the depth buffer or the
+  shader cannot be made, and then the 2D view is used.
+
+The game loop picks the view from `gameSettings::getView()` each frame; F3 switches it.
+
+## `goe::iso` (`isoMesh.h`)
+
+The 3D field's geometry in world space: one unit is a cell, x east, y south, z up. It knows
+nothing about cameras or screens, so the same mesh can be drawn by any camera (one per eye in VR).
+`shape` is how an element stands: `ground`, `block`, `standee` or `flat`, from `Shape` in
+`skins.json` (`parseShape`) or `defaultShape(type)`; `videoElementDef::shape` holds it.
+`meshBuilder(eyeX, eyeY)` collects triangles (`vertex`: position, sheet pixel, light, `backdrop`);
+standees turn to face the eye direction and block sides facing away are left out. Faces are lit by
+direction (`light`): tops brightest, the sides darker.
+
+`fieldCamera` is which part of the board is shown. `follow(centre, cells, boardSize)` moves it
+`step` (8) pixels a frame towards the window centred on `centre`, so the view glides; a bounded
+board keeps the window inside. `topLeft()` is the cell in the corner, `scroll()` the pixels past
+it, `leftCells()` / `topCells()` the same as fractions of a cell.
+
+## `hudView` (`hudView.h`)
+
+The stats strip under the game field: avatar, energy, weapon, usable item, keys, apples, score,
+Dex and D. `draw(player, dx, dy, width)` paints it and puts it on the current target.
+
+## `spritePainter` and `goe::sprites` (`spritePainter.h`, `spriteFrame.h`)
+
+`goe::sprites::frame(elem, def)` is which cell of the sprite sheet an element shows now: its
+subtype, facing and animation phase, or the dying, destroying or teleporting (fading out, fading
+in) sequence while one runs. `pixelOf(cell, tileSize, spacing)` is that cell's pixels. Every view
+uses them, so the rules live in one place.
+
+`spritePainter::draw(elem, cellPx, layer, withMotion)` blits an element and what it stands on:
+`layer::still` leaves moving elements for later (and says so), `layer::moving` draws only those,
+`layer::top` only the element itself (the HUD's icons).
+
 ## `fogLayer` (`fogLayer.h`)
 
 Draws the game field under the fog. What nobody sees is covered by the `FogBitmap` of `skins.json`,

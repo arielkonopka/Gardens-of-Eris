@@ -31,6 +31,20 @@ public:
     void setup(int scenePxWidth, int scenePxHeight, coords tileSize, const std::string &patternFile);
 
     /**
+     * Paints the mask for these view points (in scene pixels) and uploads it when it changed.
+     * draw does this itself; a view with a shader of its own calls it and reads the textures.
+     */
+    void refresh(std::span<const vpPoint> points);
+    /// the mask, one texel per fogMask::cellPx scene pixels, kept upside down like any bitmap
+    ALLEGRO_BITMAP *maskTexture() const { return this->maskBitmap.get(); }
+    /// texels across and down the mask
+    coords maskSize() const { return this->mask ? coords(this->mask->width(), this->mask->height()) : coords(0, 0); }
+    /// the fog bitmap (or one texel of the plain colour), tiled over the world
+    ALLEGRO_BITMAP *patternTexture() const { return this->pattern.get(); }
+    /// a bitmap's texture size; larger than the bitmap when the GPU pads it
+    static coords textureSize(ALLEGRO_BITMAP *bmp);
+
+    /**
      * Draws the region (sx, sy, w, h) of the scene at (dx, dy), fogged where no view point sees.
      * points are the view points in scene pixels, worldOrigin is the world position in pixels of
      * the scene's top left corner.
