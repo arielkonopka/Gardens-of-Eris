@@ -152,6 +152,8 @@ box mesh::bounds() const
 
 std::optional<mesh> load(const std::string &file, std::span<const std::string> nodes)
 {
+    if (std::string_view(file).starts_with(builtinPrefix))
+        return builtin(std::string_view(file).substr(builtinPrefix.size()));
     cgltf_options options{};
     cgltf_data *raw = nullptr;
     if (cgltf_parse_file(&options, file.c_str(), &raw) != cgltf_result_success)
@@ -187,6 +189,104 @@ std::optional<mesh> load(const std::string &file, std::span<const std::string> n
     return out;
 }
 
+namespace {
+using point = std::array<float, 3>;
+
+point scaled(const point &p, float k)
+{
+    return {p[0] * k, p[1] * k, p[2] * k};
+}
+
+point unit(const point &p)
+{
+    const float len = std::hypot(p[0], p[1], p[2]);
+    return len > 0 ? scaled(p, 1.0f / len) : point{0, 0, 1};
+}
+
+/// a triangle with one normal for its face, the low-poly look of the model packs
+void facet(mesh &m, const point &a, const point &b, const point &c)
+{
+    const point u{b[0] - a[0], b[1] - a[1], b[2] - a[2]}, v{c[0] - a[0], c[1] - a[1], c[2] - a[2]};
+    const point n = unit({u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]});
+    for (const auto &p : {a, b, c})
+        m.triangles.push_back({p[0], p[1], p[2], n[0], n[1], n[2], 0.5f, 0.5f});
+}
+
+/// a ball around (0, 0, 0.5) that fits its cell; bumps > 0 make its surface wobble
+mesh ball(float bumps)
+{
+    constexpr int rings = 8, segments = 12;
+    auto at = [&](int ring, int seg) {
+        const float theta = std::numbers::pi_v<float> * (float) ring / rings;
+        const float phi = 2 * std::numbers::pi_v<float> * (float) seg / segments;
+        const float r = 0.5f / (1 + bumps) * (1 + bumps * std::sin(3 * phi) * std::sin(2 * theta));
+        return point{r * std::sin(theta) * std::cos(phi), r * std::sin(theta) * std::sin(phi), 0.5f + r * std::cos(theta)};
+    };
+    mesh m;
+    for (int ring = 0; ring < rings; ring++)
+        for (int seg = 0; seg < segments; seg++) {
+            const point a = at(ring, seg), b = at(ring, seg + 1), c = at(ring + 1, seg + 1), d = at(ring + 1, seg);
+            if (ring > 0)
+                facet(m, a, c, b);
+            if (ring < rings - 1)
+                facet(m, a, d, c);
+        }
+    return m;
+}
+
+/// a stellated octahedron: a point out of every face and every corner
+mesh star()
+{
+    const std::array<point, 6> axes{point{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+    mesh m;
+    auto lifted = [](const point &p) { return point{p[0] * 0.5f, p[1] * 0.5f, p[2] * 0.5f + 0.5f}; };
+    for (int sx : {0, 1})
+        for (int sy : {2, 3})
+            for (int sz : {4, 5}) {
+                const point a = scaled(axes[(std::size_t) sx], 0.45f), b = scaled(axes[(std::size_t) sy], 0.45f),
+                            c = scaled(axes[(std::size_t) sz], 0.45f);
+                const point tip = scaled(unit({a[0] + b[0] + c[0], a[1] + b[1] + c[1], a[2] + b[2] + c[2]}), 1.0f);
+                facet(m, lifted(a), lifted(b), lifted(tip));
+                facet(m, lifted(b), lifted(c), lifted(tip));
+                facet(m, lifted(c), lifted(a), lifted(tip));
+            }
+    // the six corners stick out too, as thin pyramids
+    for (const auto &c : axes) {
+        const point tip = scaled(c, 1.0f);
+        const point side1 = c[0] != 0 ? point{0, 1, 0} : point{1, 0, 0};
+        const point side2 = c[2] != 0 ? point{0, 1, 0} : point{0, 0, 1};
+        const point base = scaled(c, 0.3f);
+        std::array<point, 4> ring;
+        for (int i = 0; i < 4; i++) {
+            const float s1 = (i == 0 || i == 1) ? 0.15f : -0.15f, s2 = (i == 1 || i == 2) ? 0.15f : -0.15f;
+            ring[(std::size_t) i] = {base[0] + side1[0] * s1 + side2[0] * s2,
+                                     base[1] + side1[1] * s1 + side2[1] * s2,
+                                     base[2] + side1[2] * s1 + side2[2] * s2};
+        }
+        for (std::size_t i = 0; i < 4; i++)
+            facet(m, lifted(ring[i]), lifted(ring[(i + 1) % 4]), lifted(tip));
+    }
+    return m;
+}
+
+/// set on the floor
+mesh grounded(mesh m)
+{
+    const float floor = m.bounds().min[2];
+    forEachCorner(m, [&](corner &k) { k.z -= floor; });
+    return m;
+}
+} // namespace
+
+std::optional<mesh> builtin(std::string_view name)
+{
+    if (name == "blob")
+        return grounded(ball(0.12f));
+    if (name == "star")
+        return grounded(star());
+    return std::nullopt;
+}
+
 std::optional<layout> parseLayout(std::string_view name)
 {
     if (name == "cell")
@@ -216,6 +316,16 @@ const spec *pick(std::span<const spec> specs, int subType, int facing)
 
 mesh placed(mesh m, const spec &s)
 {
+    if (s.tip != 0) {
+        const float a = s.tip * std::numbers::pi_v<float> / 180.0f;
+        const float co = std::cos(a), si = std::sin(a);
+        forEachCorner(m, [&](corner &c) {
+            c = corner{c.x, c.y * co - c.z * si, c.y * si + c.z * co, c.nx, c.ny * co - c.nz * si, c.ny * si + c.nz * co,
+                       c.u, c.v, c.colour};
+        });
+        const float floor = m.bounds().min[2];
+        forEachCorner(m, [&](corner &c) { c.z -= floor; });
+    }
     const box b = m.bounds();
     const float midX = (b.min[0] + b.max[0]) / 2;
     const float midY = (b.min[1] + b.max[1]) / 2;

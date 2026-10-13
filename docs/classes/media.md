@@ -29,6 +29,7 @@ one implementation:
   each, moved to its cell by the shader's `placement` matrix and coloured by `tint`; while it
   dies, explodes or teleports it shows its sprite animation. Wall models laid out by `sides`
   get a segment on each side the camera sees that no other block covers (`joins`) and a lid.
+  `reveal(true)` shows every cell without fog, for pictures (`goe-gallery`).
 
 The game loop picks the view from `gameSettings::getView()` each frame; F3 switches it.
 
@@ -52,7 +53,10 @@ texture's bytes. `placed(mesh, spec)` puts it in its cell: centred, its ground (
 on the floor, scaled to cells (`Scale`, or the footprint fills the cell), turned, stretched,
 lifted. `turned(mesh, quarters)` turns it clockwise seen from above, `quartersToFace(dir)` is how
 far to face a direction, `lightOf(normal)` how bright a face is, and `lid(mesh)` the square over a
-wall model's cell painted like its top. `spec` is one `"Model"` entry; `pick(specs, subtype,
+wall model's cell painted like its top. `Tip` (`spec::tip`) tips a model over
+before anything else. `builtin(name)` makes a shape in code instead of reading a file (`load`
+does it for a file named `builtin:blob` or `builtin:star`), set on the floor and filling its cell.
+`spec` is one `"Model"` entry; `pick(specs, subtype,
 facing)` finds the one for an element now, and `readModelSpecs` (`configManager.h`) reads them.
 
 `modelLibrary` (needs the display) makes each model once, the first time the 3D view needs it:

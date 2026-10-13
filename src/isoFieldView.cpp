@@ -120,7 +120,7 @@ void isoFieldView::buildMesh(const fieldFrame &frame, coords origin, float cx, f
             if (std::abs(dx * fy - dy * fx) > across || std::abs(dx * fx + dy * fy) > along)
                 continue;
             const coords np = origin + coords(x, y);
-            if (board->isVisible(np) >= 255 && !viewPoint::get_instance().isPointVisible(np)) {
+            if (!this->revealed && board->isVisible(np) >= 255 && !viewPoint::get_instance().isPointVisible(np)) {
                 // nobody has been here: plain floor, which the fog covers
                 if (floorDef && !floorDef->defArray.empty() && !floorDef->defArray[0].empty()
                     && !floorDef->defArray[0][0].empty()) {
@@ -268,7 +268,7 @@ void isoFieldView::setFogUniforms(coords origin)
     const std::array<float, 2> offset{(float) floorMod(origin.x * this->tileSize.x, pw),
                                       (float) floorMod(origin.y * this->tileSize.y, ph)};
     al_set_shader_float_vector("patternOffset", 2, offset.data(), 1);
-    al_set_shader_float("minVisibility", fogLayer::minVisibility);
+    al_set_shader_float("minVisibility", this->revealed ? 1.0f : fogLayer::minVisibility);
     al_set_shader_float_vector("boardColour", 3, this->boardColour.data(), 1);
 }
 

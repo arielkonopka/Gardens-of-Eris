@@ -67,9 +67,18 @@ struct mesh {
 /**
  * Reads a .glb (or .gltf) file: every node's triangles, moved where the node puts them. With
  * names in nodes, only the nodes of those names are read (a door model without its door).
- * Empty when the file is missing or broken.
+ * Empty when the file is missing or broken. A name starting with "builtin:" is a shape made in
+ * code instead (see builtin).
  */
 std::optional<mesh> load(const std::string &file, std::span<const std::string> nodes = {});
+
+/**
+ * Shapes made in code, for elements no model pack has: "blob" (a soft, wobbly ball, bouba) and
+ * "star" (a spiky star, kiki). White, so a tint colours them; standing on the floor (z from 0).
+ */
+std::optional<mesh> builtin(std::string_view name);
+/// "builtin:", what a model's file name starts with for a shape made in code
+constexpr std::string_view builtinPrefix = "builtin:";
 
 /// where a model goes on the board
 enum class layout {
@@ -95,6 +104,9 @@ struct spec {
     std::optional<float> scale;
     /// stretches it further along x, y and z (after the turn), e.g. a thin wall into a block
     std::array<float, 3> stretch{1, 1, 1};
+    /// degrees to tip it over about the east-west axis, before anything else: -90 lays a standing
+    /// arrow down pointing south, 90 pointing north. A tipped model is set on the floor
+    float tip = 0;
     /// degrees clockwise, seen from above, to turn the model's front to the south
     float turn = 0;
     /// cells above the floor
