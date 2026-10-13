@@ -31,6 +31,7 @@
 
 #include "configManager.h"
 #include "isoMesh.h"
+#include "model3d.h"
 
 
 
@@ -51,6 +52,8 @@ class videoElementDef
         coordVector fadingIn;
         /// how it stands in the 3D view
         goe::iso::shape shape = goe::iso::shape::standee;
+        /// its 3D models, from skins.json; none means the 3D view draws the shape above
+        std::vector<goe::models::spec> models;
         explicit videoElementDef(std::shared_ptr<ALLEGRO_BITMAP> sprites_);
         std::shared_ptr<ALLEGRO_BITMAP> sprites;
 };

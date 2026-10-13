@@ -199,6 +199,7 @@
      {
         "Type": 0,
         "Name": "Floor",
+        "Model": { "File": "data/models/kaykit-dungeon/floor_tile_large.glb", "Scale": 0.25 },
         "AnimDef": [
       [ [ [ 0, 21 ] ] ], [ [ [ 1, 21 ] ] ], [ [ [ 2, 21 ] ] ]
         ],
@@ -227,6 +228,7 @@
      {
         "Type": 4,
         "Name": "Wall",
+        "Model": { "File": "data/models/kaykit-dungeon/wall.glb", "Layout": "sides", "Scale": 0.25, "Stretch": [1, 1, 0.75] },
         "AnimDef": [
       [ [ [ 1, 20 ] ] ],[ [ [ 6,20 ],[6,21] ] ]
         ],
@@ -255,6 +257,7 @@
      {
         "Type": 8,
         "Name": "BrickCluster",
+        "Model": { "File": "data/models/kaykit-dungeon/crates_stacked.glb", "Scale": 0.4 },
         "AnimDef": [
       [ [ [ 6, 0 ], [ 8, 1 ] ] ]
         ],
@@ -689,6 +692,8 @@
      {
         "Type": 51,
         "Name": "key",
+        "Model": { "File": "data/models/kaykit-dungeon/key.glb", "Scale": 0.6, "Lift": 0.2, "Turn": 45,
+          "Tints": [ [1, 0.35, 0.35], [0.4, 1, 0.4], [0.95, 0.45, 0.9], [1, 0.9, 0.35], [0.45, 0.6, 1] ] },
         "Attributes": [
           {
              "SubType":-1,
@@ -746,6 +751,7 @@
      {
         "Type": 2,
         "Name": "rubbish",
+        "Model": { "File": "data/models/kaykit-dungeon/rubble_half.glb", "Scale": 0.2 },
         "AnimDef": [
       [ [ [0,1] ] ]
         ]
@@ -777,6 +783,11 @@
      {
         "Type": 52,
         "Name": "door",
+        "Model": [
+          { "File": "data/models/kaykit-dungeon/wall_doorway.glb", "Facing": 0, "Layout": "between", "Scale": 0.25, "Stretch": [1, 1, 0.75],
+            "Tints": [ [1, 0.7, 0.7], [0.7, 1, 0.7], [0.95, 0.7, 0.95], [1, 0.95, 0.65], [0.7, 0.8, 1] ] },
+          { "File": "data/models/kaykit-dungeon/wall_doorway.glb", "Nodes": [ "wall_doorway" ], "Layout": "between", "Scale": 0.25, "Stretch": [1, 1, 0.75] }
+        ],
         "AnimDef": [
           [
       [ [ 0, 11 ], [ 5, 11 ] ],

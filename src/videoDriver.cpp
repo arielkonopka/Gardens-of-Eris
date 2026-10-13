@@ -94,6 +94,7 @@ videoDriver::videoDriver()
         if (!config->sprites[c].shape.empty() && !goe::iso::parseShape(config->sprites[c].shape))
             std::cout << "Unknown Shape \"" << config->sprites[c].shape << "\" for "
                       << config->sprites[c].name << ", using the default\n";
+        ved->models = config->sprites[c].models;
         this->sprites[config->sprites[c].eType] = ved;
     }
 }

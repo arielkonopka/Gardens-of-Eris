@@ -15,6 +15,7 @@ uniform sampler2D fogPattern;  // what shows where nothing is seen, tiled over t
 uniform vec4 patternMap;
 uniform float minVisibility;
 uniform vec3 boardColour;      // under the floor's see-through pictures
+uniform vec3 tint;             // a model's colour for its subtype; white for the pictures
 varying vec4 varying_color;
 varying vec2 varying_texcoord;
 varying vec2 varying_maskcoord;
@@ -33,7 +34,8 @@ void main()
     vec2 tile = fract(varying_patterncoord);
     vec4 fog = texture2D(fogPattern, vec2(tile.x * patternMap.z, (1.0 - tile.y) * patternMap.w));
     // in the fog the faces keep only a hint of their light: the maze is about as hidden as in 2D
-    float light = varying_color.r;
-    vec3 hidden = fog.rgb * (0.85 + 0.15 * light);
-    gl_FragColor = vec4(mix(hidden, sprite.rgb * light, seen), 1.0);
+    // vertex colour: the face's light, times a model's material colour
+    vec3 light = varying_color.rgb;
+    vec3 hidden = fog.rgb * (0.85 + 0.15 * max(light.r, max(light.g, light.b)));
+    gl_FragColor = vec4(mix(hidden, sprite.rgb * light * tint, seen), 1.0);
 }

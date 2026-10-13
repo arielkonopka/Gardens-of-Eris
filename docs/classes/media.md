@@ -24,7 +24,11 @@ one implementation:
   (`data/shaders/isoVertex.glvs`, `isoPixel.glps`, GLSL ES compatible) cuts out the clear pixels
   of standing pictures, lays the floor over the board's colour and mixes in the fog from the same
   `fogLayer` mask and pattern as the 2D view. `ready()` is false when the depth buffer or the
-  shader cannot be made, and then the 2D view is used.
+  shader cannot be made, and then the 2D view is used. An element with a 3D model (`"Model"` in
+  `skins.json`) is drawn as that model instead of its shape, one `al_draw_vertex_buffer` call
+  each, moved to its cell by the shader's `placement` matrix and coloured by `tint`; while it
+  dies, explodes or teleports it shows its sprite animation. Wall models laid out by `sides`
+  get a segment on each side the camera sees that no other block covers (`joins`) and a lid.
 
 The game loop picks the view from `gameSettings::getView()` each frame; F3 switches it.
 
@@ -37,6 +41,24 @@ nothing about cameras or screens, so the same mesh can be drawn by any camera (o
 `meshBuilder(eyeX, eyeY)` collects triangles (`vertex`: position, sheet pixel, light, `backdrop`);
 standees turn to face the eye direction and block sides facing away are left out. Faces are lit by
 direction (`light`): tops brightest, the sides darker.
+
+## `goe::models` and `modelLibrary` (`model3d.h`, `modelLibrary.h`)
+
+The 3D models, read from glTF 2.0 files (`.glb`) with [cgltf](https://github.com/jkuhlmann/cgltf)
+(`third_party/cgltf`, MIT). `goe::models` works on the CPU only, so the tests need no display:
+`load(file, nodes)` reads every node's triangles (or only the named nodes) into a `mesh` in the
+board's axes (glTF's y up becomes z, its front looks south) with the material colour and the
+texture's bytes. `placed(mesh, spec)` puts it in its cell: centred, its ground (the file's y = 0)
+on the floor, scaled to cells (`Scale`, or the footprint fills the cell), turned, stretched,
+lifted. `turned(mesh, quarters)` turns it clockwise seen from above, `quartersToFace(dir)` is how
+far to face a direction, `lightOf(normal)` how bright a face is, and `lid(mesh)` the square over a
+wall model's cell painted like its top. `spec` is one `"Model"` entry; `pick(specs, subtype,
+facing)` finds the one for an element now, and `readModelSpecs` (`configManager.h`) reads them.
+
+`modelLibrary` (needs the display) makes each model once, the first time the 3D view needs it:
+four vertex buffers, one per quarter turn with the light baked into the vertex colours, and a
+texture shared by models painted with the same picture. `find(def, subtype, facing)` returns
+nullptr when the skin gives no model or the file cannot be read, and the view draws the shape.
 
 `fieldCamera` is which part of the board is shown. `follow(centre, cells, boardSize)` moves it
 `step` (8) pixels a frame towards the window centred on `centre`, so the view glides; a bounded
@@ -75,7 +97,7 @@ lookup, instead of every pixel looping over every view point on the GPU.
 ## `goe` handles (`allegroHandles.h`)
 
 Owning smart pointers for Allegro objects: `bitmapHandle`, `fontHandle`, `timerHandle`,
-`eventQueueHandle`, `displayHandle`, `shaderHandle`, built on `destroyWith<Destroy>`. Pass
+`eventQueueHandle`, `displayHandle`, `shaderHandle`, `vertexBufferHandle`, built on `destroyWith<Destroy>`. Pass
 `handle.get()` to C functions; the handle keeps ownership. The project has no raw `new` or
 `delete`.
 

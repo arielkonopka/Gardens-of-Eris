@@ -38,6 +38,7 @@
 #include "objectTypes.h"
 #include "commons.h"
 #include "musicCredits.h"
+#include "model3d.h"
 
 // Singleton pattern, we will not have multiple config files, therefore we do not need multiple instances of config manager
 // this class will read the config json file, and expose gathered information to whatever class needing it
@@ -77,7 +78,12 @@ typedef struct spriteData
     std::vector<attributeData> attributes;
     /// how it stands in the 3D view ("Shape": ground, block, standee or flat); empty for the default
     std::string shape;
+    /// its 3D models ("Model": one entry or a list of them, per subtype and facing)
+    std::vector<goe::models::spec> models;
 } spriteData;
+
+/// the "Model" value of an element in skins.json: one entry or a list; files get baseDir in front
+std::vector<goe::models::spec> readModelSpecs(const rapidjson::Value &v, const std::string &baseDir);
 
 using sampleData= struct sampleData
 {
