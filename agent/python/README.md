@@ -67,7 +67,7 @@ Each part's composition is a list of names (`goe.describe_features()` says what 
 - element features, for cells, items and the player: `type`, `subtype`, `energy`, `max_energy`,
   `ammo`, `max_ammo`, the qualities (`killable`, `steppable`, `collectible`, `locked`, ...), the
   timed states as ticks left (`moving`, `waiting`, `dying`, `teleporting`, ...), `facing` and
-  `direction` (0 up, 1 left, 2 down, 3 right, 4 none), `items` carried, `stack` and `below_type`
+  `direction` (0 up, 1 left, 2 down, 3 right, 4 none, 5 up-left, 6 down-left, 7 down-right, 8 up-right), `items` carried, `stack` and `below_type`
   (what lies under it);
 - cell features: `exists` (the cell is built), `in_sight` (within the player's view radius),
   and the episode's memory of the cell: `visits` (times the player stepped onto it), `seen`
@@ -84,8 +84,10 @@ By default every cell and player feature is on, and items show `type`, `subtype`
 ## Actions, steps and rewards
 
 The actions are the game's controls: `NOOP`, `MOVE_*`, `SHOOT_*`, `INTERACT_*`, `DRAG_*`
-(`UP`, `DOWN`, `LEFT`, `RIGHT`), `NEXT_ITEM`, `NEXT_GUN`, `USE`, `DROP`, and `GIVE_UP` with
-`allow_give_up=True`. A step runs `ticks_per_step` game ticks (default 8, one move; the game runs
+(`UP`, `DOWN`, `LEFT`, `RIGHT`), `NEXT_ITEM`, `NEXT_GUN`, `USE`, `DROP`, then the diagonal
+moves and shots (`MOVE_UP_LEFT`, `MOVE_UP_RIGHT`, `MOVE_DOWN_LEFT`, `MOVE_DOWN_RIGHT`, and the
+same for `SHOOT_`), and `GIVE_UP` with `allow_give_up=True`. A diagonal step needs one of the two
+cells beside it free. A step runs `ticks_per_step` game ticks (default 8, one move; the game runs
 50 ticks a second). The action reaches the player once, in the first tick it can act, like a key
 pressed once; `game.action_taken` says whether it did.
 

@@ -70,7 +70,11 @@ controlItem inputManager::translateEvent(ALLEGRO_EVENT *ev)
     }
     // the Config menu may have changed the layout since the last event
     const bool wasExit = this->lastItem.type == 10;
+    const bool wasStill = this->lastItem.dir == dir::direction::NODIRECTION;
     this->lastItem = gameSettings::getInstance().getControls().translate(this->held);
+    this->scripted = false;
+    if (wasStill && this->lastItem.dir != dir::direction::NODIRECTION)
+        this->firstWay = std::chrono::steady_clock::now();
     if (this->lastItem.type == 10 && !wasExit)
         this->exitRequest = true;
     return this->lastItem;
@@ -82,12 +86,17 @@ bool inputManager::takeExitRequest()
 
 controlItem inputManager::getCtrlItem()
 {
-    return this->lastItem;
+    const controlItem item = this->lastItem;
+    if (!this->scripted && item.dir != dir::direction::NODIRECTION && !dir::isDiagonal(item.dir)
+        && std::chrono::steady_clock::now() - this->firstWay.load() < diagonalGrace)
+        return controlItem(-1, dir::direction::NODIRECTION); // a second way may be on its way
+    return item;
 }
 
 void inputManager::setControlItem(controlItem item)
 {
     this->lastItem = item;
+    this->scripted = true;
 }
 void inputManager::inputLoop()
 {

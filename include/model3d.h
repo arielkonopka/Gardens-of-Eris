@@ -145,7 +145,10 @@ mesh turned(const mesh &m, int quarters);
 /// how bright a face looking this way is: the top brightest, the sides the camera sees next
 float lightOf(float nx, float ny, float nz);
 
-/// the quarter turns that bring a model's front (south) to face d (dir::direction as an int)
+/// the eighths of a turn, clockwise seen from above, that bring a model's front (south) to face
+/// d (dir::direction as an int, diagonals too)
+int eighthsToFace(int direction);
+/// the quarter turns that bring a model's front (south) to face one of the four sides; 0 for others
 int quartersToFace(int direction);
 
 } // namespace goe::models

@@ -16,7 +16,7 @@ class bElem;
  *
  * Every value is a float. Yes/no qualities are 0 or 1, timed states (moving, dying...) are the
  * ticks left (0 when not in that state), directions are dir::direction (0 up, 1 left, 2 down,
- * 3 right, 4 none).
+ * 3 right, 4 none, 5 up-left, 6 down-left, 7 down-right, 8 up-right).
  */
 namespace goe::agent {
 

@@ -24,6 +24,8 @@
 #include "elementSound.h"
 #include "gameEvents.h"
 #include "viewPoint.h"
+#include "chamber.h"
+#include "motion.h"
 
 std::shared_ptr<bElem> plainGun::createProjectible(std::shared_ptr<bElem> who)
 {
@@ -68,6 +70,10 @@ bool plainGun::use(std::shared_ptr<bElem> who)
     if (!this->getStats()->isCollected())
         who = shared_from_this();
     myel = who->getElementInDirection(who->getStats()->getFacing());
+    // shot diagonally into a corner closed on both sides, the shot hits the corner
+    if (const auto board = who->getBoard();
+        myel && board && !motion::cornerOpen(*board, who->getStats()->getMyPosition(), who->getStats()->getFacing()))
+        myel = nullptr;
     if (myel != nullptr) {
         if (this->getAttrs()->getAmmo() > 0 || this->getAttrs()->getSubtype() % 2 == 1) {
             goe::sound::play(*this, "use", "shoot");

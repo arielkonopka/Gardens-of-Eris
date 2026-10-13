@@ -66,6 +66,8 @@ private:
         const modelLibrary::model *model;
         float x, y;
         int quarters;
+        /// turned another eighth (clockwise from above) on top, to face a diagonal
+        bool eighth = false;
         /// below 1 for a wall cut low so the avatar shows
         float squash;
         std::array<float, 3> tint;

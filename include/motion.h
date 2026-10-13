@@ -35,8 +35,16 @@ class bElem;
  *  2. step onto the cell, if it can be stood on;
  *  3. push what is there one cell further, if the mover can push and it can be pushed;
  *  4. interact with what is there.
+ * A diagonal move (user rule of 2026-10-13) needs at least one of the two cells beside it, the
+ * ones it passes between, to be free; between two blocked cells nothing gets through, so walls
+ * that touch only at a corner still close the maze.
  */
+class chamber;
+
 namespace motion {
+/// whether a move from the cell in direction d may pass: always for the four sides; for a
+/// diagonal, when one of the two cells beside it can be stood on
+bool cornerOpen(const chamber &board, coords from, dir::direction d);
 /// moves one cell in direction d; speed is how many ticks the move takes
 bool step(const std::shared_ptr<bElem> &who, dir::direction d, int speed);
 /// moves one cell in direction d, pulling the movable element behind it along

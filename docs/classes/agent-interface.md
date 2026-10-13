@@ -180,7 +180,9 @@ What the agent can do in one step: the game's own controls, one at a time.
 | `nextGun` | `NEXT_GUN` | 5, next kind of gun |
 | `use` | `USE` | 8, use the usable in hand |
 | `drop` | `DROP` | 9, drop the usable in hand |
-| `giveUp` | `GIVE_UP` | 6, the avatar dies (only with `allowGiveUp`) |
+| `moveUpLeft` ... `moveDownRight` | `MOVE_UP_LEFT`, `MOVE_UP_RIGHT`, `MOVE_DOWN_LEFT`, `MOVE_DOWN_RIGHT` | 0, walk diagonally |
+| `shootUpLeft` ... `shootDownRight` | `SHOOT_UP_LEFT` ... | 1, shoot diagonally |
+| `giveUp` | `GIVE_UP` | 6, the avatar dies (only with `allowGiveUp`); always the last |
 
 `actionCount` is the number of values; `std::string actionName(action)` and
 `controlItem controlOf(action)` read the table in `agentGame.cpp`.
@@ -213,7 +215,7 @@ struct feature {
 The same table describes a vision cell (its top element), an inventory item and the player, so
 a name means the same everywhere. Yes/no qualities are 0 or 1, timed states are the ticks left
 (0 when not in that state), directions are `dir::direction` (0 up, 1 left, 2 down, 3 right,
-4 none).
+4 none, 5 up-left, 6 down-left, 7 down-right, 8 up-right).
 
 | Function | Returns |
 |---|---|

@@ -29,6 +29,7 @@
 #include "puppetMasterHound.h"
 #include "viewPoint.h"
 #include "lineOfSight.h"
+#include "motion.h"
 #include "player.h"
 #include "chamber.h"
 #include <algorithm>
@@ -76,14 +77,25 @@ void puppetMasterFR::onAttach(std::shared_ptr<bElem> body)
 dir::direction puppetMasterFR::towards(coords from, coords to)
 {
     int dx = to.x - from.x, dy = to.y - from.y;
-    return std::abs(dx) >= std::abs(dy) ? (dx > 0 ? dir::direction::RIGHT : dir::direction::LEFT)
-                                        : (dy > 0 ? dir::direction::DOWN : dir::direction::UP);
+    // a diagonal only when the way is closer to it than to a side (within half a cell per cell)
+    if (std::abs(dx) >= 2 * std::abs(dy))
+        dy = 0;
+    else if (std::abs(dy) >= 2 * std::abs(dx))
+        dx = 0;
+    return dir::towards(coords(dx, dy));
+}
+
+bool puppetMasterFR::touching(const chamber &board, coords a, coords b)
+{
+    const coords d(b.x - a.x, b.y - a.y);
+    return std::max(std::abs(d.x), std::abs(d.y)) == 1 && motion::cornerOpen(board, a, dir::towards(d));
 }
 
 bool puppetMasterFR::bite(std::shared_ptr<bElem> body, std::shared_ptr<bElem> prey, int damage)
 {
     coords b = body->getStats()->getMyPosition(), p = prey->getStats()->getMyPosition();
-    if (std::abs(p.x - b.x) + std::abs(p.y - b.y) != 1)
+    auto board = body->getBoard();
+    if (!board || !touching(*board, b, p))
         return false;
     goe::roam::turn(body, towards(b, p));
     prey->hurt(damage);
@@ -112,7 +124,8 @@ bool puppetMasterFR::followTrail(std::shared_ptr<bElem> body, bool preyInSight, 
         this->lastSeen = NOCOORDS; // out of our reach
         return false;
     }
-    if (std::abs(this->lastSeen.x - me.x) + std::abs(this->lastSeen.y - me.y) <= 1) {
+    auto board = body->getBoard();
+    if (this->lastSeen == me || (board && touching(*board, me, this->lastSeen))) {
         if (preyInSight && !(this->lastSeen == me)) {
             goe::roam::turn(body, towards(me, this->lastSeen));
             return true;
@@ -157,10 +170,10 @@ dir::direction puppetMasterFR::pathTowards(std::shared_ptr<bElem> body, coords g
     while (!queue.empty()) {
         coords c = queue.front();
         queue.pop_front();
-        for (int d = 0; d < 4; d++) {
-            coords n(c.x + dir::directionToCoordsMap[d].x, c.y + dir::directionToCoordsMap[d].y);
+        for (const auto d : dir::ways) {
+            coords n = c + dir::dirToCoords(d);
             if (n.x < x0 || n.x > x1 || n.y < y0 || n.y > y1 || at(n) != -1
-                || distance2(n, centre) > radius * radius)
+                || distance2(n, centre) > radius * radius || !motion::cornerOpen(*board, c, d))
                 continue;
             int8_t step = (c == start) ? (int8_t) d : at(c);
             if (n == goal)

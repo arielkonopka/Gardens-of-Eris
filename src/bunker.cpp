@@ -22,6 +22,8 @@
 
 #include "bunker.h"
 #include "difficulty.h"
+#include "chamber.h"
+#include "motion.h"
 #include <elementFactory.h>
 
 bunker::bunker()
@@ -52,11 +54,13 @@ bool bunker::mechanics()
         this->help = 0;
         this->myGun->use(shared_from_this());
     }
-    for (int c = 0; c < 4; c++) {
-        dir::direction d = (dir::direction) c;
+    // looks along its eight lines; a missile cannot pass a corner closed on both sides, nor can its eye
+    auto board = this->getBoard();
+    for (const auto d : dir::ways) {
         std::shared_ptr<bElem> e = this->getElementInDirection(d);
+        coords from = this->getStats()->getMyPosition();
         int dd = 0;
-        while (e && ++dd < range) {
+        while (e && ++dd < range && board && motion::cornerOpen(*board, from, d)) {
             if (e->getType() == bElemTypes::_player) {
                 this->getStats()->setFacing(d);
                 this->getStats()->setMyDirection(d);
@@ -65,6 +69,7 @@ bool bunker::mechanics()
             if (!e->getAttrs()->isSteppable()) {
                 break;
             }
+            from = e->getStats()->getMyPosition();
             e = e->getElementInDirection(d);
         }
     }

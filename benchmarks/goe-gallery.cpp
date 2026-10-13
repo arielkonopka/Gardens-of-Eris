@@ -58,8 +58,9 @@ int main(int argc, char **argv)
         [&](coords c) { put<refresher>(board, c); },
         [&](coords c) { put<plainGun>(board, c); },
         [&](coords c) { put<bazooka>(board, c); },
-        [&](coords c) { put<plainMissile>(board, c); },
-        [&](coords c) { put<bazookaMissile>(board, c); },
+        [&](coords c) { put<plainMissile>(board, c)->getStats()->setFacing(dir::direction::RIGHT); },
+        // flying diagonally, to show a model turned to a diagonal
+        [&](coords c) { put<bazookaMissile>(board, c)->getStats()->setFacing(dir::direction::DOWNRIGHT); },
         [&](coords c) { put<simpleBomb>(board, c); },
         [&](coords c) { put<landmine>(board, c); },
         [&](coords c) { put<bouba>(board, c); },

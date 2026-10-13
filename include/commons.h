@@ -272,21 +272,32 @@ constexpr coords NOCOORDS = coords(noCoordinate, noCoordinate);
 /**
  * @class enum dir::direction
  *
- * @brief An enumeration representing cardinal directions.
- * This is used in various operations, including movement and interaction.
- * There is a dirToCoords function provided
+ * @brief The eight ways to go, and none.
+ * The four sides keep their old numbers (saves and the agent store them), the diagonals come
+ * after NODIRECTION. There is a dirToCoords function provided.
  */
 namespace dir
 {
-    enum class direction {UP=0,LEFT=1,DOWN=2,RIGHT=3,NODIRECTION=4};
+    enum class direction {UP=0,LEFT=1,DOWN=2,RIGHT=3,NODIRECTION=4,UPLEFT=5,DOWNLEFT=6,DOWNRIGHT=7,UPRIGHT=8};
+    /// the four sides and none: the cells that touch a cell by an edge, and the cell itself
     const std::array<direction,5> allDirections={direction::UP,direction::LEFT,direction::DOWN,direction::RIGHT,direction::NODIRECTION};
-    const std::array<direction, 5> allDirectionsOpposite = {direction::DOWN,direction::RIGHT,direction::UP,direction::LEFT,direction::NODIRECTION};
-    const std::array<coords, 5> directionToCoordsMap = {
+    /// the four sides
+    constexpr std::array<direction,4> sides={direction::UP,direction::LEFT,direction::DOWN,direction::RIGHT};
+    /// every way to move, anticlockwise (seen from above, y down) from up: one eighth of a turn apart
+    constexpr std::array<direction,8> ways={direction::UP,direction::UPLEFT,direction::LEFT,direction::DOWNLEFT,
+                                            direction::DOWN,direction::DOWNRIGHT,direction::RIGHT,direction::UPRIGHT};
+    constexpr std::array<direction, 9> allDirectionsOpposite = {direction::DOWN,direction::RIGHT,direction::UP,direction::LEFT,direction::NODIRECTION,
+                                                            direction::DOWNRIGHT,direction::UPRIGHT,direction::UPLEFT,direction::DOWNLEFT};
+    constexpr std::array<coords, 9> directionToCoordsMap = {
             coords(0, -1),  // UP
             coords(-1, 0),  // LEFT
             coords(0, 1),   // DOWN
             coords(1, 0),    // RIGHT
             coords(0,0),      //NOP
+            coords(-1, -1), // UPLEFT
+            coords(-1, 1),  // DOWNLEFT
+            coords(1, 1),   // DOWNRIGHT
+            coords(1, -1),  // UPRIGHT
       };
     /**
      * @brief dirToCoords, allows easily calculate new position
@@ -302,6 +313,31 @@ namespace dir
         return dir::allDirectionsOpposite[static_cast<int>(d)];
     }
 
+    constexpr bool isDiagonal(direction d) { return static_cast<int>(d) > static_cast<int>(direction::NODIRECTION); }
+
+    /// d turned by eighths of a turn, anticlockwise seen from above (negative: clockwise); none stays none
+    constexpr direction turned(direction d, int eighths)
+    {
+        for (int i = 0; i < 8; i++)
+            if (ways[(std::size_t) i] == d)
+                return ways[(std::size_t) (((i + eighths) % 8 + 8) % 8)];
+        return direction::NODIRECTION;
+    }
+
+    /// the way from one cell towards another, diagonals included: the signs of the offset
+    constexpr direction towards(coords offset)
+    {
+        const int sx = (offset.x > 0) - (offset.x < 0), sy = (offset.y > 0) - (offset.y < 0);
+        for (int i = 0; i < 9; i++)
+            if (directionToCoordsMap[(std::size_t) i].x == sx && directionToCoordsMap[(std::size_t) i].y == sy)
+                return static_cast<direction>(i);
+        return direction::NODIRECTION;
+    }
+
+    /// the side part of a diagonal that runs along x (left or right); a side stays itself
+    constexpr direction across(direction d) { return isDiagonal(d) ? towards(coords(directionToCoordsMap[(std::size_t) d].x, 0)) : d; }
+    /// the side part of a diagonal that runs along y (up or down); a side stays itself
+    constexpr direction along(direction d) { return isDiagonal(d) ? towards(coords(0, directionToCoordsMap[(std::size_t) d].y)) : d; }
 }
 
 

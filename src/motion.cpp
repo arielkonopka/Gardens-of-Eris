@@ -22,10 +22,30 @@
 
 #include "motion.h"
 #include "bElem.h"
+#include "chamber.h"
 #include "elementSound.h"
 
 namespace motion {
+bool cornerOpen(const chamber &board, coords from, dir::direction d)
+{
+    if (!dir::isDiagonal(d))
+        return true;
+    auto free = [&](dir::direction side) {
+        const auto &e = board.topAt(from + dir::dirToCoords(side));
+        return e && e->getAttrs()->isSteppable();
+    };
+    return free(dir::across(d)) || free(dir::along(d));
+}
+
 namespace {
+/// whether who may move in d from where it stands (see cornerOpen)
+bool passes(const std::shared_ptr<bElem> &who, dir::direction d)
+{
+    auto board = who->getBoard();
+    const coords at = who->getStats()->getMyPosition();
+    return board && at != NOCOORDS && cornerOpen(*board, at, d);
+}
+
 /// places who onto target as a move that takes speed ticks
 bool moveOnto(const std::shared_ptr<bElem> &who, const std::shared_ptr<bElem> &target, int speed)
 {
@@ -75,7 +95,7 @@ bool step(const std::shared_ptr<bElem> &who, dir::direction d, int speed)
         || st.isDestroying())
         return false;
     auto target = who->getElementInDirection(d);
-    if (!target)
+    if (!target || !passes(who, d))
         return false;
     who->getStats()->setMyDirection(d);
     if (canCollect(who, target))

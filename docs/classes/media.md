@@ -51,8 +51,9 @@ The 3D models, read from glTF 2.0 files (`.glb`) with [cgltf](https://github.com
 board's axes (glTF's y up becomes z, its front looks south) with the material colour and the
 texture's bytes. `placed(mesh, spec)` puts it in its cell: centred, its ground (the file's y = 0)
 on the floor, scaled to cells (`Scale`, or the footprint fills the cell), turned, stretched,
-lifted. `turned(mesh, quarters)` turns it clockwise seen from above, `quartersToFace(dir)` is how
-far to face a direction, `lightOf(normal)` how bright a face is, and `lid(mesh)` the square over a
+lifted. `turned(mesh, quarters)` turns it clockwise seen from above, `quartersToFace(dir)` and
+`eighthsToFace(dir)` are how far to face a direction (a diagonal is a quarter turn plus an eighth,
+the eighth added in the view's placement matrix), `lightOf(normal)` how bright a face is, and `lid(mesh)` the square over a
 wall model's cell painted like its top. `Tip` (`spec::tip`) tips a model over
 before anything else. `builtin(name)` makes a shape in code instead of reading a file (`load`
 does it for a file named `builtin:blob` or `builtin:star`), set on the floor and filling its cell.

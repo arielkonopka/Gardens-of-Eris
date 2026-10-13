@@ -412,12 +412,19 @@ float lightOf(float nx, float ny, float nz)
     return 0.55f + 0.45f * std::max(facing, -0.4f);
 }
 
+int eighthsToFace(int direction)
+{
+    // indexed by dir::direction (up, left, down, right, none, then the diagonals); turning
+    // clockwise from the south seen from above: S, SW, W, NW, N, NE, E, SE
+    constexpr std::array<int, 9> eighths{4, 2, 0, 6, 0, 3, 1, 7, 5};
+    if (direction < 0 || direction >= (int) eighths.size())
+        return 0;
+    return eighths[(std::size_t) direction];
+}
+
 int quartersToFace(int direction)
 {
-    // up, left, down, right are 0 to 3; seen from the south and turning clockwise: S, W, N, E
-    if (direction < 0 || direction > 3)
-        return 0;
-    return ((2 - direction) % 4 + 4) % 4;
+    return direction >= 0 && direction <= 3 ? eighthsToFace(direction) / 2 : 0;
 }
 
 } // namespace goe::models

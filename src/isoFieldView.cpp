@@ -32,6 +32,7 @@
 #include "viewPoint.h"
 #include <array>
 #include <cmath>
+#include <numbers>
 
 namespace {
 /// the camera looks from the south west, so north is up and to the right on screen
@@ -174,11 +175,15 @@ bool isoFieldView::addModel(const videoElement::videoElementDef &ve,
                              ? std::min(1.0f, goe::iso::meshBuilder::cutHeight / m->height)
                              : 1.0f;
     const auto tint = m->spec->tintFor(subType);
-    auto put = [&](int quarters, bool lid = false) { this->placed.push_back({m, x, y, quarters, squash, tint, lid}); };
+    auto put = [&](int quarters, bool lid = false, bool eighth = false) {
+        this->placed.push_back({m, x, y, quarters, eighth, squash, tint, lid});
+    };
     switch (m->spec->place) {
-    case goe::models::layout::cell:
-        put(m->spec->turns ? goe::models::quartersToFace(facing) : 0);
+    case goe::models::layout::cell: {
+        const int eighths = m->spec->turns ? goe::models::eighthsToFace(facing) : 0;
+        put(eighths / 2, false, eighths % 2 == 1);
         break;
+    }
     case goe::models::layout::sides:
         // a segment on each side the camera sees, unless another block stands there; a lid on top
         for (const auto d : {dir::direction::UP, dir::direction::LEFT, dir::direction::DOWN, dir::direction::RIGHT}) {
@@ -202,6 +207,8 @@ void isoFieldView::drawModels()
         ALLEGRO_TRANSFORM t;
         al_identity_transform(&t);
         al_scale_transform_3d(&t, 1, 1, pm.squash);
+        if (pm.eighth) // the same way turned() turns a quarter: x to y
+            al_rotate_transform_3d(&t, 0, 0, 1, std::numbers::pi_v<float> / 4);
         al_translate_transform_3d(&t, pm.x + 0.5f, pm.y + 0.5f, 0);
         al_set_shader_matrix("placement", &t);
         al_set_shader_float_vector("tint", 3, pm.tint.data(), 1);

@@ -35,11 +35,11 @@ Helpers for subclasses (protected):
 
 | Helper | What it does |
 |---|---|
-| `bite(body, prey, damage)` | Hurt the prey when it is right next to the body, then rest. |
+| `bite(body, prey, damage)` | Hurt the prey when it is right next to the body (`touching`: by a side, or by a corner a move could pass), then rest. |
 | `lookout(body, range)` | The active player when they are within range with nothing opaque in between (`goe::sight`); remembers the cell as `lastSeen`. Chasers never read the player's position any other way. |
 | `followTrail(body, preyInSight, centre, radius)` | Walk to `lastSeen` around walls, never leaving the circle; false when there is no trail to follow. |
-| `pathTowards(body, goal, centre, radius)` | First step of a shortest walk to a cell next to `goal`, within the circle. |
-| `towards`, `distance2` | Direction and distance arithmetic. |
+| `pathTowards(body, goal, centre, radius)` | First step of a shortest walk to a cell next to `goal`, within the circle; diagonal steps where `motion::cornerOpen` lets them pass. |
+| `towards`, `touching`, `distance2` | Direction (one of eight: a diagonal when the way is closer to it than to a side) and distance arithmetic. |
 
 To add a behaviour: subclass `puppetMasterFR`, override `drive()` (and `onAttach()` if needed),
 add a kind to the enum and to `create()`. A new chaser uses `lookout`, `followTrail` and
@@ -48,8 +48,9 @@ with nothing to do it roams with `goe::roam`.
 
 ## `puppetMasterCollector` (`puppetMasterCollector.h`)
 
-Drives its body towards collectibles it sees in a straight line (`firstSolidInDirection`), and
-roams the maze otherwise.
+Drives its body towards collectibles it sees in a straight line, any of the eight
+(`firstSolidInDirection`), and roams the maze otherwise. `goe::roam::followWall` keeps to the four
+sides: a body coming off a diagonal walks on across.
 
 ## `puppetMasterHunter` (`puppetMasterHunter.h`)
 

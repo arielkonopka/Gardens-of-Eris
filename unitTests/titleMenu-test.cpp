@@ -541,7 +541,11 @@ TEST(ControlBindingsTests, DefaultLayoutPlaysAsBefore)
     EXPECT_TRUE(is({}, -1, dir::direction::NODIRECTION));
     EXPECT_TRUE(is({ALLEGRO_KEY_W}, 0, dir::direction::UP));
     EXPECT_TRUE(is({ALLEGRO_KEY_LEFT}, 0, dir::direction::LEFT));
-    EXPECT_TRUE(is({ALLEGRO_KEY_UP, ALLEGRO_KEY_RIGHT}, 0, dir::direction::RIGHT));
+    // two ways held make a diagonal; of two opposite ones the later wins
+    EXPECT_TRUE(is({ALLEGRO_KEY_UP, ALLEGRO_KEY_RIGHT}, 0, dir::direction::UPRIGHT));
+    EXPECT_TRUE(is({ALLEGRO_KEY_S, ALLEGRO_KEY_A}, 0, dir::direction::DOWNLEFT));
+    EXPECT_TRUE(is({ALLEGRO_KEY_UP, ALLEGRO_KEY_DOWN}, 0, dir::direction::DOWN));
+    EXPECT_TRUE(is({ALLEGRO_KEY_RSHIFT, ALLEGRO_KEY_W, ALLEGRO_KEY_A}, 1, dir::direction::UPLEFT));
     EXPECT_TRUE(is({ALLEGRO_KEY_RSHIFT, ALLEGRO_KEY_D}, 1, dir::direction::RIGHT));
     EXPECT_TRUE(is({ALLEGRO_KEY_LSHIFT}, -1, dir::direction::NODIRECTION)); // shooting needs a direction
     EXPECT_TRUE(is({ALLEGRO_KEY_LCTRL, ALLEGRO_KEY_S}, 2, dir::direction::DOWN));
@@ -563,6 +567,9 @@ TEST(ControlBindingsTests, DefaultLayoutPlaysAsBefore)
     auto item = b.translate(pad);
     EXPECT_EQ(item.type, 1);
     EXPECT_TRUE(item.dir == dir::direction::DOWN);
+    // a stick pushed between two ways
+    pad.stick[3] = true;
+    EXPECT_TRUE(b.translate(pad).dir == dir::direction::DOWNRIGHT);
 }
 
 TEST(ControlBindingsTests, ReboundKeysDriveTheNewAction)
