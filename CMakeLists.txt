@@ -36,6 +36,8 @@ endif()
 
 # Header files, for the game's objects, the tests and the benchmark
 include_directories(${CMAKE_SOURCE_DIR}/include)
+# cgltf reads the 3D models (MIT, one header); a system include, so its own warnings stay quiet
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/third_party/cgltf)
 
 # Set the source files for the game elements using wildcard
 file(GLOB SOURCE_FILES ${CMAKE_SOURCE_DIR}/src/*.cpp)
@@ -60,6 +62,7 @@ set(LIBRARIES
     allegro_font
     allegro_ttf
     allegro_primitives
+    allegro_memfile
     m
     openal
     sndfile

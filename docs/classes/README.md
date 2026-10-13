@@ -15,7 +15,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | [Rules](rules.md) | `difficulty`, `goe::music::byDifficulty`, `goe::music::cues`, `goe::rng`, `gameClock`, `goe::events`, `randomWordGen` |
 | [Saving](saving.md) | `gameSerializer`: saves, loads and chunk swap |
 | [The application](application.md) | `main.cpp`, `presenter`, `titleScreen`, `titleMenu`, `menuPad`, `bindings`, `inputManager`, `gameSettings`, `autopilot`, `hallOfFame`, `storyScroller`, `crashLog`, `goe::credits` |
-| [Seeing and hearing](media.md) | `viewPoint`, `fieldView`, `flatFieldView`, `isoFieldView`, `goe::iso`, `fieldCamera`, `hudView`, `spritePainter`, `goe::sprites`, `fogLayer`, `fogMask`, Allegro handles, `videoManager`, `videoDriver`, `configManager`, `soundManager`, `soundSpace`, `performerStream`, the adaptive musician (`goe::musician`), the DJ (`goe::dj`) |
+| [Seeing and hearing](media.md) | `viewPoint`, `fieldView`, `flatFieldView`, `isoFieldView`, `goe::iso`, `goe::models`, `modelLibrary`, `fieldCamera`, `hudView`, `spritePainter`, `goe::sprites`, `fogLayer`, `fogMask`, Allegro handles, `videoManager`, `videoDriver`, `configManager`, `soundManager`, `soundSpace`, `performerStream`, the adaptive musician (`goe::musician`), the DJ (`goe::dj`) |
 
 ## Where each class lives
 
@@ -58,6 +58,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `goe::events` | `include/gameEvents.h` | [rules](rules.md) |
 | `goe::hallOfFame` | `include/hallOfFame.h` | [application](application.md) |
 | `goe::iso::meshBuilder`, `shape`, `vertex` | `include/isoMesh.h` | [media](media.md) |
+| `goe::models::load`, `placed`, `spec`, `mesh` | `include/model3d.h` | [media](media.md) |
 | `goe::music::byDifficulty` | `include/difficultyMusic.h` | [rules](rules.md) |
 | `goe::dj::trackInfo`, `analyse`, `analyseFile` | `include/musicAnalysis.h` | [media](media.md) |
 | `goe::dj::mapSongs`, `planMix`, `mixPlan`, `analysisCache` | `include/autoDJ.h` | [media](media.md) |
@@ -88,6 +89,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `key` | `include/key.h` | [elements](elements.md) |
 | `kiki` | `include/kiki.h` | [elements](elements.md) |
 | `landmine` | `include/landmine.h` | [elements](elements.md) |
+| `modelLibrary` | `include/modelLibrary.h` | [media](media.md) |
 | `monster` | `include/monster.h` | [elements](elements.md) |
 | `motion` | `include/motion.h` | [elements-core](elements-core.md) |
 | `myUtility::Coords` | `include/Coords.h` | [basics](basics.md) |

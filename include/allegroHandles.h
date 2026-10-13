@@ -7,6 +7,7 @@
 
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
+#include <allegro5/allegro_primitives.h>
 #include <memory>
 
 namespace goe {
@@ -28,6 +29,7 @@ using timerHandle = std::unique_ptr<ALLEGRO_TIMER, destroyWith<al_destroy_timer>
 using eventQueueHandle = std::unique_ptr<ALLEGRO_EVENT_QUEUE, destroyWith<al_destroy_event_queue>>;
 using displayHandle = std::unique_ptr<ALLEGRO_DISPLAY, destroyWith<al_destroy_display>>;
 using shaderHandle = std::unique_ptr<ALLEGRO_SHADER, destroyWith<al_destroy_shader>>;
+using vertexBufferHandle = std::unique_ptr<ALLEGRO_VERTEX_BUFFER, destroyWith<al_destroy_vertex_buffer>>;
 } // namespace goe
 
 #endif // ALLEGROHANDLES_H

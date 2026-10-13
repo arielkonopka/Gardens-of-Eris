@@ -106,6 +106,14 @@ class isoFieldView {
 class "goe::iso::meshBuilder" as meshBuilder {
   +ground / block / standee / flat
 }
+class modelLibrary {
+  +find(def, subtype, facing)
+  vertex buffers per quarter turn
+}
+class "goe::models" as models <<namespace>> {
+  +load(glb, nodes) : mesh
+  +placed(mesh, spec)
+}
 class fieldCamera {
   +follow(centre, cells, boardSize)
   +topLeft() / scroll()
@@ -145,6 +153,8 @@ fieldView <|.. isoFieldView
 isoFieldView *-- meshBuilder
 isoFieldView *-- fogLayer : mask and pattern
 isoFieldView ..> sprites
+isoFieldView *-- modelLibrary : "Model" in skins.json
+modelLibrary ..> models
 flatFieldView *-- fogLayer
 flatFieldView *-- spritePainter
 hudView *-- spritePainter

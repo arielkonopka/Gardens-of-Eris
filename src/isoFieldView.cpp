@@ -88,6 +88,7 @@ bool isoFieldView::ready() const
 void isoFieldView::buildMesh(const fieldFrame &frame, coords origin, float cx, float cy)
 {
     const auto board = frame.focus->getBoard();
+    this->shownBoard = board;
     const float ppc = zoom * (float) this->tileSize.x;
     // on the floor, how far from the centre the screen's edges are, plus room for walls and moves
     const float across = (float) this->fieldPx.x / 2 / ppc + 1.5f;
@@ -110,6 +111,7 @@ void isoFieldView::buildMesh(const fieldFrame &frame, coords origin, float cx, f
         return towards > 0 && towards <= cutTowards && std::abs(dx * fy - dy * fx) <= cutAcross;
     };
     this->mesh.clear();
+    this->placed.clear();
     const int side = 2 * this->radius + 1;
     for (int x = 0; x < side; x++)
         for (int y = 0; y < side; y++) {
@@ -121,8 +123,10 @@ void isoFieldView::buildMesh(const fieldFrame &frame, coords origin, float cx, f
             if (board->isVisible(np) >= 255 && !viewPoint::get_instance().isPointVisible(np)) {
                 // nobody has been here: plain floor, which the fog covers
                 if (floorDef && !floorDef->defArray.empty() && !floorDef->defArray[0].empty()
-                    && !floorDef->defArray[0][0].empty())
-                    this->mesh.ground((float) x, (float) y, pictureOf(floorDef->defArray[0][0][0]));
+                    && !floorDef->defArray[0][0].empty()) {
+                    if (!this->addModel(*floorDef, 0, 0, np, (float) x, (float) y, false))
+                        this->mesh.ground((float) x, (float) y, pictureOf(floorDef->defArray[0][0][0]));
+                }
                 continue;
             }
             for (auto e = board->getElement(np); e; e = e->getStats()->getSteppingOn()) {
@@ -133,13 +137,83 @@ void isoFieldView::buildMesh(const fieldFrame &frame, coords origin, float cx, f
                 if (!cell)
                     continue;
                 const coords off = elementView::offset(*e, this->tileSize);
-                this->mesh.add(ve->shape,
-                               (float) x + (float) off.x / (float) this->tileSize.x,
-                               (float) y + (float) off.y / (float) this->tileSize.y,
-                               pictureOf(*cell),
-                               inFrontOfFocus(x, y));
+                const float ex = (float) x + (float) off.x / (float) this->tileSize.x;
+                const float ey = (float) y + (float) off.y / (float) this->tileSize.y;
+                const auto &stats = *e->getStats();
+                // exploding, dying and teleporting keep their sprite animations
+                const bool changing = stats.isDying() || stats.isDestroying() || stats.isTeleporting();
+                if (changing
+                    || !this->addModel(*ve, e->getAttrs()->getSubtype(), (int) stats.getFacing(), np, ex, ey,
+                                       inFrontOfFocus(x, y)))
+                    this->mesh.add(ve->shape, ex, ey, pictureOf(*cell), inFrontOfFocus(x, y));
             }
         }
+}
+
+bool isoFieldView::joins(coords at) const
+{
+    const auto e = this->shownBoard ? this->shownBoard->getElement(at) : nullptr;
+    if (!e)
+        return false;
+    const auto ve = videoDriver::getInstance().getVideoElement(e->getType());
+    return ve && ve->shape == goe::iso::shape::block;
+}
+
+bool isoFieldView::addModel(const videoElement::videoElementDef &ve,
+                            int subType,
+                            int facing,
+                            coords at,
+                            float x,
+                            float y,
+                            bool cut)
+{
+    const auto *m = this->models.find(ve, subType, facing);
+    if (!m)
+        return false;
+    const float squash = cut && ve.shape == goe::iso::shape::block && m->height > 0
+                             ? std::min(1.0f, goe::iso::meshBuilder::cutHeight / m->height)
+                             : 1.0f;
+    const auto tint = m->spec->tintFor(subType);
+    auto put = [&](int quarters, bool lid = false) { this->placed.push_back({m, x, y, quarters, squash, tint, lid}); };
+    switch (m->spec->place) {
+    case goe::models::layout::cell:
+        put(m->spec->turns ? goe::models::quartersToFace(facing) : 0);
+        break;
+    case goe::models::layout::sides:
+        // a segment on each side the camera sees, unless another block stands there; a lid on top
+        for (const auto d : {dir::direction::UP, dir::direction::LEFT, dir::direction::DOWN, dir::direction::RIGHT}) {
+            const coords step = dir::directionToCoordsMap[(std::size_t) d];
+            if ((float) step.x * eyeX + (float) step.y * eyeY > 0 && !this->joins(at + step))
+                put(goe::models::quartersToFace((int) d));
+        }
+        if (m->lid)
+            put(0, true);
+        break;
+    case goe::models::layout::between:
+        put(this->joins(at + coords(-1, 0)) || this->joins(at + coords(1, 0)) ? 0 : 1);
+        break;
+    }
+    return true;
+}
+
+void isoFieldView::drawModels()
+{
+    for (const auto &pm : this->placed) {
+        ALLEGRO_TRANSFORM t;
+        al_identity_transform(&t);
+        al_scale_transform_3d(&t, 1, 1, pm.squash);
+        al_translate_transform_3d(&t, pm.x + 0.5f, pm.y + 0.5f, 0);
+        al_set_shader_matrix("placement", &t);
+        al_set_shader_float_vector("tint", 3, pm.tint.data(), 1);
+        if (pm.lid)
+            al_draw_vertex_buffer(pm.model->lid.get(), pm.model->texture.get(), 0, 6, ALLEGRO_PRIM_TRIANGLE_LIST);
+        else
+            al_draw_vertex_buffer(pm.model->turns[(std::size_t) pm.quarters].get(),
+                                  pm.model->texture.get(),
+                                  0,
+                                  pm.model->corners,
+                                  ALLEGRO_PRIM_TRIANGLE_LIST);
+    }
 }
 
 void isoFieldView::useCamera(float cx, float cy)
@@ -228,6 +302,11 @@ void isoFieldView::draw(const fieldFrame &frame)
     al_clear_depth_buffer(1.0f);
     al_use_shader(shader);
     this->setFogUniforms(origin);
+    ALLEGRO_TRANSFORM still;
+    al_identity_transform(&still);
+    al_set_shader_matrix("placement", &still);
+    const std::array<float, 3> noTint{1, 1, 1};
+    al_set_shader_float_vector("tint", 3, noTint.data(), 1);
     if (!this->vertices.empty())
         al_draw_prim(this->vertices.data(),
                      nullptr,
@@ -235,6 +314,7 @@ void isoFieldView::draw(const fieldFrame &frame)
                      0,
                      (int) this->vertices.size(),
                      ALLEGRO_PRIM_TRIANGLE_LIST);
+    this->drawModels();
     al_use_shader(nullptr);
     al_set_render_state(ALLEGRO_DEPTH_TEST, 0);
     al_set_target_bitmap(target);

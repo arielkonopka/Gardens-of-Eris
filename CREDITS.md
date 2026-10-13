@@ -1,6 +1,6 @@
 # Credits
 
-Gardens of Eris is MIT licensed. The music below is not: each track keeps its own licence, listed here with its author and source. Only CC0 and CC BY music goes into the game, so the game can be shared and changed freely as long as these credits travel with it.
+Gardens of Eris is MIT licensed. The music and 3D models below are not: each track keeps its own licence, listed here with its author and source. Only CC0 and CC BY music goes into the game, so the game can be shared and changed freely as long as these credits travel with it.
 
 ## Music
 
@@ -35,3 +35,11 @@ Attribution for the Eric Skiff songs, as he asks for it: "Music: Eric Skiff - So
 The Eric Skiff songs are not kept in the repository yet; `tools/music/fetch-eric-skiff.sh` downloads them into `GoEoOL/data/music/ericskiff`. Until then the game plays the Bacalao songs and skips the missing ones.
 
 `GoEoOL/data/music/song01.mp3` to `song05.mp3` (Mister Electric Demon, Jamendo) are not used by the game and their licence has not been checked.
+
+## 3D models
+
+The 3D view draws these models (`"Model"` in `skins.json`). Each folder under `GoEoOL/data/models` keeps its pack's own licence file. Only CC0 models go in, so nothing has to be relicensed.
+
+| Folder | Pack | Author | Used for | Source | Licence |
+|---|---|---|---|---|---|
+| kaykit-dungeon | KayKit Dungeon Remastered 1.0 | Kay Lousberg | floor, walls, doors, keys, crates, rubbish | [kaylousberg.com](https://www.kaylousberg.com), [GitHub](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) |

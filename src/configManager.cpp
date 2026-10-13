@@ -23,6 +23,74 @@
 #include "allegroHandles.h"
 #include <stdexcept>
 
+namespace {
+float numberOr(const rapidjson::Value &v, const char *key, float fallback)
+{
+    return v.HasMember(key) && v[key].IsNumber() ? v[key].GetFloat() : fallback;
+}
+
+/// [x, y, z], or one number for all three
+std::array<float, 3> tripleOr(const rapidjson::Value &v, const char *key, std::array<float, 3> fallback)
+{
+    if (!v.HasMember(key))
+        return fallback;
+    const auto &t = v[key];
+    if (t.IsNumber())
+        return {t.GetFloat(), t.GetFloat(), t.GetFloat()};
+    if (!t.IsArray() || t.Size() != 3 || !t[0].IsNumber() || !t[1].IsNumber() || !t[2].IsNumber())
+        return fallback;
+    return {t[0].GetFloat(), t[1].GetFloat(), t[2].GetFloat()};
+}
+
+std::optional<goe::models::spec> readModelSpec(const rapidjson::Value &v, const std::string &baseDir)
+{
+    if (!v.IsObject() || !v.HasMember("File") || !v["File"].IsString())
+        return std::nullopt;
+    goe::models::spec s;
+    s.file = baseDir + v["File"].GetString();
+    if (v.HasMember("SubType") && v["SubType"].IsInt())
+        s.subType = v["SubType"].GetInt();
+    if (v.HasMember("Facing") && v["Facing"].IsInt())
+        s.facing = v["Facing"].GetInt();
+    if (v.HasMember("Nodes") && v["Nodes"].IsArray())
+        for (const auto &n : v["Nodes"].GetArray())
+            if (n.IsString())
+                s.nodes.emplace_back(n.GetString());
+    if (v.HasMember("Scale") && v["Scale"].IsNumber())
+        s.scale = v["Scale"].GetFloat();
+    s.stretch = tripleOr(v, "Stretch", s.stretch);
+    s.turn = numberOr(v, "Turn", s.turn);
+    s.lift = numberOr(v, "Lift", s.lift);
+    s.tint = tripleOr(v, "Tint", s.tint);
+    if (v.HasMember("Tints") && v["Tints"].IsArray())
+        for (const auto &t : v["Tints"].GetArray())
+            if (t.IsArray() && t.Size() == 3 && t[0].IsNumber() && t[1].IsNumber() && t[2].IsNumber())
+                s.tints.push_back({t[0].GetFloat(), t[1].GetFloat(), t[2].GetFloat()});
+    if (v.HasMember("Turns") && v["Turns"].IsBool())
+        s.turns = v["Turns"].GetBool();
+    if (v.HasMember("Layout") && v["Layout"].IsString()) {
+        const auto place = goe::models::parseLayout(v["Layout"].GetString());
+        if (!place)
+            std::cout << "Unknown model Layout \"" << v["Layout"].GetString() << "\", using cell\n";
+        s.place = place.value_or(goe::models::layout::cell);
+    }
+    return s;
+}
+} // namespace
+
+std::vector<goe::models::spec> readModelSpecs(const rapidjson::Value &v, const std::string &baseDir)
+{
+    std::vector<goe::models::spec> specs;
+    if (v.IsObject()) {
+        if (auto s = readModelSpec(v, baseDir))
+            specs.push_back(*s);
+    } else if (v.IsArray())
+        for (const auto &e : v.GetArray())
+            if (auto s = readModelSpec(e, baseDir))
+                specs.push_back(*s);
+    return specs;
+}
+
 std::shared_ptr<configManager> configManager::instance = nullptr;
 std::once_flag configManager::_onceFlag;
 
@@ -139,6 +207,8 @@ void configManager::configReload()
         sdata.eType = sprlist[c]["Type"].GetInt();
         if (sprlist[c].HasMember("Shape") && sprlist[c]["Shape"].IsString())
             sdata.shape = sprlist[c]["Shape"].GetString();
+        if (sprlist[c].HasMember("Model"))
+            sdata.models = readModelSpecs(sprlist[c]["Model"], this->gConfObj->baseDir);
         if (sprlist[c].HasMember("Attributes")) {
             for (unsigned int i = 0; i < sprlist[c]["Attributes"].Size(); i++) {
                 /*
