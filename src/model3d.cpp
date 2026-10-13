@@ -27,6 +27,7 @@
 #include "cgltf.h"
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -212,14 +213,15 @@ void facet(mesh &m, const point &a, const point &b, const point &c)
         m.triangles.push_back({p[0], p[1], p[2], n[0], n[1], n[2], 0.5f, 0.5f});
 }
 
-/// a ball around (0, 0, 0.5) that fits its cell; bumps > 0 make its surface wobble
-mesh ball(float bumps)
+/// a ball around (0, 0, 0.5); radius(theta, phi) says how far out each point is (theta from the
+/// top, phi round the side), 0.5 fitting the cell
+mesh ball(const std::function<float(float, float)> &radius)
 {
     constexpr int rings = 8, segments = 12;
     auto at = [&](int ring, int seg) {
         const float theta = std::numbers::pi_v<float> * (float) ring / rings;
         const float phi = 2 * std::numbers::pi_v<float> * (float) seg / segments;
-        const float r = 0.5f / (1 + bumps) * (1 + bumps * std::sin(3 * phi) * std::sin(2 * theta));
+        const float r = radius(theta, phi);
         return point{r * std::sin(theta) * std::cos(phi), r * std::sin(theta) * std::sin(phi), 0.5f + r * std::cos(theta)};
     };
     mesh m;
@@ -269,6 +271,15 @@ mesh star()
     return m;
 }
 
+/// a soft, wobbly ball that fits its cell
+mesh blob()
+{
+    constexpr float bumps = 0.12f;
+    return ball([](float theta, float phi) {
+        return 0.5f / (1 + bumps) * (1 + bumps * std::sin(3 * phi) * std::sin(2 * theta));
+    });
+}
+
 /// set on the floor
 mesh grounded(mesh m)
 {
@@ -281,7 +292,7 @@ mesh grounded(mesh m)
 std::optional<mesh> builtin(std::string_view name)
 {
     if (name == "blob")
-        return grounded(ball(0.12f));
+        return grounded(blob());
     if (name == "star")
         return grounded(star());
     return std::nullopt;

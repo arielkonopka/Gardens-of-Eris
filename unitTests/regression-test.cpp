@@ -643,10 +643,9 @@ TEST(RegressionTests, ABrokenAppleThatBlowsUpInTheInventoryKillsItsCarrier)
     std::shared_ptr<bElem> plr;
     auto mc = roomWithPlayer(coords(8, 8), plr);
     plr->stepOnElement(mc->getElement(4, 4));
-    auto apple = elementFactory::generateAnElement<goldenApple>(mc, 0);
+    // a shot apple, a refresher now: it feeds its carrier and drains itself
+    auto apple = elementFactory::generateAnElement<refresher>(mc, 0);
     apple->stepOnElement(mc->getElement(5, 4));
-    apple->hurt(1); // broken: it feeds its carrier and drains itself
-    ASSERT_EQ(apple->getAttrs()->getSubtype(), 1);
     ASSERT_TRUE(plr->collect(apple));
     if (boardKnown)
         plr->setBoard(mc);

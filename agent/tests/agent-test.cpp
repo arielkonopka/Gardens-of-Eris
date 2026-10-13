@@ -570,10 +570,9 @@ TEST(AgentTests, TeleportingAndUsingAreCounted)
     game g(c);
     g.newEpisode(555);
     const auto plr = player::getActivePlayer();
-    // a broken apple in hand: eating it gives energy
-    const auto apple = elementFactory::generateAnElement<goldenApple>(plr->getBoard(), 0);
-    apple->hurt(1);
-    ASSERT_TRUE(plr->collect(apple));
+    // a refresher (a shot apple) in hand: using it gives energy
+    const auto fresh = elementFactory::generateAnElement<refresher>(plr->getBoard(), 0);
+    ASSERT_TRUE(plr->collect(fresh));
     plr->getAttrs()->setEnergy(50);
     g.makeAction(action::use);
     EXPECT_EQ(g.stepEvents()[(std::size_t) event::use], 1.0f);

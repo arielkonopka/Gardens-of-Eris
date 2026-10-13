@@ -1,0 +1,8 @@
+Fruit Pack 01 by DataBrace
+https://opengameart.org/content/fruit-pack-01
+
+"Included models and materials are CC0."
+CC0 1.0 Universal: https://creativecommons.org/publicdomain/zero/1.0/
+
+The .glb files were exported from fruit-pack-01.blend with tools/models/blend-to-glb.py, one per
+fruit; golden_apple.glb is the apple with its skin painted gold.

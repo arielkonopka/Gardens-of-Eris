@@ -211,7 +211,7 @@ wraps `_goe.ChunkPattern` (its `_native`) and speaks numpy.
 `ELEMENT_TYPES` is `{"floor": 0, "rubbish": 2, "wall": 4, "monster": 6, "drone": 7,
 "brick_cluster": 8, "key": 51, "door": 52, "puppet_master": 77, "camera": 78, "player": 100,
 "gun": 200, "bazooka": 204, "bunker": 250, "teleporter": 400, "bouba": 555, "kiki": 556,
-"bomb": 602, "landmine": 603, "golden_apple": 900}`. `as_pattern(p)` turns a `ChunkPattern`, a
+"bomb": 602, "landmine": 603, "golden_apple": 900, "refresher": 901}`. `as_pattern(p)` turns a `ChunkPattern`, a
 path or `None` into a `ChunkPattern` or `None` (anything else raises `TypeError`); `Game` uses it
 for every pattern argument.
 

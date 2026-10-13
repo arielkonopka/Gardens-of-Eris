@@ -109,10 +109,9 @@ bool monster::checkNeigh()
                 }
                 // if it is something interesting, go and fetch it
                 if (e->getType() == bElemTypes::_stash || e->getType() == bElemTypes::_rubishType
-                    || (e->getType() == bElemTypes::_goldenAppleType
-                        && e->getAttrs()->getSubtype() != 0)
+                    || e->getType() == bElemTypes::_refresherType
                     || e->getAttrs()
-                           ->isWeapon()) // take the dir::direction towards remainings from other objects, broken apples or guns
+                           ->isWeapon()) // take the dir::direction towards remainings from other objects, refreshers or guns
                 {
                     // walk there now: waiting first would start the same wait again next turn,
                     // and the monster would never move. Blocked, it roams on instead.

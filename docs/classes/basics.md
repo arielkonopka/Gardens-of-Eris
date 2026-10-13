@@ -33,6 +33,7 @@ files, chunk patterns and the agent's `type` feature.
 | `_simpleBombType` | 602 | `simpleBomb` |
 | `_landmineType` | 603 | `landmine` |
 | `_goldenAppleType` | 900 | `goldenApple` |
+| `_refresherType` | 901 | `refresher` (a shot golden apple) |
 
 ## `GoEConstants` (namespace, `commons.h`)
 

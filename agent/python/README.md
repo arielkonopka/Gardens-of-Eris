@@ -149,7 +149,7 @@ game.generate_chunk((1, 0), rooms)                   # within an episode, see be
   `from_json`): `{"legend": {"#": "wall", "k": ["key", 1], ".": null}, "rows": ["#k.#", ...]}`.
 - A legend entry is `None` (nothing: the floor as the game made it), a type, or
   `(type, subtype)`; a type is a number or a name from `goe.ELEMENT_TYPES` (`wall`, `player`,
-  `key`, `door`, `golden_apple`, `monster`, `camera`, `teleporter`, ...). The type `floor` with
+  `key`, `door`, `golden_apple`, `refresher`, `monster`, `camera`, `teleporter`, ...). The type `floor` with
   a subtype sets the floor's own look.
 - A pattern is at most 64 cells on each side; a smaller one is repeated to fill the chunk from
   its top left cell. A patterned chunk has no maze and no walls of its own: walls are where the

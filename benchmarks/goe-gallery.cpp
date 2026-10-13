@@ -55,6 +55,7 @@ int main(int argc, char **argv)
         [&](coords c) { put<key>(board, c, 0); },
         [&](coords c) { put<key>(board, c, 3); },
         [&](coords c) { put<goldenApple>(board, c); },
+        [&](coords c) { put<refresher>(board, c); },
         [&](coords c) { put<plainGun>(board, c); },
         [&](coords c) { put<bazooka>(board, c); },
         [&](coords c) { put<plainMissile>(board, c); },
