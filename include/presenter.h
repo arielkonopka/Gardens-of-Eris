@@ -93,7 +93,14 @@ private:
     coords fieldCells{0, 0};
     coords fieldPx{0, 0};
     std::unique_ptr<fieldCamera> camera;
-    std::unique_ptr<fieldView> view;
+    /// the 2D view, and the 3D isometric one (empty when this machine cannot draw it)
+    std::unique_ptr<fieldView> flatView;
+    std::unique_ptr<fieldView> isoView;
+    /// the view the settings ask for, or the 2D one
+    fieldView &chosenView();
+    bool viewKeyDown = false;
+    /// F3 switches between the 2D and the 3D view, and keeps the choice in the settings
+    void handleViewKey();
     std::unique_ptr<hudView> hud;
     goe::timerHandle alTimer;
     goe::eventQueueHandle evQueue; // after the timer, so the queue goes first

@@ -24,6 +24,7 @@
 #include "difficulty.h"
 #include "elements.h"
 #include "flatFieldView.h"
+#include "isoFieldView.h"
 #include "fogLayer.h"
 #include "gameSerializer.h"
 #include "gameSettings.h"
@@ -107,11 +108,36 @@ bool presenter::loadCofiguredData()
     this->storyFont.reset(al_load_ttf_font(gcfg->FontFile.c_str(), storyFontSize, 0));
     this->splashFname = gcfg->splashScr;
     // one cell more than the screen all round, for the cells scrolling in
-    this->view = std::make_unique<flatFieldView>(coords(this->scrWidth + tile.x, this->scrHeight + tile.y),
-                                                 tile,
-                                                 gcfg->spacing,
-                                                 gcfg->fogBitmap);
+    this->flatView = std::make_unique<flatFieldView>(coords(this->scrWidth + tile.x, this->scrHeight + tile.y),
+                                                     tile,
+                                                     gcfg->spacing,
+                                                     gcfg->fogBitmap);
+    auto iso = std::make_unique<isoFieldView>(this->fieldPx, tile, gcfg->spacing, gcfg->fogBitmap);
+    if (iso->ready())
+        this->isoView = std::move(iso);
+    else
+        std::cout << "The 3D view cannot be drawn here, the 2D view is used\n";
     return true;
+}
+
+fieldView &presenter::chosenView()
+{
+    if (this->isoView && gameSettings::getInstance().getView() == gameSettings::fieldViewKind::iso)
+        return *this->isoView;
+    return *this->flatView;
+}
+
+void presenter::handleViewKey()
+{
+    auto &im = inputManager::getInstance();
+    const bool down = im.pressed_keys[ALLEGRO_KEY_F3];
+    if (down && !this->viewKeyDown) {
+        auto &settings = gameSettings::getInstance();
+        settings.setView(settings.getView() == gameSettings::fieldViewKind::iso ? gameSettings::fieldViewKind::flat
+                                                                                : gameSettings::fieldViewKind::iso);
+        settings.save(gameSettings::settingsFile);
+    }
+    this->viewKeyDown = down;
 }
 
 void presenter::showGameField()
@@ -127,7 +153,7 @@ void presenter::showGameField()
     al_clear_to_color(fogLayer::plainColour());
     const coords fieldAt(fieldMargin, fieldMargin / 2);
     this->hud->draw(player, fieldAt.x, fieldAt.y + this->fieldPx.y, this->fieldPx.x - 1);
-    this->view->draw({player, *this->camera, this->fieldCells, fieldAt, this->fieldPx});
+    this->chosenView().draw({player, *this->camera, this->fieldCells, fieldAt, this->fieldPx});
     this->drawStory();
     this->drawDemoNote();
     al_flip_display();
@@ -252,6 +278,7 @@ gameEnd presenter::presentEverything(bool demoMode, int demoSeconds)
                 inputManager::getInstance().setControlItem(this->pilot.decide(player::getActivePlayer()));
             } else
                 this->handleSaveKeys();
+            this->handleViewKey();
             if (!this->demo && inputManager::getInstance().takeExitRequest() && player::getActivePlayer()) {
                 // between ticks, so the save holds one consistent moment of the world
                 const std::string saveFile = gameSettings::getInstance().getSaveFile();

@@ -15,7 +15,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | [Rules](rules.md) | `difficulty`, `goe::music::byDifficulty`, `goe::music::cues`, `goe::rng`, `gameClock`, `goe::events`, `randomWordGen` |
 | [Saving](saving.md) | `gameSerializer`: saves, loads and chunk swap |
 | [The application](application.md) | `main.cpp`, `presenter`, `titleScreen`, `titleMenu`, `menuPad`, `bindings`, `inputManager`, `gameSettings`, `autopilot`, `hallOfFame`, `storyScroller`, `crashLog`, `goe::credits` |
-| [Seeing and hearing](media.md) | `viewPoint`, `fieldView`, `flatFieldView`, `fieldCamera`, `hudView`, `spritePainter`, `goe::sprites`, `fogLayer`, `fogMask`, Allegro handles, `videoManager`, `videoDriver`, `configManager`, `soundManager`, `soundSpace`, `performerStream`, the adaptive musician (`goe::musician`), the DJ (`goe::dj`) |
+| [Seeing and hearing](media.md) | `viewPoint`, `fieldView`, `flatFieldView`, `isoFieldView`, `goe::iso`, `fieldCamera`, `hudView`, `spritePainter`, `goe::sprites`, `fogLayer`, `fogMask`, Allegro handles, `videoManager`, `videoDriver`, `configManager`, `soundManager`, `soundSpace`, `performerStream`, the adaptive musician (`goe::musician`), the DJ (`goe::dj`) |
 
 ## Where each class lives
 
@@ -57,6 +57,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `goe::credits` | `include/musicCredits.h` | [application](application.md) |
 | `goe::events` | `include/gameEvents.h` | [rules](rules.md) |
 | `goe::hallOfFame` | `include/hallOfFame.h` | [application](application.md) |
+| `goe::iso::meshBuilder`, `shape`, `vertex` | `include/isoMesh.h` | [media](media.md) |
 | `goe::music::byDifficulty` | `include/difficultyMusic.h` | [rules](rules.md) |
 | `goe::dj::trackInfo`, `analyse`, `analyseFile` | `include/musicAnalysis.h` | [media](media.md) |
 | `goe::dj::mapSongs`, `planMix`, `mixPlan`, `analysisCache` | `include/autoDJ.h` | [media](media.md) |
@@ -82,6 +83,7 @@ What every class of the game does, grouped by module. The diagrams that go with 
 | `goldenApple` | `include/goldenApple.h` | [elements](elements.md) |
 | `hudView` | `include/hudView.h` | [media](media.md) |
 | `inputManager` | `include/inputManager.h` | [application](application.md) |
+| `isoFieldView` | `include/isoFieldView.h` | [media](media.md) |
 | `inventory` | `include/inventory.h` | [elements-core](elements-core.md) |
 | `key` | `include/key.h` | [elements](elements.md) |
 | `kiki` | `include/kiki.h` | [elements](elements.md) |

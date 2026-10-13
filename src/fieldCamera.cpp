@@ -23,8 +23,8 @@
 #include "fieldCamera.h"
 #include <algorithm>
 
-fieldCamera::fieldCamera(coords tileSize)
-    : tileSize(tileSize)
+fieldCamera::fieldCamera(coords tile)
+    : tileSize(tile)
 {}
 
 void fieldCamera::follow(coords centre, coords tilesOnScreen, std::optional<coords> boardSize)

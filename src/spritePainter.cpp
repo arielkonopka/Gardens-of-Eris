@@ -26,9 +26,9 @@
 #include "spriteFrame.h"
 #include "videoDriver.h"
 
-spritePainter::spritePainter(coords tileSize, int spacing)
-    : tileSize(tileSize)
-    , spacing(spacing)
+spritePainter::spritePainter(coords tile, int sheetSpacing)
+    : tileSize(tile)
+    , spacing(sheetSpacing)
 {}
 
 bool spritePainter::draw(const std::shared_ptr<bElem> &elem, coords cellPx, layer which, bool withMotion) const

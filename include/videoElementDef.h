@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "configManager.h"
+#include "isoMesh.h"
 
 
 
@@ -48,6 +49,8 @@ class videoElementDef
         coordVector destroying;
         coordVector fadingOut;
         coordVector fadingIn;
+        /// how it stands in the 3D view
+        goe::iso::shape shape = goe::iso::shape::standee;
         explicit videoElementDef(std::shared_ptr<ALLEGRO_BITMAP> sprites_);
         std::shared_ptr<ALLEGRO_BITMAP> sprites;
 };

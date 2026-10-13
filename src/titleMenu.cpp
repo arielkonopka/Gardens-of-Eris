@@ -159,6 +159,19 @@ titleMenu::titleMenu(gameSettings &edited, std::string file, std::function<bool(
         [this](int v) { this->settings.setMusicTempo(v); },
         gameSettings::minMusicTempo,
         gameSettings::maxMusicTempo));
+    // F3 switches it during the game too
+    this->options.push_back({"View",
+                             [this] {
+                                 return std::string(this->settings.getView() == gameSettings::fieldViewKind::iso
+                                                        ? "3D isometric"
+                                                        : "2D");
+                             },
+                             {},
+                             [this](int) {
+                                 this->settings.setView(this->settings.getView() == gameSettings::fieldViewKind::iso
+                                                            ? gameSettings::fieldViewKind::flat
+                                                            : gameSettings::fieldViewKind::iso);
+                             }});
     this->options.push_back({"Story scroller",
                              [this] { return std::string(this->settings.getStoriesShown() ? "On" : "Off"); },
                              {},

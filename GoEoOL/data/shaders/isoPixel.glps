@@ -1,0 +1,39 @@
+// The 3D field, fragment part. GLSL ES 1.00 compatible: no loops, no uniform arrays.
+// Clear pixels of a standing picture are dropped, so it keeps its outline with the depth buffer
+// on; the floor is laid over the board's colour; then the same fog as the 2D view is mixed in.
+#ifdef GL_ES
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+#endif
+
+uniform sampler2D al_tex;      // the sprite sheet
+uniform sampler2D fogMask;     // how much is seen, painted on the CPU, filtered linearly
+uniform sampler2D fogPattern;  // what shows where nothing is seen, tiled over the world
+uniform vec4 patternMap;
+uniform float minVisibility;
+uniform vec3 boardColour;      // under the floor's see-through pictures
+varying vec4 varying_color;
+varying vec2 varying_texcoord;
+varying vec2 varying_maskcoord;
+varying vec2 varying_patterncoord;
+
+void main()
+{
+    vec4 sprite = texture2D(al_tex, varying_texcoord);
+    // vertex alpha 1: cut the clear pixels out; 0: lay the picture over the board's colour
+    if (varying_color.a > 0.5) {
+        if (sprite.a < 0.5)
+            discard;
+    } else
+        sprite.rgb = mix(boardColour, sprite.rgb, sprite.a);
+    float seen = max(minVisibility, texture2D(fogMask, varying_maskcoord).r);
+    vec2 tile = fract(varying_patterncoord);
+    vec4 fog = texture2D(fogPattern, vec2(tile.x * patternMap.z, (1.0 - tile.y) * patternMap.w));
+    // in the fog the faces keep only a hint of their light: the maze is about as hidden as in 2D
+    float light = varying_color.r;
+    vec3 hidden = fog.rgb * (0.85 + 0.15 * light);
+    gl_FragColor = vec4(mix(hidden, sprite.rgb * light, seen), 1.0);
+}

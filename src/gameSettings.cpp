@@ -220,6 +220,8 @@ bool gameSettings::load(const std::string &file)
         this->setMusicVariety(doc["musicVariety"].GetInt());
     if (doc.HasMember("musicTempo") && doc["musicTempo"].IsInt())
         this->setMusicTempo(doc["musicTempo"].GetInt());
+    if (doc.HasMember("view") && doc["view"].IsString())
+        this->setView(viewNamed(doc["view"].GetString()));
     if (doc.HasMember("storyScroller") && doc["storyScroller"].IsBool())
         this->setStoriesShown(doc["storyScroller"].GetBool());
     if (doc.HasMember("storiesFile") && doc["storiesFile"].IsString()) {
@@ -259,6 +261,8 @@ bool gameSettings::save(const std::string &file) const
     w.Int(this->getMusicVariety());
     w.Key("musicTempo");
     w.Int(this->getMusicTempo());
+    w.Key("view");
+    w.String(nameOf(this->getView()));
     w.Key("storyScroller");
     w.Bool(this->getStoriesShown());
     w.Key("storiesFile");
@@ -305,6 +309,7 @@ void gameSettings::resetToDefaults()
     this->musicStyle = goe::musician::genre::mixed;
     this->musicVariety = 60;
     this->musicTempo = 100;
+    this->view = fieldViewKind::flat;
     this->storiesShown = true;
     this->storiesFile = defaultStoriesFile;
     this->demoWait = 60;

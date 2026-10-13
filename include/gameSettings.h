@@ -89,6 +89,15 @@ public:
     void setMusicVariety(int percent);
     void setMusicTempo(int percent);
 
+    /// how the game field is drawn: flat sprites from above, or the 3D isometric view
+    enum class fieldViewKind { flat, iso };
+    fieldViewKind getView() const { return this->view; }
+    void setView(fieldViewKind v) { this->view = v; }
+    /// the name settings.json keeps: "2D" or "3D"
+    static const char *nameOf(fieldViewKind v) { return v == fieldViewKind::iso ? "3D" : "2D"; }
+    /// the view of a name; anything unknown is the 2D view
+    static fieldViewKind viewNamed(const std::string &name) { return name == "3D" ? fieldViewKind::iso : fieldViewKind::flat; }
+
     /// the story line over the game field (storyScroller.h): on or off, and the file it tells from
     static constexpr const char *defaultStoriesFile = "data/txt/stories.json";
     bool getStoriesShown() const { return this->storiesShown; }
@@ -129,6 +138,7 @@ private:
     std::atomic<goe::musician::genre> musicStyle{}; ///< Mixed
     std::atomic<int> musicVariety = 60;
     std::atomic<int> musicTempo = 100;
+    std::atomic<fieldViewKind> view = fieldViewKind::flat;
     std::atomic<bool> storiesShown = true;
     std::atomic<int> demoWait = 60;
     std::atomic<int> demoLength = 30;

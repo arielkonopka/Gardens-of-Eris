@@ -16,6 +16,27 @@ whole cells the field shows, and where on the target it goes. Each way of lookin
 one implementation:
 - `flatFieldView`: the sprites seen from above, still elements first, then the ones on the move,
   the avatar last, all drawn into a scene bitmap and shown through the `fogLayer`.
+- `isoFieldView`: the 3D isometric view. Each frame it builds the mesh of the cells the camera
+  sees (`goe::iso::meshBuilder`), places it from the corner of a window around the camera so the
+  numbers stay small, and draws it in one `al_draw_prim` call into a bitmap with a depth buffer.
+  The camera looks from the south west at 35.26 degrees (true isometric), orthographic, `zoom`
+  screen pixels per tile pixel. Blocks between the avatar and the camera are cut low. Its shader
+  (`data/shaders/isoVertex.glvs`, `isoPixel.glps`, GLSL ES compatible) cuts out the clear pixels
+  of standing pictures, lays the floor over the board's colour and mixes in the fog from the same
+  `fogLayer` mask and pattern as the 2D view. `ready()` is false when the depth buffer or the
+  shader cannot be made, and then the 2D view is used.
+
+The game loop picks the view from `gameSettings::getView()` each frame; F3 switches it.
+
+## `goe::iso` (`isoMesh.h`)
+
+The 3D field's geometry in world space: one unit is a cell, x east, y south, z up. It knows
+nothing about cameras or screens, so the same mesh can be drawn by any camera (one per eye in VR).
+`shape` is how an element stands: `ground`, `block`, `standee` or `flat`, from `Shape` in
+`skins.json` (`parseShape`) or `defaultShape(type)`; `videoElementDef::shape` holds it.
+`meshBuilder(eyeX, eyeY)` collects triangles (`vertex`: position, sheet pixel, light, `backdrop`);
+standees turn to face the eye direction and block sides facing away are left out. Faces are lit by
+direction (`light`): tops brightest, the sides darker.
 
 `fieldCamera` is which part of the board is shown. `follow(centre, cells, boardSize)` moves it
 `step` (8) pixels a frame towards the window centred on `centre`, so the view glides; a bounded
