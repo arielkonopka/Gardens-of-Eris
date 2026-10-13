@@ -61,9 +61,13 @@ The older coordinates class with private x, y and an optional z. It converts to 
 
 ## `dir::direction` (enum class, `commons.h`)
 
-`UP = 0`, `LEFT = 1`, `DOWN = 2`, `RIGHT = 3`, `NODIRECTION = 4`. The namespace also holds
-`allDirections`, `allDirectionsOpposite`, `dirToCoords(d)` (UP is `(0, -1)`) and
-`getOppositeDirection(d)`. Turning by one is `(d + 1) % 4` to the left.
+`UP = 0`, `LEFT = 1`, `DOWN = 2`, `RIGHT = 3`, `NODIRECTION = 4`, then the diagonals `UPLEFT = 5`,
+`DOWNLEFT = 6`, `DOWNRIGHT = 7`, `UPRIGHT = 8` (they came later, so saves and the agent kept the
+old numbers). The namespace also holds `allDirections` (the four sides and none, for neighbour
+loops), `sides` (the four), `ways` (all eight, anticlockwise from up), `allDirectionsOpposite`,
+`dirToCoords(d)` (UP is `(0, -1)`), `getOppositeDirection(d)`, `isDiagonal(d)`, `turned(d, eighths)`
+(anticlockwise seen from above; never use `% 4` arithmetic), `towards(offset)` (the way along an
+offset's signs) and `across(d)` / `along(d)` (a diagonal's left-right and up-down parts).
 
 ## `controlItem` (struct, `commons.h`)
 

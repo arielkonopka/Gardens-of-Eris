@@ -36,9 +36,10 @@ namespace goe::roam {
 /// which side a creature keeps the wall on while it roams
 enum class hand { right, left };
 
-constexpr dir::direction leftOf(dir::direction d) { return (dir::direction) (((int) d + 1) % 4); }
-constexpr dir::direction rightOf(dir::direction d) { return (dir::direction) (((int) d + 3) % 4); }
-constexpr dir::direction behind(dir::direction d) { return (dir::direction) (((int) d + 2) % 4); }
+/// a quarter turn to the left, to the right, and a half turn (diagonals turn too)
+constexpr dir::direction leftOf(dir::direction d) { return dir::turned(d, 2); }
+constexpr dir::direction rightOf(dir::direction d) { return dir::turned(d, -2); }
+constexpr dir::direction behind(dir::direction d) { return dir::turned(d, 4); }
 
 /// turns the body to face d and makes it wait, without moving
 void turn(const std::shared_ptr<bElem> &body, dir::direction d);

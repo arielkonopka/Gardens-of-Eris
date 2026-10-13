@@ -201,9 +201,8 @@ bool player::mechanics()
         break;
     case 4:
         if (this->dragInDirection(currentCtrlItem.dir)) {
-            this->getStats()->setFacing(
-                (dir::direction)(((int) this->getStats()->getMyDirection() + 2)
-                                 % 4)); /* we face backwards while dragging */
+            /* we face backwards while dragging */
+            this->getStats()->setFacing(dir::getOppositeDirection(this->getStats()->getMyDirection()));
         } else if (this->moveInDirection(currentCtrlItem.dir)) {
             this->getStats()->setFacing(this->getStats()->getMyDirection());
         }

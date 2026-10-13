@@ -76,8 +76,10 @@ bool plainMissile::mechanics()
         return true;
     }
     if (myel->getAttrs()->isSteppable()) {
-        this->moveInDirectionSpeed(this->getStats()->getMyDirection(),
-                                   GoEConstants::_plainMissileSpeed);
+        // flying diagonally into a corner closed on both sides, it hits the corner like a wall
+        if (!this->moveInDirectionSpeed(this->getStats()->getMyDirection(),
+                                        GoEConstants::_plainMissileSpeed))
+            this->kill();
         return true;
     }
     if (myel->getAttrs()->isKillable()) {

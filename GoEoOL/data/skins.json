@@ -1081,7 +1081,7 @@
      {
         "Type": 201,
         "Name": "plainMissile",
-        "Model": { "File": "data/models/kaykit-adventurers/arrow.gltf", "Tip": -90, "Scale": 1.6, "Lift": 0.35, "Turns": true },
+        "Model": { "File": "data/models/kaykit-adventurers/arrow.gltf", "Tip": 90, "Scale": 1.6, "Lift": 0.35, "Turns": true },
         "AnimDef": [ [
       [ [ 2, 3 ], [ 3, 3 ] ],
       [ [ 1, 3 ], [ 0, 3 ] ],
@@ -1115,7 +1115,7 @@
      {
         "Type": 205,
         "Name": "bazookaMissile",
-        "Model": { "File": "data/models/kaykit-skeletons/Skeleton_Arrow.gltf", "Tip": -90, "Scale": 1.8, "Lift": 0.35, "Turns": true, "Tint": [1, 0.6, 0.3] },
+        "Model": { "File": "data/models/kaykit-skeletons/Skeleton_Arrow.gltf", "Tip": 90, "Scale": 1.8, "Lift": 0.35, "Turns": true, "Tint": [1, 0.6, 0.3] },
         "AnimDef": [ [
         [ [ 13, 3 ] ],
         [ [ 14, 2 ] ],

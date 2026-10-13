@@ -99,6 +99,7 @@ Which keys and pad buttons do what; the Controls screen edits it and `settings.j
   `use`, `drop`, `giveUp`, `saveAndExit`. `binding`: up to `maxKeys` (2) keys and one pad button.
 - `bindKey`, `bindPadButton`, `clear`, `of(action)`: a key belongs to one action only.
 - `translate(inputState)`: what the held keys, buttons and stick ask for, as a `controlItem`.
+  Up or down held with left or right makes a diagonal.
 - `label`, `id`, `fromId`, `keyName`, `describe`: names for menus and the settings file.
 
 ## `inputManager` (`inputManager.h`)
@@ -106,7 +107,9 @@ Which keys and pad buttons do what; the Controls screen edits it and `settings.j
 A singleton with its own input thread reading the keyboard and the pad.
 
 - `getCtrlItem()`, `setControlItem(item)`: the control item the player reads (the autopilot and the
-  agent library set it directly).
+  agent library set it directly). A way first pressed from standing still is held back for
+  `diagonalGrace` (40 ms), so two keys pressed almost together make a diagonal; an item set in
+  code is never held back.
 - `takeExitRequest()`: whether Save and exit went down since the last call.
 - `activity()`: counts presses (keys, pad buttons, stick pushes); the demo ends when it changes.
 - `getInstance(true)`: test mode, with no keyboard, joystick or thread (unit tests and the agent).

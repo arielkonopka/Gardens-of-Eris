@@ -56,6 +56,8 @@ std::optional<coords> frame(const bElem &elem, const videoElement::videoElementD
     const auto &kind = def.defArray[(std::size_t) floorMod(elem.getAttrs()->getSubtype(), (int) def.defArray.size())];
     if (kind.empty())
         return std::nullopt;
-    return phaseOf(kind[(std::size_t) floorMod((int) stats.getFacing(), (int) kind.size())], phase);
+    // sprites are drawn for the four sides; one going diagonally looks the way it goes across
+    const int facing = (int) dir::across(stats.getFacing());
+    return phaseOf(kind[(std::size_t) floorMod(facing, (int) kind.size())], phase);
 }
 } // namespace goe::sprites

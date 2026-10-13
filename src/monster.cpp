@@ -21,6 +21,8 @@
  */
 #include "monster.h"
 #include "roam.h"
+#include "chamber.h"
+#include "motion.h"
 
 bool monster::additionalProvisioning(int subtype)
 {
@@ -55,9 +57,13 @@ int monster::getType() const
 bool monster::checkNeigh()
 {
     bool r = false;
-    for (auto d : dir::allDirections) {
+    auto board = this->getBoard();
+    if (!board)
+        return false;
+    // all eight ways; nothing passes a corner closed on both sides, not even a monster's eye
+    for (auto d : dir::ways) {
         auto e = this->getElementInDirection(d);
-        if (!e)
+        if (!e || !motion::cornerOpen(*board, this->getStats()->getMyPosition(), d))
             continue;
 #ifdef _VerbousMode_
         std::cout << "  ** CHK isCollectible\n";
@@ -132,7 +138,8 @@ bool monster::checkNeigh()
                     return goe::roam::step(shared_from_this(), d);
                 }
                 // we do not see behind non steppable objects
-                if (!e->getAttrs()->isSteppable() || e->getElementInDirection(d) == nullptr)
+                if (!e->getAttrs()->isSteppable() || e->getElementInDirection(d) == nullptr
+                    || !motion::cornerOpen(*board, e->getStats()->getMyPosition(), d))
                     break;
                 e = e->getElementInDirection(d);
             }

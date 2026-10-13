@@ -287,14 +287,7 @@ Coords::Coords(coords coords1)
 
 Coords Coords::dir2coords(dir::direction dir)
 {
-    const std::array<Coords, 5> directionToCoordsMap = {
-        Coords(0, -1), // UP
-        Coords(-1, 0), // LEFT
-        Coords(0, 1),  // DOWN
-        Coords(1, 0),  // RIGHT
-        Coords(0, 0),  //NOP
-    };
-    return directionToCoordsMap[static_cast<int>(dir)];
+    return Coords(dir::dirToCoords(dir));
 }
 
 }; // namespace myUtility

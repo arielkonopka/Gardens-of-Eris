@@ -558,6 +558,8 @@ TEST(RegressionTests, MonstersWalkToWhatTheySee)
 {
     std::shared_ptr<bElem> plr;
     auto mc = roomWithPlayer(coords(15, 5), plr);
+    // out of the monster's eight lines of sight on its way, so it does not stop to shoot
+    plr->stepOnElement(mc->getElement(14, 0));
     auto mon = elementFactory::generateAnElement<monster>(mc, 0);
     mon->stepOnElement(mc->getElement(3, 3));
     auto pile = elementFactory::generateAnElement<rubbish>(mc, 0);
@@ -574,6 +576,8 @@ TEST(RegressionTests, MonstersOpenDoorsTheyHaveKeysFor)
 {
     std::shared_ptr<bElem> plr;
     auto mc = roomWithPlayer(coords(15, 5), plr);
+    // out of the monster's eight lines of sight on its way, so it does not stop to shoot
+    plr->stepOnElement(mc->getElement(14, 0));
     auto mon = elementFactory::generateAnElement<monster>(mc, 0);
     mon->stepOnElement(mc->getElement(3, 3));
     ASSERT_TRUE(mon->collect(elementFactory::generateAnElement<key>(mc, 2)));

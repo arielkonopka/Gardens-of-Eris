@@ -3,6 +3,7 @@
 #include "chamber.h"
 #include "inventory.h"
 #include "lineOfSight.h"
+#include "motion.h"
 #include "randomStreams.h"
 #include <algorithm>
 #include <array>
@@ -10,8 +11,7 @@
 
 namespace goe {
 namespace {
-constexpr std::array<dir::direction, 4> ways = {dir::direction::UP, dir::direction::LEFT, dir::direction::DOWN,
-                                                dir::direction::RIGHT};
+using dir::ways;
 
 bool isPrey(const bElem &e)
 {
@@ -40,7 +40,7 @@ std::optional<dir::direction> autopilot::target(const std::shared_ptr<bElem> &pl
     for (auto d : ways)
         for (int step = 1; step <= shootingRange; step++) {
             const auto e = board->getElement(me + dir::dirToCoords(d) * step);
-            if (!e)
+            if (!e || !motion::cornerOpen(*board, me + dir::dirToCoords(d) * (step - 1), d))
                 break;
             if (isPrey(*e))
                 return d;
@@ -69,7 +69,7 @@ controlItem autopilot::decide(const std::shared_ptr<bElem> &plr)
     std::vector<dir::direction> open;
     for (auto d : ways) {
         const auto e = plr->getElementInDirection(d);
-        if (!e)
+        if (!e || !motion::cornerOpen(*plr->getBoard(), me, d))
             continue;
         if (e->getAttrs()->isCollectible())
             return controlItem(0, d);

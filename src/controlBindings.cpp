@@ -104,17 +104,20 @@ bool bindings::held(const inputState &in, action a) const
 controlItem bindings::translate(const inputState &in) const
 {
     int type = -1;
-    dir::direction d = dir::direction::NODIRECTION;
-    // the later direction wins when several are held, as it always did
-    const std::pair<action, dir::direction> walks[] = {{action::up, dir::direction::UP},
-                                                       {action::down, dir::direction::DOWN},
-                                                       {action::left, dir::direction::LEFT},
-                                                       {action::right, dir::direction::RIGHT}};
-    for (auto [a, wd] : walks)
-        if (this->held(in, a)) {
-            type = 0;
-            d = wd;
-        }
+    // up or down and left or right held together make a diagonal; of two opposite ones, the later
+    // in this list wins, as it always did
+    coords way(0, 0);
+    if (this->held(in, action::up))
+        way.y = -1;
+    if (this->held(in, action::down))
+        way.y = 1;
+    if (this->held(in, action::left))
+        way.x = -1;
+    if (this->held(in, action::right))
+        way.x = 1;
+    const dir::direction d = dir::towards(way);
+    if (d != dir::direction::NODIRECTION)
+        type = 0;
     if (this->held(in, action::shoot) && type >= 0)
         type = 1;
     if (this->held(in, action::interact) && type >= 0)

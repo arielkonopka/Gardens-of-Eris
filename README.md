@@ -63,11 +63,13 @@ The hall of fame keeps the ten best games, kept in `halloffame.json` in the save
 
 Each time the maze grows by a new chunk, a random Discordian story scrolls along the top of the screen, unless one is still scrolling. Config switches the story scroller on or off and picks the stories file: Left and Right step through the files next to it (`data/txt/stories.json` in English, `stories.pl.json` in Polish, `stories.ro.json` in Romanian), or type the path of your own. A stories file is a JSON list of `{"title": "...", "body": "..."}`.
 
+Everything that moves can go diagonally: you, monsters, drones, missiles and pushed bricks. A diagonal step passes between the two cells beside it, and it is blocked only when both of them are, so you can round a corner but never slip between two walls that touch at a corner. Shots fly diagonally too (Shift with two directions), and so do bunkers' eyes and the hunters that chase you.
+
 These are the default keys. Config, Controls lets you choose other keys (two per action) and a pad button for each action: pick the action, then press the new key or pad button. Backspace leaves an action without keys, and Reset to defaults brings this layout back. The pad's stick always walks.
 
 | Key | What it does |
 |---|---|
-| Arrows or W A S D | walk |
+| Arrows or W A S D | walk; two together (Up and Left, say) walk diagonally |
 | Shift + direction | shoot the selected gun |
 | Ctrl + direction | interact with, or pick up, what is next to you |
 | Alt + direction | drag what is behind you |
@@ -431,6 +433,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Eight-way movement: everything that moves can go diagonally (two keys at once, or the stick or d-pad between two ways). A diagonal step is blocked only when both cells beside it are, so walls touching at a corner still seal the maze. Missiles fly diagonally, bunkers look along eight lines, chasers walk, bite and shoot diagonally, the demo's autopilot uses all eight ways; wall followers keep to the four sides. Sprites face the way they go across; 3D models turn to the diagonal (and arrows no longer fly tail first). The agent library gains `MOVE_UP_LEFT` ... `SHOOT_DOWN_RIGHT` (before `GIVE_UP`), and directions 5 to 8 in its features.
 * The refresher: a shot golden apple turns into a refresher (type 901, a green bottle) instead of a broken apple. Old saves load their broken apples as refreshers. Golden apples are the apple from DataBrace's Fruit Pack 01 (CC0), painted gold; `tools/models/blend-to-glb.py` exports a pack that comes only as a `.blend`.
 * A broken golden apple that blows up in an inventory now blows up where its carrier stands and takes the carrier with it. Before, the carrier lived on, and an apple that had no board kept sitting in the inventory, drained, still feeding its carrier.
 * More 3D models: golden apples are coin stacks, guns are crossbows firing arrows, bombs, landmines, drones (space trucks), bunkers, security cameras, puppet masters (spellbooks) and teleporters (landing pads) come from the KayKit adventurers, skeletons, space base and prototype packs (CC0); bouba and kiki are shapes made in code. `Tip` and `builtin:` in `Model`, and the `goe-gallery` tool.

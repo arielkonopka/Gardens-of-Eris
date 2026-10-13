@@ -4,6 +4,7 @@
 #include "randomLevelGenerator.h"
 #include "difficultyMusic.h"
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <memory>
 
 namespace {
@@ -186,7 +187,8 @@ TEST(DifficultyTests, HoundComesForACampingPlayerAndGivesUpWhenTheyLeave)
     for (int c = 0; c < 250; c++)
         bElem::runLiveElements();
     auto h = hound->getStats()->getMyPosition(), p = plr->getStats()->getMyPosition();
-    EXPECT_EQ(std::abs(h.x - p.x) + std::abs(h.y - p.y), 1);
+    // next to the player, by a side or a corner: chasers go and bite diagonally too
+    EXPECT_EQ(std::max(std::abs(h.x - p.x), std::abs(h.y - p.y)), 1);
     EXPECT_TRUE(p == coords(u + 20, 20)) << "the hound must bite, not push the player away";
     EXPECT_LT(plr->getAttrs()->getEnergy(), energy);
 

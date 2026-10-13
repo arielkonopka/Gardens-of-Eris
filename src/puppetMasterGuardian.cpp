@@ -52,7 +52,9 @@ bool puppetMasterGuardian::fight(std::shared_ptr<bElem> body, std::shared_ptr<bE
     if (this->bite(body, prey, meleeDamage))
         return true;
     coords b = body->getStats()->getMyPosition(), p = prey->getStats()->getMyPosition();
-    if ((p.x == b.x || p.y == b.y) && this->gun && !this->gun->getStats()->isWaiting()) {
+    // on a line the gun can shoot along: a side or a diagonal
+    const bool inLine = p.x == b.x || p.y == b.y || std::abs(p.x - b.x) == std::abs(p.y - b.y);
+    if (inLine && this->gun && !this->gun->getStats()->isWaiting()) {
         goe::roam::turn(body, towards(b, p));
         this->gun->use(body);
         return true;

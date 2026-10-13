@@ -63,8 +63,8 @@ const std::array elements = {
     feature{"fading_in", "ticks left of fading in", [](bElem &e) { return ticksLeft(e.getStats()->getFadingIn()); }},
     feature{"fading_out", "ticks left of fading out", [](bElem &e) { return ticksLeft(e.getStats()->getFadingOut()); }},
     feature{"interacting", "ticks left of an interaction", [](bElem &e) { return ticksLeft(e.getStats()->getInteracted()); }},
-    feature{"facing", "where it faces (0 up, 1 left, 2 down, 3 right, 4 none)", [](bElem &e) { return (float) e.getStats()->getFacing(); }, 4.0f},
-    feature{"direction", "where it moves (0 up, 1 left, 2 down, 3 right, 4 none)", [](bElem &e) { return (float) e.getStats()->getMyDirection(); }, 4.0f},
+    feature{"facing", "where it faces (0 up, 1 left, 2 down, 3 right, 4 none, 5 up-left, 6 down-left, 7 down-right, 8 up-right)", [](bElem &e) { return (float) e.getStats()->getFacing(); }, 4.0f},
+    feature{"direction", "where it moves (0 up, 1 left, 2 down, 3 right, 4 none, 5 up-left, 6 down-left, 7 down-right, 8 up-right)", [](bElem &e) { return (float) e.getStats()->getMyDirection(); }, 4.0f},
     feature{"items", "how many things it carries", [](bElem &e) { return (float) itemsHeld(e); }},
     feature{"stack", "how many elements lie under it on its cell", [](bElem &e) { return (float) stackBelow(e); }},
     feature{"below_type", "type of the element right under it; -1 for none", [](bElem &e) {

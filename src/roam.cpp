@@ -65,6 +65,8 @@ bool followWall(const std::shared_ptr<bElem> &body, hand side, coords centre, in
     dir::direction cdir = body->getStats()->getMyDirection();
     if (cdir == dir::direction::NODIRECTION)
         cdir = dir::direction::UP;
+    // the wall rule walks the four sides; coming off a diagonal (a chase), it keeps going across
+    cdir = dir::across(cdir);
     // the wall side, and the other one
     const dir::direction wallSide = side == hand::right ? rightOf(cdir) : leftOf(cdir);
     const dir::direction openSide = side == hand::right ? leftOf(cdir) : rightOf(cdir);

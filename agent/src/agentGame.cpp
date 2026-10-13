@@ -49,6 +49,14 @@ constexpr std::array<actionInfo, actionCount> actionTable = {{
     {"NEXT_GUN", {5, dir::direction::NODIRECTION}},
     {"USE", {8, dir::direction::NODIRECTION}},
     {"DROP", {9, dir::direction::NODIRECTION}},
+    {"MOVE_UP_LEFT", {0, dir::direction::UPLEFT}},
+    {"MOVE_UP_RIGHT", {0, dir::direction::UPRIGHT}},
+    {"MOVE_DOWN_LEFT", {0, dir::direction::DOWNLEFT}},
+    {"MOVE_DOWN_RIGHT", {0, dir::direction::DOWNRIGHT}},
+    {"SHOOT_UP_LEFT", {1, dir::direction::UPLEFT}},
+    {"SHOOT_UP_RIGHT", {1, dir::direction::UPRIGHT}},
+    {"SHOOT_DOWN_LEFT", {1, dir::direction::DOWNLEFT}},
+    {"SHOOT_DOWN_RIGHT", {1, dir::direction::DOWNRIGHT}},
     {"GIVE_UP", {6, dir::direction::NODIRECTION}},
 }};
 

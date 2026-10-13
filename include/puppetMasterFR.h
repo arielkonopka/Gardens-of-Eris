@@ -80,10 +80,13 @@ protected:
     bool followTrail(std::shared_ptr<bElem> body, bool preyInSight, coords centre, int radius);
     /// where the player was last seen; NOCOORDS when the trail is cold
     coords lastSeen = NOCOORDS;
-    /// the one of the four directions that points most directly from one cell to another
+    /// the one of the eight directions that points most directly from one cell to another
     static dir::direction towards(coords from, coords to);
+    /// whether two cells touch, by a side or by a corner a move could pass (motion::cornerOpen)
+    static bool touching(const chamber &board, coords a, coords b);
     /**
-     * first step of a shortest walk from the body to goal, over steppable cells, never leaving
+     * first step of a shortest walk from the body to goal, over steppable cells, diagonals
+     * included where a diagonal move may pass (motion::cornerOpen), never leaving
      * the circle of radius around centre; NODIRECTION when there is no such walk.
      * Reaching a cell next to goal counts, so goal itself may be solid (a player, a wall).
      */

@@ -39,6 +39,8 @@
 #include <memory>
 #include <allegro5/allegro5.h>
 #include <thread>
+#include <atomic>
+#include <chrono>
 
 /** \brief This class is responsible for all user input, keys, mouse clicks, touches, pad clicks, etc...
  *
@@ -51,7 +53,13 @@ class inputManager
 {
 public:
 
+    /**
+     * what the player asks for now. A way first pressed from standing still is held back for
+     * diagonalGrace, so two keys pressed almost together make a diagonal, not a step to the side
+     * first; a command set in code (setControlItem: the demo, an agent) is never held back
+     */
     controlItem getCtrlItem();
+    static constexpr std::chrono::milliseconds diagonalGrace{40};
     void setControlItem(controlItem item);
     virtual ~inputManager();
     bool pressed_keys[ALLEGRO_KEY_MAX];
@@ -77,6 +85,9 @@ private:
     goe::controls::inputState held; ///< keys, pad buttons and stick, as the input thread last saw them
     std::atomic<bool> exitRequest=false; ///< set by the input thread, taken by the game thread
     std::atomic<std::uint64_t> presses=0; ///< written by the input thread, read by the game thread
+    /// when a way was first held after none was, on the steady clock
+    std::atomic<std::chrono::steady_clock::time_point> firstWay{};
+    std::atomic<bool> scripted=false; ///< the item was set in code, not by the player
 
     static std::once_flag once;
     goe::eventQueueHandle evQueue;

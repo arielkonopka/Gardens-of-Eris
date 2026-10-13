@@ -38,7 +38,10 @@ enum class action : int {
     interactUp, interactDown, interactLeft, interactRight,
     dragUp, dragDown, dragLeft, dragRight,
     nextItem, nextGun, use, drop,
-    giveUp, ///< only when config::allowGiveUp: the avatar dies
+    // the diagonals came later, so the actions above kept their numbers
+    moveUpLeft, moveUpRight, moveDownLeft, moveDownRight,
+    shootUpLeft, shootUpRight, shootDownLeft, shootDownRight,
+    giveUp, ///< only when config::allowGiveUp: the avatar dies; always the last
     count
 };
 constexpr int actionCount = (int) action::count;

@@ -34,8 +34,11 @@ std::shared_ptr<bElem> puppetMasterCollector::firstSolidInDirection(std::shared_
 bool puppetMasterCollector::drive(std::shared_ptr<bElem> body)
 {
     dir::direction cdir = body->getStats()->getMyDirection();
-    for (int c = 0; c < 4; c++) {
-        auto d = (dir::direction) (((int) cdir + c) % 4);
+    if (cdir == dir::direction::NODIRECTION)
+        cdir = dir::direction::UP;
+    // looks all eight ways, ahead first
+    for (int c = 0; c < 8; c++) {
+        auto d = dir::turned(cdir, c);
         auto seen = this->firstSolidInDirection(body, d);
         if (!seen || !seen->getAttrs()->isCollectible() || !seen->collectibleBy(*body))
             continue;
