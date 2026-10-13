@@ -175,13 +175,27 @@ float explosives::getViewRadius() const
 bool explosives::explode(float blastRadius)
 {
     this->radius = blastRadius * (float) 2.5;
-    this->brd = this->getBoard();
-    if (!brd || this->getStats()->isDestroying() || this->getStats()->isDisposed())
+    if (this->getStats()->isDestroying() || this->getStats()->isDisposed())
+        return false;
+    // blowing up in an inventory: the blast is where the carrier stands, and takes it along
+    const std::shared_ptr<bElem> carrier
+        = this->getStats()->isCollected() ? this->getStats()->getCollector().lock() : nullptr;
+    const std::shared_ptr<bElem> centre = carrier ? carrier : shared_from_this();
+    this->brd = centre->getBoard();
+    if (!brd || centre->getStats()->getMyPosition() == NOCOORDS)
         return false;
     // heard from where the blast is, while the element is still on the board
-    goe::sound::play(*this, "Explosives", "Explode");
-    viewPoint::get_instance().addViewPoint(shared_from_this());
-    myUtility::Coords mpos = myUtility::Coords(this->getStats()->getMyPosition());
+    goe::sound::play(*centre, "Explosives", "Explode");
+    viewPoint::get_instance().addViewPoint(centre);
+    myUtility::Coords mpos = myUtility::Coords(centre->getStats()->getMyPosition());
+    if (carrier) {
+        [[maybe_unused]] const auto self = this->removeElement(); // out of the inventory, kept alive
+        this->collectOnAction(false, carrier);
+        {
+            goe::events::blame by(this->getStats()->getStatsOwner().lock().get());
+            carrier->destroy();
+        }
+    }
     bElem::destroy();
     viewPoint::get_instance().addViewPoint(brd->getElement(mpos));
     traverser(mpos,

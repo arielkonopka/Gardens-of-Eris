@@ -101,7 +101,7 @@ The game writes a crash report, `crash-<date>-<time>.log`, into the save folder 
 | Floor, wall | The maze itself. Floors come in a few looks; walls stand until they don't. |
 | Brick cluster | Can't be killed, but can be pushed around and blown up. Also used to block passages instead of a door. |
 | Door and key | A door opens for a key of its colour. Rooms are often locked, and the key is usually placed somewhere else. |
-| Golden apple | The thing you are here for. Shoot one and it becomes a healing item that drains itself and finally explodes in your inventory. |
+| Golden apple | The thing you are here for. Shoot one and it becomes a healing item that drains itself and finally explodes in your inventory, taking you with it. |
 | Plain gun, bazooka | Weapons to pick up. Shooting fast makes weaker shots. |
 | Simple bomb | Explodes when shot or hit by another explosion. |
 | Landmine | Looks almost like floor: a pentagon plate with the Sacred Chao on it. Goes off when anything steps on it and takes that thing with it. Only the maze further from the start has them, and the further out, the more. |
@@ -430,6 +430,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* A broken golden apple that blows up in an inventory now blows up where its carrier stands and takes the carrier with it. Before, the carrier lived on, and an apple that had no board kept sitting in the inventory, drained, still feeding its carrier.
 * More 3D models: golden apples are coin stacks, guns are crossbows firing arrows, bombs, landmines, drones (space trucks), bunkers, security cameras, puppet masters (spellbooks) and teleporters (landing pads) come from the KayKit adventurers, skeletons, space base and prototype packs (CC0); bouba and kiki are shapes made in code. `Tip` and `builtin:` in `Model`, and the `goe-gallery` tool.
 * 3D models in the 3D view: walls, floor, doors, keys, crates and rubbish are real models from KayKit Dungeon Remastered (CC0). Walls join their neighbours, doors stand across their corridor and show the doorway when open, keys float in their colour. `Model` in skins.json picks a glTF file per element (subtype and facing too); everything else is drawn as before.
 * A 3D isometric view (Config, View, or F3 in the game): walls are blocks, the floor is a plane, creatures and things stand up as pictures, all seen by an isometric camera from the south west, with the same skin and the same fog as the 2D view. Walls between the camera and your avatar are cut low, so you are never hidden. `Shape` in skins.json picks how each element stands. Under the hood the game loop now draws the field through one view interface (2D or 3D), the HUD has its own class, and a 3D view for VR later only needs another camera.
