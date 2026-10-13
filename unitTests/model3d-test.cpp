@@ -23,6 +23,7 @@
 
 #include "configManager.h"
 #include "model3d.h"
+#include "rig.h"
 #include <cmath>
 #include <filesystem>
 #include <fstream>
@@ -204,6 +205,18 @@ TEST(Model3d, ReadsModelEntriesFromSkins)
     EXPECT_TRUE(specsOf("12").empty());
 }
 
+TEST(Model3d, ReadsTheClipsOfAnAnimatedModel)
+{
+    const auto still = specsOf(R"({"File": "a.glb"})");
+    EXPECT_FALSE(still[0].animated());
+    const auto s = specsOf(R"({"File": "a.glb", "Animations": {"Walk": "Walking_A", "Death": "Death_B", "Fly": "x"}})");
+    ASSERT_EQ(s.size(), 1u);
+    EXPECT_TRUE(s[0].animated());
+    EXPECT_EQ(s[0].moves[(std::size_t) goe::models::move::idle], "");
+    EXPECT_EQ(s[0].moves[(std::size_t) goe::models::move::walk], "Walking_A");
+    EXPECT_EQ(s[0].moves[(std::size_t) goe::models::move::death], "Death_B");
+}
+
 TEST(Model3d, TipsAStandingModelOverAndSetsItOnTheFloor)
 {
     // a stick standing up from the floor, 2 high
@@ -261,6 +274,12 @@ TEST(Model3d, EveryModelTheSkinNamesLoadsAndIsCredited)
             const auto m = goe::models::load(s.file, s.nodes);
             ASSERT_TRUE(m.has_value()) << s.file << " for " << sprite.name;
             EXPECT_GT(goe::models::placed(*m, s).bounds().max[2], 0.0f) << s.file;
+            if (s.animated()) {
+                const auto r = goe::models::rig::load(s.file, s.nodes);
+                ASSERT_TRUE(r.has_value()) << s.file;
+                for (const auto &clip : s.moves)
+                    EXPECT_TRUE(clip.empty() || r->clip(clip) >= 0) << s.file << " has no clip " << clip;
+            }
             if (s.file.starts_with(goe::models::builtinPrefix))
                 continue; // made in code, nothing to credit
             const std::filesystem::path folder = std::filesystem::path(s.file).parent_path();

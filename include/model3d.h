@@ -91,6 +91,10 @@ enum class layout {
 };
 std::optional<layout> parseLayout(std::string_view name);
 
+/// what an animated model is doing, each move a clip of its file
+enum class move { idle, walk, death };
+constexpr std::size_t moveCount = 3;
+
 /// a "Model" entry of skins.json: which file, for which subtype and facing, and how it sits
 struct spec {
     std::string file;
@@ -118,6 +122,10 @@ struct spec {
     /// turns to face where the element faces (creatures); otherwise it keeps the turn above
     bool turns = false;
     layout place = layout::cell;
+    /// the clip (a glTF animation name) the model plays for each move, by goe::models::move;
+    /// a model with none is drawn still
+    std::array<std::string, moveCount> moves;
+    bool animated() const;
 
     /// the tint for an element of this subtype (kind)
     std::array<float, 3> tintFor(int kind) const;
@@ -132,6 +140,18 @@ const spec *pick(std::span<const spec> specs, int subType, int facing);
  * front pushed to the cell's southern edge; the view turns it round to the other sides.
  */
 mesh placed(mesh m, const spec &s);
+
+/// how placed() moves a model into its cell: worked out from one pose, so every other pose of an
+/// animated model stands on the same spot at the same size
+struct fitting {
+    /// how far the tipped model is lowered to stand on the floor
+    float floor = 0;
+    /// its middle on the floor, before it is moved to the cell's middle
+    float midX = 0, midY = 0;
+    float scale = 1;
+};
+fitting fit(const mesh &m, const spec &s);
+mesh placed(mesh m, const spec &s, const fitting &f);
 
 /**
  * A lid for a model laid out by sides: a square over the whole cell at the model's top, painted

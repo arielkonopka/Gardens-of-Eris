@@ -37,11 +37,13 @@
  * The game field in 3D, seen by an isometric camera: walls are blocks, the floor is a plane, and
  * creatures and things stand up as pictures. Every frame it builds the mesh of the cells the
  * camera can see (goe::iso::meshBuilder), straight from the skin's sprite sheet, and draws it in
- * one call with a depth buffer and the same fog as the 2D view. Blocks between the avatar and the
+ * one call with a depth buffer and the same fog as the 2D view. Animated models (the avatar,
+ * monsters) stand about, walk and die as their elements do. Blocks between the avatar and the
  * camera are see-through. Elements the skin gives a 3D
  * model ("Model" in skins.json) are drawn as that model instead, one call each.
  */
 class chamber;
+class bElem;
 
 class isoFieldView : public fieldView
 {
@@ -76,19 +78,30 @@ private:
         std::array<float, 3> tint;
         /// the lid over a wall model's cell, instead of the model itself
         bool lid = false;
+        /// for an animated model: what it does, and how far into it (modelLibrary::posed)
+        goe::models::move motion = goe::models::move::idle;
+        float at = 0;
     };
-    /// puts the element's model on the field; false when it has none
+    /// what an element is doing, for its animated model
+    struct motion {
+        goe::models::move move = goe::models::move::idle;
+        float at = 0;
+    };
+    /// puts the element's model on the field; false when it has none, or it is dying and the
+    /// model has no clip for that (then the sprite shows it)
     bool addModel(const videoElement::videoElementDef &ve,
                   int subType,
                   int facing,
                   coords at,
                   float x,
                   float y,
-                  bool ghost);
+                  bool ghost,
+                  motion now);
+    motion motionOf(bElem &e) const;
     /// whether the cell holds a block, which a wall model joins without a side in between
     bool joins(coords at) const;
     /// the see-through models, or the solid ones
-    void drawModels(bool ghosts);
+    void drawModels(bool seeThrough);
     /// the blocks between the avatar and the camera, after everything solid, so it shows through
     void drawGhosts(ALLEGRO_BITMAP *sheet);
     /// the cells of the window starting at origin that the camera sees, as triangles
@@ -110,6 +123,8 @@ private:
     std::vector<ALLEGRO_VERTEX> ghostVertices;
     modelLibrary models;
     std::vector<placedModel> placed;
+    /// seconds on Allegro's clock this frame, for the clips that loop
+    float clock = 0;
     /// the board drawn this frame, where wall models look at their neighbours
     std::shared_ptr<chamber> shownBoard;
     /// the colour under the floor's see-through pictures, as on the 2D board

@@ -308,6 +308,10 @@
      {
         "Type": 100,
         "Name": "Player",
+        "Model": { "File": "data/models/kaykit-adventurers/Knight.glb", "Scale": 0.4, "Turns": true,
+                   "Nodes": ["Knight_Body", "Knight_Head", "Knight_ArmLeft", "Knight_ArmRight", "Knight_LegLeft",
+                             "Knight_LegRight", "Knight_Helmet", "Knight_Cape", "1H_Sword", "Round_Shield"],
+                   "Animations": { "Idle": "Idle", "Walk": "Walking_A", "Death": "Death_A" } },
         "Lights": {
            "Dying": [ 
              [
@@ -420,6 +424,16 @@
      {
         "Type": 6,
         "Name": "Monster",
+        "Model": [
+          { "SubType": 1, "File": "data/models/kaykit-skeletons/Skeleton_Warrior.glb", "Scale": 0.42, "Turns": true,
+            "Animations": { "Idle": "Idle", "Walk": "Walking_A", "Death": "Death_A" } },
+          { "SubType": 2, "File": "data/models/kaykit-skeletons/Skeleton_Rogue.glb", "Scale": 0.42, "Turns": true,
+            "Animations": { "Idle": "Idle", "Walk": "Walking_A", "Death": "Death_A" } },
+          { "SubType": 3, "File": "data/models/kaykit-skeletons/Skeleton_Mage.glb", "Scale": 0.42, "Turns": true,
+            "Animations": { "Idle": "Idle", "Walk": "Walking_A", "Death": "Death_A" } },
+          { "File": "data/models/kaykit-skeletons/Skeleton_Minion.glb", "Scale": 0.42, "Turns": true,
+            "Animations": { "Idle": "Idle", "Walk": "Walking_A", "Death": "Death_A" } }
+        ],
       "AnimDef": [ [ [ [ 6, 2 ], [ 7, 2 ] ] ] ],
         "Samples": [ {
              "SubType": 0,

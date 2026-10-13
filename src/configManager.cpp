@@ -71,6 +71,14 @@ std::optional<goe::models::spec> readModelSpec(const rapidjson::Value &v, const 
                 s.tints.push_back({t[0].GetFloat(), t[1].GetFloat(), t[2].GetFloat()});
     if (v.HasMember("Turns") && v["Turns"].IsBool())
         s.turns = v["Turns"].GetBool();
+    if (v.HasMember("Animations") && v["Animations"].IsObject()) {
+        const auto &a = v["Animations"];
+        for (const auto &[key, m] : {std::pair{"Idle", goe::models::move::idle},
+                                     std::pair{"Walk", goe::models::move::walk},
+                                     std::pair{"Death", goe::models::move::death}})
+            if (a.HasMember(key) && a[key].IsString())
+                s.moves[(std::size_t) m] = a[key].GetString();
+    }
     if (v.HasMember("Layout") && v["Layout"].IsString()) {
         const auto place = goe::models::parseLayout(v["Layout"].GetString());
         if (!place)
