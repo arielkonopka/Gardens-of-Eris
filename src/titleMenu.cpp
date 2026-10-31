@@ -219,6 +219,11 @@ titleMenu::titleMenu(gameSettings &edited, std::string file, std::function<bool(
         "Hall of fame shown",
         [this] { return this->settings.getHallOfFameLength(); },
         [this](int v) { this->settings.setHallOfFameLength(v); }));
+    // eight ways (sides and diagonals) or the four sides only; it holds from the next game on
+    this->options.push_back({"Movement",
+                             [this] { return std::string(this->settings.getMovementMode() == 4 ? "4 ways" : "8 ways"); },
+                             {},
+                             [this](int) { this->settings.setMovementMode(this->settings.getMovementMode() == 4 ? 8 : 4); }});
     this->options.push_back({"Controls", [] { return std::string(); }, {}, {}});
 }
 

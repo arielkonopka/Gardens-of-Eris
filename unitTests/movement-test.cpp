@@ -9,7 +9,10 @@
 #include "motion.h"
 #include "testSupport.h"
 #include <gtest/gtest.h>
+#include <cstdlib>
+#include <map>
 #include <memory>
+#include <random>
 
 namespace {
 template <typename T>
@@ -177,4 +180,84 @@ TEST(MovementTests, TwoWallsTouchingAtACornerStillSealARoom)
     const auto first = chaser::pathTowards(body, coords(4, 4), coords(4, 4), 9);
     EXPECT_NE(first, dir::direction::DOWNRIGHT);
     EXPECT_NE(first, dir::direction::NODIRECTION);
+}
+
+namespace {
+/// the movement mode for one test; eight ways again afterwards, whatever happens
+struct movementMode {
+    explicit movementMode(motion::mode m) { motion::setMode(m); }
+    ~movementMode() { motion::setMode(motion::mode::eightWay); }
+    movementMode(const movementMode &) = delete;
+    movementMode &operator=(const movementMode &) = delete;
+};
+
+/// where every element on top of a cell stands, by instance id
+std::map<unsigned long, coords> whoIsWhere(const chamber &board, coords size)
+{
+    std::map<unsigned long, coords> at;
+    for (int x = 0; x < size.x; x++)
+        for (int y = 0; y < size.y; y++)
+            if (const auto e = board.topAt(coords(x, y)); e && e->getType() != bElemTypes::_floorType)
+                at[e->getStats()->getInstanceId()] = coords(x, y);
+    return at;
+}
+} // namespace
+
+TEST(MovementTests, FourWayModeClosesEveryCorner)
+{
+    auto board = chamber::makeNewChamber(coords(8, 8));
+    EXPECT_EQ(motion::currentMode(), motion::mode::eightWay) << "eight ways is the default";
+    {
+        movementMode four(motion::mode::fourWay);
+        EXPECT_FALSE(motion::cornerOpen(*board, coords(3, 3), dir::direction::UPRIGHT)) << "even on open floor";
+        EXPECT_TRUE(motion::cornerOpen(*board, coords(3, 3), dir::direction::UP));
+        auto walker = put<monster>(board, coords(3, 3));
+        EXPECT_FALSE(walker->moveInDirection(dir::direction::DOWNLEFT));
+        EXPECT_EQ(walker->getStats()->getMyPosition(), coords(3, 3));
+        EXPECT_TRUE(walker->moveInDirection(dir::direction::LEFT));
+    }
+    EXPECT_TRUE(motion::cornerOpen(*board, coords(3, 3), dir::direction::UPRIGHT));
+    EXPECT_EQ(motion::modeOf(4), motion::mode::fourWay);
+    EXPECT_EQ(motion::modeOf(8), motion::mode::eightWay);
+    EXPECT_EQ(motion::modeOf(0), motion::mode::eightWay);
+}
+
+TEST(MovementTests, InFourWayModeNothingEndsATickOnADiagonalNeighbour)
+{
+    movementMode four(motion::mode::fourWay);
+    const coords size(18, 18);
+    std::shared_ptr<bElem> plr;
+    auto board = roomWithPlayer(size, coords(9, 9), plr);
+    auto gun = put<plainGun>(board, coords(9, 8), 1); // never runs out
+    plr->collect(gun);
+    // everything that moves: monsters with each controller, drones, bricks to push, a bunker that shoots
+    for (int s = 0; s < 6; s++)
+        put<monster>(board, coords(2 + 2 * s, 2), s);
+    for (int s = 0; s < 3; s++)
+        put<patrollingDrone>(board, coords(3 + 4 * s, 15), s);
+    for (int x = 6; x < 13; x += 3)
+        put<brickCluster>(board, coords(x, 11));
+    put<bunker>(board, coords(15, 9));
+    std::mt19937 pick(31337);
+    auto before = whoIsWhere(*board, size);
+    int moves = 0;
+    for (int t = 0; t < 3000; t++) {
+        // the player presses any of the nine ways, walking or shooting
+        const auto d = static_cast<dir::direction>(pick() % 9);
+        inputManager::getInstance().setControlItem(controlItem(pick() % 4 == 0 ? 1 : 0, d));
+        bElem::runLiveElements();
+        const auto after = whoIsWhere(*board, size);
+        for (const auto &[id, was] : before)
+            if (const auto now = after.find(id); now != after.end() && !(now->second == was)) {
+                const coords by = now->second - was;
+                moves++;
+                EXPECT_FALSE(std::abs(by.x) == 1 && std::abs(by.y) == 1)
+                    << "element " << id << " went diagonally from (" << was.x << "," << was.y << ") at tick " << t;
+            }
+        before = after;
+    }
+    EXPECT_GT(moves, 100) << "the test needs things that move";
+    inputManager::getInstance().setControlItem(controlItem(-1, dir::direction::NODIRECTION));
+    if (const auto p = player::getActivePlayer())
+        p->disposeElement();
 }

@@ -125,7 +125,7 @@ music and effects volume, the music source (`getMusicSource`: `samples`, the ski
 performer's sound (`getPerformerSound`, a `goe::musician::chipStyle`; `"performerSound"`), the music
 style (`getMusicStyle`, a `goe::musician::genre`; `"musicStyle"`, Mixed by default), music
 variety (0..100%, `"musicVariety"`) and music tempo (50..150%, `"musicTempo"`), the game field's
-view (`getView`, a `fieldViewKind`: `flat` or `iso`; `"view"`: `"2D"` or `"3D"`), story scroller on or off and its file, the demo times (`demoWait`,
+view (`getView`, a `fieldViewKind`: `flat` or `iso`; `"view"`: `"2D"` or `"3D"`), the movement mode (`getMovementMode`, 8 or 4; `"movementMode"`, handed to `motion::setMode` when a game starts), story scroller on or off and its file, the demo times (`demoWait`,
 `demoLength`, `hallOfFameLength`, 5 to 3600 s) and the control bindings. `load`, `save`,
 `resetToDefaults`. A new option gets a field here, a line in `load` and `save`, and a line in
 `titleMenu`'s Config screen.

@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "inputManager.h"
+#include "motion.h"
 #include "gameSettings.h"
 #include "menuPad.h"
 #include <cmath>
@@ -87,12 +88,16 @@ bool inputManager::takeExitRequest()
 controlItem inputManager::getCtrlItem()
 {
     const controlItem item = this->lastItem;
-    if (!this->scripted && item.dir != dir::direction::NODIRECTION && !dir::isDiagonal(item.dir)
-        && std::chrono::steady_clock::now() - this->firstWay.load() < diagonalGrace)
-        return controlItem(-1, dir::direction::NODIRECTION); // a second way may be on its way
     if (this->scripted)
         return item;
-    return controlItem(item.type, dir::turned(item.dir, this->screenTurn));
+    const bool fourWay = motion::currentMode() == motion::mode::fourWay;
+    if (!fourWay && item.dir != dir::direction::NODIRECTION && !dir::isDiagonal(item.dir)
+        && std::chrono::steady_clock::now() - this->firstWay.load() < diagonalGrace)
+        return controlItem(-1, dir::direction::NODIRECTION); // a second way may be on its way
+    const auto d = dir::turned(item.dir, this->screenTurn);
+    // in the four-way mode two held keys go the way they went before eight-way movement: left or
+    // right wins over up or down
+    return controlItem(item.type, fourWay && dir::isDiagonal(d) ? dir::across(d) : d);
 }
 
 void inputManager::setControlItem(controlItem item)
