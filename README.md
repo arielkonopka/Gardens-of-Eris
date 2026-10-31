@@ -139,6 +139,8 @@ Run the game from the `GoEoOL` folder, where the `data` folder is. On Windows, t
 
 The `goe-bench` target times building the world (the start, then one chunk at a time), a game tick, save/load, and a walk that swaps chunks to disk and back: `goe-bench 61 3000 60` from `GoEoOL` builds 61 chunks, about as many cells as one of the old 500x500 levels, then walks 60 chunks east and back, reporting the chunks in memory, the time per chunk written or read, and the memory used.
 
+The `goe-audit` target checks that the maze's locks still lock with eight-way movement, without playing: for each world seed it builds the start of the world and floods it from the player's start, 4-connected and 8-connected with the game's corner rule, with walls, closed doors and bricks stopping the flood. It reports what only the 8-way walk reaches (cells, rooms, locked rooms, golden apples, keys, spare avatars, global teleporters), every locked room an 8-way walk leaves without opening its walls, and the brick-sealed rooms that a push from outside opens, straight or only diagonally. `goe-audit 200 1 out` from `GoEoOL` checks seeds 1 to 200 and writes `out/goe-audit.csv` and ASCII pictures of every bypass to `out/goe-audit-bypasses.txt`.
+
 ### Agents and Python
 
 The game can also be played by a program, without a window, sound or keyboard, for example by a learning agent such as [exRelaxer](https://github.com/arielkonopka/exRelaxer)'s. The `goe-agent` library (`agent/`) runs the game headless; the `goe` Python package (`agent/python`) wraps it as a ViZDoom-like `goe.Game` and a Gymnasium `goe.GoeEnv`. The agent sees a circle of cells around the player (or around a fixed cell), the player's numbers and its inventory, and for each it chooses which features to see: types, subtypes, qualities and states. It acts with the game's own controls, and the reward is the score gained, or a weighted sum of what the player did in the step (collecting, opening doors, kills, energy lost, deaths and more; `goe.SHAPED_REWARD` is a starting point).
@@ -433,6 +435,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* `goe-audit`: a flood-fill audit of the generated maze, 4-way against 8-way movement. Over 200 seeds (25 chunks each) no locked room leaks and nothing is reached only by walking diagonally; one brick-sealed room in 1760 opens only by a diagonal push.
 * Animated characters in the 3D view: your avatar is the KayKit Knight (with sword, round shield and cape), and monsters are KayKit skeletons (a warrior, a rogue and a mage by subtype, a minion otherwise). They stand about, walk when they move, and fall down when they die, turning to face where they go. The models are skinned on the CPU, each pose once a frame however many elements show it. `Animations` in a skins.json `Model` names the clips.
 * In the 3D view the keys, stick and d-pad follow the screen: Up walks up the screen (the board's north east), not up-left. The 2D view, the demo and agents keep the board's ways.
 * In the 3D view, walls between the camera and your avatar turn see-through instead of sinking into the floor, so you see the maze around you as it is.
