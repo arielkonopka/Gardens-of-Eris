@@ -22,6 +22,7 @@ diagonal.
 |---|---|---|---|
 | `src/plainMissile.cpp:85` | A missile whose next cell (diagonal) holds something killable hurts it without checking the corner. The step branch above it goes through `motion::step` and does stop at a closed corner. | **Leftover, a real bug.** Checked with a scratch test: a missile flying up-left hurt a player behind two walls that touch at the corner (energy 105 → 5). | Return early (the missile dies on the corner) when `!motion::cornerOpen(board, here, dir)`, as `plainGun::use` already does for its point-blank shot. Add a regression test. |
 | `src/bazookaMissile.cpp:42` | Same for the bazooka missile: `be->hurt(...)` on the next cell with no corner check. | **Leftover, same bug.** | Same corner check before the hurt. The explosion after it is a 4-connected flood, so that part is fine. |
+| `src/player.cpp:186` (control type 2, interact) | Interacting with the cell in the pressed direction (opening a door, waking an avatar, picking up an item) has no corner check. With two keys held, the player can open a door or pick up an item diagonally across a corner closed on both sides. | **Leftover.** It never reaches into a locked room: the room's wall ring is one cell thick, so nothing outside is diagonally next to anything inside. But it does let you reach around closed corners in the open maze. Agents have no diagonal interact action. | Refuse when `!motion::cornerOpen(board, here, dir)`, as walking does. |
 | `src/bElem.cpp:165` | A dying element's inventory becomes a rubbish pile on its cell, or on one of the four sides. If all four are blocked, the pile and **everything in it is thrown away**. | Leftover (it predates #316, but a free diagonal cell now counts as "next to"). | After the four sides, try the four diagonals that `cornerOpen` allows. Sides first keeps today's behaviour wherever it works now. |
 | `src/bElem.cpp:77` | Dropping an item: the four sides, else the item goes back into the inventory. | Leftover, harmless (the item is kept). | Optional: the same diagonal fallback as above. |
 | `src/puppetMasterFR.cpp:77` (`towards`) | Picks a diagonal facing when the way is closer to a diagonal. Used for bites, turning to the prey and the guardian's aim. | Intended in mode 8. **Leftover in mode 4**: the body turns diagonally, then the shot or step is refused. | When `motion::currentMode()` is 4, fall back to the dominant axis. This only matters for mode 4. |
@@ -54,6 +55,8 @@ diagonal.
 - **Two real leftovers that change gameplay in mode 8:** missiles (plain and bazooka) hurt a
   target diagonally behind a corner closed on both sides. They are small and local, with a
   regression test.
+- **Interacting has no corner check** (`player.cpp:186`): doors and items can be reached
+  diagonally around a closed corner. This never reaches into a locked room.
 - **One item-loss edge case** (rubbish pile with all four sides blocked), which predates #316 but
   is easy to soften with diagonals.
 - **Two mode-4-only leftovers** (`towards`, guardian `inLine`): they make mode 4 slightly weaker
