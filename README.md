@@ -87,6 +87,8 @@ These are the default keys. Config, Controls lets you choose other keys (two per
 
 Every new game prints its world seed (`World seed: ...`). `GardenOfEris --seed <number>` builds that same world again, which helps when reporting a bug in the maze.
 
+`GardenOfEris --movement 4` makes everything move on the four sides only, as before eight-way movement (`--movement 8` is the default). Config has the same switch (Movement: 8 ways / 4 ways, `movementMode` in settings.json); the command line wins. In the four-way mode two held keys walk left or right, as they used to.
+
 The HUD shows your score (**P**), your level (**Dex**, see Stats) and the current difficulty (**D**, see Difficulty).
 
 Settings saved by an older version kept Esc for giving up; the game moves it to Backspace and gives Esc to save and exit, unless you chose your keys after this change.
@@ -433,6 +435,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* A movement switch: `--movement 4|8`, Config "Movement" and `movementMode` in settings.json. Eight ways stays the default; four ways closes every diagonal for everything that moves (the player, monsters, drones, missiles, pushed bricks, bunkers' eyes, chasers), so the two can be compared.
 * Animated characters in the 3D view: your avatar is the KayKit Knight (with sword, round shield and cape), and monsters are KayKit skeletons (a warrior, a rogue and a mage by subtype, a minion otherwise). They stand about, walk when they move, and fall down when they die, turning to face where they go. The models are skinned on the CPU, each pose once a frame however many elements show it. `Animations` in a skins.json `Model` names the clips.
 * In the 3D view the keys, stick and d-pad follow the screen: Up walks up the screen (the board's north east), not up-left. The 2D view, the demo and agents keep the board's ways.
 * In the 3D view, walls between the camera and your avatar turn see-through instead of sinking into the floor, so you see the maze around you as it is.

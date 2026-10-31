@@ -30,6 +30,7 @@
 #include "soundManager.h"
 #include "gameSerializer.h"
 #include "gameSettings.h"
+#include "motion.h"
 #include "titleScreen.h"
 #include "crashLog.h"
 #include "videoManager.h"
@@ -86,6 +87,16 @@ coords farChunk()
     return goe::rng::below(rng, 2) == 0 ? coords(sign * along, across) : coords(across, sign * along);
 }
 
+/// "--movement 4|8" from the command line; 0 when not given, so settings.json decides
+int movementGiven = 0;
+
+/// hands the movement mode to every mover, before a game or the demo starts: "--movement" if
+/// given, else the Config setting
+void applyMovementMode()
+{
+    motion::setMode(motion::modeOf(movementGiven != 0 ? movementGiven : gameSettings::getInstance().getMovementMode()));
+}
+
 /// the title screen's demo: the autopilot plays a world of its own, which goes when it ends.
 /// It starts far out in the maze, so it looks like a game well under way. No save is written,
 /// replaced or deleted. DEMO_OVER when a press ended it, QUIT when the window closed.
@@ -98,6 +109,7 @@ presenter::gameEnd playDemo(presenter::presenter &shown, titleScreen &title)
     const auto world = worldBuilder::startNew();
     worldBuilder::movePlayerTo(world, farChunk());
     soundManager::getInstance().enableSound();
+    applyMovementMode();
     const auto end = shown.presentEverything(true, gameSettings::getInstance().getDemoLength());
     gameSerializer::clearWorld();
     // the next game is built as it would have been without the demo ("--seed" included)
@@ -110,6 +122,7 @@ int main( int argc, char * argv[] )
 {
     // "--load <file>" starts from a saved game instead of a freshly generated world
     // "--seed <number>" builds the same world again; the seed is printed at every start
+    // "--movement 4|8" moves everything the four sides only, or in eight ways (over the Config setting)
     std::string saveToLoad;
     bool seedGiven = false;
     for (int c = 1; c + 1 < argc; c++) {
@@ -118,7 +131,8 @@ int main( int argc, char * argv[] )
         else if (std::strcmp(argv[c], "--seed") == 0) {
             goe::rng::setWorldSeed((goe::rng::seed) std::strtoul(argv[c + 1], nullptr, 10));
             seedGiven = true;
-        }
+        } else if (std::strcmp(argv[c], "--movement") == 0)
+            movementGiven = std::strcmp(argv[c + 1], "4") == 0 ? 4 : 8;
     }
     gameSettings::getInstance().load();
     // a crash leaves a report in the save folder, for players without a debugger
@@ -203,6 +217,7 @@ int main( int argc, char * argv[] )
             }
             played = true;
             soundManager::getInstance().enableSound();
+            applyMovementMode();
             const auto end = myPresenter->presentEverything();
             if (end == presenter::gameEnd::QUIT)
                 break;

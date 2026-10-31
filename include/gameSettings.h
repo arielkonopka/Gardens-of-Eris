@@ -98,6 +98,12 @@ public:
     /// the view of a name; anything unknown is the 2D view
     static fieldViewKind viewNamed(const std::string &name) { return name == "3D" ? fieldViewKind::iso : fieldViewKind::flat; }
 
+    /// how many ways everything moves: 8 (the sides and the diagonals, the default) or 4 (the
+    /// sides only). The game hands it to motion::setMode when a game starts; "--movement" overrides it.
+    int getMovementMode() const { return this->movementMode; }
+    /// anything but 4 is 8
+    void setMovementMode(int ways) { this->movementMode = ways == 4 ? 4 : 8; }
+
     /// the story line over the game field (storyScroller.h): on or off, and the file it tells from
     static constexpr const char *defaultStoriesFile = "data/txt/stories.json";
     bool getStoriesShown() const { return this->storiesShown; }
@@ -139,6 +145,7 @@ private:
     std::atomic<int> musicVariety = 60;
     std::atomic<int> musicTempo = 100;
     std::atomic<fieldViewKind> view = fieldViewKind::flat;
+    std::atomic<int> movementMode = 8;
     std::atomic<bool> storiesShown = true;
     std::atomic<int> demoWait = 60;
     std::atomic<int> demoLength = 30;

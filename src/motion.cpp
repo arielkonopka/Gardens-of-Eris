@@ -24,12 +24,29 @@
 #include "bElem.h"
 #include "chamber.h"
 #include "elementSound.h"
+#include <atomic>
 
 namespace motion {
+namespace {
+std::atomic<mode> movementMode = mode::eightWay;
+}
+
+void setMode(mode m)
+{
+    movementMode.store(m, std::memory_order_relaxed);
+}
+
+mode currentMode()
+{
+    return movementMode.load(std::memory_order_relaxed);
+}
+
 bool cornerOpen(const chamber &board, coords from, dir::direction d)
 {
     if (!dir::isDiagonal(d))
         return true;
+    if (currentMode() == mode::fourWay)
+        return false;
     auto free = [&](dir::direction side) {
         const auto &e = board.topAt(from + dir::dirToCoords(side));
         return e && e->getAttrs()->isSteppable();

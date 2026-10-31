@@ -134,7 +134,7 @@ TEST(TitleMenuTests, ConfigShowsSaveLocationAndGoesBack)
     EXPECT_TRUE(m.keyDown(ALLEGRO_KEY_ENTER) == titleMenu::action::NONE);
     ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
     auto lines = m.getLines();
-    ASSERT_EQ(lines.size(), 16u);
+    ASSERT_EQ(lines.size(), 17u);
     EXPECT_EQ(lines[0], "Save location: .");
     EXPECT_EQ(lines[1], "Music volume: 100%");
     EXPECT_EQ(lines[2], "Sound effects volume: 100%");
@@ -149,8 +149,9 @@ TEST(TitleMenuTests, ConfigShowsSaveLocationAndGoesBack)
     EXPECT_EQ(lines[11], "Demo after: 60 s");
     EXPECT_EQ(lines[12], "Demo length: 30 s");
     EXPECT_EQ(lines[13], "Hall of fame shown: 10 s");
-    EXPECT_EQ(lines[14], "Controls");
-    EXPECT_EQ(lines[15], "Back");
+    EXPECT_EQ(lines[14], "Movement: 8 ways");
+    EXPECT_EQ(lines[15], "Controls");
+    EXPECT_EQ(lines[16], "Back");
     m.keyDown(ALLEGRO_KEY_ESCAPE);
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::MAIN);
     EXPECT_EQ(m.getSelected(), 1);
@@ -323,6 +324,25 @@ TEST(TitleMenuTests, StoryScrollerSwitchesAndIsKept)
     EXPECT_TRUE(gameSettings::getInstance().getStoriesShown());
 }
 
+TEST(TitleMenuTests, MovementSwitchesBetweenEightAndFourWaysAndIsKept)
+{
+    scratch s;
+    titleMenu m(gameSettings::getInstance(), s.settingsFile());
+    EXPECT_EQ(gameSettings::getInstance().getMovementMode(), 8) << "eight ways stays the default";
+    openConfigAt(m, 14);
+    m.keyDown(ALLEGRO_KEY_ENTER);
+    EXPECT_EQ(gameSettings::getInstance().getMovementMode(), 4);
+    EXPECT_EQ(m.getLines()[14], "Movement: 4 ways");
+    gameSettings::getInstance().resetToDefaults();
+    EXPECT_EQ(gameSettings::getInstance().getMovementMode(), 8);
+    ASSERT_TRUE(gameSettings::getInstance().load(s.settingsFile()));
+    EXPECT_EQ(gameSettings::getInstance().getMovementMode(), 4);
+    m.keyDown(ALLEGRO_KEY_RIGHT);
+    EXPECT_EQ(gameSettings::getInstance().getMovementMode(), 8);
+    gameSettings::getInstance().setMovementMode(5); // anything but 4 is 8
+    EXPECT_EQ(gameSettings::getInstance().getMovementMode(), 8);
+}
+
 TEST(TitleMenuTests, MusicStepsThroughSkinSamplesThePerformerAndTheDJ)
 {
     scratch s;
@@ -466,7 +486,7 @@ TEST(TitleMenuTests, ControlsCanBeRebound)
     using goe::controls::action;
     scratch s;
     titleMenu m(gameSettings::getInstance(), s.settingsFile());
-    openConfigAt(m, 14);
+    openConfigAt(m, 15);
     m.keyDown(ALLEGRO_KEY_ENTER);
     ASSERT_TRUE(m.getScreen() == titleMenu::screen::CONTROLS);
     EXPECT_EQ(m.getTitle(), "Controls");
@@ -521,7 +541,7 @@ TEST(TitleMenuTests, ControlsCanBeRebound)
     EXPECT_TRUE(gameSettings::getInstance().getControls() == goe::controls::bindings());
     m.keyDown(ALLEGRO_KEY_ESCAPE);
     EXPECT_TRUE(m.getScreen() == titleMenu::screen::CONFIG);
-    EXPECT_EQ(m.getSelected(), 14);
+    EXPECT_EQ(m.getSelected(), 15);
 }
 
 TEST(ControlBindingsTests, DefaultLayoutPlaysAsBefore)

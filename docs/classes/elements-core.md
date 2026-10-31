@@ -128,6 +128,11 @@ A diagonal move passes between the two cells beside it and is refused when both 
 (`cornerOpen(board, from, d)`), so walls touching only at a corner still close the maze; shots,
 bunkers' eyes, chasers' walks and the demo's autopilot keep to the same rule.
 
+The movement mode (`setMode`, `currentMode`, `mode::eightWay` by default or `mode::fourWay`)
+brings back four-way movement for everything at once: in mode 4 `cornerOpen` refuses every
+diagonal. The game sets it from settings.json (`movementMode`) or `--movement 4|8` when a game
+starts; it is there to measure what eight-way movement changed.
+
 - `step(who, d, speed)`: one cell in `d` (any of the eight), the move taking `speed` ticks.
 - `drag(who, d, speed)`: one cell in `d`, pulling the movable element behind along.
 - `collectAndStep(who, collectible, speed)`: collect, then step if the collect worked.
