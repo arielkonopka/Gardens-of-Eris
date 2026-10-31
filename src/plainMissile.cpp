@@ -51,6 +51,7 @@ bool plainMissile::stepOnAction(bool step, std::shared_ptr<bElem> who)
         int dw = 0;
         {
             goe::events::blame by(sowner.get());
+            goe::events::harming hand(sowner ? sowner.get() : this);
             who->hurt(this->getAttrs()->getEnergy());
         }
         dw = w - who->getAttrs()->getEnergy();
@@ -87,6 +88,7 @@ bool plainMissile::mechanics()
         int dw = 0;
         {
             goe::events::blame by(sowner.get());
+            goe::events::harming hand(sowner ? sowner.get() : this);
             myel->hurt(this->getAttrs()->getEnergy());
         }
         dw = w - myel->getAttrs()->getEnergy();

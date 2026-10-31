@@ -193,6 +193,7 @@ bool explosives::explode(float blastRadius)
         this->collectOnAction(false, carrier);
         {
             goe::events::blame by(this->getStats()->getStatsOwner().lock().get());
+            goe::events::harming hand(this);
             carrier->destroy();
         }
     }
@@ -242,6 +243,7 @@ bool explosives::traverser(
     {
         // a blast's shooter: whoever fired the missile, or set off the bomb
         goe::events::blame by(this->getStats()->getStatsOwner().lock().get());
+        goe::events::harming hand(this);
         elem->destroy();
     }
     if (noGo != dir::direction::RIGHT)

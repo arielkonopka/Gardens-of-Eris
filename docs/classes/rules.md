@@ -74,11 +74,17 @@ itself does not listen; with no watcher, `report` does nothing.
 - `kind`: `collect` (subject collected by actor), `use` (actor used subject, its usable),
   `open` (actor opened a door), `teleport` (actor sent through a teleporter), `kill` (actor's
   missile or blast killed or destroyed subject), `activate` (actor woke subject, a spare avatar,
-  in `player::interact`).
+  in `player::interact`), `harm` (subject lost energy, or was killed or destroyed, in
+  `bElem::hurt`, `kill` and `destroy`; actor is `harmer()`).
 - `observe(fn)`: one watcher at a time (`goe::agent::game` is one); an empty function clears it.
 - `report(kind, subject, actor)`: called by the elements; the actor may be null.
 - `blame(who)`: while one lives, kills are put down to `who` (the shooter of a missile or the one
   who set off a blast, also through a bomb the shot set off). Blames nest; `blamed()` says whom.
+- `harming(who)`: while one lives, harm is put down to `who`, the hand that does it: the biting
+  monster or drone (`puppetMasterFR::bite`, `monster::checkNeigh`), the shooter whose missile or
+  point-blank shot hits (else the missile), the bomb or mine whose blast reaches (`explosives`,
+  `landmine`), the bouba beam, the door that kills a player without its key. For watchers that
+  count what hurts the player (`goe-ab`); nothing in the game reads it. `harmer()` says who.
 - `isDown(e)`: dying, being destroyed or gone.
 
 ## `randomWordGen` (`randomWordGen.h`)

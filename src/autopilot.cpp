@@ -11,7 +11,6 @@
 
 namespace goe {
 namespace {
-using dir::ways;
 
 bool isPrey(const bElem &e)
 {
@@ -33,11 +32,18 @@ void autopilot::reset()
     this->heading = dir::direction::UP;
 }
 
+std::span<const dir::direction> autopilot::directions() const
+{
+    if (this->eightWays)
+        return dir::ways;
+    return dir::sides;
+}
+
 std::optional<dir::direction> autopilot::target(const std::shared_ptr<bElem> &plr) const
 {
     const auto board = plr->getBoard();
     const coords me = plr->getStats()->getMyPosition();
-    for (auto d : ways)
+    for (auto d : this->directions())
         for (int step = 1; step <= shootingRange; step++) {
             const auto e = board->getElement(me + dir::dirToCoords(d) * step);
             if (!e || !motion::cornerOpen(*board, me + dir::dirToCoords(d) * (step - 1), d))
@@ -67,7 +73,7 @@ controlItem autopilot::decide(const std::shared_ptr<bElem> &plr)
             return controlItem(1, *d);
 
     std::vector<dir::direction> open;
-    for (auto d : ways) {
+    for (auto d : this->directions()) {
         const auto e = plr->getElementInDirection(d);
         if (!e || !motion::cornerOpen(*plr->getBoard(), me, d))
             continue;

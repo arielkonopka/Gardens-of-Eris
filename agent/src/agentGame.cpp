@@ -394,6 +394,8 @@ void game::noteEvent(int k, const bElem &subject, const bElem *actor)
     case goe::events::kind::activate:
         add(event::avatar);
         break;
+    case goe::events::kind::harm:
+        break; // the agent reads lost energy itself (event::hurt)
     }
 }
 

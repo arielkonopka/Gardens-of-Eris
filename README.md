@@ -89,6 +89,8 @@ Every new game prints its world seed (`World seed: ...`). `GardenOfEris --seed <
 
 `GardenOfEris --movement 4` makes everything move on the four sides only, as before eight-way movement (`--movement 8` is the default). Config has the same switch (Movement: 8 ways / 4 ways, `movementMode` in settings.json); the command line wins. In the four-way mode two held keys walk left or right, as they used to.
 
+`goe-ab` (build target) plays headless games with the demo's autopilot to compare the two: `goe-ab --arm 8x4 --seeds 200 --cap 20000 [--drop] --out file.csv` from `GoEoOL` plays seeds 1 to 200 with eight-way movement and an autopilot that walks the four sides (`4x4`, `8x4`, `8x8`), until the last avatar is lost or the tick cap, from the start or, with `--drop`, from the demo's far drop. `tools/ab/run.sh build` runs every arm and writes a report with bootstrap confidence intervals (`tools/ab/analyze.py`, needs numpy).
+
 The HUD shows your score (**P**), your level (**Dex**, see Stats) and the current difficulty (**D**, see Difficulty).
 
 Settings saved by an older version kept Esc for giving up; the game moves it to Backspace and gives Esc to save and exit, unless you chose your keys after this change.
@@ -435,6 +437,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* The demo's autopilot can keep to the four sides (`autopilot::setWays(4)`; eight stays the default), and `goe-ab` with `tools/ab` A/B-tests four-way against eight-way movement headless. A new game event, `harm`, names what hurt something (`goe::events::harming`: the biting monster, the shooter whose missile hit, the bomb, the mine, the beam, the door); it changes nothing in the game.
 * A movement switch: `--movement 4|8`, Config "Movement" and `movementMode` in settings.json. Eight ways stays the default; four ways closes every diagonal for everything that moves (the player, monsters, drones, missiles, pushed bricks, bunkers' eyes, chasers), so the two can be compared.
 * Animated characters in the 3D view: your avatar is the KayKit Knight (with sword, round shield and cape), and monsters are KayKit skeletons (a warrior, a rogue and a mage by subtype, a minion otherwise). They stand about, walk when they move, and fall down when they die, turning to face where they go. The models are skinned on the CPU, each pose once a frame however many elements show it. `Animations` in a skins.json `Model` names the clips.
 * In the 3D view the keys, stick and d-pad follow the screen: Up walks up the screen (the board's north east), not up-left. The 2D view, the demo and agents keep the board's ways.
