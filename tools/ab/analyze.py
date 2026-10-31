@@ -38,6 +38,10 @@ def load(paths):
         with open(p, newline="") as f:
             rows.extend(csv.DictReader(f))
     causes = [k[len("damage_"):] for k in rows[0] if k.startswith("damage_")] if rows else []
+    crashed = [r for r in rows if r.get("crashed") == "1"]
+    for r in crashed:
+        print(f"left out: seed {r['seed']} arm {r['arm']} drop {r['drop']} crashed", file=sys.stderr)
+    rows = [r for r in rows if r.get("crashed") != "1"]
     for r in rows:
         r["damage_total"] = sum(int(r["damage_" + c]) for c in causes)
     return rows, causes
@@ -71,6 +75,10 @@ def report(rows, causes, boots, out):
     for start in starts:
         n = len({r["seed"] for r in rows if r["drop"] == start})
         w(f"## Start: {'demo drop (far out)' if start == '1' else 'normal start'} ({n} seeds)\n\n")
+        for a in arms:
+            missing = n - len(by_seed(rows, start, a, "score"))
+            if missing:
+                w(f"{a}: {missing} game(s) crashed and are left out of its comparisons.\n\n")
         w("Means (medians in brackets) per arm. An arm is movement x autopilot ways.\n\n")
         w("| metric | " + " | ".join(arms) + " |\n|---|" + "---|" * len(arms) + "\n")
         for key, name in METRICS:

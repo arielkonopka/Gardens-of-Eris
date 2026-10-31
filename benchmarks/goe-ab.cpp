@@ -32,7 +32,8 @@
  * Usage, from GoEoOL:
  *   goe-ab --arm 8x8 --seeds 200 --first 1 --cap 20000 [--drop] [--out file.csv]
  * --drop starts the way the title screen demo does, far out in the maze, instead of the start.
- * One CSV row per game: the score (all avatars), ticks, avatars used, golden apples, keys and
+ * A game that throws (a game bug, not the harness's) gets a row with crashed=1 and is left out
+ * of the comparison for that seed. One CSV row per game: the score (all avatars), ticks, avatars used, golden apples, keys and
  * doors, monsters and drones killed, cells visited, chunks reached, and the energy lost and
  * avatars lost by cause. tools/ab/analyze.py compares the arms.
  */
@@ -114,6 +115,7 @@ struct result
     int apples = 0, keys = 0, doors = 0, kills = 0;
     std::size_t cells = 0, chunks = 0;
     bool capped = false;
+    bool crashed = false; ///< the game threw: its row is kept, the analysis leaves the seed out
     std::array<long, (std::size_t) cause::count> damage{};
     std::array<int, (std::size_t) cause::count> deaths{};
 };
@@ -270,7 +272,7 @@ int main(int argc, char **argv)
     if (!out.empty())
         file.open(out);
     std::ostream &csv = out.empty() ? std::cout : file;
-    csv << "arm,movement,pilot,drop,seed,score,ticks,capped,avatars,apples,keys,doors,kills,cells,chunks";
+    csv << "arm,movement,pilot,drop,seed,crashed,score,ticks,capped,avatars,apples,keys,doors,kills,cells,chunks";
     for (auto n : causeNames)
         csv << ",damage_" << n;
     for (auto n : causeNames)
@@ -278,9 +280,19 @@ int main(int argc, char **argv)
     csv << "\n";
     for (int s = 0; s < seeds; s++) {
         const unsigned seed = first + (unsigned) s;
-        const result r = play(seed, movement, pilotWays, cap, drop);
+        result r;
+        try {
+            r = play(seed, movement, pilotWays, cap, drop);
+        } catch (const std::exception &e) {
+            // a game bug, not the harness's: say so, keep the row, go on with a fresh world
+            std::cerr << "seed " << seed << " arm " << arm << (drop ? " (drop)" : "") << ": " << e.what() << "\n";
+            r = result{};
+            r.crashed = true;
+            goe::events::observe({});
+            gameSerializer::clearWorld();
+        }
         csv << movement << 'x' << pilotWays << ',' << movement << ',' << pilotWays << ',' << (drop ? 1 : 0) << ','
-            << seed << ',' << r.score << ',' << r.ticks << ',' << (r.capped ? 1 : 0) << ',' << r.avatars << ','
+            << seed << ',' << (r.crashed ? 1 : 0) << ',' << r.score << ',' << r.ticks << ',' << (r.capped ? 1 : 0) << ',' << r.avatars << ','
             << r.apples << ',' << r.keys << ',' << r.doors << ',' << r.kills << ',' << r.cells << ',' << r.chunks;
         for (auto d : r.damage)
             csv << ',' << d;
