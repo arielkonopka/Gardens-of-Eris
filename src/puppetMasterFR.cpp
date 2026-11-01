@@ -21,6 +21,7 @@
  */
 
 #include "puppetMasterFR.h"
+#include "gameEvents.h"
 #include "elementFactory.h"
 #include "puppetMasterCollector.h"
 #include "puppetMasterHunter.h"
@@ -98,6 +99,7 @@ bool puppetMasterFR::bite(std::shared_ptr<bElem> body, std::shared_ptr<bElem> pr
     if (!board || !touching(*board, b, p))
         return false;
     goe::roam::turn(body, towards(b, p));
+    goe::events::harming by(body.get());
     prey->hurt(damage);
     body->getStats()->setWaiting(GoEConstants::_mov_delay * 2);
     return true;

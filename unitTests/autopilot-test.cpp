@@ -87,3 +87,30 @@ TEST(AutopilotTests, ItWandersAboutTheMaze)
     EXPECT_GT(seen.size(), 100u);
     gameSerializer::clearWorld();
 }
+
+TEST(AutopilotTests, FourWaysKeepsItToTheSides)
+{
+    const auto plr = startWorld(4242);
+    ASSERT_TRUE(plr);
+    goe::autopilot pilot;
+    EXPECT_EQ(pilot.ways(), 8) << "eight ways stays the default";
+    pilot.setWays(4);
+    EXPECT_EQ(pilot.ways(), 4);
+    pilot.reset();
+    EXPECT_EQ(pilot.ways(), 4) << "a new world keeps the ways";
+    int moves = 0;
+    for (int t = 0; t < 50 * 30 && player::getActivePlayer(); t++) {
+        const auto p = player::getActivePlayer();
+        const controlItem c = pilot.decide(p);
+        EXPECT_FALSE(dir::isDiagonal(c.dir)) << "tick " << t;
+        moves += c.type == 0;
+        inputManager::getInstance(true).setControlItem(c);
+        const coords at = p->getStats()->getMyPosition();
+        if (!worldBuilder::growAround(p->getBoard(), at))
+            worldBuilder::shrinkAround(p->getBoard(), at);
+        bElem::runLiveElements();
+    }
+    inputManager::getInstance(true).setControlItem(controlItem(-1, dir::direction::NODIRECTION));
+    EXPECT_GT(moves, 50);
+    gameSerializer::clearWorld();
+}

@@ -39,6 +39,8 @@ bool bazookaMissile::mechanics()
 
     if (be) {
         goe::events::blame by(this->getStats()->getStatsOwner().lock().get());
+        const auto owner = this->getStats()->getStatsOwner().lock();
+        goe::events::harming hand(owner ? owner.get() : this);
         be->hurt(this->getAttrs()->getEnergy());
     }
     beEnergy = beEnergy - be->getAttrs()->getEnergy();

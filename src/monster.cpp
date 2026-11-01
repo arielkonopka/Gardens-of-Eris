@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "monster.h"
+#include "gameEvents.h"
 #include "roam.h"
 #include "chamber.h"
 #include "motion.h"
@@ -81,6 +82,7 @@ bool monster::checkNeigh()
 #ifdef _VerbousMode_
             std::cout << "  *** Hurt \n";
 #endif
+            goe::events::harming by(this);
             e->hurt(5);
 #ifdef _VerbousMode_
             std::cout << "  *** Done\n";

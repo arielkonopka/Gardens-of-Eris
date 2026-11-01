@@ -65,6 +65,7 @@ bool door::stepOnAction(bool step, std::shared_ptr<bElem> who)
                                                             true);
             }
             if (!k) {
+                goe::events::harming hand(this);
                 who->kill();
             } else
                 goe::sound::play(*this, "Door", "CollectKey");

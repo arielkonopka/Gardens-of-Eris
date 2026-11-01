@@ -37,6 +37,7 @@ enum class kind : int {
     teleport, ///< actor was sent through subject, a teleporter
     kill,     ///< actor's missile or blast killed or destroyed subject
     activate, ///< actor woke subject, a spare avatar, so it joins the avatars to switch to
+    harm,     ///< subject lost energy, or was killed or destroyed; actor is what did it (see harming)
 };
 
 /// actor may be null: nobody known did it
@@ -62,6 +63,24 @@ private:
 };
 /// whom kills are put down to now; null outside any blame
 const bElem *blamed();
+
+/// While a harming lives, harm (kind::harm) is put down to `who`, the thing that does it: the
+/// monster that bites, the bunker or monster whose missile hits, the bomb that blows up, the mine,
+/// the beam. Unlike blame it names the hand, not only shooters; it is for watchers that count
+/// what hurts the player, and changes nothing in the game. Harmings nest; null names nobody.
+class harming
+{
+public:
+    explicit harming(const bElem *who);
+    ~harming();
+    harming(const harming &) = delete;
+    harming &operator=(const harming &) = delete;
+
+private:
+    const bElem *before;
+};
+/// what harm is put down to now; null outside any harming
+const bElem *harmer();
 } // namespace goe::events
 
 #endif // GAMEEVENTS_H
