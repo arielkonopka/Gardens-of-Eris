@@ -91,6 +91,13 @@ cells beside it free. A step runs `ticks_per_step` game ticks (default 8, one mo
 50 ticks a second). The action reaches the player once, in the first tick it can act, like a key
 pressed once; `game.action_taken` says whether it did.
 
+`movement=4` (on `Game` and `GoeEnv`; default 8) makes everything move on the four sides only,
+the player, monsters, drones and missiles alike, as the game's `--movement 4` does. The actions
+stay the same and in the same order, so an agent's action numbers mean the same in both; with 4
+the diagonal moves and shots do nothing and `action_taken` is False for them. `game.action_mask`
+(and `info["action_mask"]` in `GoeEnv`) is a bool per action, False for those, so an agent can
+mask them out of its choice.
+
 By default the reward is the score gained in the step. When a spare avatar takes over from a
 lost one, that step's score is 0 and `avatars_lost` grows. The episode ends (`terminated`) when
 the last avatar is gone; the maze never ends, so set `episode_ticks` to cut episodes (`truncated`).

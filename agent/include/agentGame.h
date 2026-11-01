@@ -49,6 +49,8 @@ constexpr int actionCount = (int) action::count;
 std::string actionName(action a);
 /// the game's control command for the action
 controlItem controlOf(action a);
+/// whether the action goes diagonally (MOVE_UP_LEFT ... SHOOT_DOWN_RIGHT)
+bool isDiagonal(action a);
 
 /// the inventory parts the agent can see
 enum class section : int { weapons, usables, keys, mods, tokens, count };
@@ -115,6 +117,10 @@ struct config
     std::uint64_t episodeTicks = 0;
     /// adds action::giveUp to the actions
     bool allowGiveUp = false;
+    /// how many ways everything moves (motion::setMode): 8, the sides and the diagonals, or 4,
+    /// the sides only. The actions stay the same in both; in 4 the diagonal ones do nothing
+    /// (actionMask says which). Anything but 4 is 8.
+    int movement = 8;
     /// the reward of a step: the sum of each event's count (eventName) times its weight; events
     /// left out weigh 0. The default is the score gained. Penalties take negative weights.
     std::map<std::string, float> rewardWeights = {{"score", 1.0f}};
@@ -167,8 +173,12 @@ public:
     bool isPlayerDead() const;
     /// episodeTicks passed
     bool isTruncated() const;
-    /// whether the last makeAction reached the player; false when it was busy the whole step
+    /// whether the last makeAction reached the player; false when it was busy the whole step, or
+    /// the action is masked out (a diagonal one with movement 4)
     bool actionTaken() const { return this->taken; }
+    /// one entry per action (actions()): false for those that cannot do anything here, the
+    /// diagonal ones with movement 4; all true with movement 8
+    std::vector<bool> actionMask() const;
     std::uint64_t episodeTick() const { return this->ticks; }
     /// how many times this episode a spare avatar took over from a lost one
     int avatarsLost() const { return this->lostAvatars; }
