@@ -665,3 +665,33 @@ TEST(RegressionTests, ABrokenAppleThatBlowsUpInTheInventoryKillsItsCarrier)
     EXPECT_FALSE(plr->getAttrs()->getInventory()->findInInventory(id)) << boardKnown;
     }
 }
+
+TEST(RegressionTests, ARefresherThatBlowsUpInTheInventoryOutlivesItsOwnBlast)
+{
+    // the bad_weak_ptr crash of 2026-10-31: blowing up, a refresher left its carrier's inventory,
+    // which held the last reference to it, and went on running freed. Here nothing else holds it.
+    std::shared_ptr<bElem> plr;
+    auto mc = roomWithPlayer(coords(8, 8), plr);
+    plr->stepOnElement(mc->getElement(4, 4));
+    std::weak_ptr<bElem> left;
+    {
+        auto fresh = elementFactory::generateAnElement<refresher>(mc, 0);
+        fresh->stepOnElement(mc->getElement(5, 4));
+        ASSERT_TRUE(plr->collect(fresh));
+        fresh->getAttrs()->setEnergy(6);
+        left = fresh;
+    }
+    plr->getAttrs()->setEnergy(10);
+    EXPECT_NO_THROW({
+        for (int i = 0; i < 2000 && !plr->getStats()->isDisposed(); i++) {
+            bElem::tick();
+            bElem::runLiveElements();
+        }
+        // whatever was queued for disposal is disposed cleanly afterwards
+        for (int i = 0; i < 200; i++)
+            bElem::runLiveElements();
+    });
+    EXPECT_TRUE(plr->getStats()->isDisposed() || plr->getStats()->isDying() || plr->getStats()->isDestroying());
+    if (const auto still = left.lock())
+        EXPECT_TRUE(still->getStats()->isDisposed() || still->getStats()->isDestroying());
+}

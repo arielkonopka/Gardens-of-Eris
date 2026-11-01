@@ -21,6 +21,7 @@
  */
 
 #include "bazookaMissile.h"
+#include "motion.h"
 #include "gameEvents.h"
 
 bool bazookaMissile::mechanics()
@@ -32,7 +33,8 @@ bool bazookaMissile::mechanics()
                                       GoEConstants::_bazookaMissileSpeed))
         return true;
     std::shared_ptr<bElem> be = this->getElementInDirection(this->getStats()->getMyDirection());
-    if (this->steps > 1 || !be)
+    // a closed corner ahead takes the blast; the missile never hits what is behind it
+    if (this->steps > 1 || !be || !motion::passes(shared_from_this(), this->getStats()->getMyDirection()))
         return this->explode(1.5);
 
     int beEnergy = be->getAttrs()->getEnergy();

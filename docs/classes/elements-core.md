@@ -124,9 +124,11 @@ How elements move. An element that moves into a cell tries, in order: collect wh
 then step onto what it uncovered, in the same move), step onto it, push it one cell further,
 interact with it.
 
-A diagonal move passes between the two cells beside it and is refused when both are blocked
-(`cornerOpen(board, from, d)`), so walls touching only at a corner still close the maze; shots,
-bunkers' eyes, chasers' walks and the demo's autopilot keep to the same rule.
+A diagonal move passes between the two cells beside it and needs both free
+(`cornerOpen(board, from, d)`; since 2026-11-01, one free cell was enough before), so nothing cuts
+round the end of a wall and walls touching only at a corner close the maze. `passes(who, d)` asks
+the same for an element where it stands. Steps, shots and missile hits, interacting, bunkers'
+eyes, chasers' walks and the demo's autopilot keep to the same rule.
 
 The movement mode (`setMode`, `currentMode`, `mode::eightWay` by default or `mode::fourWay`)
 brings back four-way movement for everything at once: in mode 4 `cornerOpen` refuses every

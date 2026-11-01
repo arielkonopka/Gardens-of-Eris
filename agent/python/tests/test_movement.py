@@ -8,10 +8,11 @@ import goe
 
 DIAGONALS = [a for a in goe.ACTIONS if a.startswith(("MOVE_", "SHOOT_")) and a.count("_") == 2]
 
-# The fingerprint of 400 steps of seed 4242 with actions drawn from default_rng(7), taken with
-# the game as it was before the movement switch (main at 215b1c6, Linux, GCC 13): eight-way
-# movement must play exactly as it did. A change that alters the game on purpose changes it.
-EIGHT_WAY_FINGERPRINT = "a0e4c68f1426067020438688c07dd54f1c031eb9efc9244a45c1be904b90d046"
+# The fingerprint of 400 steps of seed 4242 with actions drawn from default_rng(7): eight-way
+# movement must play exactly as it does now. A change that alters the game on purpose changes it.
+# Taken 2026-11-01 (Linux, GCC 13) when a diagonal began to need both side cells free; before
+# that, with one free side cell enough, it was a0e4c68f1426067020438688c07dd54f1c031eb9efc9244a45c1be904b90d046.
+EIGHT_WAY_FINGERPRINT = "41e3a79ac5d8c1049df345d2d9a411af93751d8e0136c63bf1bcb18afd6a0125"
 
 
 def fingerprint(**options):

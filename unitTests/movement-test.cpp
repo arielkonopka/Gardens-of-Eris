@@ -1,7 +1,8 @@
 /*
  * Eight-way movement (user request of 2026-10-13): everything that moves can go diagonally.
- * A diagonal step passes between the two cells beside it; it is refused only when both are
- * blocked, so walls touching at a corner still close the maze (the user's pick).
+ * A diagonal step passes between the two cells beside it and needs both of them free (user rule
+ * of 2026-11-01, after the eight-way audit; until then one free cell was enough), so nothing
+ * cuts round the end of a wall and walls touching at a corner still close the maze.
  */
 #include "chamber.h"
 #include "commons.h"
@@ -76,7 +77,7 @@ TEST(MovementTests, DirectionsKnowTheirDiagonals)
     EXPECT_FALSE(dir::isDiagonal(direction::NODIRECTION));
 }
 
-TEST(MovementTests, ADiagonalStepNeedsOneFreeCellBesideIt)
+TEST(MovementTests, ADiagonalStepNeedsBothCellsBesideItFree)
 {
     auto board = chamber::makeNewChamber(coords(8, 8));
     auto walker = put<monster>(board, coords(3, 3));
@@ -85,18 +86,85 @@ TEST(MovementTests, ADiagonalStepNeedsOneFreeCellBesideIt)
     EXPECT_TRUE(walker->moveInDirection(dir::direction::UPRIGHT));
     EXPECT_EQ(walker->getStats()->getMyPosition(), coords(4, 2));
     settle();
-    // one side blocked: rounds the corner
+    // one side blocked: no cutting round the end of a wall
     put<wall>(board, coords(4, 3));
-    EXPECT_TRUE(walker->moveInDirection(dir::direction::DOWNLEFT));
-    EXPECT_EQ(walker->getStats()->getMyPosition(), coords(3, 3));
-    settle();
-    // both sides blocked: the walls touch at the corner and nothing gets through
+    EXPECT_FALSE(motion::cornerOpen(*board, coords(4, 2), dir::direction::DOWNLEFT));
+    EXPECT_FALSE(walker->moveInDirection(dir::direction::DOWNLEFT));
+    EXPECT_EQ(walker->getStats()->getMyPosition(), coords(4, 2));
+    EXPECT_FALSE(motion::cornerOpen(*board, coords(3, 3), dir::direction::UPRIGHT)) << "the same corner seen from the other side";
+    // both sides blocked: closed as well
     put<wall>(board, coords(3, 2));
     EXPECT_FALSE(motion::cornerOpen(*board, coords(3, 3), dir::direction::UPRIGHT));
-    EXPECT_FALSE(walker->moveInDirection(dir::direction::UPRIGHT));
-    EXPECT_EQ(walker->getStats()->getMyPosition(), coords(3, 3));
     // the sides never need it
     EXPECT_TRUE(motion::cornerOpen(*board, coords(3, 3), dir::direction::UP));
+    // a wall elsewhere does not matter
+    EXPECT_TRUE(motion::cornerOpen(*board, coords(3, 3), dir::direction::DOWNLEFT));
+}
+
+TEST(MovementTests, AMissileNeverHitsWhatIsBehindAClosedCorner)
+{
+    // audit finding of 2026-10-31: a missile hurt a target diagonally behind two walls
+    std::shared_ptr<bElem> plr;
+    auto board = roomWithPlayer(coords(12, 12), coords(2, 2), plr);
+    auto gun = put<plainGun>(board, coords(1, 1), 1); // never runs out
+    ASSERT_TRUE(plr->collect(gun));
+    plr->getStats()->setFacing(dir::direction::DOWNRIGHT);
+    ASSERT_TRUE(gun->use(plr));
+    const auto shot = board->getElement(3, 3);
+    ASSERT_EQ(shot->getType(), bElemTypes::_plainMissile);
+    // the corner after (3,3) is closed, and someone stands behind it
+    put<wall>(board, coords(4, 3));
+    put<wall>(board, coords(3, 4));
+    auto target = put<player>(board, coords(4, 4));
+    const int before = target->getAttrs()->getEnergy();
+    for (int i = 0; i < 200; i++)
+        bElem::runLiveElements();
+    EXPECT_EQ(target->getAttrs()->getEnergy(), before);
+    EXPECT_TRUE(shot->getStats()->isDisposed() || shot->getStats()->isDying());
+    plr->disposeElement();
+}
+
+TEST(MovementTests, ABazookaMissileBlowsUpOnAClosedCornerInsteadOfHittingBehindIt)
+{
+    std::shared_ptr<bElem> plr;
+    auto board = roomWithPlayer(coords(12, 12), coords(1, 1), plr);
+    put<wall>(board, coords(4, 3));
+    put<wall>(board, coords(3, 4));
+    auto target = put<player>(board, coords(4, 4));
+    const int before = target->getAttrs()->getEnergy();
+    auto missile = elementFactory::generateAnElement<bazookaMissile>(board, 0);
+    missile->getStats()->setStatsOwner(plr);
+    missile->getStats()->setMyDirection(dir::direction::DOWNRIGHT);
+    ASSERT_TRUE(missile->stepOnElement(board->getElement(3, 3)));
+    missile->getAttrs()->setEnergy(100);
+    missile->registerLiveElement(missile);
+    for (int i = 0; i < 200; i++)
+        bElem::runLiveElements();
+    EXPECT_EQ(target->getAttrs()->getEnergy(), before) << "no direct hit, and the blast stays on this side";
+    plr->disposeElement();
+}
+
+TEST(MovementTests, InteractNeverReachesRoundAClosedCorner)
+{
+    std::shared_ptr<bElem> plr;
+    auto board = roomWithPlayer(coords(10, 10), coords(2, 2), plr);
+    put<wall>(board, coords(3, 2));
+    auto behind = put<key>(board, coords(3, 3));
+    inputManager::getInstance().setControlItem(controlItem(2, dir::direction::DOWNRIGHT));
+    for (int i = 0; i < 20; i++)
+        bElem::runLiveElements();
+    EXPECT_EQ(behind->getStats()->getMyPosition(), coords(3, 3)) << "a wall on one side closes the corner";
+    EXPECT_FALSE(behind->getStats()->isCollected());
+    // on open floor it reaches diagonally
+    inputManager::getInstance().setControlItem(controlItem(-1, dir::direction::NODIRECTION));
+    settle();
+    auto open = put<key>(board, coords(1, 3));
+    inputManager::getInstance().setControlItem(controlItem(2, dir::direction::DOWNLEFT));
+    for (int i = 0; i < 20 && !open->getStats()->isCollected(); i++)
+        bElem::runLiveElements();
+    EXPECT_TRUE(open->getStats()->isCollected());
+    inputManager::getInstance().setControlItem(controlItem(-1, dir::direction::NODIRECTION));
+    plr->disposeElement();
 }
 
 TEST(MovementTests, ThePlayerWalksAndPushesDiagonally)
