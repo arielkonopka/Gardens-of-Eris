@@ -65,7 +65,8 @@ The game itself. Not copyable.
 | `void newEpisode(std::optional<std::uint32_t> seed = std::nullopt)` | Clears the world and builds a new one: the start chunk and every chunk within `worldBuilder::buildRadius` (2) of it, from the configured patterns or as random mazes. No seed: a fresh one from the system (`goe::rng::freshSeed`). Resets the tick count, the score baseline, the event counts and the once-an-episode sets. |
 | `float makeAction(action a)` | Plays one step: `config::ticksPerStep` ticks (default 8, one move). The action reaches the player once, in the first tick it can act (when every timer it waits on runs out by the next tick), like a key pressed once; the other ticks get no command. Stops early when the episode ends. Returns the reward: each event's count in the step times its weight. Throws `std::out_of_range` for an action outside `actions()`. |
 | `bool advance(controlItem control)` | One game tick with a raw control (`commons.h`). Grows the world around the player or swaps one far chunk out (as the presenter does), then runs `bElem::runLiveElements`. False once the episode is over. Use it to drive the game tick by tick; `makeAction` is built on it. |
-| `bool actionTaken() const` | Whether the last `makeAction` reached the player; false when the player was busy (moving, dying, teleporting) for the whole step. |
+| `bool actionTaken() const` | Whether the last `makeAction` reached the player; false when the player was busy (moving, dying, teleporting) for the whole step, or the action is masked out (a diagonal one with `movement` 4). |
+| `std::vector<bool> actionMask() const` | One per action: false for those that can do nothing, the diagonal ones with `movement` 4; all true with 8. Python: `game.action_mask`, `info["action_mask"]`. |
 
 ### State and ending
 
@@ -145,6 +146,7 @@ How the game is observed and played. Every field has a default.
 | `int ticksPerStep` | `GoEConstants::_mov_delay` (8) | Game ticks per `makeAction`; the game runs 50 ticks a second. |
 | `std::uint64_t episodeTicks` | 0 | Truncate the episode after this many ticks; 0 for no limit. |
 | `bool allowGiveUp` | false | Adds `action::giveUp` (the avatar dies). |
+| `int movement` | 8 | 8 or 4: how everything moves (`motion::setMode`, set when the game is made and at every `newEpisode`). The actions stay the same; with 4 the diagonal ones are masked (`actionMask`). Python: `movement=`. |
 | `std::map<std::string, float> rewardWeights` | `{"score": 1}` | Reward = sum of each event's count times its weight; events left out weigh 0. |
 | `std::map<std::pair<int, int>, std::shared_ptr<const chunkPattern>> chunkPatterns` | none | Chunks built from a pattern, by chunk. |
 | `std::shared_ptr<const chunkPattern> defaultPattern` | none | The pattern of every other chunk; none: random mazes. |

@@ -6,6 +6,7 @@
 #include "gameEvents.h"
 #include "gameSerializer.h"
 #include "inputManager.h"
+#include "motion.h"
 #include "randomStreams.h"
 #include "worldBuilder.h"
 #include <array>
@@ -155,6 +156,11 @@ controlItem controlOf(action a)
     return actionTable.at((std::size_t) a).control;
 }
 
+bool isDiagonal(action a)
+{
+    return dir::isDiagonal(controlOf(a).dir);
+}
+
 std::string sectionName(section s)
 {
     return std::string(sectionNames.at((std::size_t) s));
@@ -175,6 +181,8 @@ std::optional<event> eventByName(std::string_view name)
 
 game::game(config c) : cfg(std::move(c))
 {
+    this->cfg.movement = this->cfg.movement == 4 ? 4 : 8;
+    motion::setMode(motion::modeOf(this->cfg.movement));
     if (this->cfg.visionRadius < 0)
         throw std::invalid_argument("visionRadius must be 0 or more");
     if (this->cfg.ticksPerStep < 1)
@@ -250,6 +258,8 @@ void game::newEpisode(std::optional<std::uint32_t> seed)
     // the running game's engine too, so one seed replays the same game for the same actions
     goe::rng::saved().seed(this->worldSeed);
     gameClock::ticks = 5;
+    // one world a process: the mode is this game's again, should anything have changed it
+    motion::setMode(motion::modeOf(this->cfg.movement));
     inputManager::getInstance(true).setControlItem(nothing);
     this->installPatterns();
     worldBuilder::startNew();
@@ -425,9 +435,11 @@ float game::makeAction(action a)
     this->taken = false;
     this->stepCounts.fill(0.0f);
     const bool aliveBefore = !this->isPlayerDead();
+    // a masked action never reaches the player: the step passes as if nothing was pressed
+    const bool allowed = this->cfg.movement == 8 || !isDiagonal(a);
     for (int t = 0; t < this->cfg.ticksPerStep && !this->isEpisodeFinished(); t++) {
         const auto plr = player::getActivePlayer();
-        const bool deliver = !this->taken && plr && readyNextTick(*plr);
+        const bool deliver = allowed && !this->taken && plr && readyNextTick(*plr);
         const int energy = plr ? plr->getAttrs()->getEnergy() : 0;
         this->advance(deliver ? controlOf(a) : nothing);
         this->taken = this->taken || deliver;
@@ -457,6 +469,15 @@ float game::makeAction(action a)
         reward += this->weights[e] * this->stepCounts[e];
     }
     return reward;
+}
+
+std::vector<bool> game::actionMask() const
+{
+    std::vector<bool> mask((std::size_t) this->actions(), true);
+    if (this->cfg.movement == 4)
+        for (int a = 0; a < this->actions(); a++)
+            mask[(std::size_t) a] = !isDiagonal((action) a);
+    return mask;
 }
 
 int game::score() const
