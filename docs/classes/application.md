@@ -137,7 +137,8 @@ cells next to the player and the lines it could shoot along. `decide(player)` gi
 until the player can act in the next tick (`bElemStats::readyNextTick`), then picks one
 control: shoot a monster or drone within `shootingRange` (5), collect an item next to it, try a
 closed door (each once), or walk to the neighbour it has stood on least. `reset()` forgets where it
-has been.
+has been. `setWays(4)` keeps it to the four sides with the same rules (eight ways by default;
+`goe-ab` compares the two).
 
 ## `goe::hallOfFame` (`hallOfFame.h`)
 

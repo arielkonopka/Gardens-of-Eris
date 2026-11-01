@@ -5,6 +5,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <span>
 #include <unordered_map>
 
 class bElem;
@@ -27,6 +28,11 @@ public:
     /// how far along a line it looks for something to shoot
     static constexpr int shootingRange = 5;
 
+    /// the ways it walks and shoots: 8 (the sides and the diagonals, the default) or 4 (the sides
+    /// only), with the same rules; anything but 4 is 8. Kept by reset().
+    void setWays(int ways) { this->eightWays = ways != 4; }
+    int ways() const { return this->eightWays ? 8 : 4; }
+
     /// the control for this tick; no command when there is nothing to do
     controlItem decide(const std::shared_ptr<bElem> &plr);
     /// forgets where it has been, for a new world
@@ -36,11 +42,14 @@ private:
     static std::uint64_t keyOf(coords c);
     /// the first direction along which a monster or drone stands in reach, with nothing between
     std::optional<dir::direction> target(const std::shared_ptr<bElem> &plr) const;
+    /// the directions it considers, in the order it considers them
+    std::span<const dir::direction> directions() const;
 
     std::unordered_map<std::uint64_t, int> visits;
     std::set<unsigned long> triedDoors;
     coords last = NOCOORDS;
     dir::direction heading = dir::direction::UP;
+    bool eightWays = true;
 };
 
 } // namespace goe

@@ -37,6 +37,12 @@ const bElem *&current()
     static const bElem *who = nullptr;
     return who;
 }
+
+const bElem *&currentHarmer()
+{
+    static const bElem *who = nullptr;
+    return who;
+}
 } // namespace
 
 void observe(observer o)
@@ -63,6 +69,21 @@ blame::~blame()
 const bElem *blamed()
 {
     return current();
+}
+
+harming::harming(const bElem *who) : before(currentHarmer())
+{
+    currentHarmer() = who;
+}
+
+harming::~harming()
+{
+    currentHarmer() = this->before;
+}
+
+const bElem *harmer()
+{
+    return currentHarmer();
 }
 
 bool isDown(const bElem &e)
