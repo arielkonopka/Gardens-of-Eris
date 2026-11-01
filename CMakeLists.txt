@@ -112,6 +112,10 @@ endif()
 add_executable(goe-bench ${CMAKE_SOURCE_DIR}/benchmarks/goe-bench.cpp $<TARGET_OBJECTS:GardenOfErisLib>)
 target_link_libraries(goe-bench ${LIBRARIES})
 
+# Do the generator's locks still lock with eight-way movement? (a flood fill, 4- vs 8-connected)
+add_executable(goe-audit ${CMAKE_SOURCE_DIR}/benchmarks/goe-audit.cpp $<TARGET_OBJECTS:GardenOfErisLib>)
+target_link_libraries(goe-audit ${LIBRARIES})
+
 # Renders the adaptive musician to a WAV file, to listen to a performer without the game
 add_executable(goe-musician ${CMAKE_SOURCE_DIR}/benchmarks/goe-musician.cpp $<TARGET_OBJECTS:GardenOfErisLib>)
 target_link_libraries(goe-musician ${LIBRARIES})
