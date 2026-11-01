@@ -33,8 +33,10 @@ bool landmine::mechanics()
     // an explosion only reaches the cells around it, so the one standing on the mine is hit here
     auto rider = this->getStats()->getStandingOn().lock();
     bool exploded = simpleBomb::mechanics();
-    if (exploded && rider && !rider->getStats()->isDisposed())
+    if (exploded && rider && !rider->getStats()->isDisposed()) {
+        goe::events::harming hand(this);
         rider->destroy();
+    }
     return exploded;
 }
 

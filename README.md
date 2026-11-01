@@ -89,6 +89,8 @@ Every new game prints its world seed (`World seed: ...`). `GardenOfEris --seed <
 
 `GardenOfEris --movement 4` makes everything move on the four sides only, as before eight-way movement (`--movement 8` is the default). Config has the same switch (Movement: 8 ways / 4 ways, `movementMode` in settings.json); the command line wins. In the four-way mode two held keys walk left or right, as they used to.
 
+`goe-ab` (build target) plays headless games with the demo's autopilot to compare the two: `goe-ab --arm 8x4 --seeds 200 --cap 20000 [--drop] --out file.csv` from `GoEoOL` plays seeds 1 to 200 with eight-way movement and an autopilot that walks the four sides (`4x4`, `8x4`, `8x8`), until the last avatar is lost or the tick cap, from the start or, with `--drop`, from the demo's far drop. `tools/ab/run.sh build` runs every arm and writes a report with bootstrap confidence intervals (`tools/ab/analyze.py`, needs numpy).
+
 The HUD shows your score (**P**), your level (**Dex**, see Stats) and the current difficulty (**D**, see Difficulty).
 
 Settings saved by an older version kept Esc for giving up; the game moves it to Backspace and gives Esc to save and exit, unless you chose your keys after this change.
@@ -140,6 +142,8 @@ ctest --test-dir build --output-on-failure
 Run the game from the `GoEoOL` folder, where the `data` folder is. On Windows, the game builds with MSYS2 (UCRT64) and the same libraries; `.github/workflows/ci.yml` lists the exact packages for both systems.
 
 The `goe-bench` target times building the world (the start, then one chunk at a time), a game tick, save/load, and a walk that swaps chunks to disk and back: `goe-bench 61 3000 60` from `GoEoOL` builds 61 chunks, about as many cells as one of the old 500x500 levels, then walks 60 chunks east and back, reporting the chunks in memory, the time per chunk written or read, and the memory used.
+
+The `goe-audit` target checks that the maze's locks still lock with eight-way movement, without playing: for each world seed it builds the start of the world and floods it from the player's start, 4-connected and 8-connected with the game's corner rule, with walls, closed doors and bricks stopping the flood. It reports what only the 8-way walk reaches (cells, rooms, locked rooms, golden apples, keys, spare avatars, global teleporters), every locked room an 8-way walk leaves without opening its walls, and the brick-sealed rooms that a push from outside opens, straight or only diagonally. `goe-audit 200 1 out` from `GoEoOL` checks seeds 1 to 200 and writes `out/goe-audit.csv` and ASCII pictures of every bypass to `out/goe-audit-bypasses.txt`.
 
 ### Agents and Python
 
@@ -438,6 +442,8 @@ New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, 
 * Fixed a crash (`bad_weak_ptr`) in long games: a refresher that blew up in an inventory freed itself halfway through its own blast, because the inventory held the last reference to it. It hit about 1 game in 80 in the A/B runs, and once on Windows CI.
 * The title screen demo no longer gets stuck in a locked start room: its autopilot decides only when the player can act. Before, a door it picked while the player was still moving counted as tried and was never tried again.
 * Diagonals need both cells beside them free (they used to need one), for everything that moves, shoots, looks or plans a path. Missiles and bazooka missiles no longer hit something diagonally behind a closed corner (a bazooka missile blows up on the corner), and interacting no longer reaches round one. Found by the eight-way movement audit.
+* The demo's autopilot can keep to the four sides (`autopilot::setWays(4)`; eight stays the default), and `goe-ab` with `tools/ab` A/B-tests four-way against eight-way movement headless. A new game event, `harm`, names what hurt something (`goe::events::harming`: the biting monster, the shooter whose missile hit, the bomb, the mine, the beam, the door); it changes nothing in the game.
+* `goe-audit`: a flood-fill audit of the generated maze, 4-way against 8-way movement. Over 200 seeds (25 chunks each) no locked room leaks and nothing is reached only by walking diagonally; one brick-sealed room in 1760 opens only by a diagonal push.
 * The agent library takes the movement switch: `goe.Game(movement=4)` / `GoeEnv(movement=4)` (default 8). The actions stay the same in both modes; with 4 the diagonal ones do nothing, and `game.action_mask` / `info["action_mask"]` say which actions can do something.
 * A movement switch: `--movement 4|8`, Config "Movement" and `movementMode` in settings.json. Eight ways stays the default; four ways closes every diagonal for everything that moves (the player, monsters, drones, missiles, pushed bricks, bunkers' eyes, chasers), so the two can be compared.
 * Animated characters in the 3D view: your avatar is the KayKit Knight (with sword, round shield and cape), and monsters are KayKit skeletons (a warrior, a rogue and a mage by subtype, a minion otherwise). They stand about, walk when they move, and fall down when they die, turning to face where they go. The models are skinned on the CPU, each pose once a frame however many elements show it. `Animations` in a skins.json `Model` names the clips.

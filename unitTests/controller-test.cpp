@@ -1,3 +1,4 @@
+#include "gameEvents.h"
 #include "musicCues.h"
 #include "elements.h"
 #include "commons.h"
@@ -325,4 +326,27 @@ TEST(ControllerTests, EveryKindAnnouncesItselfInItsOwnVoice)
         goe::sound::observe({});
         EXPECT_EQ(announced, std::vector<int>{kind});
     }
+}
+
+TEST(ControllerTests, HarmIsPutDownToTheHandThatDoesIt)
+{
+    // a monster next to the player bites it; the harm names the monster, so a watcher can tell
+    // what hurt the player (goe-ab's damage by cause)
+    auto r = makeRig(puppetMasterFR::patrol, 10, 7, 7);
+    auto biter = elementFactory::generateAnElement<monster>(r.mc, 0);
+    biter->stepOnElement(r.mc->getElement(3, 4));
+    std::vector<std::pair<unsigned long, const bElem *>> harms;
+    goe::events::observe([&](goe::events::kind k, const bElem &subject, const bElem *actor) {
+        if (k == goe::events::kind::harm)
+            harms.emplace_back(subject.getStats()->getInstanceId(), actor);
+    });
+    const int before = r.plr->getAttrs()->getEnergy();
+    for (int t = 0; t < 200 && r.plr->getAttrs()->getEnergy() == before; t++)
+        bElem::runLiveElements();
+    goe::events::observe({});
+    ASSERT_LT(r.plr->getAttrs()->getEnergy(), before) << "the monster must bite";
+    ASSERT_FALSE(harms.empty());
+    EXPECT_EQ(harms.front().first, r.plr->getStats()->getInstanceId());
+    EXPECT_EQ(harms.front().second, biter.get());
+    EXPECT_EQ(goe::events::harmer(), nullptr) << "outside a blow nobody is harming";
 }

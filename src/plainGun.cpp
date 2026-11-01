@@ -81,6 +81,7 @@ bool plainGun::use(std::shared_ptr<bElem> who)
                 this->createProjectible(who);
             } else if (myel->getAttrs()->isKillable()) {
                 goe::events::blame by(who.get());
+                goe::events::harming hand(who.get());
                 myel->hurt(this->getAttrs()->getEnergy());
             }
             if (this->getAttrs()->getSubtype() % 2 == 0) {

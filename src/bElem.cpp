@@ -209,9 +209,11 @@ bool bElem::destroy()
 {
     if (this->getAttrs()->isDestroyable() || this->getAttrs()->isSteppable()
         || this->getAttrs()->isKillable()) {
-        if (this->getAttrs()->isKillable() && !goe::events::isDown(*this))
+        if (this->getAttrs()->isKillable() && !goe::events::isDown(*this)) {
+            goe::events::report(goe::events::kind::harm, *this, goe::events::harmer());
             if (const auto by = goe::events::blamed())
                 goe::events::report(goe::events::kind::kill, *this, by);
+        }
         if (this->getStats()->isDying()) {
             this->getStats()->setKilled(0);
             this->getStats()->setKillTimeBeg(0);
@@ -263,6 +265,8 @@ bool bElem::hurt(int points)
         || this->getStats()->isDisposed())
         return false;
     this->getAttrs()->setEnergy(this->getAttrs()->getEnergy() - points);
+    if (points > 0)
+        goe::events::report(goe::events::kind::harm, *this, goe::events::harmer());
     if (this->getAttrs()->getEnergy() <= 0)
         this->kill();
     return true;
@@ -373,6 +377,7 @@ bool bElem::kill()
         bElem::toDispose.push_back(shared_from_this());
     }
     this->getStats()->setKilled(GoEConstants::_defaultKillTime);
+    goe::events::report(goe::events::kind::harm, *this, goe::events::harmer());
     if (const auto by = goe::events::blamed())
         goe::events::report(goe::events::kind::kill, *this, by);
     return true;
