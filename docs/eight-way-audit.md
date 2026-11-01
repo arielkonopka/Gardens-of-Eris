@@ -16,6 +16,9 @@ teleporters, the autopilot, rubbish, explosions, kiki/bouba beams, missiles and 
 "Mode 4" means the movement switch of #319 (`--movement 4`), where `cornerOpen` refuses every
 diagonal.
 
+
+**Update 2026-11-01:** the author chose stricter corners (a diagonal needs both side cells free). The missile, bazooka and interact leftovers are fixed with regression tests. Under the stricter rule a diagonal cell is open only when both side cells are free, so the rubbish-pile diagonal fallback no longer helps and was left as it is.
+
 ## Leftovers that disagree with movement
 
 | file:line | what | verdict | suggested change |

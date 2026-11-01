@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "player.h"
+#include "motion.h"
 #include <algorithm>
 #include "elementSound.h"
 #include "gameEvents.h"
@@ -184,7 +185,9 @@ bool player::mechanics()
         }
         break;
     case 2: {
-        if (this->getElementInDirection(currentCtrlItem.dir) == nullptr)
+        // nothing is reached round a closed corner, the same as walking
+        if (this->getElementInDirection(currentCtrlItem.dir) == nullptr
+            || !motion::passes(shared_from_this(), currentCtrlItem.dir))
             return false;
         this->getStats()->setFacing(currentCtrlItem.dir);
         std::shared_ptr<bElem> be = this->getElementInDirection(currentCtrlItem.dir);
