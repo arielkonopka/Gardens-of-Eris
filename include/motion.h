@@ -38,12 +38,24 @@ class bElem;
  * A diagonal move (user rule of 2026-10-13) needs at least one of the two cells beside it, the
  * ones it passes between, to be free; between two blocked cells nothing gets through, so walls
  * that touch only at a corner still close the maze.
+ * The movement mode (2026-10-31, for measuring what eight-way movement changed) can bring back
+ * the old four-way rule for everything at once: in mode 4 no diagonal passes. cornerOpen is the
+ * one place that reads it, so every mover, gun, line of sight and path search follows it.
  */
 class chamber;
 
 namespace motion {
+/// the movement modes: eight ways (the default since 2026-10-13) or the four sides only
+enum class mode : int { fourWay = 4, eightWay = 8 };
+/// the mode every mover follows; the game sets it from settings.json or "--movement", the agent
+/// from its config. It holds until it is set again.
+void setMode(mode m);
+mode currentMode();
+/// the mode of a number: 4 is four-way, anything else eight-way
+constexpr mode modeOf(int ways) { return ways == 4 ? mode::fourWay : mode::eightWay; }
+
 /// whether a move from the cell in direction d may pass: always for the four sides; for a
-/// diagonal, when one of the two cells beside it can be stood on
+/// diagonal, never in mode 4, else when one of the two cells beside it can be stood on
 bool cornerOpen(const chamber &board, coords from, dir::direction d);
 /// moves one cell in direction d; speed is how many ticks the move takes
 bool step(const std::shared_ptr<bElem> &who, dir::direction d, int speed);

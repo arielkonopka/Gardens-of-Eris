@@ -30,6 +30,8 @@ class GoeEnv(_Base):
     Reward: the score gained in the step, or the step's events weighed by reward_weights
     (info["events"] holds the step's event counts).
     terminated: the last avatar is gone. truncated: episode_ticks passed.
+    info["action_mask"]: bool per action, False for those that do nothing (the diagonal ones
+    with movement=4), for agents that mask their choice.
 
     Every keyword goes to Game (vision_radius, cell_features, follow_player, ...).
     """
@@ -62,7 +64,7 @@ class GoeEnv(_Base):
         s = self._last_state
         return {"score": s.score, "tick": s.tick, "centre": s.centre, "seed": self.game.seed,
                 "action_taken": self.game.action_taken, "avatars_lost": self.game.avatars_lost,
-                "events": self.game.step_events}
+                "events": self.game.step_events, "action_mask": self.game.action_mask}
 
     def reset(self, *, seed=None, options=None):
         """A new world. With a seed, the same seed gives the same world; without one, a fresh world

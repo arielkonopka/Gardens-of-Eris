@@ -95,6 +95,11 @@ class Game:
                         chunk, (1, 0) the one east of it, (0, -1) the one north; chunk_at says
                         which chunk a cell is in. A chunk is CHUNK_SIZE (64) cells on each side
     default_pattern     the pattern of every other chunk; None: a random maze
+    movement            8: everything moves the four sides and the diagonals (the game's
+                        default); 4: the four sides only, for everything that moves. The actions
+                        are the same in both, in the same order; with 4 the diagonal ones
+                        (MOVE_UP_LEFT ... SHOOT_DOWN_RIGHT) do nothing and action_taken is False
+                        for them. action_mask says which actions can do something
 
     describe_features() says what every feature means.
     """
@@ -102,7 +107,9 @@ class Game:
     def __init__(self, data_dir=None, vision_radius=8, circle=True, follow_player=True, fixed_centre=(0, 0),
                  cell_features=None, player_features=None, inventory_sections=None, inventory_slots=5,
                  item_features=None, ticks_per_step=8, episode_ticks=0, allow_give_up=False,
-                 reward_weights=None, chunk_patterns=None, default_pattern=None):
+                 reward_weights=None, chunk_patterns=None, default_pattern=None, movement=8):
+        if movement not in (4, 8):
+            raise ValueError(f"movement must be 4 or 8, not {movement!r}")
         c = _goe.Config()
         c.data_dir = default_data_dir() if data_dir is None else str(data_dir)
         c.vision_radius = vision_radius
@@ -117,6 +124,7 @@ class Game:
         c.ticks_per_step = ticks_per_step
         c.episode_ticks = episode_ticks
         c.allow_give_up = allow_give_up
+        c.movement = movement
         if reward_weights is not None:
             unknown = set(reward_weights) - set(EVENTS)
             if unknown:
@@ -127,6 +135,7 @@ class Game:
             c.default_pattern = as_pattern(default_pattern)._native
         self.vision_radius = vision_radius
         self.inventory_slots = inventory_slots
+        self.movement = movement
         self._game = _goe.Game(c)
 
     # --- the episode ---
@@ -200,6 +209,12 @@ class Game:
     def action_taken(self):
         """Whether the last action reached the player (False when it was busy the whole step)."""
         return self._game.action_taken
+
+    @property
+    def action_mask(self):
+        """bool array, one per available action: False for the actions that cannot do anything
+        with this movement (the diagonal ones with movement=4); all True with movement=8."""
+        return np.array(self._game.action_mask, dtype=bool)
 
     @property
     def step_events(self):
