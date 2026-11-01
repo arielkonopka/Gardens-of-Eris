@@ -437,6 +437,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* The title screen demo no longer gets stuck in a locked start room: its autopilot decides only when the player can act. Before, a door it picked while the player was still moving counted as tried and was never tried again.
 * `goe-audit`: a flood-fill audit of the generated maze, 4-way against 8-way movement. Over 200 seeds (25 chunks each) no locked room leaks and nothing is reached only by walking diagonally; one brick-sealed room in 1760 opens only by a diagonal push.
 * The agent library takes the movement switch: `goe.Game(movement=4)` / `GoeEnv(movement=4)` (default 8). The actions stay the same in both modes; with 4 the diagonal ones do nothing, and `game.action_mask` / `info["action_mask"]` say which actions can do something.
 * A movement switch: `--movement 4|8`, Config "Movement" and `movementMode` in settings.json. Eight ways stays the default; four ways closes every diagonal for everything that moves (the player, monsters, drones, missiles, pushed bricks, bunkers' eyes, chasers), so the two can be compared.

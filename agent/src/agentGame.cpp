@@ -105,15 +105,10 @@ std::vector<std::string> joined(std::initializer_list<std::span<const feature>> 
     return res;
 }
 
-/// the player acts in the next tick: every timer it waits on has run out by then
+/// the player acts in the next tick (bElemStats::readyNextTick)
 bool readyNextTick(const bElem &e)
 {
-    const bElemStats &st = *e.getStats();
-    // a getter gives the ticks left; one left now is none left in the next tick
-    const auto soon = [](int left) { return left <= 1; };
-    return soon(st.getWaiting()) && soon(st.getTelInProgress()) && soon(st.getKilled())
-           && soon(st.getDestroyed()) && soon(st.getMoved()) && soon(st.getFadingIn())
-           && soon(st.getFadingOut()) && (!e.getAttrs()->isInteractive() || soon(st.getInteracted()));
+    return e.getStats()->readyNextTick(e.getAttrs()->isInteractive());
 }
 
 const std::vector<std::shared_ptr<bElem>> &itemsOf(inventory &inv, section s)

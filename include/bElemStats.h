@@ -120,6 +120,17 @@ public:
         return this->isWaiting() || this->isTeleporting() || this->isDying() || this->isDestroying()
                || this->isMoving() || this->isFadingIn() || this->isFadingOut();
     }
+    /// whether the element acts in the next tick: every timer it waits on has run out by then
+    /// (one tick left now is none left then). The interaction timer counts only for an
+    /// interactive element. Who drives a player (the demo's autopilot, an agent) decides only then,
+    /// because a control given while it is still busy is dropped.
+    bool readyNextTick(bool interactive) const
+    {
+        const auto soon = [](int left) { return left <= 1; };
+        return soon(this->getWaiting()) && soon(this->getTelInProgress()) && soon(this->getKilled())
+               && soon(this->getDestroyed()) && soon(this->getMoved()) && soon(this->getFadingIn())
+               && soon(this->getFadingOut()) && (!interactive || soon(this->getInteracted()));
+    }
     // can methods
     // none present
 
