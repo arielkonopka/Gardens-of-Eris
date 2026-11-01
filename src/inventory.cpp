@@ -186,9 +186,12 @@ bool inventory::removeActiveWeapon()
 
 bool inventory::runLives()
 {
+    // a copy of the list: an item's mechanics may take it, or another, out of the inventory (a
+    // refresher blowing up, say), which would free it mid-call and break the walk over the list
     auto rl = [](const std::vector<std::shared_ptr<bElem>> &in) {
-        for (const auto &e : in) {
-            if (e->getStats()->hasActivatedMechanics())
+        const std::vector<std::shared_ptr<bElem>> held = in;
+        for (const auto &e : held) {
+            if (e->getStats()->hasActivatedMechanics() && !e->getStats()->isDisposed())
                 e->mechanics();
         }
     };
