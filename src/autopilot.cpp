@@ -62,6 +62,11 @@ controlItem autopilot::decide(const std::shared_ptr<bElem> &plr)
     constexpr controlItem nothing = controlItem(-1, dir::direction::NODIRECTION);
     if (!plr || !plr->getBoard())
         return nothing;
+    // asked every frame, it decides only when the player can act: a door picked while the
+    // player is still moving would be marked as tried without ever being tried, and a start room
+    // whose doors need the key lying inside would keep it in there for good
+    if (!plr->getStats()->readyNextTick(plr->getAttrs()->isInteractive()))
+        return nothing;
     const coords me = plr->getStats()->getMyPosition();
     if (!(me == this->last)) {
         this->visits[keyOf(me)]++;

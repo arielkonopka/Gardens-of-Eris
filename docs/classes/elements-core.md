@@ -87,7 +87,7 @@ What an element is doing, and the links that make up a cell's stack.
 - Timers, all measured on `gameClock`: moved, waiting, killed, destroyed, teleporting
   (`telInProgress`), interacted, fading in and out. Each getter returns the ticks left, or -1.
   `isMoving()`, `isWaiting()`, `isDying()`, `isDestroying()`, `isTeleporting()`, `isFadingIn()`,
-  `isFadingOut()`, `isInteracting()`, and `busy()` when any of them runs (the element cannot act).
+  `isFadingOut()`, `isInteracting()`, and `busy()` when any of them runs (the element cannot act). `readyNextTick(interactive)` says whether all of them run out by the next tick, so a control given now is taken (the demo's autopilot and the agent ask it).
 - Flags: active, collected, disposed, marked, activated mechanics, has a parent (stands on
   something).
 - Stack: `getSteppingOn()` (what it stands on) and `getStandingOn()` (what stands on it). Only

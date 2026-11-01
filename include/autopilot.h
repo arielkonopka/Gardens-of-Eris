@@ -16,7 +16,8 @@ namespace goe {
  * Plays the active player by itself, for the title screen's demo. It is fair like the chasers:
  * it only reads the cells next to the player and the lines it could shoot along.
  *
- * Each tick it picks one control, in this order: shoot a monster or drone in a straight line
+ * It decides only when the player can act in the next tick (bElemStats::readyNextTick), and
+ * gives no command in between. Then it picks one control, in this order: shoot a monster or drone in a straight line
  * within reach (when it holds a gun), collect an item next to it, try a closed door next to it
  * (each door once), or walk to the neighbouring cell it has stood on least, keeping its
  * direction on a tie. Landmines are walked around.

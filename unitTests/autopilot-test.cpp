@@ -88,6 +88,27 @@ TEST(AutopilotTests, ItWandersAboutTheMaze)
     gameSerializer::clearWorld();
 }
 
+TEST(AutopilotTests, ItTriesADoorOnlyWhenThePlayerCanAct)
+{
+    // the demo asks every frame; a door picked while the player was still moving was marked as
+    // tried and never tried, which kept it in a start room whose doors need the key inside
+    const auto plr = startWorld(555);
+    ASSERT_TRUE(plr);
+    const auto d = freeSide(plr);
+    ASSERT_TRUE(d);
+    const auto shut = elementFactory::generateAnElement<door>(plr->getBoard(), 0);
+    shut->stepOnElement(plr->getElementInDirection(*d));
+    ASSERT_FALSE(shut->getAttrs()->isOpen());
+    goe::autopilot pilot;
+    plr->getStats()->setWaiting(10); // busy, as right after a step
+    EXPECT_EQ(pilot.decide(plr).type, -1) << "no command while the player cannot act";
+    for (int i = 0; i < 20 && !plr->getStats()->readyNextTick(plr->getAttrs()->isInteractive()); i++)
+        bElem::tick();
+    const controlItem c = pilot.decide(plr);
+    EXPECT_EQ(c.type, 2) << "the door was not used up while the player was busy";
+    EXPECT_EQ(c.dir, *d);
+}
+
 TEST(AutopilotTests, FourWaysKeepsItToTheSides)
 {
     const auto plr = startWorld(4242);
