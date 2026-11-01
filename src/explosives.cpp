@@ -177,10 +177,12 @@ bool explosives::explode(float blastRadius)
     this->radius = blastRadius * (float) 2.5;
     if (this->getStats()->isDestroying() || this->getStats()->isDisposed())
         return false;
+    // taken out of an inventory below, nothing else may hold us: stay alive to the end
+    const std::shared_ptr<bElem> self = shared_from_this();
     // blowing up in an inventory: the blast is where the carrier stands, and takes it along
     const std::shared_ptr<bElem> carrier
         = this->getStats()->isCollected() ? this->getStats()->getCollector().lock() : nullptr;
-    const std::shared_ptr<bElem> centre = carrier ? carrier : shared_from_this();
+    const std::shared_ptr<bElem> centre = carrier ? carrier : self;
     this->brd = centre->getBoard();
     if (!brd || centre->getStats()->getMyPosition() == NOCOORDS)
         return false;
@@ -189,7 +191,7 @@ bool explosives::explode(float blastRadius)
     viewPoint::get_instance().addViewPoint(centre);
     myUtility::Coords mpos = myUtility::Coords(centre->getStats()->getMyPosition());
     if (carrier) {
-        [[maybe_unused]] const auto self = this->removeElement(); // out of the inventory, kept alive
+        this->removeElement(); // out of the inventory
         this->collectOnAction(false, carrier);
         {
             goe::events::blame by(this->getStats()->getStatsOwner().lock().get());
