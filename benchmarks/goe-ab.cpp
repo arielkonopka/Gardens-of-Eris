@@ -120,17 +120,11 @@ struct result
     std::array<int, (std::size_t) cause::count> deaths{};
 };
 
-/// the player acts in the next tick (as the agent library decides it, agentGame.cpp): the
-/// autopilot is asked only then. The title screen asks it every tick, and a door it decides to
-/// open while the player is still moving is never tried again; from the start room, whose doors
-/// need the key lying inside, that would keep it in there for good.
+/// the player acts in the next tick (bElemStats::readyNextTick). The autopilot checks this itself
+/// now; asking only then here also keeps goe-ab's runs comparable with the ones made before.
 bool readyNextTick(const bElem &e)
 {
-    const bElemStats &st = *e.getStats();
-    const auto soon = [](int left) { return left <= 1; };
-    return soon(st.getWaiting()) && soon(st.getTelInProgress()) && soon(st.getKilled()) && soon(st.getDestroyed())
-           && soon(st.getMoved()) && soon(st.getFadingIn()) && soon(st.getFadingOut())
-           && (!e.getAttrs()->isInteractive() || soon(st.getInteracted()));
+    return e.getStats()->readyNextTick(e.getAttrs()->isInteractive());
 }
 
 /// as the title screen demo picks it (main.cpp farChunk): 23 to 63 chunks out, any direction
