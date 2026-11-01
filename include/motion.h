@@ -35,9 +35,10 @@ class bElem;
  *  2. step onto the cell, if it can be stood on;
  *  3. push what is there one cell further, if the mover can push and it can be pushed;
  *  4. interact with what is there.
- * A diagonal move (user rule of 2026-10-13) needs at least one of the two cells beside it, the
- * ones it passes between, to be free; between two blocked cells nothing gets through, so walls
- * that touch only at a corner still close the maze.
+ * A diagonal move needs both cells beside it, the ones it passes between, to be free (user rule
+ * of 2026-11-01, after the eight-way audit; from 2026-10-13 one free cell was enough). So a body
+ * never cuts round the end of a wall: diagonals happen on open floor only, and walls that touch
+ * at a corner close the maze.
  * The movement mode (2026-10-31, for measuring what eight-way movement changed) can bring back
  * the old four-way rule for everything at once: in mode 4 no diagonal passes. cornerOpen is the
  * one place that reads it, so every mover, gun, line of sight and path search follows it.
@@ -55,8 +56,12 @@ mode currentMode();
 constexpr mode modeOf(int ways) { return ways == 4 ? mode::fourWay : mode::eightWay; }
 
 /// whether a move from the cell in direction d may pass: always for the four sides; for a
-/// diagonal, never in mode 4, else when one of the two cells beside it can be stood on
+/// diagonal, never in mode 4, else when both cells beside it can be stood on
 bool cornerOpen(const chamber &board, coords from, dir::direction d);
+/// whether who, from where it stands on its board, reaches the cell in direction d past the
+/// corner rule (cornerOpen); false when it is on no board. Anything that acts on a neighbour
+/// (a step, a hit, an interact) asks this first.
+bool passes(const std::shared_ptr<bElem> &who, dir::direction d);
 /// moves one cell in direction d; speed is how many ticks the move takes
 bool step(const std::shared_ptr<bElem> &who, dir::direction d, int speed);
 /// moves one cell in direction d, pulling the movable element behind it along

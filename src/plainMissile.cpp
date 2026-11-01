@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 #include "plainMissile.h"
+#include "motion.h"
 #include "gameEvents.h"
 
 plainMissile::plainMissile()
@@ -75,8 +76,12 @@ bool plainMissile::mechanics()
         this->disposeElement();
         return true;
     }
+    // flying diagonally into a closed corner, it hits the corner like a wall, whatever is behind
+    if (!motion::passes(shared_from_this(), this->getStats()->getMyDirection())) {
+        this->kill();
+        return true;
+    }
     if (myel->getAttrs()->isSteppable()) {
-        // flying diagonally into a corner closed on both sides, it hits the corner like a wall
         if (!this->moveInDirectionSpeed(this->getStats()->getMyDirection(),
                                         GoEConstants::_plainMissileSpeed))
             this->kill();

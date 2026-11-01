@@ -63,7 +63,7 @@ The hall of fame keeps the ten best games, kept in `halloffame.json` in the save
 
 Each time the maze grows by a new chunk, a random Discordian story scrolls along the top of the screen, unless one is still scrolling. Config switches the story scroller on or off and picks the stories file: Left and Right step through the files next to it (`data/txt/stories.json` in English, `stories.pl.json` in Polish, `stories.ro.json` in Romanian), or type the path of your own. A stories file is a JSON list of `{"title": "...", "body": "..."}`.
 
-Everything that moves can go diagonally: you, monsters, drones, missiles and pushed bricks. A diagonal step passes between the two cells beside it, and it is blocked only when both of them are, so you can round a corner but never slip between two walls that touch at a corner. Shots fly diagonally too (Shift with two directions), and so do bunkers' eyes and the hunters that chase you.
+Everything that moves can go diagonally: you, monsters, drones, missiles and pushed bricks. A diagonal step passes between the two cells beside it and needs both of them free, so diagonals happen on open floor: you never cut round the end of a wall or slip between two walls that touch at a corner. Shots fly diagonally too (Shift with two directions), and so do bunkers' eyes and the hunters that chase you.
 
 These are the default keys. Config, Controls lets you choose other keys (two per action) and a pad button for each action: pick the action, then press the new key or pad button. Backspace leaves an action without keys, and Reset to defaults brings this layout back. The pad's stick always walks.
 
@@ -435,6 +435,7 @@ The config file now will have entries to configure elements attributes, like bei
 New tiles use Discordian symbols: the golden apple, the Sacred Chao, pentagons, and Eris' gold and red. Gameplay numbers follow the Law of Fives: they are built from 5 or 23.
 
 ## ChangeLog
+* Diagonals need both cells beside them free (they used to need one), for everything that moves, shoots, looks or plans a path. Missiles and bazooka missiles no longer hit something diagonally behind a closed corner (a bazooka missile blows up on the corner), and interacting no longer reaches round one. Found by the eight-way movement audit.
 * The agent library takes the movement switch: `goe.Game(movement=4)` / `GoeEnv(movement=4)` (default 8). The actions stay the same in both modes; with 4 the diagonal ones do nothing, and `game.action_mask` / `info["action_mask"]` say which actions can do something.
 * A movement switch: `--movement 4|8`, Config "Movement" and `movementMode` in settings.json. Eight ways stays the default; four ways closes every diagonal for everything that moves (the player, monsters, drones, missiles, pushed bricks, bunkers' eyes, chasers), so the two can be compared.
 * Animated characters in the 3D view: your avatar is the KayKit Knight (with sword, round shield and cape), and monsters are KayKit skeletons (a warrior, a rogue and a mage by subtype, a minion otherwise). They stand about, walk when they move, and fall down when they die, turning to face where they go. The models are skinned on the CPU, each pose once a frame however many elements show it. `Animations` in a skins.json `Model` names the clips.
